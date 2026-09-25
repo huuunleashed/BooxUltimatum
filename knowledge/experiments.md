@@ -31,6 +31,7 @@ The in-app battery log (Battery › Battery log) now records light samples every
 | 2026-09-26 | Re-scheduling an inexact repeating alarm restarts its countdown, so scheduling on every app open could keep the log from ever sampling. | `dumpsys alarm` before and after opening the app. | The log alarm is only set when absent (and always after boot or update). |
 | 2026-09-26 | USB power from a PC reports as a wall charger (`AC`) on this firmware. | Battery › Readings while plugged into the PC. | The "stays awake while plugged in" note covers every power source. |
 | 2026-09-26 | `com.onyx.easytransfer` (BOOXDrop) had used 8 min 27 s of CPU in 4.5 h of uptime, the most of any Onyx process. | `top`, TIME+ column. | Lead for the first A/B run: *Pause idle Boox apps* covers it. |
+| 2026-09-26 | BooxUltimatum home works as the default home: Home, Back, app shortcuts, Boox entry points, Recents and recovery after a process kill all behave. Recents live in `com.android.onyxquickstep`, independent of the home app. | `cmd package set-home-activity` through the app, `resolve-activity` for HOME, `dumpsys activity activities` after each action. | Default home set on the owner's tablet; one-tap restore kept in Settings › Home screen. |
 
 ## Tweak verification
 

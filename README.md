@@ -12,7 +12,7 @@ A single sideloadable Android app that is meant to become the go-to hub of tweak
 | App | Nine destinations: Overview, Battery, Tweaks, Apps, Appearance, Fonts, Settings, Device and Access. The "Braun Instrument" design runs throughout: paper white, black ink, one green lamp, Archivo, and no animation. |
 | Tweaks | 19 reversible, tiered tweaks with a journal. Each one is listed with its mechanism and verification status in `knowledge/experiments.md`. They include *Let your apps keep running*, which fixes music stopping and Discord screen share going blank (Boox background-restricts apps you install). |
 | Battery | Drain measurement, a time-left estimate, wakeup sources, force idle, and a battery log that never wakes the tablet (samples every 30 min of awake time plus deep snapshots every 3 h), with a level chart, asleep and awake drain, and a one-zip export. |
-| Home screen | The BooxUltimatum launcher is built and enabled but not the default; the Boox home stays default until you choose. It has widgets (including Boox's own), folders, icon shapes, wallpapers, a two-pane landscape layout, and a custom header. It uses about a third of the Boox home's memory and 0 % CPU when idle (`docs/05-launcher.md`). |
+| Home screen | **BooxUltimatum home is the default home screen on the tablet (since 2026-09-26, 06:20).** It has widgets (including Boox's own), folders, app shortcuts, icon shapes, wallpapers, a two-pane landscape layout, and a custom header. It uses about a third of the Boox home's memory and 0 % CPU when idle (`docs/05-launcher.md`). The Boox home is saved and one tap away: see *Going back to the Boox home*. |
 | Appearance and fonts | System-wide status bar icons with one-tap restore, the home's look, and a full Google Fonts browser (1946 families, Vietnamese coverage, install to NeoReader). |
 | Device facts | Core facts verified: QCS6690 "volcano", kernel 6.1 GKI, Android 16, **locked bootloader**, Doze off in firmware, and all Onyx apps Doze-allowlisted. See `docs/00-device-research.md` §0 and `knowledge/experiments.md`. |
 | Root | **Out of scope (decided 2026-09-25).** The product targets T0–T2 (app, adb grants, Shizuku). |
@@ -21,7 +21,7 @@ A single sideloadable Android app that is meant to become the go-to hub of tweak
 1. Unplugged overnight run with the battery log running, to get the first real asleep and awake drain figures on FW 4.3.
 2. First A/B: *Pause idle Boox apps* and *Let Boox apps sleep* against that baseline. BOOXDrop used the most CPU of any Onyx process in the first 4.5 h.
 3. Record round trips for the three tweaks not yet verified on the tablet (`doze.boox_allowlist`, `power.autosync`, `privacy.ota`).
-4. Decide with the owner whether to make BooxUltimatum home the default home screen. It's ready, and the switch back to Boox is one tap.
+4. Daily-use test of BooxUltimatum home as the default. Note anything missing compared with the Boox home, any widget that renders badly, and any refresh that feels slow.
 5. Launcher extras: notification dots (opt-in listener), Onyx front-light and refresh quick actions, layout backup.
 
 Note: Shizuku stops on every reboot. Restart it with `.\tools\host\start-shizuku.ps1`. NA6C FW 4.3 hides Wireless debugging, so on-device restarts without a PC are still unverified. *Turn on Doze* also resets on reboot.
@@ -63,12 +63,22 @@ adb install -r app\build\outputs\apk\release\app-release.apk
 .\tools\host\power-logger.ps1 -Action Start -Interval 60   # then unplug
 ```
 
+## Going back to the Boox home
+
+BooxUltimatum saved the Boox home (`com.onyx/.StartupActivity`) before switching, so going back never loses anything:
+
+- **On the tablet:** open BooxUltimatum › Settings › Home screen and tap *Back to Boox*. Or, from BooxUltimatum home, tap *Notes · Boox home* on the Boox shelf to use the Boox home for a moment without switching.
+- **From a computer, if BooxUltimatum ever can't open:** `adb shell cmd package set-home-activity --user 0 com.onyx/.StartupActivity`.
+- **Without Shizuku or a computer:** Android Settings › Apps › Default apps › Home app, and pick ONYX Launcher.
+
+Recents, gestures, NaviBall and EInkWise belong to the system, not the home app, so they behave the same under either home.
 ## Privilege tiers
 
 Every feature declares the minimum tier it needs and degrades gracefully without it. **T0** is the plain app. **T1** is permissions granted once over adb. **T2** is Shizuku (shell uid). **T3** is root (Magisk/KernelSU and LSPosed). The core product must stay useful at T0–T2.
 
 ## Changelog
 
+- **2026-09-26 (morning):** Made **BooxUltimatum home the default home screen** through Settings › Home screen, so the Boox home is journaled and restorable in one tap. Verified as default: the Home key and Back stay on home, app shortcuts appear on long-press (Settings offers Wi‑Fi and Battery), Library, Notes (the Boox home) and Storage open from the Boox shelf, Recents (onyxquickstep) opens and returns to home, and after the app process is killed the Home key brings home straight back with the default kept. Added *Going back to the Boox home* to this README.
 - **2026-09-26 (night):** A full validation pass on the tablet, in both orientations, with every problem found fixed on the spot.
   - **Landscape:** home now puts widgets and apps side by side. The launcher's Edit and widget picker, and every panel, are width-capped. State survives rotation in the app and the launcher.
   - **Widgets:** Shorter/Taller height steps. Hosted widgets get a realistic default height (the Boox Library widget no longer crops its covers). A widget that doesn't fit shrinks to its standard height before it's skipped, it never pushes the apps off screen, and Edit and the footer say when one is hidden. The half-width clock shows the time and date when there's room.

@@ -9,7 +9,7 @@ Goal: a home screen that's as good as the Boox launcher or better, richer in fea
 3. **Don't own what we don't need.** Recents are provided by `com.android.onyxquickstep` (verified: `mRecentsComponent`), which doesn't depend on the home app. Boox gestures, NaviBall and EInkWise live in SystemUI and `com.onyx.floatingbutton`. The launcher doesn't replace any of them.
 4. **Boox functions are first-class.** Every launchable Onyx app is available, the Boox shelf widget opens Library, Notes (the Boox home) and Storage, and Boox's own widgets are listed first in the picker.
 5. **E-ink etiquette.** Refresh only on events: `ACTION_TIME_TICK`, battery and connectivity broadcasts while visible, and package callbacks. Use pages instead of scrolling, keep motion to zero, support side-button page turns, and never reflow the page while the keyboard is up.
-6. **Always reversible.** The launcher ships disabled (a HOME alias turned on from Settings › Home screen), and the switcher returns to the Boox home in one tap.
+6. **Always reversible.** The launcher ships disabled (a HOME alias turned on from Settings › Home screen), the Boox home is journaled before the first switch, and the switcher returns to it in one tap. The adb fallback is `cmd package set-home-activity --user 0 com.onyx/.StartupActivity`.
 
 ## What is built
 
@@ -20,6 +20,16 @@ Goal: a home screen that's as good as the Boox launcher or better, richer in fea
 - **Typing on home:** city search and the note open in a panel at the top of the screen, above the keyboard. Home keeps its tallest height per orientation, so the keyboard never reflows it.
 - **Drawer and panels:** a paged, searchable All apps. A long-press panel for open, shortcuts, pin, reorder, folders, hide, app info and uninstall. Panels sit on a paper veil that closes them when tapped.
 - **Look:** plain paper, the system wallpaper, or a picture (stored at half resolution, EXIF rotation applied, removable), with an adjustable paper veil. The typeface follows the system font by default, or the app's font, or any downloaded Google font.
+
+## As the default home (verified 2026-09-26)
+
+Set as default through Settings › Home screen on NA6C FW 4.3. Checked on the tablet:
+
+- The Home key returns to home from any app, and Back on home stays on home.
+- App shortcuts appear in the long-press panel (they need the default-home role), and launching one works.
+- Library, Notes (the Boox home, opened as a normal screen) and Storage open from the Boox shelf, and Home comes back from each.
+- Recents (`com.android.onyxquickstep`) opens and returns to home.
+- After the app process is killed, the Home key restarts home at once and the default is kept.
 
 ## Resource budget (measured 2026-09-26, `knowledge/experiments.md`)
 
