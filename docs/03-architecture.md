@@ -46,8 +46,21 @@ interface Tweak {
 
 Each apply writes a journal entry with the previous state, so reverting works even after an app reinstall (the journal is exported to shared storage).
 
+## As built (0.2.0)
+
+Still a single `:app` module, organised by package:
+
+| Package | Holds |
+|---|---|
+| `core` | Platform readers (battery, device, packages, privilege status), `SystemSettings`, `SystemState` parsers (Doze, allowlist, appops, standby buckets, alarm wakeups, wakelocks), the `Journal`, `BatteryLog`, `StatusBar`, `Launchers`, `Fonts`, `AppWork` (an app-wide scope for changes that must outlive their screen) |
+| `core.exec` | `Privileged`: the Shizuku user service (`ShellService`, AIDL `IShellService`) running as the shell uid, released after 45 s idle; `Diagnostics` for `dumpsys` with or without Shizuku |
+| `core.tweaks` | The tweak framework and the catalogue of 19 tweaks |
+| `ui` | Theme ("Braun Instrument"), components, glyphs, and one file per destination under `ui/screens` |
+| `launcher` | The home screen: catalogue and preferences, activity and model, UI, widgets, status glyphs |
+
 ## Power sampler design (must not cause the drain it measures)
 
-- No foreground service and no partial wakelock. It uses `AlarmManager.setAndAllowWhileIdle` (inexact) with a 15-minute minimum during standby, and ~1-minute sampling only in an explicit "test run" mode.
-- It reads `BatteryManager` (capacity, `CURRENT_NOW`, `CHARGE_COUNTER`), sticky `ACTION_BATTERY_CHANGED` (voltage, temperature, plugged), `PowerManager.isInteractive`, and elapsed realtime vs uptime (the gap is time suspended).
-- For lab runs we prefer the host-launched shell logger (`tools/host/power-logger.ps1`) because it involves zero app code.
+- No foreground service and no partial wakelock. The battery log uses `AlarmManager.setInexactRepeating` on `ELAPSED_REALTIME` (not the wakeup variant) every 30 minutes, so it only fires when the tablet is already awake and adds no wakeups. The alarm is set only when absent, because re-setting it restarts the countdown; boot and app updates set it afresh.
+- Each light sample reads `BatteryManager` (capacity, `CHARGE_COUNTER`), sticky `ACTION_BATTERY_CHANGED` (voltage, temperature, plugged), `PowerManager.isInteractive`, and elapsed realtime and uptime. The first sample after a wake shows what the tablet lost while asleep: between two samples, 1 − Δuptime/Δelapsed is the share of time suspended. Opening the app adds a sample at most every 10 minutes.
+- Every 3 hours a deep snapshot adds Doze state, alarm wakeups by app and held wakelocks. Files are CSV and JSONL in `Android/data/app.booxultimatum/files/logs`, pruned after 60 days, and shared as one zip with a README.
+- For lab runs we still prefer the host-launched shell logger (`tools/host/power-logger.ps1`) because it involves zero app code.

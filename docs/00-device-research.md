@@ -1,6 +1,23 @@
 # 00 · Device research: BOOX Note Air6 C (NA6C)
 
-Status: **pre-device desk research** (2026-09-25). Anything marked *[verify]* must be confirmed with `tools/host/recon.ps1` once the tablet is plugged in. Treat blog and aggregator specs as leads to check, not as facts.
+Status: desk research (2026-09-25), **now partly verified on a real unit** (see §0). Anything still marked *[verify]* must be confirmed with `tools/host/recon.ps1`. Treat blog and aggregator specs as leads to check, not as facts.
+
+## 0. Verified on device (capture `20260925-2118-<serial>-factory-fw43`)
+
+| Fact | Value | Implication |
+|---|---|---|
+| SoC | `ro.soc.model=QCS6690` (QTI), `soc_id=658`, family `Snapdragon`, platform/board codename **`volcano`** | This is the "Dragonwing Q‑6690". Search upstream trees and loaders for `volcano` and `QCS6690`. |
+| CPU | 4 + 3 + 1 cluster layout: policy0 cpu0‑3 at 2.02 GHz, policy4 cpu4‑6 at 2.71 GHz, policy7 cpu7 at 2.96 GHz. Governor **`walt`**. | The Snapdragon 7-series style prime core explains the benchmark jump. A future root tier could cap policy7 during notes/reading. |
+| Kernel | `6.1.134-android14-11` (GKI), built 2026‑08‑05 | Has a separate `init_boot`, so Magisk would patch `init_boot`, not `boot`. |
+| Firmware | `2026-08-17_12-29_4.3-rel_0817_fd4f8e9fe`, Android 16 (SDK 36), security patch 2026‑06‑01, `first_api_level=35`. The fingerprint oddly still reads `ONYX/TabBoox/TabBoox:13/TKQ1…`. | Same `4.3-rel` family eWritable tested, so our battery numbers are comparable to his. |
+| Boot security | `verifiedbootstate=green`, `flash.locked=1`, `vbmeta.device_state=locked`, `ro.oem_unlock_supported` empty, `ro.build.type=user`, SELinux Enforcing | **The bootloader is locked**, unlike older Boox models, which shipped unlocked. Root is not a given. Phase 5 must first find out whether OEM unlock is possible at all. |
+| Partitions | A/B (`_a` active), virtual A/B, dynamic `super`. `boot`, `init_boot`, `vendor_boot`, `recovery`, `vbmeta`, `devinfo` all present on UFS (`sde`). | Matches a modern Qualcomm GKI layout. |
+| Shell (uid 2000) access | **Denied:** `/sys/class/power_supply/battery/*`, `/sys/power/suspend_stats`, `wakeup_reasons`, `debugfs`. **Allowed:** `dumpsys *`, `getprop`, `pm`, `settings`, cpufreq, thermal zones (53). | Battery telemetry has to come from `dumpsys battery` (charge counter in µAh, voltage, temperature), not sysfs. `power-logger.ps1` has been updated. |
+| Battery service | Charge counter ≈ 2.0 Ah at 53 %, which puts a full charge at about 3.78 Ah, consistent with the 3700 mAh rating. Max charging 3 A / 5 V. | Charge-counter deltas give accurate mAh drain per test. |
+| `/onyxconfig` | The directory is world-writable, but its files are `system`-only (`ONYX_SYSTEM_CONFIG_KEY`, `ONYX_CLUSTER_SYSTEM_KEY`, `charge_control_en`, `battery_first_use_date`, …) plus an `mmkv/` directory. | **`charge_control_en`** suggests there's a charge-limit feature to investigate (battery longevity). MMKV editing needs a check of the `mmkv/` permissions. |
+| **Doze whitelist** | **All 21 `com.onyx.*` packages** are on the user-app Doze whitelist, including `production.test`, `appmarket`, `igetshop`, `calculator`, `easytransfer` and `aiassistant`. `com.google.android.gms` is whitelisted as a system app. | **This is the top battery lever to test.** Removing non-essential Onyx apps from the whitelist is reversible with `dumpsys deviceidle whitelist -/+pkg`. |
+| Package changes vs NA3C | The Simple Mobile Tools forks are gone, replaced by `com.onyx.clock`, `.gallery`, `.musicplayer` and `.voicerecorder`. New: `com.onyx.aiassistant`, `com.onyx.android.ksync`, `com.onyx.floatingbutton`, `com.android.onyxquickstep` (launcher/recents). | The knowledge base has been updated. |
+| USB IDs | MTP only: `18D1:4EE1`. MTP + ADB: `18D1:4EE2`. | Developer mode is unlocked under **Settings → More Settings → USB Debug Mode**. There's no Build-number tap: this firmware has no Build number row, and tapping Version or Serial number does nothing. |
 
 ## 1. Hardware at a glance
 

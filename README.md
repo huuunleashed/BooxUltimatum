@@ -8,16 +8,23 @@ A single sideloadable Android app that is meant to become the go-to hub of tweak
 
 | Area | State |
 |---|---|
-| Phase | **0 → 1:** desk research done, waiting for the device (arriving 2026-09-25 afternoon) |
-| Device facts | Pre-device research only. Items marked *[verify]* in `docs/00-device-research.md` are pending the first recon. |
-| App | `0.1.0-probe` builds. It has Device, Battery, Packages and Privileges tabs and a "Share report" button. No tweaks yet. |
-| Host tooling | `recon.ps1`, `power-logger.ps1` and `pull-apks.ps1` are written but haven't been run on a real device yet |
-| Root | Not attempted. Feasibility is Phase 5 (no public Q‑6690 loader, no NoteAir6C firmware key yet). |
+| Phase | **Building on the device (phase 3).** Version `0.2.0` is installed on the tablet (release build) at tier T2 and validated screen by screen in portrait and landscape. |
+| App | Nine destinations: Overview, Battery, Tweaks, Apps, Appearance, Fonts, Settings, Device and Access. The "Braun Instrument" design runs throughout: paper white, black ink, one green lamp, Archivo, and no animation. |
+| Tweaks | 19 reversible, tiered tweaks with a journal. Each one is listed with its mechanism and verification status in `knowledge/experiments.md`. They include *Let your apps keep running*, which fixes music stopping and Discord screen share going blank (Boox background-restricts apps you install). |
+| Battery | Drain measurement, a time-left estimate, wakeup sources, force idle, and a battery log that never wakes the tablet (samples every 30 min of awake time plus deep snapshots every 3 h), with a level chart, asleep and awake drain, and a one-zip export. |
+| Home screen | The BooxUltimatum launcher is built and enabled but not the default; the Boox home stays default until you choose. It has widgets (including Boox's own), folders, icon shapes, wallpapers, a two-pane landscape layout, and a custom header. It uses about a third of the Boox home's memory and 0 % CPU when idle (`docs/05-launcher.md`). |
+| Appearance and fonts | System-wide status bar icons with one-tap restore, the home's look, and a full Google Fonts browser (1946 families, Vietnamese coverage, install to NeoReader). |
+| Device facts | Core facts verified: QCS6690 "volcano", kernel 6.1 GKI, Android 16, **locked bootloader**, Doze off in firmware, and all Onyx apps Doze-allowlisted. See `docs/00-device-research.md` §0 and `knowledge/experiments.md`. |
+| Root | **Out of scope (decided 2026-09-25).** The product targets T0–T2 (app, adb grants, Shizuku). |
 
 ### Next up
-1. Unboxing session: capture the factory-firmware baseline (`recon.ps1 -Label factory`) before any OTA.
-2. Install the probe APK, grant the T1 permissions, and check the day-1 questions in `docs/02-reverse-engineering-plan.md` §Phase 1.
-3. Overnight B0 standby run with `power-logger.ps1`.
+1. Unplugged overnight run with the battery log running, to get the first real asleep and awake drain figures on FW 4.3.
+2. First A/B: *Pause idle Boox apps* and *Let Boox apps sleep* against that baseline. BOOXDrop used the most CPU of any Onyx process in the first 4.5 h.
+3. Record round trips for the three tweaks not yet verified on the tablet (`doze.boox_allowlist`, `power.autosync`, `privacy.ota`).
+4. Decide with the owner whether to make BooxUltimatum home the default home screen. It's ready, and the switch back to Boox is one tap.
+5. Launcher extras: notification dots (opt-in listener), Onyx front-light and refresh quick actions, layout backup.
+
+Note: Shizuku stops on every reboot. Restart it with `.\tools\host\start-shizuku.ps1`. NA6C FW 4.3 hides Wireless debugging, so on-device restarts without a PC are still unverified. *Turn on Doze* also resets on reboot.
 
 ## Why this exists
 
@@ -32,7 +39,9 @@ The most credible independent review ([eWritable](https://ewritable.net/brands/b
 | `docs/02-reverse-engineering-plan.md` | The phased plan for testing together, and the battery test protocol |
 | `docs/03-architecture.md` | App architecture, tweak model, and sampler design |
 | `docs/04-upstream-projects.md` | Open-source projects we fork or borrow from, with their licenses |
-| `app/` | Android app (Kotlin, Jetpack Compose, e-ink-first UI) |
+| `docs/05-launcher.md` | The BooxUltimatum home screen: compatibility rules, features, and its measured resource budget |
+| `PRODUCT.md` | Product and design context: users, tone, and the Braun Instrument design language |
+| `app/` | Android app (Kotlin, Jetpack Compose, e-ink-first UI), including the launcher in `launcher/` |
 | `knowledge/` | Onyx package knowledge base (also bundled as app assets) and the experiments log |
 | `tools/host/` | PowerShell scripts run from the PC over adb |
 | `tools/dev/` | Repo hygiene tools (for example `prose_wrap.py`) |
@@ -43,13 +52,14 @@ The most credible independent review ([eWritable](https://ewritable.net/brands/b
 Prerequisites (already installed on the dev PC): JDK 21, Android SDK (platform 36, build-tools 36) in `%LOCALAPPDATA%\Android\Sdk`, and platform-tools on `PATH`.
 
 ```powershell
-# Build the probe APK
+# Build the app (release: minified, debug-signed so it updates the installed copy in place)
 $env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.8.9-hotspot'
-.\gradlew.bat assembleDebug          # -> app\build\outputs\apk\debug\app-debug.apk
+.\gradlew.bat assembleRelease        # -> app\build\outputs\apk\release\app-release.apk
 
 # With the tablet plugged in (USB debugging on)
 .\tools\host\recon.ps1 -Label factory
-adb install -r app\build\outputs\apk\debug\app-debug.apk
+adb install -r app\build\outputs\apk\release\app-release.apk
+.\tools\host\start-shizuku.ps1        # after every tablet reboot
 .\tools\host\power-logger.ps1 -Action Start -Interval 60   # then unplug
 ```
 
@@ -59,6 +69,21 @@ Every feature declares the minimum tier it needs and degrades gracefully without
 
 ## Changelog
 
+- **2026-09-26 (night):** A full validation pass on the tablet, in both orientations, with every problem found fixed on the spot.
+  - **Landscape:** home now puts widgets and apps side by side. The launcher's Edit and widget picker, and every panel, are width-capped. State survives rotation in the app and the launcher.
+  - **Widgets:** Shorter/Taller height steps. Hosted widgets get a realistic default height (the Boox Library widget no longer crops its covers). A widget that doesn't fit shrinks to its standard height before it's skipped, it never pushes the apps off screen, and Edit and the footer say when one is hidden. The half-width clock shows the time and date when there's room.
+  - **Typing on home:** city search and the note now open in a top panel above the keyboard, and home no longer reflows when the keyboard opens. Before this, the weather field lost focus in landscape as soon as the keyboard appeared.
+  - **Weather:** debounced city search with searching, no-match and offline states. Units follow the chosen city's country. A new city now refreshes at once (a stale timestamp used to delay it by up to an hour). Open-Meteo is credited.
+  - **Resources:** the Shizuku helper process (about 66 MB) is released after 45 s idle instead of living as long as home. Measured: the launcher uses about a third of the Boox home's memory and 0 % idle CPU.
+  - **Battery log:** opening the app no longer postpones the timed sample. Samples on open are limited to one per 10 minutes. Logs share as one zip with a README. The "asleep" figure explains that it's low while plugged in.
+  - **Icons and look:** Boox's own icon frames are detected and removed inside shapes, so each icon has one outline. Tile labels are one weight heavier for e-ink. Picture wallpapers apply EXIF rotation and can be removed. Choosing *A picture* reuses the stored one.
+  - **Appearance:** the status bar list shows the common icons first, and the battery icon is always offered.
+  - **Tweaks:** changes run in an app-wide scope, so the serif font overlay (which recreates the screen) no longer logs a false failure. Journal entries read as sentences ("Status bar: E-ink refresh mode hidden").
+  - **Polish:** plural-correct counts ("1 app"), a clearer launcher description in Settings, lint clean of new warnings, version 0.2.0. Docs updated: `experiments.md` evidence log, `05-launcher.md`, `03-architecture.md`, `THIRD_PARTY.md`.
+- **2026-09-26:** The launcher gained folders, icon shapes, wallpapers, a custom header (8 Wi-Fi and 8 battery designs, network name through Shizuku), Boox widgets and a grouped widget picker. The new Appearance destination controls status bar icons system-wide (`icon_blacklist`, journaled restore) and the home's look. The battery log was added (non-wakeup alarm, CSV plus deep JSONL, chart, share). The Google Fonts browser covers 1946 families with previews, a Vietnamese filter, and install to `/sdcard/fonts` for NeoReader, the home screen or the app. A serif system font tweak was added. Redrew the logo without a frame, so launcher masks don't double it.
+- **2026-09-25 (late night):** Built the BooxUltimatum launcher (widgets: clock, month, agenda, weather, battery, alarm, note, Boox shelf, and hosted app widgets), plus the home-screen switcher with a journaled restore. Found why music and screen share stop in the background (Boox sets `RUN_ANY_IN_BACKGROUND=ignore` on installed apps) and added the fix as a tweak and per-app key. Added the Shizuku user service, the tweak framework and journal, 19 tweaks, Apps search and per-app detail, battery drain measurement and wakeup sources, and the Settings hub. Designed the "Braun Instrument" UI. Dropped *Enter deep sleep sooner*, because Android 16 blocks shell DeviceConfig writes.
+- **2026-09-25 (night):** Decided **no root**; the product targets T0–T2. Installed the probe app and Shizuku v13.6.0 (signature verified: CN=Rikka) on the tablet. Granted the T1 permissions and confirmed tier T2 on the device. Added `tools/host/start-shizuku.ps1`. The probe app now reports when Shizuku is unreachable and refreshes on Shizuku binder and permission events.
+- **2026-09-25 (evening):** First device connection. On FW 4.3, developer mode is enabled via *Settings → More Settings → USB Debug Mode*. Captured the read-only factory baseline. Verified the SoC (QCS6690 "volcano"), kernel 6.1 GKI, locked bootloader, partition layout and shell permission limits. Found that all 21 Onyx packages are Doze-whitelisted. Switched `power-logger.ps1` to `dumpsys battery` (charge counter). Knowledge base updated with presence data and 13 new packages.
 - **2026-09-25:** Project initialised. Device research, product vision, reverse-engineering plan, architecture, and upstream survey written. Android toolchain installed. Probe app `0.1.0-probe` scaffolded and building. Host recon, power-logger and APK-pull scripts added. Package knowledge base seeded from the NA3C community analysis. Repo rules added (no hard-wrapped prose, reversible tweaks, GPL-3.0).
 
 ## License

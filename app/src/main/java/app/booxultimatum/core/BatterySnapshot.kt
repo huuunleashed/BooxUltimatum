@@ -4,36 +4,33 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
+import android.os.Build
 import android.os.PowerManager
 import android.os.SystemClock
 
+enum class ChargeStatus { Charging, Discharging, Full, NotCharging, Unknown }
+enum class PowerSource { AC, USB, Wireless, Dock, None }
+enum class BatteryHealth { Good, Overheat, Dead, OverVoltage, Cold, Failure, Unknown }
+
+/** One reading of Android's battery service. Nothing here polls; callers decide when to read. */
 data class BatterySnapshot(
     val levelPct: Int,
-    val currentNowMa: Double?,
-    val currentAvgMa: Double?,
     val chargeCounterMah: Double?,
-    val voltageMv: Int,
-    val tempC: Double,
-    val status: String,
-    val plugged: String,
+    val estimatedFullMah: Double?,
+    val currentNowMa: Double?,
+    val voltageMv: Int?,
+    val tempC: Double?,
+    val status: ChargeStatus,
+    val source: PowerSource,
+    val health: BatteryHealth,
+    val technology: String?,
+    val cycleCount: Int?,
     val interactive: Boolean,
-    val sinceBootMin: Long,
-    val deepSleepPct: Double,
-    val sysfsCurrentNow: String?,
+    val sinceBootMs: Long,
+    val asleepFraction: Double,
+    val readAtMillis: Long,
 ) {
-    fun rows(): List<Pair<String, String>> = listOf(
-        "Level" to "$levelPct %",
-        "Current now" to (currentNowMa?.let { "%.1f mA".format(it) } ?: "n/a"),
-        "Current avg" to (currentAvgMa?.let { "%.1f mA".format(it) } ?: "n/a"),
-        "Charge counter" to (chargeCounterMah?.let { "%.0f mAh".format(it) } ?: "n/a"),
-        "Voltage" to "$voltageMv mV",
-        "Temperature" to "%.1f °C".format(tempC),
-        "Status / plugged" to "$status / $plugged",
-        "Screen interactive" to interactive.toString(),
-        "Since boot" to "$sinceBootMin min",
-        "Deep sleep since boot" to "%.1f %%".format(deepSleepPct),
-        "sysfs current_now" to (sysfsCurrentNow ?: "not readable"),
-    )
+    val charging get() = status == ChargeStatus.Charging
 
     companion object {
         fun read(context: Context): BatterySnapshot {
@@ -42,40 +39,50 @@ data class BatterySnapshot(
             val sticky = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
 
             fun prop(id: Int): Int? = bm.getIntProperty(id).takeIf { it != Int.MIN_VALUE && it != 0 }
-            // Units vary by vendor (µA on most Qualcomm devices); we assume µA and verify on the device.
-            val currentNow = prop(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)?.div(1000.0)
-            val currentAvg = prop(BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE)?.div(1000.0)
-            val counter = prop(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER)?.div(1000.0)
+            fun extra(name: String): Int? = sticky?.getIntExtra(name, Int.MIN_VALUE)?.takeIf { it != Int.MIN_VALUE }
 
-            val status = when (sticky?.getIntExtra(BatteryManager.EXTRA_STATUS, -1)) {
-                BatteryManager.BATTERY_STATUS_CHARGING -> "charging"
-                BatteryManager.BATTERY_STATUS_DISCHARGING -> "discharging"
-                BatteryManager.BATTERY_STATUS_FULL -> "full"
-                BatteryManager.BATTERY_STATUS_NOT_CHARGING -> "not charging"
-                else -> "unknown"
-            }
-            val plugged = when (sticky?.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0)) {
-                BatteryManager.BATTERY_PLUGGED_AC -> "AC"
-                BatteryManager.BATTERY_PLUGGED_USB -> "USB"
-                BatteryManager.BATTERY_PLUGGED_WIRELESS -> "wireless"
-                0 -> "no"
-                else -> "other"
-            }
+            val level = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+            // Charge counter is reported in µAh on this firmware (verified: 2,000,875 at 53 %).
+            val counterMah = prop(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER)?.div(1000.0)
             val elapsed = SystemClock.elapsedRealtime()
             val awake = SystemClock.uptimeMillis()
+
             return BatterySnapshot(
-                levelPct = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY),
-                currentNowMa = currentNow,
-                currentAvgMa = currentAvg,
-                chargeCounterMah = counter,
-                voltageMv = sticky?.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0) ?: 0,
-                tempC = (sticky?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) ?: 0) / 10.0,
-                status = status,
-                plugged = plugged,
+                levelPct = level,
+                chargeCounterMah = counterMah,
+                estimatedFullMah = if (counterMah != null && level in 5..100) counterMah * 100.0 / level else null,
+                currentNowMa = prop(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)?.div(1000.0),
+                voltageMv = extra(BatteryManager.EXTRA_VOLTAGE)?.takeIf { it > 0 },
+                tempC = extra(BatteryManager.EXTRA_TEMPERATURE)?.div(10.0),
+                status = when (extra(BatteryManager.EXTRA_STATUS)) {
+                    BatteryManager.BATTERY_STATUS_CHARGING -> ChargeStatus.Charging
+                    BatteryManager.BATTERY_STATUS_DISCHARGING -> ChargeStatus.Discharging
+                    BatteryManager.BATTERY_STATUS_FULL -> ChargeStatus.Full
+                    BatteryManager.BATTERY_STATUS_NOT_CHARGING -> ChargeStatus.NotCharging
+                    else -> ChargeStatus.Unknown
+                },
+                source = when (extra(BatteryManager.EXTRA_PLUGGED)) {
+                    BatteryManager.BATTERY_PLUGGED_AC -> PowerSource.AC
+                    BatteryManager.BATTERY_PLUGGED_USB -> PowerSource.USB
+                    BatteryManager.BATTERY_PLUGGED_WIRELESS -> PowerSource.Wireless
+                    BatteryManager.BATTERY_PLUGGED_DOCK -> PowerSource.Dock
+                    else -> PowerSource.None
+                },
+                health = when (extra(BatteryManager.EXTRA_HEALTH)) {
+                    BatteryManager.BATTERY_HEALTH_GOOD -> BatteryHealth.Good
+                    BatteryManager.BATTERY_HEALTH_OVERHEAT -> BatteryHealth.Overheat
+                    BatteryManager.BATTERY_HEALTH_DEAD -> BatteryHealth.Dead
+                    BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE -> BatteryHealth.OverVoltage
+                    BatteryManager.BATTERY_HEALTH_COLD -> BatteryHealth.Cold
+                    BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE -> BatteryHealth.Failure
+                    else -> BatteryHealth.Unknown
+                },
+                technology = sticky?.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY)?.takeIf { it.isNotBlank() },
+                cycleCount = if (Build.VERSION.SDK_INT >= 34) extra(BatteryManager.EXTRA_CYCLE_COUNT)?.takeIf { it >= 0 } else null,
                 interactive = pm.isInteractive,
-                sinceBootMin = elapsed / 60_000,
-                deepSleepPct = if (elapsed > 0) 100.0 * (elapsed - awake) / elapsed else 0.0,
-                sysfsCurrentNow = Shell.readFile("/sys/class/power_supply/battery/current_now"),
+                sinceBootMs = elapsed,
+                asleepFraction = if (elapsed > 0) (elapsed - awake).toDouble() / elapsed else 0.0,
+                readAtMillis = System.currentTimeMillis(),
             )
         }
     }

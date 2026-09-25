@@ -21,3 +21,6 @@ captures/*
 *.img
 payload.bin
 firmware/
+
+# Local design-tool cache
+.impeccable/

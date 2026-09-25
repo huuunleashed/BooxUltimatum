@@ -21,7 +21,7 @@ Goal: find out how the NA6C spends its energy and CPU, map every Onyx component,
 
 1. **First boot decision (your call):** optionally let the first boot run on a network we can observe (a PC hotspot with Wireshark or a Pi-hole log) to record what phones home before any account sign-in. Otherwise, skip Wi-Fi during setup.
 2. Write down the firmware version from *Settings → About*, **before accepting any OTA**. We capture the factory firmware baseline first, then update. The update may fix battery issues, so we want before/after numbers.
-3. Enable Developer options (tap *Build number* 7×), turn on **USB debugging**, plug in, and accept the RSA prompt.
+3. Enable developer mode. On NA6C FW 4.3 it's a simple toggle: **Settings → More Settings → USB Debug Mode**. There's no Build-number tap. Plug in and accept the RSA prompt.
 4. Run `tools\host\recon.ps1 -Label factory`. It collects props, the SoC and kernel, CPU/thermal/power-supply sysfs, all packages (with paths, UIDs, installers and disabled state), `dumpsys` of battery/batterystats/power/deviceidle/alarm/jobscheduler/activity services/appops/usagestats, `settings` in all three namespaces, the `/onyxconfig` listing, SELinux mode, verified-boot and bootloader flags, and the partition layout (if readable).
 5. Install the probe APK (`adb install app-debug.apk`) and grant the T1 permissions:
    ```
@@ -73,7 +73,9 @@ For each suspect (from Phase 2–3 data), apply one reversible change, repeat th
 4. Disabling Onyx services one by one (`pm disable-user --user 0`) for OTA, push, analytics, the app market, easy-transfer, and production-test packages.
 5. T3 only: CPU policy caps and governor for the idle floor, kernel wakeup_sources analysis, and IRQ affinity.
 
-## Phase 5 · Root feasibility (optional; only after Phases 1–4 and a full backup)
+## Phase 5 · Root feasibility (PARKED)
+
+**Decision 2026-09-25: no root.** The NA6C ships with a locked bootloader (`flash.locked=1`, `verifiedbootstate=green`, empty `ro.oem_unlock_supported`), and no public unlock path exists for the QCS6690. The product targets tiers T0–T2. The notes below are kept in case this is ever revisited.
 
 1. Check flags: `ro.boot.flash.locked`, `ro.boot.verifiedbootstate`, `ro.boot.vbmeta.device_state`, and `getprop ro.oem_unlock_supported`. Also check whether *OEM unlocking* appears in Developer options.
 2. Fastboot: `adb reboot bootloader` → `fastboot getvar all` (read-only). Save the output and don't run any `flash` or `oem` commands yet.

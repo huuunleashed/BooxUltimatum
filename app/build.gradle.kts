@@ -12,13 +12,17 @@ android {
         applicationId = "app.booxultimatum"
         minSdk = 30
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0-probe"
+        versionCode = 2
+        versionName = "0.2.0"
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // Minified and non-debuggable for real-world memory and CPU. Signed with the debug key so it upgrades
+            // the installed debug build in place and keeps its adb grants and Shizuku permission.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
@@ -29,6 +33,7 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+        aidl = true
     }
     lint {
         // Signature/development permissions are granted via adb by design (tier T1).

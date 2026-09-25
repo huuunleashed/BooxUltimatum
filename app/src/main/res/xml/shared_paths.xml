@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Only the battery logs, and the zip they are bundled into for sharing, ever leave the app. -->
+<paths>
+    <external-files-path name="logs" path="logs/" />
+    <external-files-path name="exports" path="exports/" />
+</paths>

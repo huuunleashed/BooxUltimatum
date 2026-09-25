@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Adaptive-icon foreground: the needle across its scale, lamp lit at the tip. No rim of its own; the launcher's
+  mask supplies the shape, so the mark never doubles up with a launcher's stroke. Kept inside the 66 dp safe zone.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path android:strokeColor="#000000" android:strokeWidth="3.5" android:pathData="M30,69H78" />
+    <path android:strokeColor="#000000" android:strokeWidth="2.4" android:pathData="M38,69V61M46,69V64M62,69V64M70,69V61" />
+    <path android:strokeColor="#000000" android:strokeWidth="6" android:pathData="M54,33V73" />
+    <path android:fillColor="#1E7A46" android:strokeColor="#000000" android:strokeWidth="1.8"
+        android:pathData="M48.5,33a5.5,5.5 0,1 1,11 0a5.5,5.5 0,1 1,-11 0z" />
+</vector>

@@ -4,8 +4,10 @@
     On-device power logger that keeps running after USB is unplugged (no app needed).
 .DESCRIPTION
     Start: pushes a tiny sh loop to /data/local/tmp and launches it detached (setsid + nohup).
-    Each sample writes: epoch, boottime_s, capacity, current_uA, voltage_uV, temp_dC, status, wakefulness, suspend_success.
-    While the SoC is in deep sleep the loop is frozen too, so gaps between samples show suspended time.
+    Each sample writes: epoch, uptime_s, level, charge_uAh, voltage_mV, temp_dC, status, ac, usb, wakefulness.
+    Data comes from `dumpsys battery` / `dumpsys power` because FW 4.3 denies the shell uid access to
+    /sys/class/power_supply and /sys/power (verified on NA6C 2026-09-25). Charge counter deltas give mAh consumed.
+    The loop's `sleep` stops while the SoC is suspended, so epoch gaps larger than the interval mean deep sleep.
     Stop: kills the loop. Pull: copies the CSV into a capture folder.
 .EXAMPLE
     .\tools\host\power-logger.ps1 -Action Start -Interval 60 -Label B0-standby
@@ -31,19 +33,18 @@ switch ($Action) {
     'Start' {
         $script = @'
 #!/system/bin/sh
-# BooxUltimatum power logger. Low overhead: a few sysfs reads per sample.
+# BooxUltimatum power logger. Two dumpsys calls per sample; keep the interval >= 60 s.
 D=/data/local/tmp/bu
-PS=/sys/class/power_supply/battery
-[ -d "$PS" ] || PS=$(ls -d /sys/class/power_supply/* | head -n 1)
 echo $$ > $D/pid
-[ -f $D/power.csv ] || echo "epoch,boottime_s,capacity,current_uA,voltage_uV,temp_dC,status,wakefulness,suspend_success" > $D/power.csv
+[ -f $D/power.csv ] || echo "epoch,uptime_s,level,charge_uAh,voltage_mV,temp_dC,status,ac,usb,wakefulness" > $D/power.csv
 while true; do
+  B=$(dumpsys battery 2>/dev/null)
+  v() { echo "$B" | grep -m1 "^  $1:" | sed 's/.*: //'; }
   W=$(dumpsys power 2>/dev/null | grep -m1 'mWakefulness=' | cut -d= -f2)
-  echo "$(date +%s),$(cut -d' ' -f1 /proc/uptime),$(cat $PS/capacity 2>/dev/null),$(cat $PS/current_now 2>/dev/null),$(cat $PS/voltage_now 2>/dev/null),$(cat $PS/temp 2>/dev/null),$(cat $PS/status 2>/dev/null),$W,$(cat /sys/power/suspend_stats/success 2>/dev/null)" >> $D/power.csv
+  echo "$(date +%s),$(cut -d' ' -f1 /proc/uptime),$(v level),$(v 'Charge counter'),$(v voltage),$(v temperature),$(v status),$(v 'AC powered'),$(v 'USB powered'),$W" >> $D/power.csv
   sleep __INTERVAL__
 done
 '@
-        # Note: /proc/uptime on Android counts CLOCK_BOOTTIME (includes suspend); compare with epoch deltas and sample gaps.
         $script = $script.Replace('__INTERVAL__', "$Interval").Replace("`r`n", "`n")
         $tmp = New-TemporaryFile
         [IO.File]::WriteAllText($tmp.FullName, $script, (New-Object Text.UTF8Encoding $false))

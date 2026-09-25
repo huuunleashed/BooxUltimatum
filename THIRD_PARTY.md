@@ -9,6 +9,20 @@ BooxUltimatum is GPL-3.0-or-later. Every piece of upstream code or data that get
 | AndroidX / Jetpack Compose | Apache-2.0 | UI and platform support |
 | Shizuku API + provider (`dev.rikka.shizuku`) | Apache-2.0 | T2 privilege backend |
 
+## Bundled assets
+
+| Asset | Source | License | Where |
+|---|---|---|---|
+| Archivo (variable TTF) | [Omnibus-Type/Archivo](https://github.com/Omnibus-Type/Archivo) via Google Fonts | SIL OFL-1.1 | `app/src/main/res/font/archivo.ttf`, license text in `app/src/main/assets/licenses/archivo-OFL.txt` |
+
+## Online services (used at runtime, nothing redistributed)
+
+| Service | Terms | Use |
+|---|---|---|
+| [Google Fonts](https://fonts.google.com) catalogue and CSS2 API | Fonts are OFL-1.1 or Apache-2.0; each family's license is shown on its page | The Fonts browser downloads families only when the user previews or installs them |
+| [Open-Meteo](https://open-meteo.com) forecast and geocoding APIs | Free for non-commercial use; data is CC BY 4.0, credited on the weather widget | The weather widget, for a city the user types; no location is read |
+| [AdGuard DNS](https://adguard-dns.io) public resolver | Public service | Target of the optional *Block trackers with private DNS* tweak |
+
 ## Vendored code
 
 None yet.

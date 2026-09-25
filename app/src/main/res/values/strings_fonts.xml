@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fonts library: browse, preview and apply Google Fonts. -->
+<resources>
+    <string name="dest_fonts">Fonts</string>
+    <string name="fonts_subtitle">%1$d families from Google Fonts, free and open</string>
+    <string name="fonts_refresh">Refresh list</string>
+    <string name="fonts_search">Search families</string>
+    <string name="fonts_sample_hint">Type your own preview text</string>
+    <string name="fonts_sample_short">Reading on paper that glows</string>
+    <string name="fonts_sample_vi_short">Đọc sách trên giấy điện tử</string>
+    <string name="fonts_sample">The quick brown fox jumps over the lazy dog. Reading on paper that glows, one quiet page at a time.</string>
+    <string name="fonts_sample_vi">Đọc sách trên màn hình giấy điện tử thật dễ chịu. The quick brown fox jumps over the lazy dog.</string>
+    <string name="fonts_charset">ABCDEFGHIJKLMNOPQRSTUVWXYZ\nabcdefghijklmnopqrstuvwxyz\n0123456789 .,;:!?&amp;@()[]“”‘’—–</string>
+    <string name="fonts_charset_vi">ABCDEFGHIJKLMNOPQRSTUVWXYZ\nabcdefghijklmnopqrstuvwxyz\n0123456789 .,;:!?&amp;@()“”—\nĂÂĐÊÔƠƯ ăâđêôơư ạảãáà ặẳẵắằ ộổỗốồ ợởỡớờ</string>
+    <string name="fonts_f_picks">E-ink picks</string>
+    <string name="fonts_f_all">All</string>
+    <string name="fonts_serif">Serif</string>
+    <string name="fonts_sans">Sans serif</string>
+    <string name="fonts_f_display">Display</string>
+    <string name="fonts_f_hand">Handwriting</string>
+    <string name="fonts_f_mono">Monospace</string>
+    <string name="fonts_vietnamese">Vietnamese</string>
+    <string name="fonts_sort_popular">Most popular</string>
+    <string name="fonts_sort_name">A–Z</string>
+    <plurals name="fonts_count">
+        <item quantity="one">%1$d family</item>
+        <item quantity="other">%1$d families</item>
+    </plurals>
+    <string name="fonts_none">No family matches “%1$s”.</string>
+    <string name="fonts_catalog_failed">Couldn’t load the Google Fonts list: %1$s</string>
+    <plurals name="fonts_styles">
+        <item quantity="one">%1$d style</item>
+        <item quantity="other">%1$d styles</item>
+    </plurals>
+    <string name="fonts_in_reader">In NeoReader</string>
+    <string name="fonts_in_app">In this app</string>
+    <string name="fonts_back">All fonts</string>
+    <string name="fonts_specimen">Specimen</string>
+    <string name="fonts_size">%1$d sp</string>
+    <string name="fonts_styles_title">Styles · %1$d</string>
+    <string name="fonts_style">Weight %1$d</string>
+    <string name="fonts_style_italic">Weight %1$d italic</string>
+    <string name="fonts_style_sample">Handgloves 0123 Ăâđêôơư</string>
+    <string name="fonts_apply">Apply</string>
+    <string name="fonts_apply_reader">NeoReader and Boox reading</string>
+    <string name="fonts_apply_reader_s">Installs regular, italic and bold into the Boox fonts folder. Pick it in NeoReader’s font settings.</string>
+    <string name="fonts_apply_home">BooxUltimatum home</string>
+    <string name="fonts_apply_home_s">Sets the launcher’s typeface. The system font is used otherwise.</string>
+    <string name="fonts_apply_app">This app</string>
+    <string name="fonts_apply_app_s">Replaces Archivo throughout BooxUltimatum.</string>
+    <string name="fonts_apply_system">System-wide</string>
+    <string name="fonts_apply_system_s">Android 16 only accepts system fonts signed by Google, so no app can install one without root. What this firmware does offer is a built-in serif system font, switched from Tweaks › Interface.</string>
+    <string name="fonts_open_serif_tweak">Serif system font</string>
+    <string name="fonts_install">Install</string>
+    <string name="fonts_remove">Remove</string>
+    <string name="fonts_use">Use</string>
+    <string name="fonts_use_system">Use system font</string>
+    <string name="fonts_use_archivo">Back to Archivo</string>
+    <plurals name="fonts_installed">
+        <item quantity="one">%1$s installed (%2$d file). Choose it in NeoReader’s font settings.</item>
+        <item quantity="other">%1$s installed (%2$d files). Choose it in NeoReader’s font settings.</item>
+    </plurals>
+    <string name="fonts_removed">%1$s removed from the Boox fonts folder.</string>
+    <string name="fonts_home_set">BooxUltimatum home now uses %1$s.</string>
+    <string name="fonts_home_reset">BooxUltimatum home follows the system font again.</string>
+    <string name="fonts_needs_shizuku">Installing into the Boox fonts folder needs Shizuku.</string>
+</resources>

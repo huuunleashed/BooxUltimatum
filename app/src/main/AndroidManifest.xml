@@ -11,10 +11,24 @@
     <uses-permission android:name="android.permission.DUMP" />
     <uses-permission android:name="android.permission.READ_LOGS" />
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
+    <!-- T0: master auto-sync switch (normal permissions). -->
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
+    <!-- Weather (Open-Meteo) and Google Fonts downloads. Nothing else talks to the network. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Launcher: agenda and month widgets (asked at runtime), and the uninstall action. -->
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
+    <!-- Launcher indicators (normal permissions): Wi-Fi on/connected state. -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Battery log: re-arm the non-wakeup sampling alarm after a restart. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="false"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.BooxUltimatum">
@@ -28,6 +42,38 @@
             </intent-filter>
         </activity>
 
+        <!--
+          The launcher. The activity itself has no HOME filter; the alias below carries it and ships disabled,
+          so installing this app never offers a second home or prompts a chooser. It is switched on from
+          Settings > Home screen.
+        -->
+        <activity
+            android:name=".launcher.LauncherActivity"
+            android:exported="false"
+            android:label="@string/launcher_name"
+            android:launchMode="singleTask"
+            android:stateNotNeeded="true"
+            android:clearTaskOnLaunch="true"
+            android:resumeWhilePausing="true"
+            android:excludeFromRecents="true"
+            android:taskAffinity="app.booxultimatum.home"
+            android:windowSoftInputMode="adjustResize"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|density|uiMode|locale|layoutDirection"
+            android:theme="@style/Theme.BooxUltimatum" />
+
+        <activity-alias
+            android:name=".launcher.Home"
+            android:targetActivity=".launcher.LauncherActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:label="@string/launcher_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
+
         <provider
             android:name="rikka.shizuku.ShizukuProvider"
             android:authorities="${applicationId}.shizuku"
@@ -35,5 +81,23 @@
             android:exported="true"
             android:multiprocess="false"
             android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
+
+        <receiver android:name=".core.BatteryLogReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="app.booxultimatum.action.LOG_SAMPLE" />
+            </intent-filter>
+        </receiver>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.files"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/shared_paths" />
+        </provider>
     </application>
 </manifest>

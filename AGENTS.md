@@ -18,7 +18,7 @@ BooxUltimatum is a GPL-3.0 Android hub app of measured, reversible tweaks for th
 
 ## Layout
 
-- `app/`: Android app, Kotlin + Jetpack Compose, package `app.booxultimatum`, minSdk 30, target 36. `core/` holds platform readers and executors, `ui/` holds e-ink UI primitives.
+- `app/`: Android app, Kotlin + Jetpack Compose, package `app.booxultimatum`, minSdk 30, target 36. `core/` holds platform readers, the journal and battery log, `core/exec/` the Shizuku executor, `core/tweaks/` the tweak framework and catalogue, `ui/` the e-ink theme, components and screens, and `launcher/` the BooxUltimatum home screen.
 - `knowledge/`: `onyx-packages.json` (bundled into app assets via `sourceSets`) and `experiments.md`.
 - `tools/host/`: PowerShell scripts over adb (`common.ps1` holds shared helpers). `tools/dev/`: repo hygiene tools.
 - `docs/`: numbered design docs. Update the relevant one when its topic changes.
@@ -27,15 +27,19 @@ BooxUltimatum is a GPL-3.0 Android hub app of measured, reversible tweaks for th
 
 ```powershell
 $env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.8.9-hotspot'   # JDK 21 (JDK 25 is also installed but too new for Gradle 8.14)
-.\gradlew.bat assembleDebug        # build
-.\gradlew.bat lintDebug            # lint (version-upgrade warnings are known and intentional)
+.\gradlew.bat assembleDebug        # build (debug)
+.\gradlew.bat assembleRelease      # build what is installed on the tablet: R8-minified, debug-signed so it updates in place
+.\gradlew.bat lintRelease          # lint (version-upgrade warnings are known and intentional)
 python tools\dev\prose_wrap.py     # prose rule check
 .\tools\host\recon.ps1 -Label <name> [-Quick]
+.\tools\host\start-shizuku.ps1     # after every tablet reboot (Shizuku does not survive reboots)
 ```
 
 ## UI conventions (e-ink)
 
 Pure black on white, no ripples or animations, large touch targets, and no background polling. Data refreshes only on user action or on scheduled, inexact alarms. Prefer pagination over long scrolling lists where it's practical.
+
+Every screen must work in portrait and landscape, and state must survive a rotation; check both on the tablet before calling UI work done. Text entry on the home screen goes in a panel at the top, where the keyboard can't cover it. Strings that carry a count use `plurals`.
 
 ## Toolchain pins
 

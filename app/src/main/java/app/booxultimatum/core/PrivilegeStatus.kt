@@ -8,7 +8,7 @@ import android.os.Process
 import rikka.shizuku.Shizuku
 import java.io.File
 
-enum class Tier(val label: String) { T0("App"), T1("adb-granted"), T2("Shizuku"), T3("Root") }
+enum class Tier { T0, T1, T2, T3 }
 
 data class PrivilegeStatus(
     val secureSettings: Boolean,
@@ -27,18 +27,11 @@ data class PrivilegeStatus(
             else -> Tier.T0
         }
 
-    fun rows(): List<Pair<String, String>> = listOf(
-        "Highest tier" to "${highestTier.name} · ${highestTier.label}",
-        "WRITE_SECURE_SETTINGS" to secureSettings.yesNo(),
-        "DUMP" to dump.yesNo(),
-        "READ_LOGS" to readLogs.yesNo(),
-        "Usage access" to usageStats.yesNo(),
-        "Shizuku running" to shizukuRunning.yesNo(),
-        "Shizuku permission" to shizukuGranted.yesNo(),
-        "su binary" to (suBinary ?: "not found"),
-    )
+    /** adb-granted permissions (tier T1) that are currently held, out of [T1_GRANTS]. */
+    val t1Granted get() = listOf(secureSettings, dump, readLogs, usageStats).count { it }
 
     companion object {
+        const val T1_GRANTS = 4
         private val SU_PATHS = listOf("/system/bin/su", "/system/xbin/su", "/sbin/su", "/debug_ramdisk/su", "/data/adb/ksu/bin/su")
 
         const val ADB_GRANT_HELP = """adb shell pm grant app.booxultimatum android.permission.WRITE_SECURE_SETTINGS
@@ -65,10 +58,12 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow"""
             )
         }
 
-        fun requestShizuku(requestCode: Int = 1) {
-            if (runCatching { Shizuku.pingBinder() }.getOrDefault(false)) Shizuku.requestPermission(requestCode)
+        /** Returns false when the Shizuku server is unreachable (not started since reboot, or a stale binder). */
+        fun requestShizuku(requestCode: Int = 1): Boolean {
+            if (!runCatching { Shizuku.pingBinder() }.getOrDefault(false)) return false
+            if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) Shizuku.requestPermission(requestCode)
+            return true
         }
     }
 }
 
-private fun Boolean.yesNo() = if (this) "yes" else "no"

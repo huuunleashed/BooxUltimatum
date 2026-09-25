@@ -1,4 +1,186 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  All user-facing copy lives here so it can be translated. Voice: honest and precise.
+  State what was measured and where it came from; never promise savings we have not measured.
+-->
 <resources>
-    <string name="app_name">BooxUltimatum</string>
+    <string name="app_name" translatable="false">BooxUltimatum</string>
+
+    <!-- Destinations -->
+    <string name="dest_overview">Overview</string>
+    <string name="dest_battery">Battery</string>
+    <string name="dest_device">Device</string>
+    <string name="dest_apps">Apps</string>
+    <string name="dest_access">Access</string>
+
+    <!-- Actions -->
+    <string name="action_read_again">Read again</string>
+    <string name="action_share">Share report</string>
+    <string name="action_details">Details</string>
+    <string name="action_show_all">Show all</string>
+    <string name="action_hide">Hide</string>
+    <string name="action_previous">Previous</string>
+    <string name="action_next">Next</string>
+    <string name="action_copy_commands">Copy commands</string>
+    <string name="action_request_shizuku">Ask Shizuku for permission</string>
+    <string name="share_title">Share device report</string>
+
+    <!-- States -->
+    <string name="state_reading">Reading the tablet…</string>
+    <string name="lamp_on">On</string>
+    <string name="lamp_off">Off</string>
+    <string name="state_not_built">Not built yet</string>
+    <string name="state_copied">Copied</string>
+    <string name="pager_position">Page %1$d of %2$d</string>
+
+    <!-- Overview -->
+    <string name="overview_subtitle">%1$s · firmware %2$s · Android %3$s</string>
+    <string name="overview_subtitle_nofw">%1$s · Android %2$s</string>
+    <string name="scale_description">Battery level %1$d percent</string>
+    <string name="status_stored">About %1$s stored, of roughly %2$s when full.</string>
+    <string name="status_asleep">Asleep %1$s of the time since the last restart, %2$s ago.</string>
+    <string name="status_asleep_usb">Plugged in, the tablet charges and often stays awake, so this figure means most on battery.</string>
+    <string name="plate_drain">Drain</string>
+    <string name="drain_not_measured">Not measured on this tablet yet.</string>
+    <string name="drain_explain">Drain is measured over hours, unplugged. Start a measurement from Battery, and every tweak can then be judged against it.</string>
+    <string name="drain_reference" formatted="false">For comparison only: eWritable measured about 2 % per hour idle and 10 % per hour writing on the same 4.3 firmware.</string>
+    <string name="plate_access">Access</string>
+    <string name="plate_planned">Planned</string>
+    <string name="pillar_profiles">E-Ink Profiles</string>
+    <string name="pillar_profiles_purpose">Back up, share and tune refresh settings per app.</string>
+
+    <!-- Charge lines -->
+    <string name="charge_charging">Charging</string>
+    <string name="charge_charging_ac">Charging from the wall</string>
+    <string name="charge_charging_usb">Charging over USB</string>
+    <string name="charge_charging_wireless">Charging wirelessly</string>
+    <string name="charge_full">Full</string>
+    <string name="charge_not_charging">Plugged in, not charging</string>
+    <string name="charge_on_battery">On battery</string>
+    <string name="charge_unknown">Charge state unknown</string>
+
+    <!-- Battery -->
+    <string name="battery_subtitle">Read at %1$s from Android’s battery service</string>
+    <string name="plate_readings">Readings</string>
+    <string name="spec_status">Status</string>
+    <string name="spec_source">Power source</string>
+    <string name="spec_stored">Charge stored</string>
+    <string name="spec_full">Full capacity</string>
+    <string name="spec_full_note">Estimated from the charge counter and level</string>
+    <string name="spec_voltage">Voltage</string>
+    <string name="spec_temperature">Temperature</string>
+    <string name="spec_health">Health</string>
+    <string name="spec_cycles">Charge cycles</string>
+    <string name="spec_technology">Chemistry</string>
+    <string name="spec_current">Current right now</string>
+    <string name="spec_since_boot">Since last restart</string>
+    <string name="spec_asleep">Time asleep</string>
+    <string name="spec_asleep_note">Share of time since restart spent in deep sleep</string>
+    <string name="value_not_reported">Not reported by this firmware</string>
+    <string name="source_ac">Wall charger</string>
+    <string name="source_usb">USB</string>
+    <string name="source_wireless">Wireless</string>
+    <string name="source_dock">Dock</string>
+    <string name="source_none">None, on battery</string>
+    <string name="health_good">Good</string>
+    <string name="health_overheat">Overheating</string>
+    <string name="health_dead">Dead</string>
+    <string name="health_over_voltage">Over voltage</string>
+    <string name="health_cold">Too cold</string>
+    <string name="health_failure">Failure reported</string>
+    <string name="health_unknown">Not reported</string>
+    <string name="unit_mah">%1$s mAh</string>
+    <string name="unit_percent">%1$s %%</string>
+    <string name="duration_dh">%1$d d %2$d h</string>
+    <string name="duration_hm">%1$d h %2$d min</string>
+    <string name="duration_m">%1$d min</string>
+
+    <!-- Device -->
+    <string name="group_identity">Identity</string>
+    <string name="group_silicon">Silicon</string>
+    <string name="group_boot">Boot security</string>
+    <string name="group_display">Display</string>
+    <string name="spec_model">Model</string>
+    <string name="spec_firmware">Firmware build</string>
+    <string name="spec_android">Android</string>
+    <string name="spec_security_patch">Security patch</string>
+    <string name="spec_soc">Chip</string>
+    <string name="spec_platform">Platform codename</string>
+    <string name="spec_cpu">Cores</string>
+    <string name="spec_governor">CPU governor</string>
+    <string name="spec_kernel">Kernel</string>
+    <string name="spec_bootloader">Bootloader</string>
+    <string name="spec_verified_boot">Verified boot</string>
+    <string name="spec_slot">Active slot</string>
+    <string name="spec_build_type">Build type</string>
+    <string name="spec_resolution">Panel</string>
+    <string name="spec_window">Window</string>
+    <string name="spec_font_scale">Font scale</string>
+    <string name="value_android">%1$s · API %2$d</string>
+    <string name="value_cores">%1$d cores</string>
+    <string name="value_locked">Locked</string>
+    <string name="value_unlocked">Unlocked</string>
+    <string name="value_resolution">%1$d × %2$d px at %3$d dpi</string>
+    <string name="value_window">%1$d × %2$d dp</string>
+    <string name="plate_properties">System properties</string>
+    <plurals name="properties_explain">
+        <item quantity="one">%1$d raw property the firmware exposes to apps. Useful when reporting a problem.</item>
+        <item quantity="other">%1$d raw properties the firmware exposes to apps. Useful when reporting a problem.</item>
+    </plurals>
+
+    <!-- Apps -->
+    <string name="apps_subtitle">What’s installed, and what Android never puts to sleep</string>
+    <string name="filter_boox">Boox · %1$d</string>
+    <string name="filter_doze">Never sleeps · %1$d</string>
+    <string name="filter_all">All · %1$d</string>
+    <string name="filter_boox_explain">Apps made by Onyx for this tablet. Descriptions come from the project’s knowledge base.</string>
+    <string name="filter_doze_explain">Apps exempt from Doze, Android’s deep-sleep mode. They may wake the tablet at any time, which is the first place to look for standby drain.</string>
+    <string name="filter_all_explain">Everything installed, including Android itself.</string>
+    <string name="apps_empty">Nothing matches this filter.</string>
+    <string name="apps_boox_summary">%1$d of these %2$d never sleep.</string>
+    <string name="tag_doze_exempt">Never sleeps</string>
+    <string name="tag_disabled">Disabled</string>
+    <string name="tag_user">Installed by you</string>
+    <string name="kb_line">%1$s · %2$s</string>
+    <string name="kb_unanalysed">Not analysed yet</string>
+    <string name="risk_safe">Safe to disable</string>
+    <string name="risk_caution">Removes a feature</string>
+    <string name="risk_expert">May break the system</string>
+    <string name="risk_never">Core system, leave alone</string>
+    <string name="risk_unknown">Risk not assessed</string>
+
+    <!-- Access -->
+    <string name="access_subtitle">What BooxUltimatum may do on this tablet. Each level unlocks more tweaks.</string>
+    <string name="tier_app">App</string>
+    <string name="tier_app_short">Readings any app can take</string>
+    <string name="tier_app_state">Installed</string>
+    <string name="tier_app_explain">Battery, device and app readings that need no special permission.</string>
+    <string name="tier_adb">adb grants</string>
+    <string name="tier_adb_count">%1$d of %2$d granted from a computer</string>
+    <string name="tier_adb_explain">Permissions granted once from a computer over USB. They survive restarts.</string>
+    <string name="grant_secure_settings">Change system settings</string>
+    <string name="grant_secure_settings_why">Needed to apply and undo settings tweaks.</string>
+    <string name="grant_dump">Read system diagnostics</string>
+    <string name="grant_dump_why">Needed to see which apps wake the tablet.</string>
+    <string name="grant_logs">Read system logs</string>
+    <string name="grant_logs_why">Needed to trace wakeups back to their cause.</string>
+    <string name="grant_usage">Usage access</string>
+    <string name="grant_usage_why">Needed to know which apps you actually use.</string>
+    <string name="grant_how">Grant them from a computer with adb:</string>
+    <string name="tier_shizuku">Shizuku</string>
+    <string name="tier_shizuku_explain">Lets the app act with the same rights as adb, without a computer. Shizuku stops when the tablet restarts and must be started again.</string>
+    <string name="shizuku_server">Shizuku service</string>
+    <string name="shizuku_server_on">Running</string>
+    <string name="shizuku_server_off">Not running. Start it from a computer with tools\\host\\start-shizuku.ps1.</string>
+    <string name="shizuku_permission">Permission for BooxUltimatum</string>
+    <string name="shizuku_permission_on">Allowed</string>
+    <string name="shizuku_permission_off">Not allowed yet</string>
+    <string name="shizuku_not_running">Not running since the last restart</string>
+    <string name="shizuku_not_allowed">Running, permission not given</string>
+    <string name="shizuku_ready">Running and allowed</string>
+    <string name="shizuku_unreachable">Shizuku isn’t reachable. Start it from a computer, then reopen BooxUltimatum.</string>
+    <string name="tier_root">Root</string>
+    <string name="tier_root_short">Out of scope, bootloader locked</string>
+    <string name="tier_root_state">Not used</string>
+    <string name="tier_root_explain">This tablet’s bootloader is locked, so BooxUltimatum is built to work without root.</string>
 </resources>

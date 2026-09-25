@@ -1,2 +1,7 @@
-# Keep Shizuku binder/user-service entry points.
+# Shizuku binder and user-service entry points.
 -keep class rikka.shizuku.** { *; }
+
+# Instantiated by Shizuku by class name in its own process, through the (Context) constructor.
+-keep class app.booxultimatum.core.exec.ShellService { <init>(...); *; }
+-keep class app.booxultimatum.IShellService { *; }
+-keep class app.booxultimatum.IShellService$** { *; }
