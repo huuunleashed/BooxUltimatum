@@ -1,0 +1,23 @@
+# Build outputs
+build/
+.gradle/
+.kotlin/
+*.apk
+*.aab
+!docs/**/*.apk
+
+# IDE
+.idea/
+*.iml
+local.properties
+.DS_Store
+
+# Device captures can contain personal data (accounts, Wi-Fi SSIDs, logcat). Kept local; commit curated summaries only.
+captures/*
+!captures/README.md
+
+# Firmware and partition images (large, copyrighted)
+*.upx
+*.img
+payload.bin
+firmware/

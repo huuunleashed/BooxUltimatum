@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "description": "Onyx/Boox package knowledge base. 'observedOn' lists devices/firmware where the entry was seen; 'na6cStatus' is 'unverified' until confirmed from a captures/ recon.",
+  "riskLevels": {
+    "safe": "Disabling has no effect on core functions.",
+    "caution": "Disabling removes a feature some users rely on.",
+    "expert": "Disabling may break system UI, pen input, or updates.",
+    "never": "Core system component; disabling can soft-brick.",
+    "unknown": "Not yet analysed."
+  },
+  "packages": [
+    { "id": "com.onyx.android.onyxotaservice", "purpose": "Firmware OTA updater", "risk": "caution", "privacy": "contacts Onyx update servers", "batterySuspect": "possible", "sources": ["fardjad NA3C gist"], "observedOn": ["NoteAir3C"], "na6cStatus": "unverified" },
+    { "id": "com.onyx.android.production.test", "purpose": "Factory production test tool", "risk": "safe", "sources": ["fardjad NA3C gist"], "observedOn": ["NoteAir3C"], "na6cStatus": "unverified" },
+    { "id": "com.onyx.appmarket", "purpose": "Boox app store", "risk": "safe", "privacy": "network", "sources": ["fardjad NA3C gist"], "observedOn": ["NoteAir3C"], "na6cStatus": "unverified" },
+    { "id": "com.onyx.calculator", "purpose": "Calculator", "risk": "safe", "sources": ["fardjad NA3C gist"], "observedOn": ["NoteAir3C"], "na6cStatus": "unverified" },
+    { "id": "com.onyx.easytransfer", "purpose": "Device-to-device transfer", "risk": "safe", "sources": ["fardjad NA3C gist"], "observedOn": ["NoteAir3C"], "na6cStatus": "unverified" },
+    { "id": "com.onyx.igetshop", "purpose": "Shop front-end", "risk": "safe", "privacy": "network", "sources": ["fardjad NA3C gist"], "observedOn": ["NoteAir3C"], "na6cStatus": "unverified" },
+    { "id": "com.onyx.kime", "purpose": "Onyx input method (CJK)", "risk": "caution", "sources": ["fardjad NA3C gist"], "observedOn": ["NoteAir3C"], "na6cStatus": "unverified" },
+    { "id": "com.onyx.latinime", "purpose": "Onyx Latin keyboard (handwriting/voice input)", "risk": "caution", "notes": "eWritable rates the Boox keyboard highly; keep unless replaced.", "sources": ["fardjad NA3C gist"], "observedOn": ["NoteAir3C"], "na6cStatus": "unverified" },
+    { "id": "com.onyx.mail", "purpose": "Mail client", "risk": "safe", "sources": ["fardjad NA3C gist"], "observedOn": ["NoteAir3C"], "na6cStatus": "unverified" },
+    { "id": "com.simplemobiletools.clock", "purpose": "Re-signed Simple Mobile Tools fork (clock)", "risk": "safe", "sources": ["fardjad NA3C gist"], "observedOn": ["NoteAir3C"], "na6cStatus": "unverified" },
+    { "id": "com.simplemobiletools.gallery", "purpose": "Re-signed Simple Mobile Tools fork (gallery)", "risk": "safe", "sources": ["fardjad NA3C gist"], "observedOn": ["NoteAir3C"], "na6cStatus": "unverified" },
+    { "id": "com.simplemobiletools.musicplayer", "purpose": "Re-signed Simple Mobile Tools fork (music)", "risk": "safe", "sources": ["fardjad NA3C gist"], "observedOn": ["NoteAir3C"], "na6cStatus": "unverified" },
+    { "id": "com.simplemobiletools.voicerecorder", "purpose": "Re-signed Simple Mobile Tools fork (recorder)", "risk": "safe", "sources": ["fardjad NA3C gist"], "observedOn": ["NoteAir3C"], "na6cStatus": "unverified" },
+    { "id": "org.chromium.chrome", "purpose": "Onyx Chromium fork (may lag on security patches)", "risk": "safe", "sources": ["fardjad NA3C gist"], "observedOn": ["NoteAir3C"], "na6cStatus": "unverified" },
+    { "id": "com.qualcomm.embms", "purpose": "Qualcomm LTE broadcast (useless on Wi-Fi-only device)", "risk": "safe", "sources": ["UAD via fardjad gist"], "observedOn": ["NoteAir3C"], "na6cStatus": "unverified" },
+    { "id": "com.qualcomm.qti.uim", "purpose": "Qualcomm SIM/UIM service (no SIM on device)", "risk": "caution", "sources": ["UAD via fardjad gist"], "observedOn": ["NoteAir3C"], "na6cStatus": "unverified" }
+  ],
+  "networkEndpoints": [
+    { "pattern": "*.onyx-international.cn", "purpose": "firmware/API", "sources": ["fardjad NA3C gist"] },
+    { "pattern": "*.boox.com", "purpose": "cloud/push/shop", "sources": ["fardjad NA3C gist"] },
+    { "pattern": "*.codekk.com", "purpose": "unknown", "sources": ["fardjad NA3C gist"] },
+    { "pattern": "effect.snssdk.com", "purpose": "ByteDance SDK endpoint (unknown use)", "sources": ["fardjad NA3C gist"] }
+  ]
+}
