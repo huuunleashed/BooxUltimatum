@@ -167,7 +167,7 @@ class LauncherModel(private val context: Context) {
                 val colors = android.app.WallpaperManager.getInstance(context).getWallpaperColors(android.app.WallpaperManager.FLAG_SYSTEM)
                 when {
                     colors == null -> 1f
-                    colors.colorHints and android.app.WallpaperColors.HINT_SUPPORTS_DARK_TEXT != 0 -> 0.85f
+                    android.os.Build.VERSION.SDK_INT >= 31 && colors.colorHints and android.app.WallpaperColors.HINT_SUPPORTS_DARK_TEXT != 0 -> 0.85f
                     else -> colors.primaryColor.luminance()
                 }
             }.getOrDefault(1f)
