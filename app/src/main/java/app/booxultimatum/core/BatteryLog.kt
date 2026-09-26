@@ -124,6 +124,12 @@ object BatteryLog {
      * sampling, so with Shizuku available the app lifts the restriction on itself.
      */
     fun ensureNotRestricted(c: Context) {
+        // An app may read its own app-ops without any permission; the Shizuku helper starts only when there is work.
+        val restricted = runCatching {
+            val ops = c.getSystemService(android.app.AppOpsManager::class.java)
+            ops.unsafeCheckOpNoThrow("android:run_any_in_background", android.os.Process.myUid(), c.packageName) == android.app.AppOpsManager.MODE_IGNORED
+        }.getOrDefault(true)
+        if (!restricted) return
         scope.launch {
             if (!Privileged.ready()) return@launch
             if (SystemState.backgroundMode(c.packageName) == BgMode.Ignore) {

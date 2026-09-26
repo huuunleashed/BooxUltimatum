@@ -22,6 +22,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.CircleShape
@@ -77,17 +79,26 @@ fun <T> rememberReading(key: Any, read: suspend () -> T): T? {
     return value
 }
 
-/** The page frame: one scrolling column with a comfortable measure, never wider than an instrument face. */
+/** The page frame: one scrolling column with a comfortable measure, centred in wide windows so landscape has no dead margin. */
 @Composable
 fun InstrumentPage(compact: Boolean, content: LazyListScope.() -> Unit) {
     val side = if (compact) Space.l else Space.xl
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopStart) {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
         LazyColumn(
-            modifier = Modifier.widthIn(max = 1000.dp).fillMaxSize(),
+            modifier = Modifier.widthIn(max = 1200.dp).fillMaxSize(),
             contentPadding = PaddingValues(start = side, end = side, top = Space.xl, bottom = Space.xxl),
             content = content,
         )
     }
+}
+
+/**
+ * Ink behind the status bar. NA6C FW 4.3 keeps status-bar icons white over apps that EinkWise tunes (it strips
+ * `LIGHT_STATUS_BARS` from their windows), so a paper background there would hide the clock and battery.
+ */
+@Composable
+fun StatusStrip(modifier: Modifier = Modifier) {
+    Box(modifier.fillMaxWidth().windowInsetsTopHeight(androidx.compose.foundation.layout.WindowInsets.statusBars).background(Ink.Black))
 }
 
 @Composable
@@ -208,6 +219,32 @@ fun Key(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, primar
         contentAlignment = Alignment.Center,
     ) {
         Text(text, style = MaterialTheme.typography.labelLarge, color = ink, maxLines = 1)
+    }
+}
+
+/**
+ * A round key that carries a glyph instead of a word, for controls whose meaning is universal (settings, edit,
+ * page turns). [label] is read by accessibility services and shown nowhere else.
+ */
+@Composable
+fun IconKey(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, onClick: () -> Unit, modifier: Modifier = Modifier, primary: Boolean = false, enabled: Boolean = true) {
+    val fill = if (primary && enabled) Ink.Black else Ink.Paper
+    val ink = when {
+        !enabled -> Ink.Rule
+        primary -> Ink.Paper
+        else -> Ink.Black
+    }
+    Box(
+        modifier
+            .size(56.dp)
+            .clip(CircleShape)
+            .background(fill)
+            .border(Lines.rim, if (enabled) Ink.Black else Ink.Rule, CircleShape)
+            .clickable(remember { MutableInteractionSource() }, LocalIndication.current, enabled = enabled, role = Role.Button, onClickLabel = label, onClick = onClick)
+            .semantics { contentDescription = label },
+        contentAlignment = Alignment.Center,
+    ) {
+        androidx.compose.material3.Icon(icon, contentDescription = null, tint = ink, modifier = Modifier.size(26.dp))
     }
 }
 

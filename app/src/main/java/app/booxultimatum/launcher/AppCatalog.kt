@@ -36,14 +36,23 @@ data class Folder(val id: String, val name: String, val apps: List<String>)
 /** Favourites hold app keys, or folder references in this form. */
 const val FOLDER_PREFIX = "folder:"
 
-/** One launchable activity. [key] is stable across restarts: component plus user serial. */
+/**
+ * One launchable entry. [key] is stable across restarts: component plus user serial, or `boox:<name>` for the Boox
+ * functions that live inside the Boox home and have no launcher activity of their own (Notes, Library, Storage…).
+ * Those carry the [intent] that opens them.
+ */
 data class LaunchTarget(
     val key: String,
     val component: ComponentName,
     val user: UserHandle,
     val label: String,
     val isBoox: Boolean,
+    val intent: android.content.Intent? = null,
 )
+
+enum class DrawerSort { Name, Colour, Recent }
+
+enum class DrawerView { Grid, List }
 
 data class LauncherPrefs(
     val favourites: List<String>,
@@ -71,6 +80,8 @@ data class LauncherPrefs(
     val showBluetooth: Boolean = true,
     val showBatteryPct: Boolean = true,
     val folders: Map<String, Folder> = emptyMap(),
+    val drawerSort: DrawerSort = DrawerSort.Name,
+    val drawerView: DrawerView = DrawerView.Grid,
 )
 
 /** Launcher state on disk. Plain preferences: small, synchronous, and easy to back up later. */
@@ -90,7 +101,7 @@ class LauncherStore(context: Context) {
             .getOrElse { if (prefs.getString("font_file", null) != null) FontSource.Custom else FontSource.System },
         iconShape = runCatching { IconShape.valueOf(prefs.getString("icon_shape", null) ?: "") }.getOrDefault(IconShape.Original),
         wallMode = runCatching { WallMode.valueOf(prefs.getString("wall_mode", null) ?: "") }.getOrDefault(WallMode.Paper),
-        wallDim = prefs.getInt("wall_dim", 55),
+        wallDim = prefs.getInt("wall_dim", 50).let { ((it + 5) / 10 * 10).coerceIn(0, 90) },
         statusBar = prefs.getBoolean("status_bar", true),
         indicatorStyle = runCatching { IndicatorStyle.valueOf(prefs.getString("indicator_style", null) ?: "") }.getOrDefault(IndicatorStyle.Glyphs),
         wifiGlyph = runCatching { WifiGlyph.valueOf(prefs.getString("wifi_glyph", null) ?: "") }.getOrDefault(WifiGlyph.Arcs),
@@ -111,6 +122,8 @@ class LauncherStore(context: Context) {
                 }
             }.getOrNull()
         } ?: emptyMap(),
+        drawerSort = runCatching { DrawerSort.valueOf(prefs.getString("drawer_sort", null) ?: "") }.getOrDefault(DrawerSort.Name),
+        drawerView = runCatching { DrawerView.valueOf(prefs.getString("drawer_view", null) ?: "") }.getOrDefault(DrawerView.Grid),
     )
 
     /** First-run seeding happens once; kept separate from [save] so settings written elsewhere never skip it. */
@@ -145,6 +158,8 @@ class LauncherStore(context: Context) {
             .putString("folders", org.json.JSONObject().apply {
                 p.folders.values.forEach { f -> put(f.id, org.json.JSONObject().put("name", f.name).put("apps", JSONArray(f.apps))) }
             }.toString())
+            .putString("drawer_sort", p.drawerSort.name)
+            .putString("drawer_view", p.drawerView.name)
             .apply()
     }
 }
@@ -163,6 +178,7 @@ class AppCatalog(private val context: Context) {
     @Synchronized
     fun load(): List<LaunchTarget> {
         infos.clear()
+        virtualIcons.clear()
         icons.evictAll()
         val result = mutableListOf<LaunchTarget>()
         for (user in users.userProfiles) {
@@ -170,18 +186,47 @@ class AppCatalog(private val context: Context) {
                 val key = keyOf(info.componentName, user)
                 infos[key] = info
                 val pkg = info.componentName.packageName
-                result += LaunchTarget(key, info.componentName, user, info.label.toString(), pkg == "com.onyx" || pkg.startsWith("com.onyx."))
+                val label = RENAMES[info.componentName.flattenToShortString()]?.let { context.getString(it) } ?: info.label.toString()
+                result += LaunchTarget(key, info.componentName, user, label, pkg == "com.onyx" || pkg.startsWith("com.onyx."))
             }
         }
+        result += booxFunctions()
         return result.sortedWith(compareBy({ it.label.lowercase() }, { it.key }))
+    }
+
+    private val virtualIcons = HashMap<String, Drawable>()
+
+    /**
+     * Boox functions without a launcher activity, reached through the entry points the Boox home itself uses
+     * (verified on NA6C FW 4.3). Only those that resolve on this tablet are listed.
+     */
+    private fun booxFunctions(): List<LaunchTarget> {
+        val pm = context.packageManager
+        val me = android.os.Process.myUserHandle()
+        fun main(action: String) = android.content.Intent("com.onyx.intent.action.MAIN_ACTIVITY").setPackage("com.onyx").putExtra("json", "{\"action\":\"$action\"}")
+        val entries = listOf(
+            Triple("notes", app.booxultimatum.R.string.boox_fn_notes, main("OPEN_NOTE")) to "com.onyx.android.note",
+            Triple("library", app.booxultimatum.R.string.boox_fn_library, android.content.Intent("com.onyx.action.LIBRARY").setPackage("com.onyx")) to null,
+            Triple("storage", app.booxultimatum.R.string.boox_fn_storage, android.content.Intent("com.onyx.action.STORAGE").setPackage("com.onyx")) to null,
+            Triple("shop", app.booxultimatum.R.string.boox_fn_shop, android.content.Intent("com.onyx.action.SHOP").setPackage("com.onyx")) to null,
+            Triple("settings", app.booxultimatum.R.string.boox_fn_settings, BooxIntents.settings()) to null,
+        )
+        return entries.mapNotNull { (e, iconPkg) ->
+            val (id, label, intent) = e
+            val ri = pm.resolveActivity(intent, 0) ?: return@mapNotNull null
+            val key = "boox:$id"
+            val icon = iconPkg?.let { runCatching { pm.getApplicationIcon(it) }.getOrNull() } ?: runCatching { ri.loadIcon(pm) }.getOrNull()
+            icon?.let { virtualIcons[key] = it }
+            LaunchTarget(key, ComponentName(ri.activityInfo.packageName, ri.activityInfo.name), me, context.getString(label), true, intent)
+        }
     }
 
     @Synchronized
     fun icon(key: String, sizePx: Int, style: IconStyle, shape: IconShape = IconShape.Original): Bitmap? {
         val cacheKey = "$key|$sizePx|${style.name}|${shape.name}"
         icons.get(cacheKey)?.let { return it }
-        val info = infos[key] ?: return null
-        val raw = runCatching { info.getBadgedIcon(context.resources.displayMetrics.densityDpi) }.getOrNull() ?: return null
+        val info = infos[key]
+        val raw = (if (info != null) runCatching { info.getBadgedIcon(context.resources.displayMetrics.densityDpi) }.getOrNull() else virtualIcons[key]) ?: return null
         val bmp = runCatching { if (shape == IconShape.Original) render(raw, sizePx, style) else renderShaped(raw, sizePx, style, shape) }.getOrNull() ?: return null
         icons.put(cacheKey, bmp)
         return bmp
@@ -307,17 +352,26 @@ class AppCatalog(private val context: Context) {
         return out
     }
 
-    fun launch(t: LaunchTarget) = runCatching { launcherApps.startMainActivity(t.component, t.user, null, null) }.isSuccess
+    fun launch(t: LaunchTarget) = runCatching {
+        if (t.intent != null) context.startActivity(android.content.Intent(t.intent).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
+        else launcherApps.startMainActivity(t.component, t.user, null, null)
+    }.isSuccess
 
     fun openAppInfo(t: LaunchTarget) {
-        runCatching { launcherApps.startAppDetailsActivity(t.component, t.user, null, null) }
+        runCatching {
+            if (t.intent != null) context.startActivity(
+                android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, android.net.Uri.parse("package:${t.component.packageName}"))
+                    .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),
+            )
+            else launcherApps.startAppDetailsActivity(t.component, t.user, null, null)
+        }
     }
 
     fun canShowShortcuts() = runCatching { launcherApps.hasShortcutHostPermission() }.getOrDefault(false)
 
     /** App shortcuts (the long-press actions apps publish). Android only hands them to the default home app. */
     fun shortcuts(t: LaunchTarget): List<ShortcutInfo> {
-        if (!canShowShortcuts()) return emptyList()
+        if (t.intent != null || !canShowShortcuts()) return emptyList()
         val q = LauncherApps.ShortcutQuery()
             .setPackage(t.component.packageName)
             .setQueryFlags(LauncherApps.ShortcutQuery.FLAG_MATCH_DYNAMIC or LauncherApps.ShortcutQuery.FLAG_MATCH_MANIFEST or LauncherApps.ShortcutQuery.FLAG_MATCH_PINNED)
@@ -338,5 +392,52 @@ class AppCatalog(private val context: Context) {
     fun trim() = icons.evictAll()
 
     fun isSystem(t: LaunchTarget): Boolean =
-        infos[t.key]?.applicationInfo?.let { it.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM != 0 } ?: true
+        t.intent != null || infos[t.key]?.applicationInfo?.let { it.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM != 0 } ?: true
+
+    /**
+     * An icon's colour as a sort key: hue for colourful icons, then the near-greys by lightness at the end, so a
+     * colour-sorted drawer reads as a spectrum followed by the black-and-white Boox icons.
+     */
+    @Synchronized
+    fun colourKey(key: String): Float {
+        hues[key]?.let { return it }
+        val bmp = icon(key, 24, IconStyle.Original) ?: return 2f
+        var r = 0.0; var g = 0.0; var b = 0.0; var weight = 0.0
+        val hsv = FloatArray(3)
+        for (x in 0 until bmp.width) for (y in 0 until bmp.height) {
+            val p = bmp.getPixel(x, y)
+            if (android.graphics.Color.alpha(p) < 128) continue
+            android.graphics.Color.colorToHSV(p, hsv)
+            val w = 0.05 + hsv[1] * hsv[2]
+            r += android.graphics.Color.red(p) * w; g += android.graphics.Color.green(p) * w; b += android.graphics.Color.blue(p) * w; weight += w
+        }
+        if (weight == 0.0) return 2f
+        android.graphics.Color.RGBToHSV((r / weight).toInt(), (g / weight).toInt(), (b / weight).toInt(), hsv)
+        val k = if (hsv[1] < 0.18f) 1f + (1f - hsv[2]) * 0.99f else hsv[0] / 360f
+        hues[key] = k
+        return k
+    }
+
+    private val hues = HashMap<String, Float>()
+
+    companion object {
+        /** Two apps are both called "Settings"; home names them apart. */
+        private val RENAMES = mapOf(
+            "com.android.settings/.Settings" to app.booxultimatum.R.string.label_android_settings,
+            "com.onyx/.StartupActivity" to app.booxultimatum.R.string.label_boox_home,
+        )
+    }
+}
+
+/** Entry points into the Boox system app (com.onyx), verified on NA6C FW 4.3. */
+object BooxIntents {
+    /** Boox's own Settings, as the Boox home opens it. */
+    fun settings(): android.content.Intent = android.content.Intent("com.onyx.action.SETTING")
+        .setComponent(ComponentName("com.onyx", "com.onyx.tablet.settings.SettingsActivity"))
+
+    /** Opens Boox Settings, falling back to Android's when the Boox app is missing. */
+    fun openSettings(context: Context) {
+        val tries = listOf(settings(), android.content.Intent(android.provider.Settings.ACTION_SETTINGS))
+        for (i in tries) if (runCatching { context.startActivity(android.content.Intent(i).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) }.isSuccess) return
+    }
 }

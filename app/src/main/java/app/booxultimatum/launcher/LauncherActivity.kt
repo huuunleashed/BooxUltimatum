@@ -117,6 +117,7 @@ class LauncherModel(private val context: Context) {
 
     /** Loads the custom wallpaper at half resolution in RGB_565: about 2.3 MB instead of 18 MB at full size. */
     fun loadWallpaper() {
+        readBackdrop()
         if (prefs.value.wallMode != WallMode.Image) { wallpaper.value = null; wallStamp = 0; return }
         val f = java.io.File(context.filesDir, WALLPAPER_FILE)
         // Returning home must not re-decode the picture: only a changed file is loaded again.
@@ -125,11 +126,72 @@ class LauncherModel(private val context: Context) {
             val bmp = if (f.exists()) runCatching {
                 android.graphics.BitmapFactory.decodeFile(f.absolutePath, android.graphics.BitmapFactory.Options().apply { inPreferredConfig = android.graphics.Bitmap.Config.RGB_565 })
             }.getOrNull() else null
-            main.post { wallpaper.value = bmp; wallStamp = f.lastModified() }
+            val lum = bmp?.let { averageLuminance(it) }
+            main.post { wallpaper.value = bmp; wallStamp = f.lastModified(); if (lum != null) pictureLum = lum; readBackdrop() }
         }
     }
 
     private var wallStamp = 0L
+    private var pictureLum = 1f
+    private var systemLum = 1f
+
+    /**
+     * How light the backdrop behind home's labels is, 0 black to 1 white, after the paper veil. Labels switch to
+     * white ink with a dark halo below 0.5, so they stay legible on any wallpaper.
+     */
+    val backdropLum = mutableStateOf(1f)
+
+    /** The text-weight offset chosen in Appearance, shared with the app. */
+    val weightBoost = androidx.compose.runtime.mutableIntStateOf(app.booxultimatum.core.UiFonts.weightBoost(context))
+
+    /**
+     * The Boox system font as a full family. Android hands apps the file's default instance, which for a variable
+     * font like the Manrope Boox often ships is its lightest; loading the file ourselves gets every weight.
+     */
+    val systemFamily = mutableStateOf<androidx.compose.ui.text.font.FontFamily?>(null)
+    private var systemFontSource: String? = null
+
+    fun readSystemFont() {
+        io.execute {
+            val src = app.booxultimatum.core.UiFonts.systemFontPath()
+            if (src == systemFontSource && systemFamily.value != null) return@execute
+            val fam = app.booxultimatum.core.UiFonts.systemFontCopy(context)?.let { app.booxultimatum.core.UiFonts.family(it.absolutePath) }
+            main.post { systemFontSource = src; systemFamily.value = fam }
+        }
+    }
+
+    private fun readBackdrop() {
+        val p = prefs.value
+        if (p.wallMode == WallMode.System) io.execute {
+            val lum = runCatching {
+                val colors = android.app.WallpaperManager.getInstance(context).getWallpaperColors(android.app.WallpaperManager.FLAG_SYSTEM)
+                when {
+                    colors == null -> 1f
+                    colors.colorHints and android.app.WallpaperColors.HINT_SUPPORTS_DARK_TEXT != 0 -> 0.85f
+                    else -> colors.primaryColor.luminance()
+                }
+            }.getOrDefault(1f)
+            main.post { systemLum = lum; backdropLum.value = veiled(systemLum) }
+        }
+        backdropLum.value = when (p.wallMode) {
+            WallMode.Paper -> 1f
+            WallMode.Image -> veiled(pictureLum)
+            WallMode.System -> veiled(systemLum)
+        }
+    }
+
+    private fun veiled(lum: Float): Float { val v = prefs.value.wallDim / 100f; return v + (1 - v) * lum }
+
+    private fun averageLuminance(b: android.graphics.Bitmap): Float {
+        var sum = 0.0; var n = 0
+        val stepX = maxOf(1, b.width / 48); val stepY = maxOf(1, b.height / 48)
+        for (x in 0 until b.width step stepX) for (y in 0 until b.height step stepY) {
+            val c = b.getPixel(x, y)
+            sum += (0.2126 * android.graphics.Color.red(c) + 0.7152 * android.graphics.Color.green(c) + 0.0722 * android.graphics.Color.blue(c)) / 255.0
+            n++
+        }
+        return if (n == 0) 1f else (sum / n).toFloat()
+    }
 
     /** Copies a picked image into app storage, downscaled to half the panel so it costs little memory. */
     fun importWallpaper(uri: android.net.Uri, done: (Boolean) -> Unit) {
@@ -149,6 +211,9 @@ class LauncherModel(private val context: Context) {
             if (fresh.iconShape != prefs.value.iconShape || fresh.iconStyle != prefs.value.iconStyle) catalog.trim()
             prefs.value = fresh
         }
+        readBackdrop()
+        weightBoost.intValue = app.booxultimatum.core.UiFonts.weightBoost(context)
+        readSystemFont()
     }
 
     // ---------- Folders ----------
@@ -362,22 +427,29 @@ class LauncherActivity : ComponentActivity() {
     }
 
     /**
-     * Status bar and wallpaper are window properties. "Show status bar" lays home out below the system bar instead
-     * of edge to edge, which is what makes the Boox status bar draw its icons.
+     * Status bar and wallpaper are window properties. Home draws edge to edge and paints an ink strip under the
+     * status bar itself: this firmware keeps status-bar icons white over apps it tunes with EinkWise, whatever the
+     * app requests (verified on NA6C FW 4.3: `LIGHT_STATUS_BARS` is stripped from the window), so on paper they vanish.
      */
     fun applyWindow() {
         val p = model.prefs.value
-        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, p.statusBar)
+        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
         val controller = androidx.core.view.WindowCompat.getInsetsController(window, window.decorView)
-        controller.isAppearanceLightStatusBars = true
+        controller.isAppearanceLightStatusBars = false
         controller.isAppearanceLightNavigationBars = true
         if (p.statusBar) controller.show(androidx.core.view.WindowInsetsCompat.Type.statusBars())
         else {
             controller.systemBarsBehavior = androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             controller.hide(androidx.core.view.WindowInsetsCompat.Type.statusBars())
         }
-        if (p.wallMode == WallMode.System) window.addFlags(android.view.WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER)
-        else window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER)
+        // The system wallpaper only shows through a window with no background of its own.
+        if (p.wallMode == WallMode.System) {
+            window.addFlags(android.view.WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER)
+            window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(Color.TRANSPARENT))
+        } else {
+            window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER)
+            window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(Color.WHITE))
+        }
         model.loadWallpaper()
     }
 
@@ -393,7 +465,7 @@ class LauncherActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge(SystemBarStyle.light(Color.WHITE, Color.WHITE), SystemBarStyle.light(Color.WHITE, Color.WHITE))
+        enableEdgeToEdge(SystemBarStyle.dark(Color.BLACK), SystemBarStyle.light(Color.WHITE, Color.WHITE))
         super.onCreate(savedInstanceState)
         model = LauncherModel(this)
         model.catalog.register(model.launcherCallback)
@@ -407,10 +479,8 @@ class LauncherActivity : ComponentActivity() {
                 FontSource.App -> app.booxultimatum.core.Fonts.appFont(this)
                 FontSource.Custom -> p.fontFile
             }
-            val custom = androidx.compose.runtime.remember(path) {
-                path?.let { runCatching { androidx.compose.ui.text.font.FontFamily(androidx.compose.ui.text.font.Font(java.io.File(it))) }.getOrNull() }
-            }
-            InstrumentTheme(systemFont = true, customFont = custom) {
+            val custom = androidx.compose.runtime.remember(path) { path?.let { app.booxultimatum.core.UiFonts.family(it) } }
+            InstrumentTheme(systemFont = true, customFont = custom, weightBoost = model.weightBoost.intValue, systemFamily = model.systemFamily.value) {
                 LauncherScreen(
                     model = model,
                     onRequestCalendar = { calendarPermission.launch(Manifest.permission.READ_CALENDAR) },
@@ -445,6 +515,9 @@ class LauncherActivity : ComponentActivity() {
         model.readIndicators()
         model.visibleKey.intValue++
         runCatching { model.host.startListening() }
+        // Saving any EinkWise setting makes Boox restrict the app in the background again (verified on FW 4.3),
+        // which would stop the battery log; home is the app's most frequent entry point, so it checks here too.
+        app.booxultimatum.core.BatteryLog.ensureNotRestricted(this)
     }
 
     override fun onStop() {

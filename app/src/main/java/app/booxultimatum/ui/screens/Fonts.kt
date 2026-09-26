@@ -325,14 +325,59 @@ private fun FontDetail(
                     }
                 }
                 Spacer(Modifier.height(Space.m))
-                Text(stringResource(R.string.fonts_apply_system), style = MaterialTheme.typography.titleMedium)
-                Paragraph(stringResource(R.string.fonts_apply_system_s), color = Ink.Legend)
+                SystemFontRow(f, busy, onAct = ::act)
+                Spacer(Modifier.height(Space.m))
+                Text(stringResource(R.string.fonts_apply_serif), style = MaterialTheme.typography.titleSmall)
+                Text(stringResource(R.string.fonts_apply_serif_s), style = MaterialTheme.typography.bodySmall, color = Ink.Legend)
                 Spacer(Modifier.height(Space.s))
                 Key(stringResource(R.string.fonts_open_serif_tweak), onClick = onOpenTweaks)
                 message?.takeIf { it.isNotEmpty() }?.let { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.m)) }
                 error?.let { ErrorLine(it) }
             }
         }
+    }
+}
+
+/**
+ * The whole tablet's font, through Boox's own font switch. A heavier cut is offered first where the family has
+ * one, because the panel thins every stroke.
+ */
+@Composable
+private fun SystemFontRow(f: FontFamilyInfo, busy: String?, onAct: (String, suspend () -> String) -> Unit) {
+    val context = LocalContext.current
+    val weights = listOf(400, 500, 600, 700).filter { f.has(it, false) }.ifEmpty { listOf(f.regularKey.removeSuffix("i").toIntOrNull() ?: 400) }
+    var weight by rememberSaveable(f.name) { mutableIntStateOf(if (500 in weights) 500 else weights.first()) }
+    var current by remember { mutableStateOf(app.booxultimatum.core.SystemFont.current()) }
+    val inUse = current?.substringAfterLast('/') == Fonts.fileName(f.name, weight, false)
+    Text(stringResource(R.string.fonts_apply_system), style = MaterialTheme.typography.titleMedium)
+    Text(stringResource(R.string.fonts_apply_system_s), style = MaterialTheme.typography.bodyMedium, color = Ink.Legend)
+    Text(
+        stringResource(R.string.fonts_sys_now, app.booxultimatum.core.SystemFont.nameOf(current) ?: stringResource(R.string.fonts_sys_default)),
+        style = MaterialTheme.typography.bodySmall, color = Ink.Legend, modifier = Modifier.padding(top = Space.xs),
+    )
+    Spacer(Modifier.height(Space.s))
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.s), verticalArrangement = Arrangement.spacedBy(Space.s)) {
+        if (weights.size > 1) weights.forEach { w -> Key(stringResource(R.string.fonts_style, w), primary = w == weight, onClick = { weight = w }) }
+        Key(
+            if (busy == "system") stringResource(R.string.state_working) else stringResource(if (inUse) R.string.fonts_sys_in_use else R.string.fonts_sys_use),
+            primary = true, enabled = busy == null && !inUse,
+            onClick = {
+                onAct("system") {
+                    val file = Fonts.style(context, f, weight, false).getOrThrow()
+                    val named = java.io.File(Fonts.keptDir(context), Fonts.fileName(f.name, weight, false)).also { if (it.absolutePath != file.absolutePath) file.copyTo(it, overwrite = true) }
+                    current = app.booxultimatum.core.SystemFont.apply(context, named, "${f.name} $weight").getOrThrow()
+                    context.getString(R.string.fonts_sys_done, f.name)
+                }
+            },
+        )
+        if (app.booxultimatum.core.SystemFont.changed(context)) Key(stringResource(R.string.fonts_sys_restore), enabled = busy == null, onClick = {
+            onAct("system") {
+                app.booxultimatum.core.SystemFont.restore(context).getOrThrow()
+                current = app.booxultimatum.core.SystemFont.current()
+                context.getString(R.string.fonts_sys_restored)
+            }
+        })
+        Key(stringResource(R.string.fonts_sys_boox), onClick = { app.booxultimatum.launcher.BooxIntents.openSettings(context) })
     }
 }
 

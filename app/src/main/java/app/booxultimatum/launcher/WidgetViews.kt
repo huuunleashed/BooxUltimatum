@@ -113,8 +113,9 @@ fun BooxWidget(modifier: Modifier = Modifier) {
     val entries = remember {
         listOf(
             R.string.w_boox_library to Intent("com.onyx.action.LIBRARY"),
-            R.string.w_boox_notes to Intent(Intent.ACTION_MAIN).setComponent(android.content.ComponentName("com.onyx", "com.onyx.StartupActivity")),
+            R.string.w_boox_notes to Intent("com.onyx.intent.action.MAIN_ACTIVITY").setPackage("com.onyx").putExtra("json", "{\"action\":\"OPEN_NOTE\"}"),
             R.string.w_boox_storage to Intent("com.onyx.action.STORAGE"),
+            R.string.boox_fn_settings to BooxIntents.settings(),
         ).filter { (_, i) -> context.packageManager.resolveActivity(i, 0) != null }
     }
     WidgetFace(modifier) {

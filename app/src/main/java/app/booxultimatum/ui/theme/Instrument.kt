@@ -80,16 +80,16 @@ private fun archivo(weight: Int, width: Float = 100f) = Font(
     variationSettings = FontVariation.Settings(FontVariation.weight(weight), FontVariation.width(width)),
 )
 
-val Archivo = FontFamily(archivo(400), archivo(500), archivo(600), archivo(700))
+val Archivo = FontFamily(archivo(400), archivo(500), archivo(600), archivo(700), archivo(800))
 
 /** Semi-condensed cut for the scale figure and dense numerals. */
-val ArchivoNarrow = FontFamily(archivo(500, 88f), archivo(600, 88f))
+val ArchivoNarrow = FontFamily(archivo(500, 88f), archivo(600, 88f), archivo(700, 88f), archivo(800, 88f))
 
 private const val TABULAR = "tnum, lnum"
 
-private fun style(size: Int, line: Int, weight: Int, tracking: Double = 0.0, family: FontFamily = Archivo) = TextStyle(
+private fun style(size: Int, line: Int, weight: Int, tracking: Double = 0.0, family: FontFamily = Archivo, boost: Int = 0) = TextStyle(
     fontFamily = family,
-    fontWeight = FontWeight(weight),
+    fontWeight = FontWeight((weight + boost).coerceAtMost(900)),
     fontSize = size.sp,
     lineHeight = line.sp,
     letterSpacing = tracking.em,
@@ -105,22 +105,22 @@ val InstrumentType = instrumentType(Archivo, ArchivoNarrow)
  */
 val SystemType = instrumentType(FontFamily.Default, FontFamily.Default)
 
-private fun instrumentType(body: FontFamily, figures: FontFamily) = Typography(
-    displayLarge = style(76, 80, 600, -0.03, figures),
-    displayMedium = style(56, 60, 600, -0.025, figures),
-    displaySmall = style(44, 48, 600, -0.02, figures),
-    headlineLarge = style(36, 42, 600, -0.02, body),
-    headlineMedium = style(30, 36, 600, -0.015, body),
-    headlineSmall = style(25, 32, 600, -0.01, body),
-    titleLarge = style(21, 28, 600, -0.005, body),
-    titleMedium = style(18, 24, 600, family = body),
-    titleSmall = style(16, 22, 600, family = body),
-    bodyLarge = style(18, 27, 400, family = body),
-    bodyMedium = style(16, 24, 400, family = body),
-    bodySmall = style(14, 20, 400, family = body),
-    labelLarge = style(16, 20, 600, 0.005, body),
-    labelMedium = style(14, 18, 500, 0.01, body),
-    labelSmall = style(13, 16, 500, 0.02, body),
+private fun instrumentType(body: FontFamily, figures: FontFamily, boost: Int = 0) = Typography(
+    displayLarge = style(76, 80, 600, -0.03, figures, boost = boost),
+    displayMedium = style(56, 60, 600, -0.025, figures, boost = boost),
+    displaySmall = style(44, 48, 600, -0.02, figures, boost = boost),
+    headlineLarge = style(36, 42, 600, -0.02, body, boost = boost),
+    headlineMedium = style(30, 36, 600, -0.015, body, boost = boost),
+    headlineSmall = style(25, 32, 600, -0.01, body, boost = boost),
+    titleLarge = style(21, 28, 600, -0.005, body, boost = boost),
+    titleMedium = style(18, 24, 600, family = body, boost = boost),
+    titleSmall = style(16, 22, 600, family = body, boost = boost),
+    bodyLarge = style(18, 27, 400, family = body, boost = boost),
+    bodyMedium = style(16, 24, 400, family = body, boost = boost),
+    bodySmall = style(14, 20, 400, family = body, boost = boost),
+    labelLarge = style(16, 20, 600, 0.005, body, boost = boost),
+    labelMedium = style(14, 18, 500, 0.01, body, boost = boost),
+    labelSmall = style(13, 16, 500, 0.02, body, boost = boost),
 )
 
 /** Package ids and property keys are code, so they get the system monospace. */
@@ -143,11 +143,20 @@ private val InstrumentColors = lightColorScheme(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InstrumentTheme(systemFont: Boolean = false, customFont: FontFamily? = null, content: @Composable () -> Unit) {
-    val type = when {
-        customFont != null -> androidx.compose.runtime.remember(customFont) { instrumentType(customFont, customFont) }
-        systemFont -> SystemType
-        else -> InstrumentType
+fun InstrumentTheme(
+    systemFont: Boolean = false,
+    customFont: FontFamily? = null,
+    weightBoost: Int = 0,
+    systemFamily: FontFamily? = null,
+    content: @Composable () -> Unit,
+) {
+    // Weights are raised by [weightBoost] across the scale: thin faces lose strokes on e-ink.
+    val type = androidx.compose.runtime.remember(systemFont, customFont, weightBoost, systemFamily) {
+        when {
+            customFont != null -> instrumentType(customFont, customFont, weightBoost)
+            systemFont -> (systemFamily ?: FontFamily.Default).let { instrumentType(it, it, weightBoost) }
+            else -> instrumentType(Archivo, ArchivoNarrow, weightBoost)
+        }
     }
     MaterialTheme(colorScheme = InstrumentColors, typography = type) {
         // Ripples repaint the panel several times per tap; the instrument answers with a flat, instant press mark instead.

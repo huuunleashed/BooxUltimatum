@@ -114,4 +114,41 @@ object Glyphs {
         line { moveTo(2.5f, 21.5f); lineTo(21.5f, 21.5f) }
         line(fill = true) { circle(19f, 16.5f, 2.4f) }
     }
+
+    // ---------- Key glyphs (launcher keys) ----------
+
+    /** A cog: eight flat teeth around a rim, with a hub. */
+    val Gear = glyph("gear") {
+        line {
+            val teeth = 8
+            for (i in 0 until teeth * 2) {
+                val a = Math.toRadians(i * 360.0 / (teeth * 2) - 90)
+                val r = if (i % 2 == 0) 9.6f else 7.4f
+                val a2 = Math.toRadians((i + 1) * 360.0 / (teeth * 2) - 90)
+                val x1 = 12f + (kotlin.math.cos(a) * r).toFloat(); val y1 = 12f + (kotlin.math.sin(a) * r).toFloat()
+                val x2 = 12f + (kotlin.math.cos(a2) * r).toFloat(); val y2 = 12f + (kotlin.math.sin(a2) * r).toFloat()
+                if (i == 0) moveTo(x1, y1) else lineTo(x1, y1)
+                lineTo(x2, y2)
+            }
+            close()
+        }
+        line { circle(12f, 12f, 3f) }
+    }
+
+    /** A pencil laid diagonally, with its tip and a rule underneath: arranging. */
+    val Pencil = glyph("pencil") {
+        line { moveTo(15.5f, 4.5f); lineTo(19.5f, 8.5f); lineTo(9f, 19f); lineTo(4.5f, 19.5f); lineTo(5f, 15f); close() }
+        line { moveTo(13.5f, 6.5f); lineTo(17.5f, 10.5f) }
+    }
+
+    val Close = glyph("close") { line { moveTo(6f, 6f); lineTo(18f, 18f) }; line { moveTo(18f, 6f); lineTo(6f, 18f) } }
+
+    val ChevronLeft = glyph("chevron-left") { line { moveTo(15f, 5f); lineTo(8f, 12f); lineTo(15f, 19f) } }
+
+    val ChevronRight = glyph("chevron-right") { line { moveTo(9f, 5f); lineTo(16f, 12f); lineTo(9f, 19f) } }
+
+    /** Nine dots: every app. */
+    val AllApps = glyph("all-apps") {
+        for (x in listOf(6f, 12f, 18f)) for (y in listOf(6f, 12f, 18f)) line(fill = true) { circle(x, y, 1.7f) }
+    }
 }

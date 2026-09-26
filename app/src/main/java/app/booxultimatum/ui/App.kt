@@ -73,7 +73,10 @@ fun BooxUltimatumApp(accessEvents: Int, initial: String? = null) {
     val go: (Destination) -> Unit = { destination = it }
     BackHandler(enabled = destination != Destination.Overview) { destination = Destination.Overview }
 
-    BoxWithConstraints(Modifier.fillMaxSize().background(Ink.Paper).windowInsetsPadding(WindowInsets.safeDrawing)) {
+    Box(Modifier.fillMaxSize().background(Ink.Paper)) {
+    // Ink under the status bar: this firmware draws its icons white over this app, whatever the app asks for.
+    StatusStrip(Modifier.align(androidx.compose.ui.Alignment.TopStart))
+    BoxWithConstraints(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
         val compact = maxWidth < 600.dp
         Row(Modifier.fillMaxSize()) {
             NavigationRail(
@@ -120,5 +123,6 @@ fun BooxUltimatumApp(accessEvents: Int, initial: String? = null) {
                 }
             }
         }
+    }
     }
 }

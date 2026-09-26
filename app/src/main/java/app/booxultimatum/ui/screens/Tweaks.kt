@@ -209,6 +209,7 @@ private fun journalLine(e: app.booxultimatum.core.JournalEntry): String = when (
     "font" -> stringResource(R.string.journal_font, e.subject)
     "font-remove" -> stringResource(R.string.journal_font_remove, e.subject)
     "launcher" -> stringResource(R.string.journal_launcher, e.subject)
+    "system-font" -> stringResource(R.string.journal_system_font, e.subject)
     else -> e.subject
 }
 

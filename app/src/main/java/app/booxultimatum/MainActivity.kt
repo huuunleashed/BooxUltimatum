@@ -20,10 +20,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Lay out below the system bars instead of edge to edge: Boox's status bar only draws its icons then.
-        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, true)
+        // Edge to edge with an ink strip under the status bar (see StatusStrip): this firmware keeps the icons white here.
+        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
         androidx.core.view.WindowCompat.getInsetsController(window, window.decorView).apply {
-            isAppearanceLightStatusBars = true
+            isAppearanceLightStatusBars = false
             isAppearanceLightNavigationBars = true
             show(androidx.core.view.WindowInsetsCompat.Type.statusBars())
         }
@@ -33,11 +33,10 @@ class MainActivity : ComponentActivity() {
         Shizuku.addBinderReceivedListenerSticky(onBinder)
         Shizuku.addBinderDeadListener(onBinderDead)
         Shizuku.addRequestPermissionResultListener(onPermission)
-        // A font chosen in Fonts › Use in this app replaces Archivo everywhere in the UI.
-        val appFont = app.booxultimatum.core.Fonts.appFont(this)?.let { path ->
-            runCatching { androidx.compose.ui.text.font.FontFamily(androidx.compose.ui.text.font.Font(java.io.File(path))) }.getOrNull()
-        }
-        setContent { InstrumentTheme(customFont = appFont) { BooxUltimatumApp(accessEvents.intValue, initialDestination()) } }
+        // A font chosen in Fonts › Use in this app replaces Archivo everywhere in the UI, at every weight it uses.
+        val appFont = app.booxultimatum.core.Fonts.appFont(this)?.let { app.booxultimatum.core.UiFonts.family(it) }
+        val boost = app.booxultimatum.core.UiFonts.weightBoost(this)
+        setContent { InstrumentTheme(customFont = appFont, weightBoost = boost) { BooxUltimatumApp(accessEvents.intValue, initialDestination()) } }
     }
 
     private fun initialDestination(): String? = intent?.getStringExtra(EXTRA_DESTINATION)

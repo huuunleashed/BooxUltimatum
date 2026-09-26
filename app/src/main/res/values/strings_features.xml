@@ -69,6 +69,7 @@
     <string name="journal_font">Font added for NeoReader: %1$s</string>
     <string name="journal_font_remove">Font removed from NeoReader: %1$s</string>
     <string name="journal_launcher">Home app: %1$s</string>
+    <string name="journal_system_font">Tablet font: %1$s</string>
     <string name="need_t0">Works without extra access</string>
     <string name="need_t1">Needs adb grants</string>
     <string name="need_t2">Needs Shizuku</string>

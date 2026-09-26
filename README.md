@@ -78,6 +78,17 @@ Every feature declares the minimum tier it needs and degrades gracefully without
 
 ## Changelog
 
+- **2026-09-26 (morning, feedback round):** Fixes from the first day as default home.
+  - **Whole-tablet font without root:** found the switch Boox Settings uses (a broadcast SystemUI handles, `onyx.action.font.replace.system`) and built it into Fonts › *Use on the whole tablet*, with a weight choice, journaled *Restore previous*, and a shortcut to Boox's font settings. Verified: Inter applied tablet-wide and Manrope restored, both from the app.
+  - **Text too thin:** the system font here is a variable Manrope, and Android hands apps its ExtraLight default. Home now loads the tablet font itself at every weight, custom fonts get real weights, and Appearance › Text sets how much heavier than designed (default one step).
+  - **Settings key** opens Boox Settings. The stock Android one is labelled *Android settings* and the Boox home *Boox home*, so no two icons share a name.
+  - **Boox apps in All apps:** Notes, Library, Storage, Shop and Boox settings now appear, opened through the Boox home's own entry points.
+  - **All apps:** sort A–Z, by icon colour, or recently used, and a grid or list view (two columns in landscape).
+  - **Icon keys:** settings, edit, page turns, All apps and Close are round glyph keys.
+  - **System wallpaper** now shows through (the window had kept a white background). **Label ink** follows the backdrop: white with a dark halo on dark pictures, black with a paper halo on light ones; header and footer sit on paper plates over a wallpaper. The paper veil starts at 50 and steps by 10.
+  - **Status bar:** this firmware keeps status icons white over apps EinkWise tunes, so they vanished on paper. The app and home now draw an ink strip under the bar.
+  - **EinkWise:** Regal saves when chosen from the EinkWise panel (verified in the Onyx config). Saving an EinkWise setting re-restricts the app in the background, so home now lifts that on every return.
+  - **Landscape:** app pages centre and widen to 1200 dp, so Settings no longer leaves a gap on the right.
 - **2026-09-26 (morning):** Made **BooxUltimatum home the default home screen** through Settings › Home screen, so the Boox home is journaled and restorable in one tap. Verified as default: the Home key and Back stay on home, app shortcuts appear on long-press (Settings offers Wi‑Fi and Battery), Library, Notes (the Boox home) and Storage open from the Boox shelf, Recents (onyxquickstep) opens and returns to home, and after the app process is killed the Home key brings home straight back with the default kept. Added *Going back to the Boox home* to this README.
 - **2026-09-26 (night):** A full validation pass on the tablet, in both orientations, with every problem found fixed on the spot.
   - **Landscape:** home now puts widgets and apps side by side. The launcher's Edit and widget picker, and every panel, are width-capped. State survives rotation in the app and the launcher.

@@ -69,10 +69,15 @@ import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import app.booxultimatum.R
 import app.booxultimatum.ui.Key
+import app.booxultimatum.ui.IconKey
 import app.booxultimatum.ui.Lamp
 import app.booxultimatum.ui.Paragraph
 import app.booxultimatum.ui.Plate
 import app.booxultimatum.ui.SearchField
+import app.booxultimatum.ui.StatusStrip
+import androidx.compose.runtime.produceState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import app.booxultimatum.ui.theme.CodeStyle
 import app.booxultimatum.ui.theme.Ink
 import app.booxultimatum.ui.theme.Lines
@@ -118,7 +123,9 @@ fun LauncherScreen(
         }
         Box(Modifier.fillMaxSize().then(if (overlay == Overlay.None) Modifier else Modifier.background(Ink.Paper)).windowInsetsPadding(WindowInsets.safeDrawing)) {
             when (overlay) {
-                Overlay.None -> Home(model, onRequestCalendar, onOpenApp)
+                Overlay.None -> androidx.compose.runtime.CompositionLocalProvider(LocalLabelInk provides labelInkFor(prefs.wallMode, model.backdropLum.value)) {
+                    Home(model, onRequestCalendar, onOpenApp)
+                }
                 Overlay.Drawer -> Drawer(model)
                 Overlay.Edit -> EditHome(model, onOpenApp, onOpenAppearance, onWindowChanged)
                 Overlay.WidgetPicker -> WidgetPicker(model, onAddSystemWidget)
@@ -148,7 +155,23 @@ fun LauncherScreen(
                 }
             }
         }
+        StatusStrip(Modifier.align(Alignment.TopStart))
     }
+}
+
+/**
+ * Ink for text set straight on the backdrop (tile labels, header, footer). On a dark picture it turns white with a
+ * dark halo; on paper it stays black. A soft halo in the paper colour sits under dark ink too, so labels lift off
+ * a busy wallpaper either way.
+ */
+data class LabelInk(val color: androidx.compose.ui.graphics.Color, val halo: androidx.compose.ui.graphics.Shadow?)
+
+val LocalLabelInk = androidx.compose.runtime.staticCompositionLocalOf { LabelInk(Ink.Black, null) }
+
+private fun labelInkFor(wall: WallMode, lum: Float): LabelInk = when {
+    wall == WallMode.Paper -> LabelInk(Ink.Black, null)
+    lum < 0.5f -> LabelInk(Ink.Paper, androidx.compose.ui.graphics.Shadow(Ink.Black.copy(alpha = 0.75f), androidx.compose.ui.geometry.Offset(0f, 2f), 10f))
+    else -> LabelInk(Ink.Black, androidx.compose.ui.graphics.Shadow(Ink.Paper.copy(alpha = 0.9f), androidx.compose.ui.geometry.Offset(0f, 2f), 10f))
 }
 
 /** One item in the home grid. */
@@ -241,9 +264,9 @@ private fun AppPages(model: LauncherModel, items: List<HomeItem>, modifier: Modi
 
 @Composable
 private fun HomeFooter(model: LauncherModel, pinned: Int) {
-    Row(Modifier.fillMaxWidth().padding(top = Space.m), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.padding(top = Space.m).fillMaxWidth().onBackdrop(model), verticalAlignment = Alignment.CenterVertically) {
         val pages = model.pages.intValue
-        Key(stringResource(R.string.action_previous), onClick = { model.page.intValue = (model.page.intValue - 1).coerceAtLeast(0) }, enabled = model.page.intValue > 0)
+        IconKey(app.booxultimatum.ui.Glyphs.ChevronLeft, stringResource(R.string.action_previous), onClick = { model.page.intValue = (model.page.intValue - 1).coerceAtLeast(0) }, enabled = model.page.intValue > 0)
         val off = model.widgetsOffscreen.intValue
         Column(Modifier.weight(1f).padding(horizontal = Space.s), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
@@ -255,9 +278,9 @@ private fun HomeFooter(model: LauncherModel, pinned: Int) {
                 style = MaterialTheme.typography.labelSmall, color = Ink.Legend, textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis,
             )
         }
-        Key(stringResource(R.string.action_next), onClick = { model.page.intValue = (model.page.intValue + 1).coerceAtMost(pages - 1) }, enabled = model.page.intValue < pages - 1)
+        IconKey(app.booxultimatum.ui.Glyphs.ChevronRight, stringResource(R.string.action_next), onClick = { model.page.intValue = (model.page.intValue + 1).coerceAtMost(pages - 1) }, enabled = model.page.intValue < pages - 1)
         Spacer(Modifier.size(Space.m))
-        Key(stringResource(R.string.l_all_apps), primary = true, onClick = { model.overlay.value = Overlay.Drawer })
+        IconKey(app.booxultimatum.ui.Glyphs.AllApps, stringResource(R.string.l_all_apps), primary = true, onClick = { model.overlay.value = Overlay.Drawer })
     }
 }
 
@@ -270,7 +293,7 @@ private fun Header(model: LauncherModel) {
     val ind by model.indicators
     fun open(action: String) = runCatching { context.startActivity(Intent(action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
     val p = model.prefs.value
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.onBackdrop(model), verticalAlignment = Alignment.CenterVertically) {
         // Boox blanks the status bar's icons over non-Boox apps, so the header carries the time as well.
         if (p.showTime) {
             Text(android.text.format.DateFormat.getTimeFormat(context).format(java.util.Date(now)), style = MaterialTheme.typography.titleLarge)
@@ -304,13 +327,9 @@ private fun Header(model: LauncherModel) {
             IndicatorItem(style, "${b.levelPct} %", b.charging, glyph = { StatusGlyphs.Battery(b.levelPct, b.charging, p.batteryGlyph) }, alwaysText = p.showBatteryPct) { open(Intent.ACTION_POWER_USAGE_SUMMARY) }
         }
         Spacer(Modifier.size(Space.s))
-        Key(stringResource(R.string.l_settings), onClick = {
-            runCatching {
-                context.startActivity(Intent().setComponent(android.content.ComponentName("com.android.settings", "com.android.settings.Settings")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-            }
-        })
+        IconKey(app.booxultimatum.ui.Glyphs.Gear, stringResource(R.string.l_settings_boox), onClick = { BooxIntents.openSettings(context) })
         Spacer(Modifier.size(Space.s))
-        Key(stringResource(R.string.l_edit), onClick = { model.overlay.value = Overlay.Edit })
+        IconKey(app.booxultimatum.ui.Glyphs.Pencil, stringResource(R.string.l_edit_home), onClick = { model.overlay.value = Overlay.Edit })
     }
 }
 
@@ -336,7 +355,13 @@ private fun Modifier.androidxSemantics(label: String) = this.then(
 
 /** Labels one step heavier than body text: thin system faces vanish at 14 sp on e-ink. */
 private val TileLabel: androidx.compose.ui.text.TextStyle
-    @Composable get() = MaterialTheme.typography.bodySmall.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Medium)
+    @Composable get() = LocalLabelInk.current.let { ink -> MaterialTheme.typography.bodySmall.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Medium, color = ink.color, shadow = ink.halo) }
+
+/** Over a wallpaper, the header and footer sit on a paper plate like the widgets, so their glyphs and keys stay legible. */
+@Composable
+private fun Modifier.onBackdrop(model: LauncherModel): Modifier =
+    if (model.prefs.value.wallMode == WallMode.Paper) this
+    else this.clip(RoundedCornerShape(22.dp)).background(Ink.Paper).padding(horizontal = Space.m, vertical = Space.xs)
 
 private fun iconSize(cellW: Dp): Dp = (cellW * 0.52f).coerceIn(44.dp, 76.dp)
 
@@ -614,42 +639,123 @@ private fun WidgetCell(model: LauncherModel, w: WidgetSpec, modifier: Modifier, 
 private fun Drawer(model: LauncherModel) {
     val prefs by model.prefs
     val apps by model.apps
+    val context = LocalContext.current
     var query by rememberSaveable { mutableStateOf("") }
     val visible = apps.filter { it.key !in prefs.hidden }
     val q = query.trim()
-    val list = if (q.isEmpty()) visible else visible.filter { it.label.contains(q, true) || it.component.packageName.contains(q, true) }
+    val matched = if (q.isEmpty()) visible else visible.filter { it.label.contains(q, true) || it.component.packageName.contains(q, true) }
+    // Sort keys are read off the main thread: colour needs each icon, recency needs usage stats.
+    val lastUsed by produceState<Map<String, Long>?>(null, prefs.drawerSort, apps) {
+        value = if (prefs.drawerSort == DrawerSort.Recent) withContext(Dispatchers.IO) { recentUse(context) } else null
+    }
+    val colours by produceState<Map<String, Float>?>(null, prefs.drawerSort, apps) {
+        value = if (prefs.drawerSort == DrawerSort.Colour) withContext(Dispatchers.Default) { apps.associate { it.key to model.catalog.colourKey(it.key) } } else null
+    }
+    fun usedAt(t: LaunchTarget) = lastUsed?.get(t.component.packageName) ?: 0L
+    val list = when (prefs.drawerSort) {
+        DrawerSort.Name -> matched
+        DrawerSort.Recent -> lastUsed?.let { matched.sortedWith(compareByDescending<LaunchTarget> { usedAt(it) }.thenBy { it.label.lowercase() }) } ?: matched
+        DrawerSort.Colour -> colours?.let { c -> matched.sortedWith(compareBy<LaunchTarget> { c[it.key] ?: 2f }.thenBy { it.label.lowercase() }) } ?: matched
+    }
     Column(Modifier.fillMaxSize().padding(horizontal = Space.xl, vertical = Space.l)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(stringResource(R.string.l_all_apps), style = MaterialTheme.typography.headlineMedium, modifier = Modifier.weight(1f))
             Text(pluralStringResource(R.plurals.l_count, list.size, list.size), style = MaterialTheme.typography.labelLarge, color = Ink.Legend)
             Spacer(Modifier.size(Space.m))
-            Key(stringResource(R.string.l_close), onClick = { model.overlay.value = Overlay.None })
+            IconKey(app.booxultimatum.ui.Glyphs.Close, stringResource(R.string.l_close), onClick = { model.overlay.value = Overlay.None })
         }
         Spacer(Modifier.height(Space.m))
         SearchField(query, { query = it; model.drawerPage.intValue = 0 }, stringResource(R.string.l_search))
+        Spacer(Modifier.height(Space.m))
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.s), verticalArrangement = Arrangement.spacedBy(Space.s), itemVerticalAlignment = Alignment.CenterVertically) {
+            Text(stringResource(R.string.l_sort), style = MaterialTheme.typography.labelLarge, color = Ink.Legend, modifier = Modifier.padding(end = Space.xs))
+            listOf(DrawerSort.Name to R.string.l_sort_name, DrawerSort.Colour to R.string.l_sort_colour, DrawerSort.Recent to R.string.l_sort_recent).forEach { (s, label) ->
+                Key(stringResource(label), primary = prefs.drawerSort == s, onClick = { model.update { it.copy(drawerSort = s) }; model.drawerPage.intValue = 0 })
+            }
+            Spacer(Modifier.width(Space.l))
+            listOf(DrawerView.Grid to R.string.l_view_grid, DrawerView.List to R.string.l_view_list).forEach { (v, label) ->
+                Key(stringResource(label), primary = prefs.drawerView == v, onClick = { model.update { it.copy(drawerView = v) }; model.drawerPage.intValue = 0 })
+            }
+        }
         Spacer(Modifier.height(Space.l))
         BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
-            val cols = gridColumns(prefs.columns, maxWidth)
-            val icon = iconSize(maxWidth / cols)
-            val cellH = cellHeight(icon, prefs.labels)
-            val rows = max(1, (maxHeight / cellH).toInt())
-            val perPage = cols * rows
+            val perPage: Int
+            if (prefs.drawerView == DrawerView.List) {
+                // Two columns of rows when the panel is wide, so landscape doesn't stretch a row across the screen.
+                val cols = if (maxWidth > 900.dp) 2 else 1
+                perPage = cols * max(1, (maxHeight / (ListRowHeight + Lines.hairline)).toInt())
+            } else {
+                val cols = gridColumns(prefs.columns, maxWidth)
+                perPage = cols * max(1, (maxHeight / cellHeight(iconSize(maxWidth / cols), prefs.labels)).toInt())
+            }
             val pages = max(1, (list.size + perPage - 1) / perPage)
             if (model.drawerPages.intValue != pages) model.drawerPages.intValue = pages
             val page = model.drawerPage.intValue.coerceIn(0, pages - 1)
             if (model.drawerPage.intValue != page) model.drawerPage.intValue = page
-            if (list.isEmpty()) Paragraph(stringResource(R.string.apps_no_match, q), color = Ink.Legend)
-            else Grid(model, list.drop(page * perPage).take(perPage).map { HomeItem.App(it) }, cols, icon, cellH)
+            val slice = list.drop(page * perPage).take(perPage)
+            when {
+                list.isEmpty() -> Paragraph(stringResource(R.string.apps_no_match, q), color = Ink.Legend)
+                prefs.drawerView == DrawerView.List -> AppList(model, slice, if (maxWidth > 900.dp) 2 else 1, if (prefs.drawerSort == DrawerSort.Recent) ::usedAt else null)
+                else -> {
+                    val cols = gridColumns(prefs.columns, maxWidth)
+                    val icon = iconSize(maxWidth / cols)
+                    Grid(model, slice.map { HomeItem.App(it) }, cols, icon, cellHeight(icon, prefs.labels))
+                }
+            }
         }
         Row(Modifier.fillMaxWidth().padding(top = Space.m), verticalAlignment = Alignment.CenterVertically) {
             val pages = model.drawerPages.intValue
-            Key(stringResource(R.string.action_previous), onClick = { model.drawerPage.intValue = (model.drawerPage.intValue - 1).coerceAtLeast(0) }, enabled = model.drawerPage.intValue > 0)
+            IconKey(app.booxultimatum.ui.Glyphs.ChevronLeft, stringResource(R.string.action_previous), onClick = { model.drawerPage.intValue = (model.drawerPage.intValue - 1).coerceAtLeast(0) }, enabled = model.drawerPage.intValue > 0)
             Text(stringResource(R.string.l_page_of, model.drawerPage.intValue + 1, pages), style = MaterialTheme.typography.labelLarge, color = Ink.Legend, textAlign = TextAlign.Center, modifier = Modifier.weight(1f))
-            Key(stringResource(R.string.action_next), onClick = { model.drawerPage.intValue = (model.drawerPage.intValue + 1).coerceAtMost(pages - 1) }, enabled = model.drawerPage.intValue < pages - 1)
+            IconKey(app.booxultimatum.ui.Glyphs.ChevronRight, stringResource(R.string.action_next), onClick = { model.drawerPage.intValue = (model.drawerPage.intValue + 1).coerceAtMost(pages - 1) }, enabled = model.drawerPage.intValue < pages - 1)
         }
     }
 }
 
+private val ListRowHeight = 76.dp
+
+/** The last time each package was in the foreground over the past 60 days, from Android's usage stats. */
+private fun recentUse(context: android.content.Context): Map<String, Long> = runCatching {
+    val usm = context.getSystemService(android.app.usage.UsageStatsManager::class.java)
+    val now = System.currentTimeMillis()
+    usm.queryAndAggregateUsageStats(now - 60L * 24 * 3600 * 1000, now).mapValues { it.value.lastTimeUsed }
+}.getOrDefault(emptyMap())
+
+/** The drawer as rows: icon, name, and when the app was last used (while sorting by recency) or its package. */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun AppList(model: LauncherModel, items: List<LaunchTarget>, cols: Int, usedAt: ((LaunchTarget) -> Long)?) {
+    val context = LocalContext.current
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Space.xl)) {
+        val perCol = (items.size + cols - 1) / cols
+        items.chunked(max(1, perCol)).forEach { column ->
+            Column(Modifier.weight(1f)) {
+                column.forEach { t ->
+                    Row(
+                        Modifier.fillMaxWidth().height(ListRowHeight).clip(RoundedCornerShape(12.dp))
+                            .combinedClickable(role = Role.Button, onClickLabel = t.label, onLongClick = { model.selected.value = t }, onClick = { if (!model.catalog.launch(t)) model.selected.value = t })
+                            .padding(horizontal = Space.s),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        AppIcon(model, t, 48.dp)
+                        Spacer(Modifier.size(Space.m))
+                        Column(Modifier.weight(1f)) {
+                            Text(t.label, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            val sub = when {
+                                usedAt == null -> t.component.packageName
+                                usedAt(t) > 0 -> stringResource(R.string.l_recent_ago, app.booxultimatum.ui.Format.duration(context, System.currentTimeMillis() - usedAt(t)))
+                                else -> stringResource(R.string.l_recent_never)
+                            }
+                            Text(sub, style = MaterialTheme.typography.bodySmall, color = Ink.Legend, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
+                    }
+                    HorizontalDivider(thickness = Lines.hairline, color = Ink.Rule)
+                }
+            }
+        }
+        repeat(cols - items.chunked(max(1, perCol)).size) { Spacer(Modifier.weight(1f)) }
+    }
+}
 @Composable
 private fun AppActions(model: LauncherModel, t: LaunchTarget, modifier: Modifier) {
     val context = LocalContext.current

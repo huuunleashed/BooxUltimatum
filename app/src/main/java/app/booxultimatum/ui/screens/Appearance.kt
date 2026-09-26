@@ -220,6 +220,23 @@ fun AppearanceScreen(readKey: Int, compact: Boolean, onOpenFonts: () -> Unit) {
                 }
             }
         }
+        item {
+            Spacer(Modifier.height(Space.xxl))
+            var boost by remember { mutableIntStateOf(app.booxultimatum.core.UiFonts.weightBoost(context)) }
+            Plate(stringResource(R.string.ap_text)) {
+                Paragraph(stringResource(R.string.ap_text_explain), color = Ink.Legend, modifier = Modifier.padding(vertical = Space.s))
+                Choice(
+                    stringResource(R.string.ap_text_weight),
+                    listOf(stringResource(R.string.ap_weight_designed) to 0, stringResource(R.string.ap_weight_heavier) to 100, stringResource(R.string.ap_weight_heaviest) to 200),
+                    boost,
+                ) { v ->
+                    boost = v
+                    app.booxultimatum.core.UiFonts.setWeightBoost(context, v)
+                    (context as? android.app.Activity)?.recreate()
+                }
+                Text(stringResource(R.string.ap_text_note), style = MaterialTheme.typography.bodySmall, color = Ink.Legend, modifier = Modifier.padding(top = Space.s))
+            }
+        }
     }
 }
 
