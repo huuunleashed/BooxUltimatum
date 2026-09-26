@@ -1,123 +1,204 @@
 # BooxUltimatum
 
-A single sideloadable Android app that is meant to become the go-to hub of tweaks and tricks for the **BOOX Note Air6 C** (and, eventually, other Boox tablets). Its goals are longer battery life, simpler access to Boox's scattered settings, and privacy. Every tweak will be measured, explained, and reversible. The project is licensed GPL-3.0-or-later so we can build on the open-source Boox community's work.
+**A home screen, sleep-screen designer, battery doctor and tweak hub for the BOOX Note Air6 C, in one app, without root.**
 
-> This README changes as the project moves. It's the single place to see where things stand. Agents and contributors update it with every meaningful change (see `AGENTS.md`).
+![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue) ![Status: pre-release](https://img.shields.io/badge/status-pre--release-orange) ![Android 11+](https://img.shields.io/badge/Android-11%2B-3ddc84) ![Tested on Note Air6 C, FW 4.3](https://img.shields.io/badge/tested%20on-Note%20Air6%20C%20%C2%B7%20FW%204.3-black)
 
-## Status
+<p align="center">
+  <img src="docs/screenshots/home.png" width="300" alt="BooxUltimatum home screen in portrait: clock, Library and Boox shelf widgets, and a grid of apps">
+  &nbsp;
+  <img src="docs/screenshots/sleep-face.png" width="225" alt="A BooxUltimatum sleep screen: the weekday, the date and a quote, set large">
+</p>
 
-| Area | State |
-|---|---|
-| Phase | **Building on the device (phase 3).** Version `0.3.0` is installed on the tablet (release build) at tier T2 and validated screen by screen in portrait and landscape. |
-| App | Eleven destinations: Overview, Battery, Tweaks, Apps, Appearance, Fonts, Sleep, Ink, Settings, Device and Access. The "Braun Instrument" design runs throughout: paper white, black ink, one green lamp, Archivo, and no animation. |
-| Tweaks | 19 reversible, tiered tweaks with a journal. Each one is listed with its mechanism and verification status in `knowledge/experiments.md`. They include *Let your apps keep running*, which fixes music stopping and Discord screen share going blank (Boox background-restricts apps you install). |
-| Battery | Drain measurement, a time-left estimate, wakeup sources, force idle, and a battery log that never wakes the tablet: samples every 30 min of awake time, a row at every screen, plug and level change, and deep snapshots every 3 h, with a level chart, screen-off and screen-on drain, and a one-zip export. First analysis (2026-09-26): standby is already near the floor (0–12 mA); screen-on use (430–640 mA, SoC awake 93 % of the time) is where the battery goes. |
-| Sleep screen | **Sleep screen studio:** eight faces (Almanac, Instrument, Poster, Under the clock, Photo, Note, Return card, Minimal) set in the owner's font, portrait and landscape, published as Boox's sleep picture and refreshed while the tablet is awake (every 1–30 min, plus battery, time and rotation changes). Verified live on the tablet. An *Over Transparent* mode lays a plate over Boox's Transparent style through its sticker (T2). |
-| Home screen | **BooxUltimatum home is the default home screen on the tablet (since 2026-09-26, 06:20).** It has widgets (including Boox's own), folders, app shortcuts, icon shapes, wallpapers, a two-pane landscape layout, and a custom header. It uses about a third of the Boox home's memory and 0 % CPU when idle (`docs/05-launcher.md`). The Boox home is saved and one tap away: see *Going back to the Boox home*. |
-| Appearance and fonts | System-wide status bar icons with one-tap restore, the home's look, and a full Google Fonts browser (1946 families, Vietnamese coverage, install to NeoReader). |
-| Device facts | Core facts verified: QCS6690 "volcano", kernel 6.1 GKI, Android 16, **locked bootloader**, Doze off in firmware, and all Onyx apps Doze-allowlisted. See `docs/00-device-research.md` §0 and `knowledge/experiments.md`. |
-| Root | **Out of scope (decided 2026-09-25).** The product targets T0–T2 (app, adb grants, Shizuku). |
+The Note Air6 C is a lovely tablet with a frustrating side. Independent reviews such as [eWritable's](https://ewritable.net/brands/boox/tablets/boox-note-air6-c/) praise the screen and the pen, then point at the same two things owners complain about: battery life, and software that scatters useful settings across a dozen places. BooxUltimatum is one owner's attempt to fix that from the inside. It isn't a skin over the problem. Every change it makes is measured on the real tablet, explained in plain words, and one tap away from being undone.
 
-### Next up
-1. **Instant ink: first run on the tablet.** The controller now uses the swap found in testing (release the held app frames after the lift, session kept open) and the full-panel region. To check with the owner drawing: the in-app service in Sketchbook in both orientations, the eraser end, finger panning, switching apps, and the one-in-ten stroke start that loses its preview.
-2. **Reading mode:** one key for Wi-Fi and Bluetooth off, Battery Saver on and auto-sync paused while unplugged, journaled. The battery analysis found Wi-Fi active 75 % of battery time and the SoC awake 93 % of screen-on time.
-3. Unplugged overnight run with the improved battery log, then the first A/B (*Pause idle Boox apps*, *Let Boox apps sleep*, *Turn on Doze*).
-4. Record round trips for the three tweaks not yet verified on the tablet (`doze.boox_allowlist`, `power.autosync`, `privacy.ota`).
-5. Launcher extras: notification dots (opt-in listener), Onyx front-light and refresh quick actions, layout backup.
+It's a single APK. Nothing is flashed, and the bootloader stays locked.
 
-Note: Shizuku stops on every reboot. Restart it with `.\tools\host\start-shizuku.ps1`. NA6C FW 4.3 hides Wireless debugging, so on-device restarts without a PC are still unverified. *Turn on Doze* also resets on reboot.
+> **Status: pre-release.** It runs daily on the author's own tablet (Note Air6 C, firmware 4.3, Android 16), and nowhere else yet. The first public build is planned as 0.4 (see [Roadmap](#roadmap)). Until then, build it from source.
 
-## Why this exists
+## What it does
 
-The most credible independent review ([eWritable](https://ewritable.net/brands/boox/tablets/boox-note-air6-c/)) calls the NA6C an excellent, versatile tablet held back by **poor battery life** (≈2 %/h awake idle, ≈10 %/h in native Notes on FW 4.3) and by **complex, scattered software**. BooxUltimatum goes after exactly those two problems, plus privacy. See `docs/01-product-vision.md`.
+### A home screen made for e-ink
 
-## Repository map
+<p align="center">
+  <img src="docs/screenshots/home-landscape.png" width="620" alt="BooxUltimatum home in landscape: widgets on the left, apps on the right">
+</p>
 
-| Path | What |
-|---|---|
-| `docs/00-device-research.md` | NA6C hardware/software research, the NA5C comparison, known issues, and privilege tiers |
-| `docs/01-product-vision.md` | Pillars: Battery Doctor, Settings Hub, E-Ink Profiles, Privacy & Debloat, Power-user |
-| `docs/02-reverse-engineering-plan.md` | The phased plan for testing together, and the battery test protocol |
-| `docs/03-architecture.md` | App architecture, tweak model, and sampler design |
-| `docs/04-upstream-projects.md` | Open-source projects we fork or borrow from, with their licenses |
-| `docs/05-launcher.md` | The BooxUltimatum home screen: compatibility rules, features, and its measured resource budget |
-| `PRODUCT.md` | Product and design context: users, tone, and the Braun Instrument design language |
-| `app/` | Android app (Kotlin, Jetpack Compose, e-ink-first UI), including the launcher in `launcher/` |
-| `knowledge/` | Onyx package knowledge base (also bundled as app assets) and the experiments log |
-| `tools/host/` | PowerShell scripts run from the PC over adb |
-| `tools/dev/` | Repo hygiene tools (for example `prose_wrap.py`) |
-| `captures/` | Raw device captures (git-ignored, may contain personal data) |
+A calm, paper-white launcher that uses about a third of the Boox home's memory and no CPU when idle.
 
-## Quick start
+- **Widgets:** clock, month, agenda, weather, battery, next alarm, a note, a Boox shelf (Library, Notes, Storage) and any app's widget, including Boox's own. Library covers are pixelated in these screenshots.
+- **Apps:** paged grids you turn with a swipe, folders, and icon shapes that remove the frame Boox draws into its own icons.
+- **The header:** time, network, Bluetooth and battery in 8 Wi-Fi and 8 battery designs, plus keys for Boox Settings and BooxUltimatum.
+- **All apps:** includes the Boox functions that have no launcher icon, sorted by name, colour or recent use.
+- **Layout:** two panes in landscape. Nothing ever reflows while you type.
 
-Prerequisites (already installed on the dev PC): JDK 21, Android SDK (platform 36, build-tools 36) in `%LOCALAPPDATA%\Android\Sdk`, and platform-tools on `PATH`.
+<p align="center"><img src="docs/screenshots/all-apps.png" width="300" alt="All apps as a two-column list, sorted A to Z"></p>
 
-```powershell
-# Build the app (release: minified, debug-signed so it updates the installed copy in place)
-$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.8.9-hotspot'
-.\gradlew.bat assembleRelease        # -> app\build\outputs\apk\release\app-release.apk
+### Your own sleep screen
 
-# With the tablet plugged in (USB debugging on)
-.\tools\host\recon.ps1 -Label factory
-adb install -r app\build\outputs\apk\release\app-release.apk
-.\tools\host\start-shizuku.ps1        # after every tablet reboot
-.\tools\host\power-logger.ps1 -Action Start -Interval 60   # then unplug
+<p align="center">
+  <img src="docs/screenshots/sleep-studio.png" width="300" alt="The Sleep screen studio in portrait: a preview, Apply keys, the mode and the face picker">
+  &nbsp;
+  <img src="docs/screenshots/sleep-studio-landscape.png" width="480" alt="The Sleep screen studio in landscape, two panes">
+</p>
+
+Boox gives you six preset screensavers. BooxUltimatum gives you eight faces set in *your* tablet font: Almanac, Instrument, Poster, Under the clock, Photo, Note, Return card and Minimal. Each has its own portrait and landscape layout.
+
+- **Freshness:** Boox only reads the picture as the tablet goes to sleep, so the studio quietly redraws it while you use the tablet. It updates every 5 minutes by default, and whenever the battery, date or rotation changes. The time it shows is honest: "put down around 4:30 PM".
+- **Rotation:** both orientations are kept ready, so turning the tablet never leaves you with a cropped face.
+- **Keeping the Transparent style:** an *Over Transparent* mode lays a small paper plate over it instead.
+
+### Instant ink for other apps (experimental)
+
+<p align="center"><img src="docs/screenshots/ink.png" width="300" alt="The Instant ink page: status, brush, width, swap delay and app list"></p>
+
+In Boox Notes, ink appears under the nib in about 10 ms. In Sketchbook and most other apps, it trails behind. BooxUltimatum found how Notes does it (the display system draws the stroke straight from the pen) and lends that path to apps you choose.
+
+A preview stroke lands at once, and half a second after you lift, the app's own brush takes its place. The app isn't modified in any way. It needs no root and no Shizuku. This is new and still being tuned; see [Known limits](#known-limits).
+
+### A battery doctor that doesn't drain the battery
+
+<p align="center">
+  <img src="docs/screenshots/overview.png" width="300" alt="Overview: the battery gauge, drain rate, access level and tweak count">
+  &nbsp;
+  <img src="docs/screenshots/battery.png" width="300" alt="Battery: measure drain, past measurements and the battery log">
+</p>
+
+- **Measure drain:** unplug, use the tablet, and read the rate. The time-left estimate comes from real mAh, not guesses.
+- **Battery log:** runs without ever waking the tablet, logging every screen, plug and level change, with a chart and a one-zip export.
+- **Findings so far on this tablet:** standby is already excellent (0–12 mA), and screen-on use is where the battery goes, mostly because background downloads, music and chat apps keep the processor awake. The tweaks aim at exactly that.
+
+### Tweaks you can undo
+
+<p align="center">
+  <img src="docs/screenshots/tweaks.png" width="300" alt="Tweaks: grouped, reversible changes with their access level">
+  &nbsp;
+  <img src="docs/screenshots/appearance.png" width="300" alt="Appearance: system status bar icons and home screen look">
+</p>
+
+There are 19 reversible tweaks across apps, sleep, power, radios, interface and privacy. Every one records what it replaced, and *Undo* puts it back. Some examples:
+
+- **Let your apps keep running.** Boox background-restricts every app you install, which is why music stops a minute after you leave the player.
+- **Let Boox apps sleep**, **Turn on Doze**, and **Pause idle Boox apps**.
+- **Status bar icons**, tablet-wide.
+- **The whole tablet's font**, at a proper weight, without root.
+
+<p align="center"><img src="docs/screenshots/fonts.png" width="300" alt="Fonts: a Google Fonts browser with Vietnamese previews"></p>
+
+A full **Google Fonts browser** (1946 families, with a Vietnamese filter) installs fonts for the tablet, NeoReader, the home screen or the app.
+
+## How much access it needs
+
+Every feature declares the least access it needs, and the app stays useful with none:
+
+| Tier | What it is | What it unlocks |
+|---|---|---|
+| **T0** | Just the app | Home screen, sleep screen, Instant ink, battery measurement, fonts, the settings hub |
+| **T1** | A few permissions granted once from a computer with `adb` | Reading battery statistics in the app, and changing system settings |
+| **T2** | [Shizuku](https://shizuku.rikka.app), which runs a small service with the same rights as `adb` | Most tweaks, tablet-wide status bar icons, the network name in the header |
+| T3 | Root | Out of scope. BooxUltimatum doesn't need or ask for it |
+
+The one-off T1 grants are:
+
+```text
+adb shell pm grant app.booxultimatum android.permission.WRITE_SECURE_SETTINGS
+adb shell pm grant app.booxultimatum android.permission.DUMP
+adb shell pm grant app.booxultimatum android.permission.READ_LOGS
+adb shell appops set app.booxultimatum GET_USAGE_STATS allow
 ```
 
-## Going back to the Boox home
+Shizuku stops on every reboot. With the tablet plugged into a computer, `.\tools\host\start-shizuku.ps1` restarts it. Firmware 4.3 hides Wireless debugging, so restarting it without a computer isn't possible yet.
 
-BooxUltimatum saved the Boox home (`com.onyx/.StartupActivity`) before switching, so going back never loses anything:
+## Install
 
-- **On the tablet:** open BooxUltimatum › Settings › Home screen and tap *Back to Boox*. Or, from BooxUltimatum home, tap *Notes · Boox home* on the Boox shelf to use the Boox home for a moment without switching.
-- **From a computer, if BooxUltimatum ever can't open:** `adb shell cmd package set-home-activity --user 0 com.onyx/.StartupActivity`.
-- **Without Shizuku or a computer:** Android Settings › Apps › Default apps › Home app, and pick ONYX Launcher.
+**From a release (planned for 0.4):** download the APK from this repository's Releases page, allow your browser or file manager to install apps, and open it. The Access page shows what each tier unlocks and the exact commands for it.
 
-Recents, gestures, NaviBall and EInkWise belong to the system, not the home app, so they behave the same under either home.
-## Privilege tiers
+**From source (today):**
 
-Every feature declares the minimum tier it needs and degrades gracefully without it. **T0** is the plain app. **T1** is permissions granted once over adb. **T2** is Shizuku (shell uid). **T3** is root (Magisk/KernelSU and LSPosed). The core product must stay useful at T0–T2.
+```powershell
+# JDK 21 and the Android SDK (platform 36) are required.
+$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.8.9-hotspot'
+.\gradlew.bat assembleRelease                  # -> app\build\outputs\apk\release\app-release.apk
+adb install -r app\build\outputs\apk\release\app-release.apk
+```
 
-## Changelog
+Release builds from source are debug-signed for now, so they update an installed copy in place. Public releases will use a proper signing key.
 
-- **2026-09-26 (evening):** **Instant ink** returns as the Ink destination. A test session with the owner drawing in Sketchbook found the missing piece: Boox's display service holds an app's frames back while the pen draws and lets them through after the lift, which replaces the fast preview with the app's own stroke without closing the pen session, so strokes no longer lose their start. The preview region now covers the whole panel (a portrait-shaped region missed the bottom quarter), hovering arms it before the nib touches, and the preview defaults to the fountain-pen brush at 4 px, which reads as continuous where the pencil looked broken. Verified with test scripts; the in-app service is built but not yet run on the tablet.
-- **2026-09-26 (afternoon):** Sleep screen after a rotation, and a cleaner sleep screen.
-  - **Rotation:** turning the tablet and then sleeping showed the face cropped, because the face was only redrawn a few seconds after the turn, so Boox still had the picture for the old shape. Each refresh now also prepares the other orientation, and a turn swaps the file in at once; a last check runs as the tablet starts to sleep. Verified on the tablet: rotate then sleep within 0.2 s in both directions, and rotate and sleep at the same instant from the lock screen, all showed the right shape.
-  - **Boox's bottom bar** (battery and "Press power button to wake up") is off in Boox's screensaver settings, and faces no longer leave room for it. Boox still forces it on while the tablet is charging (read from its code, confirmed on battery); the studio says so.
-  - A new version now redraws the sleep face on its own after installing.
-- **2026-09-26 (midday, 0.3.0):** Sleep screen, battery analysis, launcher fixes, pen research.
-  - **Sleep screen studio (new Sleep destination):** your own sleep screen in your font instead of Boox's presets. Boox reads its sleep picture fresh at every sleep but never while asleep, so the studio re-renders while the tablet is awake (every 5 min by default) and on battery, time and rotation changes. Found and verified the unprotected broadcast Boox Settings uses to set the picture, working from the app itself. *Over Transparent* keeps Boox's Transparent style and lays a plate over it through its sticker file (T2). With Boox's own clock and motto set to None, only the face shows.
-  - **Battery log fixes from the first real log:** the 33 "boot" rows were force-stops (Android 15+ sends boot to a force-stopped app), so real boots are now told apart by the boot count. The log now records screen, plug and level transitions, front light, Wi-Fi and Doze state, and its deep snapshots no longer start the Shizuku helper. Analysis: standby is near the floor, and screen-on use with the SoC awake is where the battery goes.
-  - **Launcher:** swipe left or right to turn pages on home and in All apps. The page footer and All apps key could vanish or slip down after an inset change (for example switching to gesture navigation), because home froze itself at the tallest height it had seen; home now pads only for the system bars and ignores the keyboard, and panels with a text field rise above it. A BooxUltimatum settings key sits in the header beside Boox Settings and Edit. Long one-word app names shrink to fit rather than breaking mid-word.
-  - **Pen latency research:** Boox Notes' ink is drawn by SurfaceFlinger straight from the pen, and any app, BooxUltimatum included, can switch that path on over another app. Swapping the preview back to the app's stroke isn't solved yet, so *Instant ink* is deferred. EinkWise's per-app handwriting mode was also tried on Sketchbook and didn't engage; its config was restored byte for byte.
-- **2026-09-26 (morning, feedback round):** Fixes from the first day as default home.
-  - **Whole-tablet font without root:** found the switch Boox Settings uses (a broadcast SystemUI handles, `onyx.action.font.replace.system`) and built it into Fonts › *Use on the whole tablet*, with a weight choice, journaled *Restore previous*, and a shortcut to Boox's font settings. Verified: Inter applied tablet-wide and Manrope restored, both from the app.
-  - **Text too thin:** the system font here is a variable Manrope, and Android hands apps its ExtraLight default. Home now loads the tablet font itself at every weight, custom fonts get real weights, and Appearance › Text sets how much heavier than designed (default one step).
-  - **Settings key** opens Boox Settings. The stock Android one is labelled *Android settings* and the Boox home *Boox home*, so no two icons share a name.
-  - **Boox apps in All apps:** Notes, Library, Storage, Shop and Boox settings now appear, opened through the Boox home's own entry points.
-  - **All apps:** sort A–Z, by icon colour, or recently used, and a grid or list view (two columns in landscape).
-  - **Icon keys:** settings, edit, page turns, All apps and Close are round glyph keys.
-  - **System wallpaper** now shows through (the window had kept a white background). **Label ink** follows the backdrop: white with a dark halo on dark pictures, black with a paper halo on light ones; header and footer sit on paper plates over a wallpaper. The paper veil starts at 50 and steps by 10.
-  - **Status bar:** this firmware keeps status icons white over apps EinkWise tunes, so they vanished on paper. The app and home now draw an ink strip under the bar.
-  - **EinkWise:** Regal saves when chosen from the EinkWise panel (verified in the Onyx config). Saving an EinkWise setting re-restricts the app in the background, so home now lifts that on every return.
-  - **Landscape:** app pages centre and widen to 1200 dp, so Settings no longer leaves a gap on the right.
-- **2026-09-26 (morning):** Made **BooxUltimatum home the default home screen** through Settings › Home screen, so the Boox home is journaled and restorable in one tap. Verified as default: the Home key and Back stay on home, app shortcuts appear on long-press (Settings offers Wi‑Fi and Battery), Library, Notes (the Boox home) and Storage open from the Boox shelf, Recents (onyxquickstep) opens and returns to home, and after the app process is killed the Home key brings home straight back with the default kept. Added *Going back to the Boox home* to this README.
-- **2026-09-26 (night):** A full validation pass on the tablet, in both orientations, with every problem found fixed on the spot.
-  - **Landscape:** home now puts widgets and apps side by side. The launcher's Edit and widget picker, and every panel, are width-capped. State survives rotation in the app and the launcher.
-  - **Widgets:** Shorter/Taller height steps. Hosted widgets get a realistic default height (the Boox Library widget no longer crops its covers). A widget that doesn't fit shrinks to its standard height before it's skipped, it never pushes the apps off screen, and Edit and the footer say when one is hidden. The half-width clock shows the time and date when there's room.
-  - **Typing on home:** city search and the note now open in a top panel above the keyboard, and home no longer reflows when the keyboard opens. Before this, the weather field lost focus in landscape as soon as the keyboard appeared.
-  - **Weather:** debounced city search with searching, no-match and offline states. Units follow the chosen city's country. A new city now refreshes at once (a stale timestamp used to delay it by up to an hour). Open-Meteo is credited.
-  - **Resources:** the Shizuku helper process (about 66 MB) is released after 45 s idle instead of living as long as home. Measured: the launcher uses about a third of the Boox home's memory and 0 % idle CPU.
-  - **Battery log:** opening the app no longer postpones the timed sample. Samples on open are limited to one per 10 minutes. Logs share as one zip with a README. The "asleep" figure explains that it's low while plugged in.
-  - **Icons and look:** Boox's own icon frames are detected and removed inside shapes, so each icon has one outline. Tile labels are one weight heavier for e-ink. Picture wallpapers apply EXIF rotation and can be removed. Choosing *A picture* reuses the stored one.
-  - **Appearance:** the status bar list shows the common icons first, and the battery icon is always offered.
-  - **Tweaks:** changes run in an app-wide scope, so the serif font overlay (which recreates the screen) no longer logs a false failure. Journal entries read as sentences ("Status bar: E-ink refresh mode hidden").
-  - **Polish:** plural-correct counts ("1 app"), a clearer launcher description in Settings, lint clean of new warnings, version 0.2.0. Docs updated: `experiments.md` evidence log, `05-launcher.md`, `03-architecture.md`, `THIRD_PARTY.md`.
-- **2026-09-26:** The launcher gained folders, icon shapes, wallpapers, a custom header (8 Wi-Fi and 8 battery designs, network name through Shizuku), Boox widgets and a grouped widget picker. The new Appearance destination controls status bar icons system-wide (`icon_blacklist`, journaled restore) and the home's look. The battery log was added (non-wakeup alarm, CSV plus deep JSONL, chart, share). The Google Fonts browser covers 1946 families with previews, a Vietnamese filter, and install to `/sdcard/fonts` for NeoReader, the home screen or the app. A serif system font tweak was added. Redrew the logo without a frame, so launcher masks don't double it.
-- **2026-09-25 (late night):** Built the BooxUltimatum launcher (widgets: clock, month, agenda, weather, battery, alarm, note, Boox shelf, and hosted app widgets), plus the home-screen switcher with a journaled restore. Found why music and screen share stop in the background (Boox sets `RUN_ANY_IN_BACKGROUND=ignore` on installed apps) and added the fix as a tweak and per-app key. Added the Shizuku user service, the tweak framework and journal, 19 tweaks, Apps search and per-app detail, battery drain measurement and wakeup sources, and the Settings hub. Designed the "Braun Instrument" UI. Dropped *Enter deep sleep sooner*, because Android 16 blocks shell DeviceConfig writes.
-- **2026-09-25 (night):** Decided **no root**; the product targets T0–T2. Installed the probe app and Shizuku v13.6.0 (signature verified: CN=Rikka) on the tablet. Granted the T1 permissions and confirmed tier T2 on the device. Added `tools/host/start-shizuku.ps1`. The probe app now reports when Shizuku is unreachable and refreshes on Shizuku binder and permission events.
-- **2026-09-25 (evening):** First device connection. On FW 4.3, developer mode is enabled via *Settings → More Settings → USB Debug Mode*. Captured the read-only factory baseline. Verified the SoC (QCS6690 "volcano"), kernel 6.1 GKI, locked bootloader, partition layout and shell permission limits. Found that all 21 Onyx packages are Doze-whitelisted. Switched `power-logger.ps1` to `dumpsys battery` (charge counter). Knowledge base updated with presence data and 13 new packages.
-- **2026-09-25:** Project initialised. Device research, product vision, reverse-engineering plan, architecture, and upstream survey written. Android toolchain installed. Probe app `0.1.0-probe` scaffolded and building. Host recon, power-logger and APK-pull scripts added. Package knowledge base seeded from the NA3C community analysis. Repo rules added (no hard-wrapped prose, reversible tweaks, GPL-3.0).
+### Using it as your home screen, and going back
+
+Settings › Home screen › *Use this* makes BooxUltimatum the home screen. It first records the Boox home, so going back never loses anything:
+
+- **On the tablet:** Settings › Home screen › *Back to Boox*. You can also tap *Notes* on the Boox shelf to use the Boox home for a moment.
+- **From a computer**, if BooxUltimatum ever won't open: `adb shell cmd package set-home-activity --user 0 com.onyx/.StartupActivity`.
+- **Without either:** Android Settings › Apps › Default apps › Home app › ONYX Launcher.
+
+Recents, gestures, NaviBall and EinkWise belong to the system, so they behave the same under either home.
+
+## Known limits
+
+- **One tablet, one firmware.** Everything is verified on a Note Air6 C with firmware 4.3. Other Boox models are likely close but untested.
+- **Undocumented interfaces.** The sleep screen, the tablet font and Instant ink work through undocumented Boox interfaces, found by reading how Boox's own apps do it. A firmware update can change them without notice. When something stops working, the app says so rather than guessing.
+- **Instant ink is experimental:**
+  - The preview is Boox's own black pen, so a coloured brush or the eraser only shows once the app's stroke takes over.
+  - About one stroke in ten can lose the first millimetres of its preview.
+  - It hasn't been tested with many apps yet.
+- **The sleep screen can't tick while asleep.** Boox doesn't read the picture again until the tablet wakes. Boox's own clock overlay is the only thing that updates while asleep, and the studio can leave room for it.
+- **Charging:** while the tablet charges, Boox always draws its battery bar over the sleep screen.
+
+## Privacy
+
+There are no accounts, analytics, ads or trackers. The app goes online for two things only: weather from [Open-Meteo](https://open-meteo.com) (the city you type), and fonts from Google Fonts when you open the browser. The battery log stays on the tablet until you choose to share it.
+
+## Disclaimer
+
+BooxUltimatum is an independent project. It is not affiliated with, endorsed by or supported by Onyx International or BOOX. "BOOX", "Note Air" and related names are trademarks of their owners, used here only to say which device this is for.
+
+The app changes system settings, and, if you ask it to, the home screen, the sleep screen and how other apps draw. Every change is recorded and reversible, and nothing touches the system partitions or the bootloader. Still, this is pre-release software that relies on undocumented behaviour: **use it at your own risk**. As the GPL says, it comes with no warranty (sections 15 and 16 of `LICENSE`).
+
+## Roadmap
+
+No dates promised; this is a spare-time project, and each release ships when it works on the tablet.
+
+- **0.4, first public preview (next)**
+  - Instant ink checked with a real pen in several apps.
+  - A release-signed APK on GitHub Releases.
+  - A first-run guide for the adb grants and Shizuku.
+  - A week of daily use without crashes.
+- **0.5, battery**
+  - A one-tap reading mode: Wi-Fi and Bluetooth off, Battery Saver on and sync paused, all undone together.
+  - The first overnight and A/B results shown in the app.
+  - Round trips recorded for the last three unverified tweaks.
+- **0.6, home and sleep polish**
+  - Notification dots (opt-in).
+  - Front-light and refresh-mode quick actions.
+  - Backing up and restoring the layout.
+  - Agenda events on the sleep screen, and more faces.
+- **1.0**
+  - Confirmed on at least one more Boox model.
+  - A Vietnamese translation.
+  - Reproducible release builds.
+
+The full, dated history is in [`CHANGELOG.md`](CHANGELOG.md).
+
+## How it's built
+
+Kotlin and Jetpack Compose, minSdk 30, target 36. The look is a "Braun Instrument" design language: paper white, black ink, one green lamp, the Archivo typeface, and no animation, because e-ink punishes motion. Every device fact the app relies on is written down with its evidence in [`knowledge/experiments.md`](knowledge/experiments.md). The design docs in [`docs/`](docs) explain the research, the architecture, the launcher and the sleep screen.
+
+It is written by an owner of the tablet working with an AI pair programmer (GitHub Copilot). Every change is tested on the tablet before it's committed.
+
+| Path | What's there |
+|---|---|
+| `app/` | The Android app. `core/` holds system readers, tweaks, the battery log, `sleep/` and `ink/`. `launcher/` is the home screen and `ui/` the screens |
+| `docs/` | Numbered design docs (`00` device research to `06` sleep screen), plus the screenshots |
+| `knowledge/` | The evidence log (`experiments.md`) and the Onyx package knowledge base bundled with the app |
+| `tools/host/` | PowerShell scripts run from a computer over adb (recon, battery logger, Shizuku start) |
+| `tools/dev/` | Repository hygiene (`prose_wrap.py`) |
+| `AGENTS.md` | The rules for anyone, human or AI, working in this repo |
+
+## Contributing
+
+Bug reports and findings from other Boox models are the most useful contributions right now. For a finding, include your model, firmware version and what you measured. Before sending code, read [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`AGENTS.md`](AGENTS.md). In short: every tweak must be reversible and declare its access tier, device facts need evidence, and prose is never hard-wrapped.
 
 ## License
 
-GPL-3.0-or-later (see `LICENSE`). Third-party code and attributions are listed in `THIRD_PARTY.md`.
+BooxUltimatum is free software under the **GNU General Public License v3.0 or later** (see [`LICENSE`](LICENSE)). You may use, study, share and change it; if you distribute a changed version, you share its source under the same terms. Third-party code and assets, and their licenses, are listed in [`THIRD_PARTY.md`](THIRD_PARTY.md).

@@ -27,6 +27,16 @@ BooxUltimatum is GPL-3.0-or-later. Every piece of upstream code or data that get
 
 None yet.
 
+## Interoperability with Boox firmware
+
+BooxUltimatum contains no Onyx/BOOX code, SDKs or assets. The Boox interfaces it uses were learned by observing the tablet and by reading how Boox's own apps call the firmware:
+
+- the sleep-picture and system-font broadcasts;
+- the SurfaceFlinger handwriting and post transactions behind Instant ink;
+- the EinkWise configuration it reads.
+
+They are called through small clients written from scratch in `core/sleep/`, `core/SystemFont.kt` and `core/ink/`. Onyx's pen SDK (`onyxsdk-pen`) is published as an obfuscated binary and deliberately isn't bundled. The evidence for each interface is in `knowledge/experiments.md`.
+
 ## Data
 
 | Data | Source | License / terms | Where |
