@@ -35,7 +35,12 @@ BooxUltimatum is a GPL-3.0 Android app for the BOOX Note Air6 C: a home screen, 
 - `docs/`: numbered design docs (`00` device research to `06` sleep screen) and `screenshots/` for the README.
 - `knowledge/`: `experiments.md` (the evidence log) and `onyx-packages.json` (bundled into app assets via `sourceSets`).
 - `tools/host/`: PowerShell scripts over adb (`common.ps1` holds shared helpers). `tools/dev/`: repository hygiene.
-- `README.md` (the front page), `CHANGELOG.md` (the history), `CONTRIBUTING.md`, `THIRD_PARTY.md` and `PRODUCT.md` (design context).
+- **The GitHub side:**
+  - Contribution rules are in `CONTRIBUTING.md` and the forms in `.github/ISSUE_TEMPLATE/`.
+  - CI (`.github/workflows/build.yml`) builds, lints and checks prose on every push and pull request.
+  - The landing page in `site/` deploys to GitHub Pages through `.github/workflows/pages.yml`, together with `docs/screenshots/` and `docs/brand/`.
+  - Keep the landing page's claims in step with the README.
+- `README.md` (the front page), `CHANGELOG.md` (the history), `CONTRIBUTING.md`, `SECURITY.md`, `THIRD_PARTY.md` and `PRODUCT.md` (design context).
 
 ## Commands
 
@@ -77,7 +82,7 @@ Retake them when a screen changes noticeably, and never edit one to show a featu
   2. Update the README roadmap.
   3. Run lint and build.
   4. Tag `vX.Y.Z` and attach the APK to a GitHub Release.
-- **Signing:** public releases must be signed with a release key kept outside the repo, passed in through `local.properties` or environment variables, never committed. Until that key exists, don't publish the debug-signed build.
+- **Signing:** public releases are signed with a release key kept outside the repository. Build them with `.\gradlew.bat assembleRelease -Pbu.signing=<path to signing.properties>`, where that file holds `storeFile`, `storePassword`, `keyAlias` and `keyPassword`; the maintainer's lives in `%USERPROFILE%\.booxultimatum\`. Without `-Pbu.signing` the build is debug-signed, which is what the development tablet runs. Never publish a debug-signed build, and never install a release-signed build over the development copy: the signatures differ, so Android refuses the update, and uninstalling loses the app's data and grants.
 - **Release notes** state which device and firmware were tested, and repeat the known limits.
 
 ## UI conventions (e-ink)

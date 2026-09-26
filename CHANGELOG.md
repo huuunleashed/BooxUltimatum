@@ -13,6 +13,9 @@ All notable changes to BooxUltimatum. Newest first. The project follows [Semanti
   - Fountain pen at 4 px is the default brush, because the pencil is textured and looked broken.
   - The in-app service is built and starts cleanly, but hasn't yet been checked with a real pen.
 - **Screenshots** of the app and home screen in `docs/screenshots/`, taken on the tablet and anonymised.
+- **A landing page and technical guide** in `site/`, published to GitHub Pages: what it does, the access tiers, and how each part works, with links to the exact files.
+- **GitHub project files:** issue forms (bug, device finding, idea), a pull request template, `SECURITY.md`, fuller contributing guidelines, a CI workflow that builds, lints and checks prose, and a Pages deploy workflow.
+- **Release signing:** `-Pbu.signing=<properties>` signs with a key kept outside the repository. Without it, builds stay debug-signed.
 - **A new icon.** An ordered-dither ramp: grey made only of black and white cells, the way e-ink draws it, with one 2×2 colour cell lit, since one Kaleido colour pixel covers four mono ones. It draws no outline of its own, so launcher masks never double it, and it has a themed single-colour layer. It was chosen from six concepts and replaces the needle-and-scale placeholder. The PNG versions are in `docs/brand/`.
 
 ### Changed

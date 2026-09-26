@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BooxUltimatum: home screen, sleep screen and battery tools for the BOOX Note Air6 C</title>
+<meta name="description" content="An open-source Android app for the BOOX Note Air6 C: an e-ink home screen, a sleep-screen designer, Instant ink, a battery log and reversible tweaks. No root. Verified on one tablet, firmware 4.3.">
+<link rel="canonical" href="https://huuunleashed.github.io/BooxUltimatum/">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" type="image/png" sizes="256x256" href="brand/mark-256.png">
+<link rel="apple-touch-icon" href="brand/icon-512.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="BooxUltimatum">
+<meta property="og:title" content="BooxUltimatum for the BOOX Note Air6 C">
+<meta property="og:description" content="A home screen, sleep-screen designer, battery doctor and tweak hub for the Note Air6 C, in one app, without root. Every change is recorded and can be undone.">
+<meta property="og:url" content="https://huuunleashed.github.io/BooxUltimatum/">
+<meta property="og:image" content="https://huuunleashed.github.io/BooxUltimatum/screenshots/home-landscape.png">
+<meta property="og:image:width" content="1000">
+<meta property="og:image:height" content="750">
+<meta property="og:image:alt" content="The BooxUltimatum home screen in landscape on a Note Air6 C: a clock and Library widget on the left, apps on the right.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="BooxUltimatum for the BOOX Note Air6 C">
+<meta name="twitter:description" content="Home screen, sleep screen, Instant ink, battery log and reversible tweaks for the Note Air6 C. No root.">
+<meta name="twitter:image" content="https://huuunleashed.github.io/BooxUltimatum/screenshots/home-landscape.png">
+<meta name="twitter:image:alt" content="The BooxUltimatum home screen in landscape on a Note Air6 C.">
+<link rel="preload" href="fonts/archivo.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="wrap masthead">
+  <a class="brand" href="./" aria-label="BooxUltimatum, home">
+    <img src="brand/mark-256.png" width="36" height="36" alt="">
+    <span>BooxUltimatum</span>
+  </a>
+  <nav aria-label="Main">
+    <ul class="nav">
+      <li><a href="docs.html">How it works</a></li>
+      <li class="opt"><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/knowledge/experiments.md">Evidence</a></li>
+      <li class="opt"><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/CHANGELOG.md">Changelog</a></li>
+      <li><a class="key small" href="https://github.com/huuunleashed/BooxUltimatum">GitHub</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="main">
+
+  <div class="wrap hero">
+    <div>
+      <h1>BooxUltimatum</h1>
+      <p class="lead">A home screen, sleep-screen designer, battery doctor and tweak hub for the BOOX Note Air6&nbsp;C, in one app, without root.</p>
+      <div class="keys">
+        <a class="key solid" href="https://github.com/huuunleashed/BooxUltimatum">Source on GitHub</a>
+        <a class="key" href="docs.html">How it works</a>
+      </div>
+      <p class="status-line"><span class="lamp" aria-hidden="true"></span><span><strong>Pre-release.</strong> It runs daily on the author's own tablet and nowhere else yet. The first public build, 0.4, is planned; until then, <a href="#get">build it from source</a>.</span></p>
+    </div>
+    <figure>
+      <div class="panel">
+        <img src="screenshots/home-landscape.png" width="1000" height="750" alt="The BooxUltimatum home screen in landscape: the time and date across the top with Wi-Fi, Bluetooth and battery, a clock dial and a Library widget on the left above a Boox shelf with Library, Notes, Storage and Boox settings keys, and two rows of apps on the right.">
+      </div>
+      <figcaption><b>Fig. 1</b>The home screen in landscape, on the Note Air6&nbsp;C. Library covers are pixelated.</figcaption>
+    </figure>
+  </div>
+
+  <section class="wrap" aria-labelledby="access-title">
+    <div class="scale-head">
+      <h2 id="access-title">How much access it needs</h2>
+      <p>Every feature declares the least access it needs. More ink on the scale means more privilege; the app stays useful with none.</p>
+    </div>
+    <ol class="tiers">
+      <li class="tier t0">
+        <div class="band" aria-hidden="true"></div>
+        <h3><span class="id">T0</span> Just the app</h3>
+        <p>Home screen, sleep screen, Instant ink, battery measurement, fonts and the settings hub.</p>
+        <p class="lamp-note"><span class="lamp" aria-hidden="true"></span>Useful from the first open</p>
+      </li>
+      <li class="tier t1">
+        <div class="band" aria-hidden="true"></div>
+        <h3><span class="id">T1</span> adb grants</h3>
+        <p>A few permissions granted once from a computer. Unlocks battery statistics in the app and changing system settings.</p>
+      </li>
+      <li class="tier t2">
+        <div class="band" aria-hidden="true"></div>
+        <h3><span class="id">T2</span> Shizuku</h3>
+        <p>A small service with the same rights as <code>adb</code>. Unlocks most tweaks, tablet-wide status bar icons and the network name.</p>
+      </li>
+      <li class="tier t3">
+        <div class="band" aria-hidden="true"></div>
+        <h3><span class="id">T3</span> Root</h3>
+        <p><strong>Out of scope.</strong> The bootloader on this tablet is locked, and BooxUltimatum doesn't need or ask for root.</p>
+      </li>
+    </ol>
+    <p class="after-scale"><a class="more" href="docs.html#access">Why no root, and what each tier can reach</a></p>
+  </section>
+
+  <section class="wrap block" aria-labelledby="why-title">
+    <div class="engraved"><h2 id="why-title">Why it exists</h2></div>
+    <div class="why">
+      <div class="statement">
+        <p>The Note Air6&nbsp;C is a lovely tablet with a frustrating side. Independent reviews such as <a href="https://ewritable.net/brands/boox/tablets/boox-note-air6-c/">eWritable's</a> praise the screen and the pen, then point at the same two things owners complain about: battery life, and software that scatters useful settings across a dozen places.</p>
+        <p>BooxUltimatum is one owner's attempt to fix that from the inside. It's a single APK. Nothing is flashed, and the bootloader stays locked.</p>
+      </div>
+      <dl class="readings" aria-label="What it has been verified on">
+        <div><dt>Verified on</dt><dd>BOOX Note Air6 C<span>One tablet, the author's own</span></dd></div>
+        <div><dt>Firmware</dt><dd>4.3, Android 16<span><code>4.3-rel_0817</code>, built 2026-08-17</span></dd></div>
+        <div><dt>Other models</dt><dd>Untested<span>Likely close, not yet confirmed</span></dd></div>
+        <div><dt>Bootloader</dt><dd>Locked, and it stays locked</dd></div>
+        <div><dt>Status</dt><dd>Pre-release<span>0.4, the first public preview, is next</span></dd></div>
+        <div><dt>License</dt><dd>GPL-3.0-or-later</dd></div>
+      </dl>
+      <ul class="principles">
+        <li><h3>Written down</h3><p>Every device fact it relies on has its test recorded in the evidence log.</p></li>
+        <li><h3>Explained</h3><p>Plain words for what a change does, and the access it needs to do it.</p></li>
+        <li><h3>Undoable</h3><p>Every change records what it replaced, and <em>Undo</em> puts it back.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="wrap block" aria-labelledby="does-title">
+    <div class="engraved">
+      <h2 id="does-title">What it does</h2>
+      <a class="key small" href="docs.html">How each part works</a>
+    </div>
+
+    <article class="feature" aria-labelledby="f-home">
+      <div class="text">
+        <h3 id="f-home">A home screen made for e-ink</h3>
+        <p>A calm, paper-white launcher that uses about a third of the Boox home's memory and no CPU when idle.</p>
+        <ul class="ticks">
+          <li><b>Widgets:</b> clock, month, agenda, weather, battery, next alarm, a note, a Boox shelf, and any app's widget, including Boox's own.</li>
+          <li><b>Apps:</b> paged grids turned with a swipe, folders, and icon shapes that remove the frame Boox draws into its own icons.</li>
+          <li><b>All apps</b> includes the Boox functions that have no launcher icon.</li>
+          <li><b>Going back</b> to the Boox home is one tap, and it's recorded before the first switch.</li>
+        </ul>
+        <a class="more" href="docs.html#home">The resource budget, measured</a>
+      </div>
+      <div class="figures">
+        <figure>
+          <div class="panel"><img src="screenshots/home.png" width="620" height="827" loading="lazy" decoding="async" alt="Home in portrait: clock, Library and Boox shelf widgets, then a grid of apps."></div>
+          <figcaption><b>Fig. 2</b>Home, portrait.</figcaption>
+        </figure>
+        <figure>
+          <div class="panel"><img src="screenshots/all-apps.png" width="620" height="827" loading="lazy" decoding="async" alt="All apps as a two-column list sorted A to Z."></div>
+          <figcaption><b>Fig. 3</b>All apps, sorted A to Z.</figcaption>
+        </figure>
+      </div>
+    </article>
+
+    <article class="feature" aria-labelledby="f-sleep">
+      <div class="text">
+        <h3 id="f-sleep">Your own sleep screen</h3>
+        <p>Boox gives you six preset screensavers. BooxUltimatum gives you eight faces set in your tablet font, each with its own portrait and landscape layout.</p>
+        <ul class="ticks">
+          <li><b>Faces:</b> Almanac, Instrument, Poster, Under the clock, Photo, Note, Return card and Minimal.</li>
+          <li><b>Fresh:</b> Boox reads the picture only as the tablet goes to sleep, so the studio redraws it while you use the tablet. The time it shows is honest: “put down around 4:30&nbsp;PM”.</li>
+          <li><b>Both orientations</b> are kept ready, so turning the tablet never leaves a cropped face.</li>
+        </ul>
+        <a class="more" href="docs.html#sleep">How the picture reaches the sleep screen</a>
+      </div>
+      <div class="figures">
+        <figure>
+          <div class="panel"><img src="screenshots/sleep-studio.png" width="620" height="827" loading="lazy" decoding="async" alt="The Sleep screen studio in portrait: a preview of the face, Apply keys, the mode and the face picker."></div>
+          <figcaption><b>Fig. 4</b>The sleep screen studio.</figcaption>
+        </figure>
+        <figure>
+          <div class="panel"><img src="screenshots/sleep-face.png" width="465" height="620" loading="lazy" decoding="async" alt="A Poster sleep face: the word Saturday set very large, the date, a red bar, a short quote, and a footer reading put down around 6:40 PM and 80 percent, charging."></div>
+          <figcaption><b>Fig. 5</b>The Poster face, as the panel shows it.</figcaption>
+        </figure>
+      </div>
+    </article>
+
+    <article class="feature" aria-labelledby="f-ink">
+      <div class="text">
+        <h3 id="f-ink">Instant ink for other apps <span class="tag">Experimental</span></h3>
+        <p>In Boox Notes, ink appears under the nib in about 10&nbsp;ms. In Sketchbook and most other apps, it trails behind. BooxUltimatum found how Notes does it, the display system drawing the stroke straight from the pen, and lends that path to apps you choose.</p>
+        <ul class="ticks">
+          <li>A preview stroke lands at once; half a second after you lift, the app's own brush takes its place.</li>
+          <li>The app isn't modified in any way. No root and no Shizuku.</li>
+          <li>Still being tuned: the preview is black only, and about one stroke in ten loses its first millimetres.</li>
+        </ul>
+        <a class="more" href="docs.html#ink">What the display system is asked to do</a>
+      </div>
+      <div class="figures one">
+        <figure>
+          <div class="panel"><img src="screenshots/ink.png" width="620" height="827" loading="lazy" decoding="async" alt="The Instant ink page: status, brush, width, swap delay and the list of apps it applies to."></div>
+          <figcaption><b>Fig. 6</b>The Instant ink page: brush, width, swap delay and apps.</figcaption>
+        </figure>
+      </div>
+    </article>
+
+    <article class="feature" aria-labelledby="f-battery">
+      <div class="text">
+        <h3 id="f-battery">A battery doctor that doesn't drain the battery</h3>
+        <p>Measure drain, see what keeps the tablet awake, and keep a log that never wakes it to write a line.</p>
+        <ul class="ticks">
+          <li><b>Measure:</b> unplug, use the tablet, read the rate. Time left comes from real mAh, not guesses.</li>
+          <li><b>Log:</b> every screen, plug and level change, with a chart and a one-zip export.</li>
+          <li><b>Found so far:</b> standby is already excellent, 0–12&nbsp;mA. Screen-on use is where the battery goes.</li>
+        </ul>
+        <a class="more" href="docs.html#battery">How the log stays out of the way</a>
+      </div>
+      <div class="figures">
+        <figure>
+          <div class="panel"><img src="screenshots/overview.png" width="620" height="827" loading="lazy" decoding="async" alt="Overview: a tuning-scale battery gauge at 91 percent, charging status, measured drain, access level and tweak count."></div>
+          <figcaption><b>Fig. 7</b>Overview.</figcaption>
+        </figure>
+        <figure>
+          <div class="panel"><img src="screenshots/battery.png" width="620" height="827" loading="lazy" decoding="async" alt="Battery: measure drain, past measurements and the battery log."></div>
+          <figcaption><b>Fig. 8</b>Battery.</figcaption>
+        </figure>
+      </div>
+    </article>
+
+    <article class="feature" aria-labelledby="f-tweaks">
+      <div class="text">
+        <h3 id="f-tweaks">Tweaks you can undo</h3>
+        <p>Nineteen reversible tweaks across apps, sleep, power, radios, interface and privacy. Every one records what it replaced.</p>
+        <ul class="ticks">
+          <li><b>Let your apps keep running.</b> Boox background-restricts every app you install, which is why music stops a minute after you leave the player.</li>
+          <li><b>Let Boox apps sleep</b>, <b>Turn on Doze</b> and <b>Pause idle Boox apps</b>.</li>
+          <li><b>The whole tablet's font</b>, at a proper weight, from a Google Fonts browser of 1946 families.</li>
+        </ul>
+        <a class="more" href="docs.html#tweaks">The journal, and what each tweak changes</a>
+      </div>
+      <div class="figures">
+        <figure>
+          <div class="panel"><img src="screenshots/tweaks.png" width="620" height="827" loading="lazy" decoding="async" alt="Tweaks: grouped, reversible changes, each showing its access level."></div>
+          <figcaption><b>Fig. 9</b>Tweaks, with their access level.</figcaption>
+        </figure>
+        <figure>
+          <div class="panel"><img src="screenshots/fonts.png" width="620" height="827" loading="lazy" decoding="async" alt="Fonts: a Google Fonts browser with Vietnamese previews."></div>
+          <figcaption><b>Fig. 10</b>The fonts browser.</figcaption>
+        </figure>
+      </div>
+    </article>
+  </section>
+
+  <section class="wrap block" id="get" aria-labelledby="get-title">
+    <div class="engraved">
+      <h2 id="get-title">Get it</h2>
+      <a class="key small" href="https://github.com/huuunleashed/BooxUltimatum/releases">Releases</a>
+    </div>
+    <div class="install">
+      <div>
+        <h3>From a release</h3>
+        <p>The first public preview, <strong>0.4</strong>, is planned for the <a href="https://github.com/huuunleashed/BooxUltimatum/releases">Releases page</a>: a release-signed APK, a first-run guide for the adb grants and Shizuku, and a week of daily use without crashes behind it. There are no dates promised; it ships when it works on the tablet.</p>
+        <p>Until then there is nothing to download, and the honest way to try it is to build it.</p>
+      </div>
+      <div>
+        <h3>From source, today</h3>
+        <pre><code><span class="c"># JDK 21 and the Android SDK (platform 36)</span>
+.\gradlew.bat assembleRelease
+adb install -r app\build\outputs\apk\release\app-release.apk</code></pre>
+        <p>Release builds from source are debug-signed for now, so they update an installed copy in place. The <a href="https://github.com/huuunleashed/BooxUltimatum#install">README</a> has the full steps, and how to go back to the Boox home.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap block" aria-labelledby="project-title">
+    <div class="engraved"><h2 id="project-title">The project</h2></div>
+    <ul class="links">
+      <li><a href="docs.html"><strong>How it works</strong><span>Each feature explained, with the file it lives in and the test behind it.</span></a></li>
+      <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/knowledge/experiments.md"><strong>Evidence log</strong><span>Every device fact and tweak, with how it was verified on the tablet.</span></a></li>
+      <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/CHANGELOG.md"><strong>Changelog</strong><span>The dated history, newest first.</span></a></li>
+      <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/CONTRIBUTING.md"><strong>Contributing</strong><span>Findings from other Boox models are the most useful help right now: model, firmware and what you measured.</span></a></li>
+      <li><a href="https://github.com/huuunleashed/BooxUltimatum/issues"><strong>Issues</strong><span>Bug reports. Mention portrait or landscape; it matters on this device.</span></a></li>
+      <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/LICENSE"><strong>License</strong><span>GPL-3.0-or-later. Use, study, share and change it; share changed versions under the same terms.</span></a></li>
+    </ul>
+  </section>
+
+</main>
+
+<footer class="wrap foot">
+  <div>
+    <p class="sign"><img src="brand/mark-256.png" width="28" height="28" alt="">BooxUltimatum</p>
+    <p><strong>Not affiliated with Onyx or BOOX.</strong> BooxUltimatum is an independent project, not endorsed or supported by Onyx International. “BOOX”, “Note Air” and related names are trademarks of their owners, used here only to say which device this is for.</p>
+    <p>It changes system settings and, if you ask it to, the home screen, the sleep screen and how other apps draw. Every change is recorded and reversible, and nothing touches the system partitions or the bootloader. Still, this is pre-release software that relies on undocumented behaviour: use it at your own risk. As the GPL says, it comes with <strong>no warranty</strong>.</p>
+  </div>
+  <div>
+    <ul>
+      <li><a href="https://github.com/huuunleashed/BooxUltimatum">GitHub</a></li>
+      <li><a href="https://github.com/huuunleashed/BooxUltimatum/releases">Releases</a></li>
+      <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/CHANGELOG.md">Changelog</a></li>
+      <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/THIRD_PARTY.md">Third party</a></li>
+      <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/LICENSE">GPL-3.0-or-later</a></li>
+    </ul>
+    <p class="quiet">This page loads no scripts, trackers or third-party fonts. It is set in Archivo (SIL OFL&nbsp;1.1), served from this site.</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,22 @@
+name: Idea or request
+description: Suggest a feature, a tweak, or a change.
+labels: ["idea"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What bothers you on the tablet today, in your own words.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What you'd like
+      description: How BooxUltimatum could help. Any known mechanism (a setting, an intent, a command) is very welcome.
+  - type: checkboxes
+    id: rules
+    attributes:
+      label: Fits the project
+      options:
+        - label: It can be undone, and it doesn't need root.

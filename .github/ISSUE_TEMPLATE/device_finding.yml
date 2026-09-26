@@ -1,0 +1,33 @@
+name: Device finding
+description: Something you measured or found on a Boox device: a setting, an interface, a battery result, or a firmware difference.
+labels: ["finding"]
+body:
+  - type: markdown
+    attributes:
+      value: "Findings from other models and firmware versions are the most useful contribution right now. Every fact the app relies on is recorded with its evidence in `knowledge/experiments.md`, so please say how you verified it. Remove personal data before pasting."
+  - type: input
+    id: device
+    attributes:
+      label: Device and firmware
+      description: Model, firmware version and Android version.
+    validations:
+      required: true
+  - type: textarea
+    id: finding
+    attributes:
+      label: The finding
+      description: What is true on your device, in one or two sentences.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: How you verified it
+      description: Commands and their output (for example `dumpsys`, `getprop`, `settings get`), before-and-after measurements, or a battery log export.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: consequence
+    attributes:
+      label: What it could mean for the app (optional)

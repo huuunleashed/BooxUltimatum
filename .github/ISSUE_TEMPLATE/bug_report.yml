@@ -1,0 +1,66 @@
+name: Bug report
+description: Something in BooxUltimatum doesn't work as it should.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: "Thanks for reporting. BooxUltimatum is tested on one tablet so far, so the details below matter a lot. Please remove personal data (network names, account names, notification text, book titles) from anything you paste."
+  - type: input
+    id: device
+    attributes:
+      label: Device and firmware
+      description: Model, and the firmware version from Settings › About (for example "Note Air6 C, 4.3 (2026-08-17)").
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: BooxUltimatum version
+      description: Shown in the app's Settings, or the commit you built from.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Home screen
+        - Sleep screen
+        - Instant ink
+        - Battery
+        - Tweaks
+        - Appearance or fonts
+        - Something else
+    validations:
+      required: true
+  - type: dropdown
+    id: access
+    attributes:
+      label: Access level
+      description: See "How much access it needs" in the README.
+      options:
+        - T0 (just the app)
+        - T1 (adb grants)
+        - T2 (Shizuku running)
+        - Not sure
+  - type: dropdown
+    id: orientation
+    attributes:
+      label: Orientation
+      options:
+        - Portrait
+        - Landscape
+        - Both
+  - type: textarea
+    id: steps
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots (optional)
+      description: "For example `adb logcat -d | findstr booxultimatum`, or a screenshot."
+      render: text

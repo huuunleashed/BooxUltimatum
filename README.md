@@ -6,6 +6,8 @@
 
 ![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue) ![Status: pre-release](https://img.shields.io/badge/status-pre--release-orange) ![Android 11+](https://img.shields.io/badge/Android-11%2B-3ddc84) ![Tested on Note Air6 C, FW 4.3](https://img.shields.io/badge/tested%20on-Note%20Air6%20C%20%C2%B7%20FW%204.3-black)
 
+**[Website and technical guide](https://huuunleashed.github.io/BooxUltimatum/)** · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md) · [Report a bug or a finding](https://github.com/huuunleashed/BooxUltimatum/issues/new/choose)
+
 <p align="center">
   <img src="docs/screenshots/home.png" width="300" alt="BooxUltimatum home screen in portrait: clock, Library and Boox shelf widgets, and a grid of apps">
   &nbsp;
@@ -199,7 +201,7 @@ It is written by an owner of the tablet working with an AI pair programmer (GitH
 
 ## Contributing
 
-Bug reports and findings from other Boox models are the most useful contributions right now. For a finding, include your model, firmware version and what you measured. Before sending code, read [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`AGENTS.md`](AGENTS.md). In short: every tweak must be reversible and declare its access tier, device facts need evidence, and prose is never hard-wrapped.
+Bug reports and findings from other Boox models are the most useful contributions right now; the issue forms ask for exactly what's needed. [`CONTRIBUTING.md`](CONTRIBUTING.md) covers where help is wanted, the development setup, the rules for changes and how pull requests work. In short: every tweak must be reversible and declare its access tier, device facts need evidence, and prose is never hard-wrapped. Security problems go through [private reporting](SECURITY.md).
 
 ## License
 
