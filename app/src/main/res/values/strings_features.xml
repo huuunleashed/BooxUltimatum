@@ -182,7 +182,7 @@
 
     <!-- Battery log -->
     <string name="plate_log">Battery log</string>
-    <string name="log_explain">Recorded whenever the tablet is awake anyway, never waking it: the log itself adds no drain. The first sample after a wake shows what the tablet lost while asleep, so standby drain is measured without you doing anything.</string>
+    <string name="log_explain">Recorded whenever the tablet is awake anyway, never waking it: the log itself adds no drain. Turning the screen on or off and plugging in add a row of their own, so standby and use are split exactly without you doing anything.</string>
     <string name="log_status">Recording</string>
     <string name="log_on">On, every 30 minutes of awake time</string>
     <string name="log_off">Paused</string>
@@ -190,8 +190,11 @@
     <string name="log_resume">Resume</string>
     <string name="log_samples">Samples, last 7 days</string>
     <string name="log_samples_value">%1$d over %2$s</string>
-    <string name="log_asleep_rate">Drain while asleep</string>
-    <string name="log_awake_rate">Drain while awake</string>
+    <string name="log_asleep_rate">Drain with the screen off</string>
+    <string name="log_awake_rate">Drain with the screen on</string>
+    <string name="log_screen_on_sleep">Processor asleep while the screen is on</string>
+    <string name="log_screen_on_sleep_value">%1$d %%</string>
+    <string name="log_screen_on_sleep_note">Boox lets the processor sleep between page turns; music, downloads and busy apps keep it awake.</string>
     <string name="log_not_enough">Not enough unplugged time yet</string>
     <string name="log_over">Measured over %1$s, unplugged</string>
     <string name="log_chart">Level, recent samples. Green bands: plugged in.</string>

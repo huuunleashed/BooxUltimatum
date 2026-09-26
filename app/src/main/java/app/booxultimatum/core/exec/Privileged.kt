@@ -111,16 +111,23 @@ object Privileged {
     }
 }
 
-/** `dumpsys` through Shizuku when possible, otherwise from the app itself using the adb-granted DUMP permission. */
+/**
+ * `dumpsys` through Shizuku when possible, otherwise from the app itself using the adb-granted DUMP permission.
+ * Background logging passes `preferApp`: with DUMP granted (T1) the app runs dumpsys itself and never starts the
+ * 65 MB `:shell` helper process just to read a snapshot.
+ */
 object Diagnostics {
-    suspend fun dumpsys(args: String): ShellResult {
+    suspend fun dumpsys(args: String, preferApp: Boolean = false): ShellResult {
+        if (preferApp) appDumpsys(args).let { if (it.ok && it.out.isNotBlank() && !it.out.take(300).contains("Permission Denial")) return it }
         if (Privileged.ready()) {
             val r = Privileged.sh("dumpsys $args")
             if (r.ok) return r
         }
-        return withContext(Dispatchers.IO) {
-            val r = Shell.run("dumpsys", *args.split(' ').filter { it.isNotBlank() }.toTypedArray(), timeoutSec = 20)
-            ShellResult(r.exitCode, r.stdout, r.stderr)
-        }
+        return appDumpsys(args)
+    }
+
+    private suspend fun appDumpsys(args: String): ShellResult = withContext(Dispatchers.IO) {
+        val r = Shell.run("dumpsys", *args.split(' ').filter { it.isNotBlank() }.toTypedArray(), timeoutSec = 20)
+        ShellResult(r.exitCode, r.stdout, r.stderr)
     }
 }

@@ -151,4 +151,12 @@ object Glyphs {
     val AllApps = glyph("all-apps") {
         for (x in listOf(6f, 12f, 18f)) for (y in listOf(6f, 12f, 18f)) line(fill = true) { circle(x, y, 1.7f) }
     }
+
+    /** BooxUltimatum's own mark, the needle across its scale with the lamp at its tip: the hub app. */
+    val Mark = glyph("mark") {
+        line { moveTo(4.5f, 18.5f); lineTo(19.5f, 18.5f) }
+        line { moveTo(7f, 18.5f); lineTo(7f, 16f); moveTo(17f, 18.5f); lineTo(17f, 16f) }
+        path(stroke = SolidColor(Color.Black), strokeLineWidth = 2.6f, strokeLineCap = StrokeCap.Round) { moveTo(12f, 7.5f); lineTo(12f, 19f) }
+        line(fill = true) { circle(12f, 6f, 2.6f) }
+    }
 }

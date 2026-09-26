@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sleep screen studio: faces for the Boox sleep screen, kept current while the tablet is awake. -->
+<resources>
+    <string name="dest_sleep">Sleep</string>
+    <string name="sl_title">Sleep screen</string>
+    <string name="sl_subtitle">Your own face for the Boox sleep screen, typeset for the panel and kept up to date while you use the tablet.</string>
+
+    <!-- Mode -->
+    <string name="sl_mode">Mode</string>
+    <string name="sl_mode_image">Sleep image</string>
+    <string name="sl_mode_image_detail">A full-screen face. Boox shows it as its screensaver picture and reads it fresh at every sleep.</string>
+    <string name="sl_mode_overlay">Over Transparent</string>
+    <string name="sl_mode_overlay_detail">A paper plate laid over what was on screen, through the Boox Transparent style and its sticker. Needs Shizuku.</string>
+
+    <!-- Faces -->
+    <string name="sl_face">Face</string>
+    <string name="sl_plate">Plate</string>
+    <string name="sl_face_almanac">Almanac</string>
+    <string name="sl_face_instrument">Instrument</string>
+    <string name="sl_face_poster">Poster</string>
+    <string name="sl_face_under_clock">Under the clock</string>
+    <string name="sl_face_photo">Photo</string>
+    <string name="sl_face_note">Note</string>
+    <string name="sl_face_return">Return card</string>
+    <string name="sl_face_minimal">Minimal</string>
+    <string name="sl_ov_bottom">Bottom band</string>
+    <string name="sl_ov_top">Top band</string>
+    <string name="sl_ov_corner">Corner card</string>
+    <string name="sl_ov_centre">Centre card</string>
+    <string name="sl_note_almanac">The weekday, a big day number, the month with today marked, and what is coming up.</string>
+    <string name="sl_note_instrument">A Braun tuning scale for the battery, with the date and ruled readings below.</string>
+    <string name="sl_note_poster">The weekday set as large as the panel allows, over the quote of the day or your own.</string>
+    <string name="sl_note_under_clock">Leaves the top of the screen to the live Boox clock, which Boox refreshes every 5 minutes while asleep. Set Clock style to Digital in Boox for this face.</string>
+    <string name="sl_note_photo">Your picture, filled or fitted, with an optional caption band that holds the Boox status bar.</string>
+    <string name="sl_note_note">Your note, set as large as it fits.</string>
+    <string name="sl_note_return">Who to return the tablet to if it is found. Best on a tablet that leaves the house.</string>
+    <string name="sl_note_minimal">Only the date and the lamp.</string>
+    <string name="sl_note_overlay">Plates are drawn on a transparent sheet with a soft paper edge, so they stay legible over any page underneath.</string>
+
+    <!-- Elements -->
+    <string name="sl_shows">What it shows</string>
+    <string name="sl_el_date">Date</string>
+    <string name="sl_el_battery">Battery</string>
+    <string name="sl_el_put_down">Put-down time</string>
+    <string name="sl_el_put_down_detail">When the tablet was last in use. It is rounded down to the refresh step, and exact with Sleep now.</string>
+    <string name="sl_el_agenda">Next events</string>
+    <string name="sl_el_agenda_detail">From your calendars, the coming seven days.</string>
+    <string name="sl_el_note">Note</string>
+    <string name="sl_el_owner">Owner</string>
+    <string name="sl_el_quote">Quote</string>
+    <string name="sl_calendar_off">Calendar access is off, so events stay hidden until you allow it.</string>
+    <string name="sl_allow_calendar">Allow calendar</string>
+    <string name="sl_edit">Edit</string>
+    <string name="sl_note_none">No note yet</string>
+    <string name="sl_owner_none">No name or contact yet</string>
+    <string name="sl_quote_source">Quote</string>
+    <string name="sl_quote_daily">Quote of the day</string>
+    <string name="sl_quote_own">My own</string>
+    <string name="sl_quote_daily_detail">A short public-domain line, a new one each day.</string>
+    <string name="sl_clock_room">Leave room for the Boox clock</string>
+    <string name="sl_clock_room_detail">Keeps the top of the screen free, for a live time from Boox\'s own clock.</string>
+
+    <!-- Photo -->
+    <string name="sl_photo_choose">Choose picture</string>
+    <string name="sl_photo_remove">Remove picture</string>
+    <string name="sl_photo_failed">That picture could not be read.</string>
+    <string name="sl_caption_edit">Caption</string>
+    <string name="sl_photo_fit">Framing</string>
+    <string name="sl_fit_fill">Fill the screen</string>
+    <string name="sl_fit_fit">Show it whole</string>
+    <string name="sl_dither">Dither</string>
+    <string name="sl_dither_off">Let Boox do it</string>
+    <string name="sl_dither_on">Pre-dither</string>
+    <string name="sl_dither_note">Boox dithers every picture itself. Pre-dithering spreads the photo over 16 levels per colour first, which can look finer on Kaleido; the text stays undithered either way.</string>
+
+    <!-- Type and ink -->
+    <string name="sl_type">Type</string>
+    <string name="sl_font">Typeface</string>
+    <string name="sl_font_system">Tablet font</string>
+    <string name="sl_font_archivo">Archivo</string>
+    <string name="sl_display_weight">Large type</string>
+    <string name="sl_body_weight">Small type</string>
+    <string name="sl_w_regular">Regular</string>
+    <string name="sl_w_medium">Medium</string>
+    <string name="sl_w_semibold">Semibold</string>
+    <string name="sl_w_bold">Bold</string>
+    <string name="sl_w_heavy">Heavy</string>
+    <string name="sl_w_black">Black</string>
+    <string name="sl_type_note">Faces use real weights of the chosen typeface, including every instance of a variable font. Fonts you keep in Fonts appear here.</string>
+    <string name="sl_ink">Ink</string>
+    <string name="sl_ink_label">Page</string>
+    <string name="sl_ink_paper">Black on paper</string>
+    <string name="sl_ink_inverted">White on black</string>
+    <string name="sl_accent">Accent</string>
+    <string name="sl_ac_green">Green</string>
+    <string name="sl_ac_red">Red</string>
+    <string name="sl_ac_blue">Blue</string>
+    <string name="sl_ac_orange">Orange</string>
+    <string name="sl_ac_yellow">Yellow</string>
+    <string name="sl_ac_ink">Ink</string>
+    <string name="sl_accent_note">The accent fills the lamp, today\'s date and the needle. Kaleido shows solid colour areas best, so text always stays black or white.</string>
+
+    <!-- Refresh -->
+    <string name="sl_refresh">Refresh</string>
+    <string name="sl_refresh_label">While the tablet is awake, redraw every</string>
+    <plurals name="sl_minutes">
+        <item quantity="one">%d minute</item>
+        <item quantity="other">%d minutes</item>
+    </plurals>
+    <string name="sl_refresh_explain">Boox reads the picture when the tablet goes to sleep and never again until it wakes, so nothing on it can change while asleep. The only live element is the Boox clock, which Boox redraws every 5 minutes. The face is also redrawn when the battery, the date, the calendar, the rotation or your settings change, and not at all when nothing on it would change.</string>
+
+    <!-- Keys and state -->
+    <string name="sl_apply">Apply</string>
+    <string name="sl_apply_again">Apply again</string>
+    <string name="sl_applied">This face is now the sleep screen.</string>
+    <string name="sl_sleep_now">Sleep now</string>
+    <string name="sl_restore">Restore Boox default</string>
+    <string name="sl_restore_confirm">Tap again to restore</string>
+    <string name="sl_restored">Back to the Boox default picture. Choose your former style in Boox\'s screensaver settings.</string>
+    <string name="sl_open_boox">Boox screensaver settings</string>
+    <string name="sl_shell_note">Sleep now and Over Transparent need Shizuku.</string>
+    <string name="sl_mode_changed">Mode changed. Tap Apply to hand the new mode to Boox; until then the last picture stays and is no longer redrawn.</string>
+    <string name="sl_state_on">%1$s, redrawn every %2$s while awake</string>
+    <string name="sl_state_off">Not applied</string>
+    <string name="sl_status">Published %1$s · render %2$d ms, encode %3$d ms · %4$s · %5$s</string>
+    <string name="sl_status_skipped">Checked %1$s · nothing on the face changed, so the file was left as it is</string>
+    <string name="sl_status_error">Failed %1$s · %2$s</string>
+    <string name="sl_preview_ms">Preview drawn in %1$d ms</string>
+    <string name="sl_preview_legend">Drawn by the same renderer as the published picture. Dashes mark where Boox draws its status bar, and its clock when you leave room for it.</string>
+    <string name="sl_preview_description">Preview of the sleep screen</string>
+
+    <!-- Boox guidance -->
+    <string name="sl_boox">Boox settings</string>
+    <string name="sl_boox_image">For a clean face, open Boox screensaver settings and set Clock style and Text display to None. To keep a live time instead, leave Clock style on Digital and turn on Leave room for the Boox clock, or use Under the clock.</string>
+    <string name="sl_boox_overlay_intro">Boox needs you to choose the sticker once. After that BooxUltimatum keeps it up to date.</string>
+    <string name="sl_step_1">Tap Put in Sticker album below. The current plate appears in the gallery\'s Sticker album.</string>
+    <string name="sl_step_2">Open Boox screensaver settings, choose Transparent, turn on Show lockscreen sticker, then Select sticker, the + tile, the Sticker album and the BooxUltimatum picture, and confirm the crop with OK.</string>
+    <string name="sl_step_3">Apply Transparent in Boox.</string>
+    <string name="sl_step_4">Come back here and tap Apply. BooxUltimatum finds the sticker Boox saved and redraws it for you.</string>
+    <string name="sl_prepare">Put in Sticker album</string>
+    <string name="sl_prepared">The plate is in the Sticker album.</string>
+    <string name="sl_boox_overlay_settings">The Boox clock, the motto and the status bar are drawn by Boox over any style. Restore can\'t read back the style you had before, so it sets the Boox default picture; pick your former style in Boox afterwards.</string>
+    <string name="sl_limits">With a PIN, a tablet put to sleep from the lock screen shows a black privacy screen instead. That is Boox\'s choice and outside this app.</string>
+
+    <!-- Editing -->
+    <string name="sl_edit_note">Note</string>
+    <string name="sl_edit_owner">Owner card</string>
+    <string name="sl_edit_quote">Your quote</string>
+    <string name="sl_edit_caption">Caption</string>
+    <string name="sl_caption">Caption under the picture</string>
+    <string name="sl_quote_text">Quote</string>
+    <string name="sl_quote_author">Author</string>
+    <string name="sl_owner_name">Name</string>
+    <string name="sl_owner_contact">Phone or email</string>
+    <string name="sl_owner_reward">Reward line</string>
+    <string name="sl_cancel">Cancel</string>
+    <string name="sl_done">Done</string>
+
+    <!-- Printed on the faces -->
+    <string name="sl_battery">Battery</string>
+    <string name="sl_put_down">Put down</string>
+    <string name="sl_put_down_at">Put down at %1$s</string>
+    <string name="sl_put_down_around">Put down around %1$s</string>
+    <string name="sl_put_down_lead_at">Put down at</string>
+    <string name="sl_put_down_lead_around">Put down around</string>
+    <string name="sl_next">Next</string>
+    <string name="sl_charging">Charging</string>
+    <string name="sl_on_battery">On battery</string>
+    <string name="sl_battery_charging">%1$d %% · charging</string>
+    <string name="sl_battery_on">%1$d %%</string>
+    <string name="sl_return_heading">If found, please return to</string>
+    <string name="sl_reward">Reward</string>
+    <string name="sl_contact">Contact</string>
+    <string name="sl_nothing_planned">Nothing planned this week</string>
+    <string name="sl_note_empty">Write a note in BooxUltimatum › Sleep to show it here.</string>
+    <string name="sl_photo_empty">Choose a picture in BooxUltimatum › Sleep.</string>
+    <string name="sl_owner_empty">Your name</string>
+    <string name="sl_today">Today</string>
+    <string name="sl_tomorrow">Tomorrow</string>
+
+    <!-- Errors and journal -->
+    <string name="sl_err_needs_shizuku">This needs Shizuku. Start it from Access, then try again.</string>
+    <string name="sl_err_no_sticker">No Boox sticker yet. Follow the steps under Boox settings to choose the BooxUltimatum sticker once.</string>
+    <string name="sl_journal_image">Sleep screen set to the %1$s face, as the Boox sleep picture</string>
+    <string name="sl_journal_overlay">Sleep screen set to the %1$s plate, over the Boox Transparent style</string>
+    <string name="sl_journal_restore">Sleep screen handed back to the Boox default picture</string>
+</resources>

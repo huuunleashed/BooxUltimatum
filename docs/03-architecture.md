@@ -55,6 +55,7 @@ Still a single `:app` module, organised by package:
 | `core` | Platform readers (battery, device, packages, privilege status), `SystemSettings`, `SystemState` parsers (Doze, allowlist, appops, standby buckets, alarm wakeups, wakelocks), the `Journal`, `BatteryLog`, `StatusBar`, `Launchers`, `Fonts`, `AppWork` (an app-wide scope for changes that must outlive their screen) |
 | `core.exec` | `Privileged`: the Shizuku user service (`ShellService`, AIDL `IShellService`) running as the shell uid, released after 45 s idle; `Diagnostics` for `dumpsys` with or without Shizuku |
 | `core.tweaks` | The tweak framework and the catalogue of 19 tweaks |
+| `core.sleep` | The sleep screen studio: face spec and store, pure Canvas renderer and faces, publisher (MediaStore picture, Onyx broadcast, sticker copy), scheduler (non-wakeup alarm and event receivers). See `docs/06-sleep-screen.md` |
 | `ui` | Theme ("Braun Instrument"), components, glyphs, and one file per destination under `ui/screens` |
 | `launcher` | The home screen: catalogue and preferences, activity and model, UI, widgets, status glyphs |
 

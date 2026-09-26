@@ -19,18 +19,23 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -66,6 +71,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
 import app.booxultimatum.R
 import app.booxultimatum.ui.Key
@@ -121,7 +127,10 @@ fun LauncherScreen(
             // A paper veil keeps text and icons legible over any picture.
             Box(Modifier.fillMaxSize().background(Ink.Paper.copy(alpha = prefs.wallDim / 100f)))
         }
-        Box(Modifier.fillMaxSize().then(if (overlay == Overlay.None) Modifier else Modifier.background(Ink.Paper)).windowInsetsPadding(WindowInsets.safeDrawing)) {
+        // Home ignores the keyboard, so typing in a panel never reflows the page, drops a widget, or repaints the whole
+        // screen; the panels that take text lift themselves above it instead. Full-screen overlays still make room for it.
+        val insets = if (overlay == Overlay.None) WindowInsets.systemBars.union(WindowInsets.displayCutout) else WindowInsets.safeDrawing
+        Box(Modifier.fillMaxSize().then(if (overlay == Overlay.None) Modifier else Modifier.background(Ink.Paper)).windowInsetsPadding(insets)) {
             when (overlay) {
                 Overlay.None -> androidx.compose.runtime.CompositionLocalProvider(LocalLabelInk provides labelInkFor(prefs.wallMode, model.backdropLum.value)) {
                     Home(model, onRequestCalendar, onOpenApp)
@@ -181,8 +190,6 @@ private sealed interface HomeItem {
     data class Group(val folder: Folder, val apps: List<LaunchTarget>) : HomeItem { override val key get() = FOLDER_PREFIX + folder.id }
 }
 
-// Configuration.screenHeightDp is only a key here, telling orientation and panel size apart; the height used comes from layout.
-@android.annotation.SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 private fun Home(model: LauncherModel, onRequestCalendar: () -> Unit, onOpenApp: () -> Unit) {
     val prefs by model.prefs
@@ -197,17 +204,12 @@ private fun Home(model: LauncherModel, onRequestCalendar: () -> Unit, onOpenApp:
 
     val widgets by model.widgets
     Column(Modifier.fillMaxSize().padding(horizontal = Space.xl, vertical = Space.l)) {
-        Header(model)
+        Header(model, onOpenApp)
         Spacer(Modifier.height(Space.l))
         BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
-            // The keyboard shrinks the window. Home keeps the tallest height seen in this orientation, so typing in a
-            // panel never reflows the page, drops a widget, or repaints the whole screen.
-            val config = androidx.compose.ui.platform.LocalConfiguration.current
-            val tallest = remember(config.orientation, config.screenHeightDp, prefs.statusBar) { floatArrayOf(0f) }
-            if (maxHeight.value > tallest[0]) tallest[0] = maxHeight.value
-            val bodyH = Dp(tallest[0])
+            val bodyH = maxHeight
             val bodyW = maxWidth
-            Box(Modifier.fillMaxWidth().wrapContentHeight(Alignment.Top, unbounded = true).height(bodyH)) {
+            Box(Modifier.fillMaxSize()) {
                 // Landscape puts widgets and apps side by side: stacked, the widgets would leave the apps a single row.
                 if (bodyW > bodyH && widgets.isNotEmpty()) {
                     Row(Modifier.fillMaxSize()) {
@@ -258,8 +260,29 @@ private fun AppPages(model: LauncherModel, items: List<HomeItem>, modifier: Modi
         val page = model.page.intValue.coerceIn(0, pages - 1)
         if (model.page.intValue != page) model.page.intValue = page
         if (items.isEmpty()) Paragraph(stringResource(R.string.l_empty_home), color = Ink.Legend)
-        else Grid(model, items.drop(page * perPage).take(perPage), cols, icon, cellH)
+        else Box(Modifier.fillMaxSize().swipePages(page, pages) { model.page.intValue = it }) {
+            Grid(model, items.drop(page * perPage).take(perPage), cols, icon, cellH)
+        }
     }
+}
+
+/**
+ * A horizontal swipe turns the page: leftwards for the next one, rightwards for the previous one. The page flips once
+ * the finger lifts, in one repaint, rather than following it, which on e-ink would only smear.
+ */
+private fun Modifier.swipePages(page: Int, pages: Int, onPage: (Int) -> Unit): Modifier = if (pages <= 1) this else pointerInput(page, pages) {
+    val threshold = 64.dp.toPx()
+    var dx = 0f
+    detectHorizontalDragGestures(
+        onDragStart = { dx = 0f },
+        onDragEnd = {
+            when {
+                dx <= -threshold && page < pages - 1 -> onPage(page + 1)
+                dx >= threshold && page > 0 -> onPage(page - 1)
+            }
+        },
+        onHorizontalDrag = { change, amount -> change.consume(); dx += amount },
+    )
 }
 
 @Composable
@@ -286,7 +309,7 @@ private fun HomeFooter(model: LauncherModel, pinned: Int) {
 
 /** Date, connectivity and battery. Each indicator opens the matching system control. */
 @Composable
-private fun Header(model: LauncherModel) {
+private fun Header(model: LauncherModel, onOpenApp: () -> Unit) {
     val context = LocalContext.current
     val now by model.now
     val battery by model.battery
@@ -329,6 +352,8 @@ private fun Header(model: LauncherModel) {
         Spacer(Modifier.size(Space.s))
         IconKey(app.booxultimatum.ui.Glyphs.Gear, stringResource(R.string.l_settings_boox), onClick = { BooxIntents.openSettings(context) })
         Spacer(Modifier.size(Space.s))
+        IconKey(app.booxultimatum.ui.Glyphs.Mark, stringResource(R.string.l_open_hub), onClick = onOpenApp)
+        Spacer(Modifier.size(Space.s))
         IconKey(app.booxultimatum.ui.Glyphs.Pencil, stringResource(R.string.l_edit_home), onClick = { model.overlay.value = Overlay.Edit })
     }
 }
@@ -355,7 +380,21 @@ private fun Modifier.androidxSemantics(label: String) = this.then(
 
 /** Labels one step heavier than body text: thin system faces vanish at 14 sp on e-ink. */
 private val TileLabel: androidx.compose.ui.text.TextStyle
-    @Composable get() = LocalLabelInk.current.let { ink -> MaterialTheme.typography.bodySmall.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Medium, color = ink.color, shadow = ink.halo) }
+    @Composable get() = LocalLabelInk.current.let { ink -> MaterialTheme.typography.bodySmall.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Medium, color = ink.color, shadow = ink.halo, textAlign = TextAlign.Center) }
+
+/**
+ * A tile's name. Names of several words wrap onto two lines; a single long word ("BooxUltimatum") would be cut in the
+ * middle, so it stays on one line and steps its size down until it fits.
+ */
+@Composable
+private fun TileName(name: String) {
+    val style = TileLabel
+    if (name.any { it.isWhitespace() }) Text(name, style = style, maxLines = 2, overflow = TextOverflow.Ellipsis)
+    else androidx.compose.foundation.text.BasicText(
+        name, style = style, maxLines = 1, overflow = TextOverflow.Ellipsis,
+        autoSize = androidx.compose.foundation.text.TextAutoSize.StepBased(minFontSize = 10.sp, maxFontSize = style.fontSize, stepSize = 0.5.sp),
+    )
+}
 
 /** Over a wallpaper, the header and footer sit on a paper plate like the widgets, so their glyphs and keys stay legible. */
 @Composable
@@ -406,7 +445,7 @@ private fun AppTile(model: LauncherModel, t: LaunchTarget, icon: Dp, modifier: M
         AppIcon(model, t, icon)
         if (prefs.labels) {
             Spacer(Modifier.height(6.dp))
-            Text(t.label, style = TileLabel, maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
+            TileName(t.label)
         }
     }
 }
@@ -433,7 +472,7 @@ private fun FolderTile(model: LauncherModel, g: HomeItem.Group, icon: Dp, modifi
         }
         if (prefs.labels) {
             Spacer(Modifier.height(6.dp))
-            Text(g.folder.name, style = TileLabel, maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
+            TileName(g.folder.name)
         }
     }
 }
@@ -453,7 +492,8 @@ private fun TopPanel(modifier: Modifier, content: @Composable () -> Unit) {
 private fun BottomPanel(modifier: Modifier, content: @Composable () -> Unit) {
     val shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
     Column(
-        modifier.widthIn(max = 880.dp).fillMaxWidth().clip(shape).background(Ink.Paper).border(Lines.rim, Ink.Black, shape)
+        // Home leaves the keyboard alone, so a panel with a text field rises above it by itself.
+        modifier.imePadding().widthIn(max = 880.dp).fillMaxWidth().clip(shape).background(Ink.Paper).border(Lines.rim, Ink.Black, shape)
             .clickable(enabled = false) {}
             .padding(horizontal = Space.xl, vertical = Space.l),
     ) { content() }
@@ -693,13 +733,15 @@ private fun Drawer(model: LauncherModel) {
             val page = model.drawerPage.intValue.coerceIn(0, pages - 1)
             if (model.drawerPage.intValue != page) model.drawerPage.intValue = page
             val slice = list.drop(page * perPage).take(perPage)
+            val swipe = Modifier.fillMaxSize().swipePages(page, pages) { model.drawerPage.intValue = it }
+            val listCols = if (maxWidth > 900.dp) 2 else 1
             when {
                 list.isEmpty() -> Paragraph(stringResource(R.string.apps_no_match, q), color = Ink.Legend)
-                prefs.drawerView == DrawerView.List -> AppList(model, slice, if (maxWidth > 900.dp) 2 else 1, if (prefs.drawerSort == DrawerSort.Recent) ::usedAt else null)
+                prefs.drawerView == DrawerView.List -> Box(swipe) { AppList(model, slice, listCols, if (prefs.drawerSort == DrawerSort.Recent) ::usedAt else null) }
                 else -> {
                     val cols = gridColumns(prefs.columns, maxWidth)
                     val icon = iconSize(maxWidth / cols)
-                    Grid(model, slice.map { HomeItem.App(it) }, cols, icon, cellHeight(icon, prefs.labels))
+                    Box(swipe) { Grid(model, slice.map { HomeItem.App(it) }, cols, icon, cellHeight(icon, prefs.labels)) }
                 }
             }
         }

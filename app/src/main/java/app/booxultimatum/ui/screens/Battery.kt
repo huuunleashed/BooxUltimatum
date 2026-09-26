@@ -53,6 +53,7 @@ import app.booxultimatum.ui.theme.Ink
 import app.booxultimatum.ui.theme.Lines
 import app.booxultimatum.ui.theme.Space
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
@@ -340,6 +341,9 @@ private fun BatteryLogPlate(key: Any) {
             summary.awakePctPerHour?.let { stringResource(R.string.rate_value_pct, String.format(Locale.getDefault(), "%.2f", it)) } ?: stringResource(R.string.log_not_enough),
             note = if (summary.awakeHours * 60 >= 1) stringResource(R.string.log_over, Format.duration(context, (summary.awakeHours * 3_600_000).toLong())) else null,
         )
+        summary.screenOnSleepPct?.let {
+            SpecRow(stringResource(R.string.log_screen_on_sleep), stringResource(R.string.log_screen_on_sleep_value, it.roundToInt()), note = stringResource(R.string.log_screen_on_sleep_note))
+        }
         if (summary.recent.size >= 2) {
             Spacer(Modifier.height(Space.m))
             Text(stringResource(R.string.log_chart), style = MaterialTheme.typography.titleSmall)

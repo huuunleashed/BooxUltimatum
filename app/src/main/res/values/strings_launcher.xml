@@ -63,6 +63,7 @@
     <string name="l_ind_text">Words</string>
     <string name="l_settings">Settings</string>
     <string name="l_settings_boox">Boox settings</string>
+    <string name="l_open_hub">BooxUltimatum settings</string>
     <string name="l_edit_home">Arrange home</string>
     <string name="boox_fn_notes">Notes</string>
     <string name="boox_fn_library">Library</string>

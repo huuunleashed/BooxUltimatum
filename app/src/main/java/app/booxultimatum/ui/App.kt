@@ -53,6 +53,7 @@ enum class Destination(@StringRes val label: Int, val glyph: ImageVector) {
     Apps(R.string.dest_apps, Glyphs.Apps),
     Appearance(R.string.dest_appearance, Glyphs.Appearance),
     Fonts(R.string.dest_fonts, Glyphs.Fonts),
+    Sleep(R.string.dest_sleep, app.booxultimatum.ui.screens.SleepGlyph),
     Hub(R.string.dest_hub, Glyphs.Hub),
     Device(R.string.dest_device, Glyphs.Device),
     Access(R.string.dest_access, Glyphs.Access),
@@ -117,6 +118,7 @@ fun BooxUltimatumApp(accessEvents: Int, initial: String? = null) {
                     Destination.Apps -> AppsScreen(readKey, compact, readAgain) { go(Destination.Access) }
                     Destination.Appearance -> app.booxultimatum.ui.screens.AppearanceScreen(readKey, compact) { go(Destination.Fonts) }
                     Destination.Fonts -> app.booxultimatum.ui.screens.FontsScreen(readKey, compact) { go(Destination.Tweaks) }
+                    Destination.Sleep -> app.booxultimatum.ui.screens.SleepScreen(readKey, accessEvents)
                     Destination.Hub -> HubScreen(readKey, compact)
                     Destination.Device -> DeviceScreen(readKey, compact, readAgain)
                     Destination.Access -> AccessScreen(readKey, accessEvents, compact, readAgain)

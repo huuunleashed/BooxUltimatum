@@ -26,6 +26,7 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
+        android:name=".BooxUltimatumApplication"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher"
@@ -91,6 +92,9 @@
                 <action android:name="app.booxultimatum.action.LOG_SAMPLE" />
             </intent-filter>
         </receiver>
+
+        <!-- Sleep screen studio: the non-wakeup refresh alarm. -->
+        <receiver android:name=".core.sleep.SleepReceiver" android:exported="false" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
