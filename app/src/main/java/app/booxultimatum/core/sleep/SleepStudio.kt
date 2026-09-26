@@ -99,9 +99,98 @@ object SleepStudio {
         b
     }
 
+    /** The shared full-size sheet. Portrait and landscape hold the same number of pixels, so one allocation serves both. */
     private fun canvasFor(w: Int, h: Int): Bitmap = synchronized(this) {
-        canvasBitmap?.takeIf { it.width == w && it.height == h && it.isMutable }?.let { return it }
+        canvasBitmap?.let { b ->
+            if (b.isMutable && b.width == w && b.height == h) return b
+            if (b.isMutable && b.allocationByteCount >= w * h * 4) { b.reconfigure(w, h, Bitmap.Config.ARGB_8888); return b }
+        }
         createBitmap(w, h).also { canvasBitmap = it }
+    }
+
+    // ---------- Both orientations, ready ahead ----------
+
+    /** One encoded picture per panel size, so a rotation only has to swap a file instead of rendering. */
+    private class Cached(val bytes: ByteArray, val format: SleepPublisher.Format, val key: String)
+
+    private val publishLock = Mutex()
+
+    private fun sizeKey(w: Int, h: Int) = "${w}x$h"
+
+    private fun specHash(spec: SleepFaceSpec) = sha(spec.copy(active = false).toJson().toString())
+
+    private fun cacheFile(context: Context, w: Int, h: Int) = File(File(context.noBackupFilesDir, "sleep-cache").apply { mkdirs() }, "${sizeKey(w, h)}.bin")
+
+    private fun storeCache(context: Context, w: Int, h: Int, spec: SleepFaceSpec, bytes: ByteArray, format: SleepPublisher.Format, key: String) {
+        val f = cacheFile(context, w, h)
+        val tmp = File(f.parentFile, f.name + ".tmp")
+        tmp.writeBytes(bytes)
+        if (!tmp.renameTo(f)) { tmp.delete(); return }
+        SleepStore.put(context, "cache_${sizeKey(w, h)}", JSONObject().put("key", key).put("spec", specHash(spec)).put("format", format.name).toString())
+    }
+
+    /** The picture rendered ahead for [w] × [h], if it was made from the face as it is set now. */
+    private fun cached(context: Context, w: Int, h: Int, spec: SleepFaceSpec): Cached? = runCatching {
+        val meta = JSONObject(SleepStore.get(context, "cache_${sizeKey(w, h)}") ?: return null)
+        if (meta.getString("spec") != specHash(spec)) return null
+        val f = cacheFile(context, w, h)
+        if (f.length() == 0L) return null
+        Cached(f.readBytes(), SleepPublisher.Format.valueOf(meta.getString("format")), meta.getString("key"))
+    }.getOrNull()
+
+    /**
+     * Renders the face for the other orientation and keeps it encoded, unless the one kept is already current. Onyx
+     * centre-crops the picture to the rotation the tablet sleeps in, so the second orientation has to be ready before
+     * anyone turns the tablet; rendering it only after the turn left seconds in which a sleep showed a cropped face.
+     */
+    private fun prepareOther(context: Context, spec: SleepFaceSpec, exact: Boolean, w: Int, h: Int) {
+        runCatching {
+            val alt = job(context, spec, exact, 1f, size = h to w)
+            if (cached(context, alt.w, alt.h, spec)?.key == alt.key) return
+            val r = draw(context, alt, null, shared = true)
+            val (bytes, format) = encode(r.bitmap, spec)
+            storeCache(context, alt.w, alt.h, spec, bytes, format, alt.key)
+        }
+    }
+
+    /** Writes an already-encoded picture where Onyx reads it. Callers hold [publishLock]. */
+    private suspend fun publish(context: Context, spec: SleepFaceSpec, bytes: ByteArray, format: SleepPublisher.Format, announce: Boolean): String = when (spec.mode) {
+        SleepMode.Image -> {
+            val p = SleepPublisher.writeImage(context, bytes, format)
+            if (announce || p != SleepStore.get(context, "broadcast_path")) {
+                SleepPublisher.broadcastImage(context, p)
+                SleepStore.put(context, "broadcast_path", p)
+            }
+            p
+        }
+        SleepMode.Overlay -> SleepPublisher.writeSticker(context, bytes, redetect = announce).getOrThrow()
+    }
+
+    /** Whether the picture Onyx will show was made for the panel's rotation right now. */
+    fun matchesRotation(context: Context): Boolean {
+        val (w, h) = panelSize(context)
+        return SleepStore.get(context, "published_size") == sizeKey(w, h)
+    }
+
+    /**
+     * Puts the picture for the current rotation in place straight away, from the one rendered ahead: a file write,
+     * not a render. False when there is none yet, so the caller renders instead. Safe to call at any moment.
+     */
+    suspend fun matchRotation(context: Context): Boolean = withContext(Dispatchers.IO) {
+        val app = context.applicationContext
+        val spec = SleepStore.load(app)
+        if (!spec.active || matchesRotation(app)) return@withContext true
+        runCatching {
+            publishLock.withLock {
+                val (w, h) = panelSize(app)
+                if (SleepStore.get(app, "published_size") == sizeKey(w, h)) return@withLock true
+                val c = cached(app, w, h, spec) ?: return@withLock false
+                publish(app, spec, c.bytes, c.format, announce = false)
+                SleepStore.put(app, "published_size", sizeKey(w, h))
+                SleepStore.put(app, "hash", c.key)
+                true
+            }
+        }.getOrDefault(false)
     }
 
     private fun sha(text: String): String = MessageDigest.getInstance("SHA-256").digest(text.toByteArray()).joinToString("") { "%02x".format(it) }
@@ -109,8 +198,8 @@ object SleepStudio {
     private class Job(val spec: SleepFaceSpec, val data: SleepData, val fonts: SleepTypefaces, val w: Int, val h: Int, val usesPhoto: Boolean, val key: String)
 
     /** Gathers what the face will show and its fingerprint, without drawing anything. Blocking. */
-    private fun job(context: Context, spec: SleepFaceSpec, exact: Boolean, scale: Float): Job {
-        val (pw, ph) = panelSize(context)
+    private fun job(context: Context, spec: SleepFaceSpec, exact: Boolean, scale: Float, size: Pair<Int, Int>? = null): Job {
+        val (pw, ph) = size ?: panelSize(context)
         val w = (pw * scale).toInt().coerceAtLeast(16)
         val h = (ph * scale).toInt().coerceAtLeast(16)
         val data = SleepData.gather(context, spec, exact)
@@ -163,6 +252,7 @@ object SleepStudio {
                     }
                     if (!force && live && j.key == SleepStore.get(app, "hash")) {
                         val prev = SleepStore.status(app)
+                        prepareOther(app, spec, exact, j.w, j.h)
                         return@runCatching SleepStatus(
                             System.currentTimeMillis(), 0, 0, prev?.bytes ?: 0, prev?.file.orEmpty(), spec.mode, reason, true, null,
                         ).also { SleepStore.setStatus(app, it) }
@@ -171,19 +261,22 @@ object SleepStudio {
                     val t1 = SystemClock.elapsedRealtime()
                     val (bytes, format) = encode(r.bitmap, spec)
                     val encodeMs = SystemClock.elapsedRealtime() - t1
-                    val path = when (spec.mode) {
-                        SleepMode.Image -> {
-                            val p = SleepPublisher.writeImage(app, bytes, format)
-                            if (announce || p != SleepStore.get(app, "broadcast_path")) {
-                                SleepPublisher.broadcastImage(app, p)
-                                SleepStore.put(app, "broadcast_path", p)
-                            }
-                            p
+                    storeCache(app, j.w, j.h, spec, bytes, format, r.key)
+                    val path = publishLock.withLock {
+                        // The tablet may have turned while this rendered: publishing now would put the wrong shape in place.
+                        if (panelSize(app) != j.w to j.h) null
+                        else publish(app, spec, bytes, format, announce).also {
+                            SleepStore.put(app, "hash", r.key)
+                            SleepStore.put(app, "published_size", sizeKey(j.w, j.h))
                         }
-                        SleepMode.Overlay -> SleepPublisher.writeSticker(app, bytes, redetect = announce).getOrThrow()
                     }
-                    SleepStore.put(app, "hash", r.key)
-                    SleepStatus(System.currentTimeMillis(), r.renderMs, encodeMs, bytes.size.toLong(), path, spec.mode, reason, false, null)
+                    if (path == null) {
+                        matchRotation(app)
+                        SleepScheduler.request(app, "rotation", 1_500)
+                    }
+                    // Sleep now puts the tablet down right after this; the other shape can wait for the next refresh.
+                    if (reason != "sleep_now") prepareOther(app, spec, exact, j.w, j.h)
+                    SleepStatus(System.currentTimeMillis(), r.renderMs, encodeMs, bytes.size.toLong(), path ?: SleepStore.status(app)?.file.orEmpty(), spec.mode, reason, false, null)
                         .also { SleepStore.setStatus(app, it) }
                 }.onFailure { e ->
                     if (e.message != "inactive") {
@@ -274,7 +367,8 @@ object SleepStudio {
             SleepPublisher.broadcastImage(app, SleepPublisher.BOOX_DEFAULT)
             val sticker = SleepPublisher.restoreSticker(app)
             SleepPublisher.deleteOurPictures(app)
-            listOf("hash", "broadcast_path").forEach { SleepStore.put(app, it, null) }
+            listOf("hash", "broadcast_path", "published_size", "reannounce").forEach { SleepStore.put(app, it, null) }
+            File(app.noBackupFilesDir, "sleep-cache").deleteRecursively()
             Journal.forget(app, SCREEN_JOURNAL)
             sticker.getOrThrow()
         }

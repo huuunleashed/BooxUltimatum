@@ -8,14 +8,15 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.content.res.Configuration
 import android.database.ContentObserver
+import android.hardware.display.DisplayManager
 import android.os.BatteryManager
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
 import android.os.SystemClock
 import android.provider.CalendarContract
+import android.view.Display
 import androidx.core.content.ContextCompat
 import app.booxultimatum.core.AppWork
 import kotlinx.coroutines.launch
@@ -26,8 +27,10 @@ import java.util.concurrent.atomic.AtomicBoolean
  *
  * - An inexact `ELAPSED_REALTIME` repeating alarm at the chosen step (1, 5, 15 or 30 minutes). Non-wakeup alarms don't
  *   fire while the tablet sleeps, so the studio costs nothing in standby; a missed one is delivered on wake.
- * - Broadcasts the system sends anyway: battery level or plug changes, rotation, time, date and time-zone changes and
- *   screen on, plus a calendar observer once READ_CALENDAR is granted. Triggers are coalesced for two seconds.
+ * - Broadcasts the system sends anyway: battery level or plug changes, time, date and time-zone changes and screen on,
+ *   plus a calendar observer once READ_CALENDAR is granted. Triggers are coalesced for two seconds.
+ * - Rotation, from display events: the face for both orientations is kept rendered, so a turn only swaps a file, and
+ *   Onyx's going-to-sleep broadcast gets one last check that the picture matches the rotation it will be shown in.
  * - Each render is fingerprinted, so a trigger that changes nothing on the face costs one data read and no encode.
  *
  * Registered from [app.booxultimatum.BooxUltimatumApplication] in the main process, like the battery log's watch.
@@ -41,9 +44,12 @@ object SleepScheduler {
     @Volatile private var pendingReason = "event"
     @Volatile private var lastLevel = -1
     @Volatile private var lastPlugged = -1
-    @Volatile private var lastOrientation = -1
+    @Volatile private var lastRotation = -1
     @Volatile private var lastBatteryRender = 0L
     private const val BATTERY_GAP = 60_000L
+
+    /** Sent by the framework as the tablet starts going to sleep, tens of milliseconds before Onyx reads the picture. */
+    private const val ONYX_GOING_TO_SLEEP = "com.onyx.action.ONYX_SYSTEM_GOING_TO_SLEEP"
 
     private val run = Runnable {
         val c = appContext ?: return@Runnable
@@ -62,6 +68,23 @@ object SleepScheduler {
         main.postDelayed(run, delayMs)
     }
 
+    private fun rotation(c: Context): Int = c.getSystemService(DisplayManager::class.java)?.getDisplay(Display.DEFAULT_DISPLAY)?.rotation ?: -1
+
+    /**
+     * The panel turned: the picture rendered ahead for the new shape goes in place at once (a file write), and a fresh
+     * render follows once the turn has settled. Without one ready, the render starts straight away.
+     */
+    private fun onRotation(c: Context) {
+        val r = rotation(c)
+        if (r < 0 || r == lastRotation) return
+        lastRotation = r
+        if (!SleepStore.load(c).active) return
+        AppWork.scope.launch {
+            val swapped = SleepStudio.matchRotation(c)
+            request(c, "rotation", if (swapped) 1_500 else 0)
+        }
+    }
+
     /** Registers the triggers once per process and arms the alarm if it is missing. A no-op while the studio is off. */
     fun watch(app: Context) {
         val c = app.applicationContext
@@ -70,7 +93,28 @@ object SleepScheduler {
         schedule(c)
         watchCalendar(c)
         if (!watching.compareAndSet(false, true)) return
-        lastOrientation = c.resources.configuration.orientation
+        lastRotation = rotation(c)
+        // Display events arrive as the panel turns, before any configuration reaches this process.
+        c.getSystemService(DisplayManager::class.java)?.registerDisplayListener(object : DisplayManager.DisplayListener {
+            override fun onDisplayAdded(displayId: Int) = Unit
+            override fun onDisplayRemoved(displayId: Int) = Unit
+            override fun onDisplayChanged(displayId: Int) { if (displayId == Display.DEFAULT_DISPLAY) onRotation(c) }
+        }, main)
+        // Last line: if the tablet turned in the final moment (a cover closing tilts it), swap before Onyx reads the file.
+        ContextCompat.registerReceiver(c, object : BroadcastReceiver() {
+            override fun onReceive(ctx: Context, i: Intent) {
+                val spec = SleepStore.load(ctx)
+                if (!spec.active || spec.mode != SleepMode.Image || SleepStudio.matchesRotation(ctx)) return
+                val pending = goAsync()
+                AppWork.scope.launch {
+                    try {
+                        // A write this close to Onyx's read could meet it half done, and Onyx then drops the picture; saying
+                        // it again on wake puts it back.
+                        if (SleepStudio.matchRotation(ctx)) SleepStore.put(ctx, "reannounce", "1")
+                    } finally { pending.finish() }
+                }
+            }
+        }, IntentFilter(ONYX_GOING_TO_SLEEP), ContextCompat.RECEIVER_EXPORTED)
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_BATTERY_CHANGED)
             addAction(Intent.ACTION_CONFIGURATION_CHANGED)
@@ -96,13 +140,13 @@ object SleepScheduler {
                         lastBatteryRender = SystemClock.elapsedRealtime() + wait
                         request(ctx, "battery", wait)
                     }
-                    Intent.ACTION_CONFIGURATION_CHANGED -> {
-                        val o = ctx.resources.configuration.orientation
-                        if (o == lastOrientation || o == Configuration.ORIENTATION_UNDEFINED) return
-                        lastOrientation = o
-                        request(ctx, "rotation", 1_500)
+                    Intent.ACTION_CONFIGURATION_CHANGED -> onRotation(ctx)
+                    Intent.ACTION_SCREEN_ON -> {
+                        if (SleepStore.get(ctx, "reannounce") != null) {
+                            SleepStore.put(ctx, "reannounce", null)
+                            AppWork.scope.launch { SleepStudio.refresh(ctx, "wake", force = true, announce = true) }
+                        } else request(ctx, "wake", 3_000)
                     }
-                    Intent.ACTION_SCREEN_ON -> request(ctx, "wake", 3_000)
                     else -> request(ctx, "clock")
                 }
             }
