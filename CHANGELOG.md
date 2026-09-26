@@ -13,6 +13,16 @@ All notable changes to BooxUltimatum. Newest first. The project follows [Semanti
   - Fountain pen at 4 px is the default brush, because the pencil is textured and looked broken.
   - The in-app service is built and starts cleanly, but hasn't yet been checked with a real pen.
 - **Screenshots** of the app and home screen in `docs/screenshots/`, taken on the tablet and anonymised.
+- **A new icon.** An ordered-dither ramp: grey made only of black and white cells, the way e-ink draws it, with one 2×2 colour cell lit, since one Kaleido colour pixel covers four mono ones. It draws no outline of its own, so launcher masks never double it, and it has a themed single-colour layer. It was chosen from six concepts and replaces the needle-and-scale placeholder. The PNG versions are in `docs/brand/`.
+
+### Changed
+
+- **The in-app glyphs were redrawn as one family:** the same stroke, padding and optical size, true arcs, and legible at 24 dp and inverted in the selected rail pill.
+  - Sleep is a properly built crescent with a lamp.
+  - Fonts is a clean "Aa".
+  - Settings is a gear rather than a sun that read as brightness.
+  - The battery terminal, slider knobs, app grid gaps and chevrons were fixed.
+  - The header's BooxUltimatum key uses the new mark.
 
 ### Fixed
 

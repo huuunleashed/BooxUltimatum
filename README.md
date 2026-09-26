@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/brand/icon-512.png" width="96" alt="The BooxUltimatum icon: an ordered-dither ramp of black cells with one green cell lit"></p>
+
 # BooxUltimatum
 
 **A home screen, sleep-screen designer, battery doctor and tweak hub for the BOOX Note Air6 C, in one app, without root.**

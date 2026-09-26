@@ -62,12 +62,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -113,22 +109,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
-/** Rail glyph: a crescent over the lamp, the tablet asleep with its face still showing. */
-val SleepGlyph: ImageVector = ImageVector.Builder("sleep", 24.dp, 24.dp, 24f, 24f).apply {
-    path(stroke = SolidColor(Color.Black), strokeLineWidth = 1.75f, strokeLineCap = StrokeCap.Round, strokeLineJoin = StrokeJoin.Round) {
-        moveTo(15.5f, 3.5f)
-        arcToRelative(8.5f, 8.5f, 0f, true, false, 5f, 11.5f)
-        arcToRelative(6.5f, 6.5f, 0f, false, true, -5f, -11.5f)
-        close()
-    }
-    path(fill = SolidColor(Color.Black)) {
-        moveTo(17f, 19.5f)
-        arcToRelative(2f, 2f, 0f, true, true, 4f, 0f)
-        arcToRelative(2f, 2f, 0f, true, true, -4f, 0f)
-        close()
-    }
-}.build()
 
 private enum class SleepField { Note, Owner, Quote, Caption }
 

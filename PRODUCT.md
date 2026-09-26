@@ -32,7 +32,7 @@ It's the only tool built around evidence on this specific hardware. Every tweak 
 - Every tweak has apply/revert, a tier, a risk level, and linked evidence.
 - No background polling. Data refreshes on user action or on scheduled inexact alarms, so the app must never cause the drain it measures.
 - Strings live in Android resources, English first, structured for later translation.
-- Undecided: distribution channel details, app icon and name treatment beyond the current placeholder.
+- Undecided: distribution channel details. The app icon is decided (2026-09-26): an ordered-dither ramp with one lit colour cell (`docs/brand/`).
 
 ## Brand Commitments
 

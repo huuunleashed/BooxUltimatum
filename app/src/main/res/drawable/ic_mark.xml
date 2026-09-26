@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The BooxUltimatum mark: one needle across an engraved scale, the lamp lit at its tip. Frameless by design. -->
+<!-- The BooxUltimatum mark: the dither ramp with its lit colour cell, cropped to the artwork. Frameless by design. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="48dp"
     android:height="48dp"
-    android:viewportWidth="48"
-    android:viewportHeight="48">
-    <path android:strokeColor="#000000" android:strokeWidth="2.5" android:pathData="M4,38H44" />
-    <path android:strokeColor="#000000" android:strokeWidth="1.8" android:pathData="M10,38V32M17,38V35M31,38V35M38,38V32" />
-    <path android:strokeColor="#000000" android:strokeWidth="4.5" android:pathData="M24,10V41" />
-    <path android:fillColor="#1E7A46" android:strokeColor="#000000" android:strokeWidth="1.5"
-        android:pathData="M19.5,10a4.5,4.5 0,1 1,9 0a4.5,4.5 0,1 1,-9 0z" />
+    android:viewportWidth="44.8"
+    android:viewportHeight="44.8">
+    <group android:translateX="-31.6" android:translateY="-31.6">
+        <path android:fillColor="#000000" android:pathData="M37.2,31.6h5.6v5.6h-5.6ZM31.6,37.2h5.6v5.6h-5.6ZM37.2,42.8h5.6v5.6h-5.6ZM48.4,42.8h5.6v5.6h-5.6ZM31.6,48.4h5.6v5.6h-5.6ZM37.2,48.4h5.6v5.6h-5.6ZM42.8,48.4h5.6v5.6h-5.6ZM31.6,54h5.6v5.6h-5.6ZM37.2,54h5.6v5.6h-5.6ZM48.4,54h5.6v5.6h-5.6ZM59.6,54h5.6v5.6h-5.6ZM31.6,59.6h5.6v5.6h-5.6ZM37.2,59.6h5.6v5.6h-5.6ZM42.8,59.6h5.6v5.6h-5.6ZM48.4,59.6h5.6v5.6h-5.6ZM54,59.6h5.6v5.6h-5.6ZM31.6,65.2h5.6v5.6h-5.6ZM37.2,65.2h5.6v5.6h-5.6ZM42.8,65.2h5.6v5.6h-5.6ZM48.4,65.2h5.6v5.6h-5.6ZM59.6,65.2h5.6v5.6h-5.6ZM70.8,65.2h5.6v5.6h-5.6ZM31.6,70.8h5.6v5.6h-5.6ZM37.2,70.8h5.6v5.6h-5.6ZM42.8,70.8h5.6v5.6h-5.6ZM48.4,70.8h5.6v5.6h-5.6ZM54,70.8h5.6v5.6h-5.6ZM59.6,70.8h5.6v5.6h-5.6ZM65.2,70.8h5.6v5.6h-5.6Z" />
+        <path android:fillColor="#1E7A46" android:pathData="M65.2,31.6h5.6v5.6h-5.6ZM70.8,31.6h5.6v5.6h-5.6ZM65.2,37.2h5.6v5.6h-5.6ZM70.8,37.2h5.6v5.6h-5.6Z" />
+    </group>
 </vector>

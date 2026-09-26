@@ -12,6 +12,11 @@ build/
 local.properties
 .DS_Store
 
+# Signing keys and their credentials never enter the repository.
+*.jks
+*.keystore
+signing.properties
+
 # Device captures can contain personal data (accounts, Wi-Fi SSIDs, logcat). Kept local; commit curated summaries only.
 captures/*
 !captures/README.md

@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -16,13 +18,28 @@ android {
         versionName = "0.3.0"
     }
 
+    // Public releases are signed with a key kept outside the repository. Pass the path to a properties file holding
+    // storeFile, storePassword, keyAlias and keyPassword: `.\gradlew.bat assembleRelease -Pbu.signing=<path>`.
+    val publishSigning = (findProperty("bu.signing") as String?)?.let { file(it) }?.takeIf { it.isFile }?.let { f ->
+        Properties().apply { f.inputStream().use { load(it) } }
+    }
+    signingConfigs {
+        if (publishSigning != null) create("publish") {
+            storeFile = file(publishSigning.getProperty("storeFile"))
+            storePassword = publishSigning.getProperty("storePassword")
+            keyAlias = publishSigning.getProperty("keyAlias")
+            keyPassword = publishSigning.getProperty("keyPassword")
+        }
+    }
+
     buildTypes {
         release {
-            // Minified and non-debuggable for real-world memory and CPU. Signed with the debug key so it upgrades
-            // the installed debug build in place and keeps its adb grants and Shizuku permission.
+            // Minified and non-debuggable for real-world memory and CPU. Without -Pbu.signing it is signed with the
+            // debug key, so it upgrades the developer's installed build in place and keeps its adb grants and Shizuku
+            // permission; a public build must use the release key.
             isMinifyEnabled = true
             isShrinkResources = true
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName(if (publishSigning != null) "publish" else "debug")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }

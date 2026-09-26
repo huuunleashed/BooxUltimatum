@@ -53,7 +53,7 @@ enum class Destination(@StringRes val label: Int, val glyph: ImageVector) {
     Apps(R.string.dest_apps, Glyphs.Apps),
     Appearance(R.string.dest_appearance, Glyphs.Appearance),
     Fonts(R.string.dest_fonts, Glyphs.Fonts),
-    Sleep(R.string.dest_sleep, app.booxultimatum.ui.screens.SleepGlyph),
+    Sleep(R.string.dest_sleep, Glyphs.Sleep),
     Ink(R.string.dest_ink, Glyphs.Pen),
     Hub(R.string.dest_hub, Glyphs.Hub),
     Device(R.string.dest_device, Glyphs.Device),

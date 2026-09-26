@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Themed-icon layer (Android 13+): the same mark as a single tint, no rim. -->
+<!-- Themed-icon layer (Android 13+): the same ramp as a single tint, the lit block included. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path android:strokeColor="#000000" android:strokeWidth="3.5" android:pathData="M30,69H78" />
-    <path android:strokeColor="#000000" android:strokeWidth="2.4" android:pathData="M38,69V61M46,69V64M62,69V64M70,69V61" />
-    <path android:strokeColor="#000000" android:strokeWidth="6" android:pathData="M54,38V73" />
-    <path android:fillColor="#000000" android:pathData="M48.5,33a5.5,5.5 0,1 1,11 0a5.5,5.5 0,1 1,-11 0z" />
+    <path android:fillColor="#000000" android:pathData="M37.2,31.6h5.6v5.6h-5.6ZM31.6,37.2h5.6v5.6h-5.6ZM37.2,42.8h5.6v5.6h-5.6ZM48.4,42.8h5.6v5.6h-5.6ZM31.6,48.4h5.6v5.6h-5.6ZM37.2,48.4h5.6v5.6h-5.6ZM42.8,48.4h5.6v5.6h-5.6ZM31.6,54h5.6v5.6h-5.6ZM37.2,54h5.6v5.6h-5.6ZM48.4,54h5.6v5.6h-5.6ZM59.6,54h5.6v5.6h-5.6ZM31.6,59.6h5.6v5.6h-5.6ZM37.2,59.6h5.6v5.6h-5.6ZM42.8,59.6h5.6v5.6h-5.6ZM48.4,59.6h5.6v5.6h-5.6ZM54,59.6h5.6v5.6h-5.6ZM31.6,65.2h5.6v5.6h-5.6ZM37.2,65.2h5.6v5.6h-5.6ZM42.8,65.2h5.6v5.6h-5.6ZM48.4,65.2h5.6v5.6h-5.6ZM59.6,65.2h5.6v5.6h-5.6ZM70.8,65.2h5.6v5.6h-5.6ZM31.6,70.8h5.6v5.6h-5.6ZM37.2,70.8h5.6v5.6h-5.6ZM42.8,70.8h5.6v5.6h-5.6ZM48.4,70.8h5.6v5.6h-5.6ZM54,70.8h5.6v5.6h-5.6ZM59.6,70.8h5.6v5.6h-5.6ZM65.2,70.8h5.6v5.6h-5.6ZM65.2,31.6h5.6v5.6h-5.6ZM70.8,31.6h5.6v5.6h-5.6ZM65.2,37.2h5.6v5.6h-5.6ZM70.8,37.2h5.6v5.6h-5.6Z" />
 </vector>
