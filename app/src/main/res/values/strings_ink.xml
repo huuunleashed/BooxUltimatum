@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dest_ink">Ink</string>
+    <string name="ink_title">Instant ink</string>
+    <string name="ink_subtitle">Boox Notes’ pen speed, lent to other apps</string>
+    <string name="ink_explain">In Boox Notes the stroke appears under the nib at once, because the display draws it directly instead of waiting for the app. Instant ink switches that same path on while an app you pick is in front: a preview stroke lands the moment the pen touches, and shortly after you lift, the app’s own stroke takes its place. The app itself is not changed and still receives every pen movement.</string>
+    <string name="ink_turn_on">Turn on</string>
+    <string name="ink_turn_off">Turn off</string>
+    <string name="ink_status">Status</string>
+    <string name="ink_status_off">Off</string>
+    <string name="ink_status_noapps">Pick at least one app below</string>
+    <string name="ink_status_ready">Ready: waits for the pen over a chosen app</string>
+    <string name="ink_status_armed">Active in %1$s</string>
+    <string name="ink_status_nopen">No stylus input found on this tablet</string>
+    <string name="ink_status_noroute">The display service did not answer. Try Recover screen, then turn it on again</string>
+    <string name="ink_status_needs_shizuku">Needs Shizuku: start it from Access, then turn Instant ink on again</string>
+    <string name="ink_check">Check again</string>
+    <string name="ink_recover">Recover screen</string>
+    <string name="ink_recover_hint">If preview ink ever stays on screen, Recover screen ends the pen session and repaints everything.</string>
+    <string name="ink_recovered">Pen session ended and screen repainted</string>
+    <string name="ink_stroke">Preview stroke</string>
+    <string name="ink_style">Brush</string>
+    <string name="ink_style_fountain">Fountain pen</string>
+    <string name="ink_style_pencil">Pencil</string>
+    <string name="ink_style_marker">Marker</string>
+    <string name="ink_width">Width</string>
+    <string name="ink_px">%1$d px</string>
+    <string name="ink_latency">Swap to the app’s stroke after the lift</string>
+    <string name="ink_ms">%1$d ms</string>
+    <string name="ink_latency_hint">Shorter swaps sooner; if a stroke flickers or appears twice, give the app more time.</string>
+    <string name="ink_hold">While drawing</string>
+    <string name="ink_hold_on">Show only the preview</string>
+    <string name="ink_hold_off">Show both</string>
+    <string name="ink_apps">Apps</string>
+    <string name="ink_app_add">Use</string>
+    <string name="ink_app_remove">Stop</string>
+    <string name="ink_limits">What to expect</string>
+    <string name="ink_limits_body">The preview is Boox’s own brush in black, not the app’s brush, colour or eraser: those appear when the app’s stroke takes over, shortly after the lift or at once when the pen leaves the screen. Pencil is textured and can look broken at small widths, so Fountain pen is the default. While the pen’s eraser end is near, the preview pauses. Instant ink needs no special access; it runs as a small foreground service so Android doesn’t freeze it behind the drawing app. Turn off or Recover screen ends it at once.</string>
+    <string name="ink_channel">Instant ink</string>
+    <string name="ink_notification">Pen preview is on for your drawing apps</string>
+    <plurals name="ink_apps_count">
+        <item quantity="one">%d chosen</item>
+        <item quantity="other">%d chosen</item>
+    </plurals>
+</resources>

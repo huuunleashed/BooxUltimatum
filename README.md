@@ -9,7 +9,7 @@ A single sideloadable Android app that is meant to become the go-to hub of tweak
 | Area | State |
 |---|---|
 | Phase | **Building on the device (phase 3).** Version `0.3.0` is installed on the tablet (release build) at tier T2 and validated screen by screen in portrait and landscape. |
-| App | Ten destinations: Overview, Battery, Tweaks, Apps, Appearance, Fonts, Sleep, Settings, Device and Access. The "Braun Instrument" design runs throughout: paper white, black ink, one green lamp, Archivo, and no animation. |
+| App | Eleven destinations: Overview, Battery, Tweaks, Apps, Appearance, Fonts, Sleep, Ink, Settings, Device and Access. The "Braun Instrument" design runs throughout: paper white, black ink, one green lamp, Archivo, and no animation. |
 | Tweaks | 19 reversible, tiered tweaks with a journal. Each one is listed with its mechanism and verification status in `knowledge/experiments.md`. They include *Let your apps keep running*, which fixes music stopping and Discord screen share going blank (Boox background-restricts apps you install). |
 | Battery | Drain measurement, a time-left estimate, wakeup sources, force idle, and a battery log that never wakes the tablet: samples every 30 min of awake time, a row at every screen, plug and level change, and deep snapshots every 3 h, with a level chart, screen-off and screen-on drain, and a one-zip export. First analysis (2026-09-26): standby is already near the floor (0–12 mA); screen-on use (430–640 mA, SoC awake 93 % of the time) is where the battery goes. |
 | Sleep screen | **Sleep screen studio:** eight faces (Almanac, Instrument, Poster, Under the clock, Photo, Note, Return card, Minimal) set in the owner's font, portrait and landscape, published as Boox's sleep picture and refreshed while the tablet is awake (every 1–30 min, plus battery, time and rotation changes). Verified live on the tablet. An *Over Transparent* mode lays a plate over Boox's Transparent style through its sticker (T2). |
@@ -19,7 +19,7 @@ A single sideloadable Android app that is meant to become the go-to hub of tweak
 | Root | **Out of scope (decided 2026-09-25).** The product targets T0–T2 (app, adb grants, Shizuku). |
 
 ### Next up
-1. **Instant ink** (deferred): BooxUltimatum can already make the display draw the pen stroke instantly over any app, as Boox Notes does, but the swap back to the app's own stroke after a lift is unsolved (see `knowledge/experiments.md`). The prototype is parked outside the repo.
+1. **Instant ink: first run on the tablet.** The controller now uses the swap found in testing (release the held app frames after the lift, session kept open) and the full-panel region. To check with the owner drawing: the in-app service in Sketchbook in both orientations, the eraser end, finger panning, switching apps, and the one-in-ten stroke start that loses its preview.
 2. **Reading mode:** one key for Wi-Fi and Bluetooth off, Battery Saver on and auto-sync paused while unplugged, journaled. The battery analysis found Wi-Fi active 75 % of battery time and the SoC awake 93 % of screen-on time.
 3. Unplugged overnight run with the improved battery log, then the first A/B (*Pause idle Boox apps*, *Let Boox apps sleep*, *Turn on Doze*).
 4. Record round trips for the three tweaks not yet verified on the tablet (`doze.boox_allowlist`, `power.autosync`, `privacy.ota`).
@@ -79,6 +79,7 @@ Every feature declares the minimum tier it needs and degrades gracefully without
 
 ## Changelog
 
+- **2026-09-26 (evening):** **Instant ink** returns as the Ink destination. A test session with the owner drawing in Sketchbook found the missing piece: Boox's display service holds an app's frames back while the pen draws and lets them through after the lift, which replaces the fast preview with the app's own stroke without closing the pen session, so strokes no longer lose their start. The preview region now covers the whole panel (a portrait-shaped region missed the bottom quarter), hovering arms it before the nib touches, and the preview defaults to the fountain-pen brush at 4 px, which reads as continuous where the pencil looked broken. Verified with test scripts; the in-app service is built but not yet run on the tablet.
 - **2026-09-26 (afternoon):** Sleep screen after a rotation, and a cleaner sleep screen.
   - **Rotation:** turning the tablet and then sleeping showed the face cropped, because the face was only redrawn a few seconds after the turn, so Boox still had the picture for the old shape. Each refresh now also prepares the other orientation, and a turn swaps the file in at once; a last check runs as the tablet starts to sleep. Verified on the tablet: rotate then sleep within 0.2 s in both directions, and rotate and sleep at the same instant from the lock screen, all showed the right shape.
   - **Boox's bottom bar** (battery and "Press power button to wake up") is off in Boox's screensaver settings, and faces no longer leave room for it. Boox still forces it on while the tablet is charging (read from its code, confirmed on battery); the studio says so.

@@ -10,6 +10,7 @@ class BooxUltimatumApplication : Application() {
         if (Application.getProcessName() == packageName) {
             app.booxultimatum.core.BatteryLog.watch(this)
             app.booxultimatum.core.sleep.SleepScheduler.watch(this)
+            app.booxultimatum.core.ink.InstantInk.resume(this)
         }
     }
 }

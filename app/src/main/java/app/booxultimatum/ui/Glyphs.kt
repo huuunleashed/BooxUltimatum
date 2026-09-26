@@ -152,6 +152,12 @@ object Glyphs {
         for (x in listOf(6f, 12f, 18f)) for (y in listOf(6f, 12f, 18f)) line(fill = true) { circle(x, y, 1.7f) }
     }
 
+    /** A stylus nib with a stroke leaving it: instant ink. */
+    val Pen = glyph("pen") {
+        line { moveTo(17.5f, 3.5f); lineTo(20.5f, 6.5f); lineTo(10f, 17f); lineTo(6f, 18f); lineTo(7f, 14f); close() }
+        line { moveTo(3.5f, 21f); curveTo(6f, 19.5f, 8f, 21.5f, 11f, 20.5f) }
+    }
+
     /** BooxUltimatum's own mark, the needle across its scale with the lamp at its tip: the hub app. */
     val Mark = glyph("mark") {
         line { moveTo(4.5f, 18.5f); lineTo(19.5f, 18.5f) }
