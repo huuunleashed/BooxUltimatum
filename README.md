@@ -117,6 +117,8 @@ Shizuku stops on every reboot. With the tablet plugged into a computer, `.\tools
 
 **From a release (planned for 0.4):** download the APK from this repository's Releases page, allow your browser or file manager to install apps, and open it. The Access page shows what each tier unlocks and the exact commands for it.
 
+**Test builds (for testers, today):** every commit on `main` builds a debug-signed APK. Open the latest successful [Build run](https://github.com/huuunleashed/BooxUltimatum/actions/workflows/build.yml) and download `booxultimatum-debug-signed` under Artifacts. GitHub asks you to sign in for this. These builds are for testing: they aren't release-signed, so the 0.4 release won't install over them. Uninstall the test build first when that comes.
+
 **From source (today):**
 
 ```powershell
@@ -140,7 +142,7 @@ Recents, gestures, NaviBall and EinkWise belong to the system, so they behave th
 
 ## Known limits
 
-- **One tablet, one firmware.** Everything is verified on a Note Air6 C with firmware 4.3. Other Boox models are likely close but untested.
+- **One tablet, one firmware.** Everything is verified on a Note Air6 C with firmware 4.3. The Note Air4 C and Air5 C run very similar Boox software, so much of it may work there, but nothing is tested on them yet. Results from those tablets, and from other Boox models, are the most welcome contribution; use the *Device finding* issue form.
 - **Undocumented interfaces.** The sleep screen, the tablet font and Instant ink work through undocumented Boox interfaces, found by reading how Boox's own apps do it. A firmware update can change them without notice. When something stops working, the app says so rather than guessing.
 - **Instant ink is experimental:**
   - The preview is Boox's own black pen, so a coloured brush or the eraser only shows once the app's stroke takes over.
