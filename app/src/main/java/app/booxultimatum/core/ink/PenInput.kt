@@ -57,7 +57,8 @@ class PenInput(private val onEvent: (Event) -> Unit) {
                     if (type == EV_KEY) when (code) {
                         // This pen reports hover as the brush tool (seen on NA6C FW 4.3); the pen code is kept for others.
                         BTN_TOOL_PEN, BTN_TOOL_BRUSH -> onEvent(if (value != 0) Event.Near else Event.Away)
-                        BTN_TOOL_RUBBER -> onEvent(if (value != 0) Event.EraserNear else Event.EraserAway)
+                        // Many drawing apps map a side button to erasing, so a held side button counts as the eraser.
+                        BTN_TOOL_RUBBER, BTN_STYLUS, BTN_STYLUS2 -> onEvent(if (value != 0) Event.EraserNear else Event.EraserAway)
                         BTN_TOUCH -> onEvent(if (value != 0) Event.Down else Event.Up)
                     }
                     off += EVENT_SIZE
@@ -80,6 +81,8 @@ class PenInput(private val onEvent: (Event) -> Unit) {
         private const val BTN_TOOL_PEN = 0x140
         private const val BTN_TOOL_RUBBER = 0x141
         private const val BTN_TOOL_BRUSH = 0x142
+        private const val BTN_STYLUS = 0x14b
+        private const val BTN_STYLUS2 = 0x14c
         private const val BTN_TOUCH = 0x14a
 
         /** The pen's event node, found by its kernel name; event5 on the Note Air6 C. */

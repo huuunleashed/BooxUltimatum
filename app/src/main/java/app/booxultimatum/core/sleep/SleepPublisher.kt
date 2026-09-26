@@ -119,6 +119,24 @@ object SleepPublisher {
         if (Privileged.ready()) Privileged.sh("am broadcast -a $ACTION --ei type $TYPE_IMAGE --es file '$path' --ez show_result_hint false")
     }
 
+    // ---------- The power-off image ----------
+
+    /** The same broadcast with type 17 sets the picture Boox shows when the tablet is switched off (Onyx's SDK `ScreenSaverUtils`). */
+    private const val TYPE_POWER_OFF = 17
+    const val BOOX_POWER_OFF_DEFAULT = "/system/media/shutdown-default.png"
+    private const val POWER_OFF_NAME = "booxultimatum-poweroff"
+
+    /** Writes the power-off picture as our own file in `Pictures/` and returns its path. */
+    fun writePowerOff(context: Context, bytes: ByteArray): String = write(context, "poweroff_uri", PICTURES, POWER_OFF_NAME, Format.Png, bytes)
+
+    /** Asks Boox to use [path] as the power-off image. Boox keeps its own copy, so the picture only changes when this is sent again. */
+    fun broadcastPowerOff(context: Context, path: String) {
+        require(!path.contains('\'')) { "Bad path" }
+        context.sendBroadcast(Intent(ACTION).putExtra("type", TYPE_POWER_OFF).putExtra("file", path).putExtra("show_result_hint", false))
+    }
+
+    fun deletePowerOff(context: Context) = deleteRow(context, "poweroff_uri")
+
     // ---------- The Transparent style's sticker ----------
 
     /** The sticker Boox saved most recently, which is the one the Transparent style shows. Needs Shizuku. */

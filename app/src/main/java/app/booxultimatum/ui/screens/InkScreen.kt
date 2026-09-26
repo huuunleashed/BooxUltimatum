@@ -101,6 +101,17 @@ fun InkScreen(readKey: Int, compact: Boolean) {
                     status == InstantInk.Status.Armed -> stringResource(R.string.ink_status_armed, InstantInk.armedFor.orEmpty())
                     else -> stringResource(R.string.ink_status_ready)
                 })
+                val route = remember(statusKey, prefs) { app.booxultimatum.core.ink.SurfaceInk.route }
+                if (prefs.enabled && route != null) {
+                    Text(
+                        stringResource(when (route) {
+                            app.booxultimatum.core.ink.SurfaceInk.Route.Firmware -> R.string.ink_route_firmware
+                            app.booxultimatum.core.ink.SurfaceInk.Route.Direct -> R.string.ink_route_direct
+                            app.booxultimatum.core.ink.SurfaceInk.Route.Shizuku -> R.string.ink_route_shizuku
+                        }),
+                        style = MaterialTheme.typography.bodySmall, color = Ink.Legend, modifier = Modifier.padding(top = Space.xs),
+                    )
+                }
                 Spacer(Modifier.height(Space.m))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.s), verticalArrangement = Arrangement.spacedBy(Space.s)) {
                     Key(stringResource(R.string.ink_check), onClick = { statusKey++ })

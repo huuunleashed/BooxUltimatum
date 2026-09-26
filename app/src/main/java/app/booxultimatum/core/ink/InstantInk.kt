@@ -113,15 +113,38 @@ class InkService : Service() {
     private var armedRotation = -1
     private var lastForeground: String? = null
     private var lastQuery = 0L
-    /** App frames are held back from the panel (a stroke is being drawn or waiting to be swapped). */
+    /** App frames are held back from the panel (the pen is near, a stroke is being drawn or waiting to be swapped). */
     private var holding = false
     private var touching = false
+    private var near = false
+    private var lastSwap = 0L
 
-    /** The swap: the app's frames go to the panel again and replace the preview; the session stays open. */
-    private val swap = Runnable {
+    private fun hold() {
+        if (prefs.holdAppInk && !holding) { SurfaceInk.enablePost(false); holding = true }
+        handler.removeCallbacks(watchdog)
+        handler.postDelayed(watchdog, 30_000)
+    }
+
+    private fun letThrough() {
         handler.removeCallbacks(watchdog)
         if (holding) { SurfaceInk.enablePost(true); holding = false }
+        lastSwap = android.os.SystemClock.uptimeMillis()
     }
+
+    /**
+     * The swap: the app's frames reach the panel again and replace the preview, while the session stays open. If the
+     * pen is still hovering, the hold resumes shortly afterwards, so the next stroke's first points are never raced
+     * by the app's own frames (the likely cause of the preview sometimes missing a stroke's start).
+     */
+    private val swap = Runnable {
+        letThrough()
+        if (near && armed != null) { handler.removeCallbacks(rehold); handler.postDelayed(rehold, REHOLD_MS) }
+    }
+
+    private val rehold = Runnable { if (near && !touching && armed != null) { hold(); handler.postDelayed(hoverIdle, HOVER_IDLE_MS) } }
+
+    /** A pen resting in range without drawing doesn't keep the app's screen frozen: its frames go through after a while. */
+    private val hoverIdle = Runnable { if (!touching && holding) letThrough() }
 
     /** Never leave app frames held back for long, whatever the pen reports. */
     private val watchdog = Runnable { if (holding) { SurfaceInk.enablePost(true); holding = false } }
@@ -158,6 +181,7 @@ class InkService : Service() {
         disarm()
         if (!prefs.enabled || prefs.apps.isEmpty()) { InstantInk.setStatus(InstantInk.Status.Off); stopSelf(); return }
         if (SurfaceInk.connect { InstantInk.serverPid() } == null) { InstantInk.setStatus(InstantInk.Status.NoRoute); return }
+        android.util.Log.i("InstantInk", "route ${SurfaceInk.route}, pen state ${SurfaceInk.penState()}")
         if (pen == null) {
             val p = PenInput { e -> handler.post { onPen(e) } }
             if (!p.start()) { InstantInk.setStatus(InstantInk.Status.NoPen); return }
@@ -168,26 +192,43 @@ class InkService : Service() {
 
     private fun onPen(e: PenInput.Event) {
         when (e) {
-            // The pen comes into range about half a second before it touches, so the session is ready before the first point.
-            PenInput.Event.Near -> checkTarget()
+            // The pen comes into range about half a second before it touches. Arming and holding the app's frames now,
+            // as Onyx's SDK does at hover, means the first point of the stroke already lands on a held screen.
+            PenInput.Event.Near -> {
+                near = true
+                checkTarget()
+                if (armed != null) {
+                    hold()
+                    handler.removeCallbacks(hoverIdle); handler.postDelayed(hoverIdle, HOVER_IDLE_MS)
+                }
+            }
             PenInput.Event.Down -> {
-                touching = true
+                touching = true; near = true
                 if (armed == null) checkTarget()
                 if (armed == null) return
                 // A swap still pending from the last stroke is dropped: letting frames through now would cover this stroke's start.
-                handler.removeCallbacks(swap)
-                if (prefs.holdAppInk && !holding) { SurfaceInk.enablePost(false); holding = true }
-                handler.removeCallbacks(watchdog)
-                handler.postDelayed(watchdog, 30_000)
+                handler.removeCallbacks(swap); handler.removeCallbacks(rehold); handler.removeCallbacks(hoverIdle)
+                if (!holding) android.util.Log.d("InstantInk", "stroke began unheld, ${android.os.SystemClock.uptimeMillis() - lastSwap} ms after the last swap")
+                hold()
             }
             PenInput.Event.Up -> {
                 touching = false
                 if (armed != null) { handler.removeCallbacks(swap); handler.postDelayed(swap, prefs.latencyMs.toLong()) }
             }
-            // Out of range means the owner is done for now: swap at once.
-            PenInput.Event.Away -> if (armed != null && !touching) { handler.removeCallbacks(swap); swap.run() }
-            // The eraser is the app's own tool; the preview would draw black under it, so it pauses and the app shows.
-            PenInput.Event.EraserNear -> if (armed != null) { handler.removeCallbacks(swap); swap.run(); SurfaceInk.setPenState(SurfaceInk.PAUSE) }
+            // Out of range means the owner is done for now: swap at once and stop holding.
+            PenInput.Event.Away -> {
+                near = false
+                if (armed != null && !touching) {
+                    handler.removeCallbacks(swap); handler.removeCallbacks(rehold); handler.removeCallbacks(hoverIdle)
+                    letThrough()
+                }
+            }
+            // The eraser end, or a side button that apps map to erasing, is the app's own tool; the preview would draw
+            // black under it, so the preview pauses and the app shows.
+            PenInput.Event.EraserNear -> if (armed != null) {
+                handler.removeCallbacks(swap); handler.removeCallbacks(rehold); handler.removeCallbacks(hoverIdle)
+                letThrough(); SurfaceInk.setPenState(SurfaceInk.PAUSE)
+            }
             PenInput.Event.EraserAway -> if (armed != null) SurfaceInk.setPenState(SurfaceInk.DRAW)
         }
     }
@@ -206,15 +247,16 @@ class InkService : Service() {
         // rectangle lost the bottom quarter. A square as large as the long side covers the panel in every orientation.
         val side = maxOf(w, h)
         SurfaceInk.setRegion(intArrayOf(0, 0, side, side))
-        SurfaceInk.setStroke(prefs.widthPx.toFloat(), 0xFF000000.toInt(), prefs.style.code)
+        // The stroke goes after START, as in Onyx's demo: arming can reset the stroke to firmware defaults.
         SurfaceInk.setPenState(SurfaceInk.START)
+        SurfaceInk.setStroke(prefs.widthPx.toFloat(), 0xFF000000.toInt(), prefs.style.code)
         SurfaceInk.setPenState(SurfaceInk.DRAW)
         armed = pkg; armedRotation = rotation
         InstantInk.setStatus(InstantInk.Status.Armed, pkg)
     }
 
     private fun disarm() {
-        handler.removeCallbacks(swap); handler.removeCallbacks(watchdog)
+        handler.removeCallbacks(swap); handler.removeCallbacks(watchdog); handler.removeCallbacks(rehold); handler.removeCallbacks(hoverIdle)
         if (armed != null || holding) SurfaceInk.release()
         armed = null; holding = false; touching = false
         if (InstantInk.status == InstantInk.Status.Armed) InstantInk.setStatus(InstantInk.Status.Ready)
@@ -264,5 +306,9 @@ class InkService : Service() {
     companion object {
         private const val CHANNEL = "instant_ink"
         private const val NOTIFICATION_ID = 42
+        /** After a swap with the pen still in range, frames flow this long before the hold resumes: enough for one e-ink refresh. */
+        private const val REHOLD_MS = 350L
+        /** A hovering pen that doesn't touch down releases the app's frames after this long. */
+        private const val HOVER_IDLE_MS = 2_500L
     }
 }

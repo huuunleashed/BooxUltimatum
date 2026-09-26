@@ -15,6 +15,9 @@
     <string name="ink_status_noroute">The display service did not answer. Try Recover screen, then turn it on again</string>
     <string name="ink_status_needs_shizuku">Needs Shizuku: start it from Access, then turn Instant ink on again</string>
     <string name="ink_check">Check again</string>
+    <string name="ink_route_firmware">Through the firmware’s own pen helper, the one Onyx’s pen SDK uses</string>
+    <string name="ink_route_direct">Through direct display calls (the firmware’s pen helper wasn’t reachable)</string>
+    <string name="ink_route_shizuku">Through Shizuku (the display didn’t answer the app directly)</string>
     <string name="ink_recover">Recover screen</string>
     <string name="ink_recover_hint">If preview ink ever stays on screen, Recover screen ends the pen session and repaints everything.</string>
     <string name="ink_recovered">Pen session ended and screen repainted</string>

@@ -153,13 +153,20 @@ object SleepStudio {
         }
     }
 
-    /** Writes an already-encoded picture where Onyx reads it. Callers hold [publishLock]. */
+    /**
+     * Writes an already-encoded picture where Onyx reads it. Callers hold [publishLock]. The style switch is never sent
+     * while the tablet sleeps: other apps report that switching while the sleep screen is drawn blanks it to white
+     * (smoores-dev/storyteller). It's sent on the next wake instead.
+     */
     private suspend fun publish(context: Context, spec: SleepFaceSpec, bytes: ByteArray, format: SleepPublisher.Format, announce: Boolean): String = when (spec.mode) {
         SleepMode.Image -> {
             val p = SleepPublisher.writeImage(context, bytes, format)
             if (announce || p != SleepStore.get(context, "broadcast_path")) {
-                SleepPublisher.broadcastImage(context, p)
-                SleepStore.put(context, "broadcast_path", p)
+                val awake = context.getSystemService(android.os.PowerManager::class.java)?.isInteractive != false
+                if (awake) {
+                    SleepPublisher.broadcastImage(context, p)
+                    SleepStore.put(context, "broadcast_path", p)
+                } else SleepStore.put(context, "reannounce", "1")
             }
             p
         }
@@ -385,4 +392,50 @@ object SleepStudio {
     }
 
     fun changed(context: Context) = Journal.original(context, SCREEN_JOURNAL) != null || SleepPublisher.stickerChanged(context)
+
+    // ---------- Power-off screen ----------
+
+    private const val POWER_OFF_JOURNAL = "sleep.poweroff"
+
+    /** Elements that describe the moment, which would be stale on a picture shown until the next power-on. */
+    private val MOMENT = setOf(SleepElement.Battery, SleepElement.PutDown)
+
+    fun powerOffSet(context: Context) = Journal.original(context, POWER_OFF_JOURNAL) != null
+
+    /**
+     * Makes the chosen face the power-off picture, in portrait and without the battery or put-down time. Boox copies the
+     * picture once when it's set, so it doesn't follow later edits until this runs again. T0.
+     */
+    suspend fun applyPowerOff(context: Context): Result<String> = mutex.withLock {
+        withContext(Dispatchers.Default) {
+            val app = context.applicationContext
+            val r = runCatching {
+                val base = SleepStore.load(app)
+                val spec = base.copy(mode = SleepMode.Image, elements = base.elements - MOMENT, clockRoom = false)
+                val (pw, ph) = panelSize(app).let { (w, h) -> minOf(w, h) to maxOf(w, h) }
+                val j = job(app, spec, exact = false, scale = 1f, size = pw to ph)
+                val drawn = draw(app, j, null, shared = false)
+                val bytes = ByteArrayOutputStream(1 shl 20).also { drawn.bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }.toByteArray()
+                drawn.bitmap.recycle()
+                val path = SleepPublisher.writePowerOff(app, bytes)
+                if (Journal.original(app, POWER_OFF_JOURNAL) == null) Journal.rememberOriginal(app, POWER_OFF_JOURNAL, JSONObject().put("boox", SleepPublisher.BOOX_POWER_OFF_DEFAULT))
+                SleepPublisher.broadcastPowerOff(app, path)
+                path
+            }
+            Journal.log(app, "sleep-screen", app.getString(R.string.sl_journal_poweroff, faceName(app, SleepStore.load(app))), r.exceptionOrNull()?.message.orEmpty(), r.isSuccess)
+            r
+        }
+    }
+
+    /** Back to Boox's own power-off picture. */
+    suspend fun restorePowerOff(context: Context): Result<Unit> = withContext(Dispatchers.Default) {
+        val app = context.applicationContext
+        val r = runCatching {
+            SleepPublisher.broadcastPowerOff(app, SleepPublisher.BOOX_POWER_OFF_DEFAULT)
+            SleepPublisher.deletePowerOff(app)
+            Journal.forget(app, POWER_OFF_JOURNAL)
+        }
+        Journal.log(app, "sleep-screen", app.getString(R.string.sl_journal_poweroff_restore), r.exceptionOrNull()?.message.orEmpty(), r.isSuccess)
+        r
+    }
 }

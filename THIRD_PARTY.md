@@ -35,7 +35,7 @@ BooxUltimatum contains no Onyx/BOOX code, SDKs or assets. The Boox interfaces it
 - the SurfaceFlinger handwriting and post transactions behind Instant ink;
 - the EinkWise configuration it reads.
 
-They are called through small clients written from scratch in `core/sleep/`, `core/SystemFont.kt` and `core/ink/`. Onyx's pen SDK (`onyxsdk-pen`) is published as an obfuscated binary and deliberately isn't bundled. The evidence for each interface is in `knowledge/experiments.md`.
+They are called through small clients written from scratch in `core/sleep/`, `core/SystemFont.kt` and `core/ink/`. The sleep-picture and font broadcasts aren't publicly documented. The pen path is: Onyx documents it for app developers as its pen SDK, [onyx-intl/OnyxAndroidDemo](https://github.com/onyx-intl/OnyxAndroidDemo) (Apache-2.0, `doc/Onyx-Pen-SDK.md`), which Instant ink credits as the starting point. The SDK itself (`onyxsdk-pen`, `onyxsdk-device`) is published as obfuscated binaries without source, so it isn't bundled. `core/ink/SurfaceInk.kt` tries the same firmware helper the SDK uses (`android.onyx.ViewUpdateHelper`) and falls back to SurfaceFlinger's transactions where that helper is blocked. The evidence for each interface is in `knowledge/experiments.md`.
 
 ## Data
 

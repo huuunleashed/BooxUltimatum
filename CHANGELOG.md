@@ -2,18 +2,32 @@
 
 All notable changes to BooxUltimatum. Newest first. The project follows [Semantic Versioning](https://semver.org) loosely while it is below 1.0: minor versions add features, and anything may still change between them. Dates are in the tablet's time zone (UTC+7).
 
-## [Unreleased] (towards 0.4.0, the first public preview)
+## [Unreleased]
+
+Nothing yet.
+
+## [0.4.0] (2026-09-27, the first public preview)
+
+The first build published as an APK. It folds in the research from the Reddit launch thread, so the answers to it are fixes and features rather than apologies. Tested on one Note Air6 C, firmware 4.3, Android 16.
 
 ### Added
 
-- **Instant ink** (Ink destination, experimental). While an app you pick is in front, the display draws the pen stroke straight onto the panel as Boox Notes does, and the app's own stroke replaces the preview half a second after the lift. It needs no root, no Shizuku and no change to the app. Found in a test session with the owner drawing in Sketchbook:
-  - Boox's display service can hold an app's frames back while the pen draws and let them through after the lift. That swaps the preview for the app's stroke without closing the pen session, so no stroke loses its start.
+- **Instant ink** (Ink destination, experimental). While an app you pick is in front, the display draws the pen stroke straight onto the panel as Boox Notes does, and the app's own stroke replaces the preview half a second after the lift. It needs no root, no Shizuku and no change to the app. Checked with a real pen in Sketchbook:
+  - Boox's display service can hold an app's frames back while the pen draws and let them through after the lift. That swaps the preview for the app's stroke without closing the pen session.
+  - The frames are held from **hover**, as Onyx's SDK arms at hover, rather than from pen-down. The one stroke in ten that used to lose its first millimetres of preview no longer does.
+  - The stroke is sent as **style, then width, then colour**, after the session starts. Choosing a style resets the width to its default, so the width setting had never applied before; it does now.
   - The preview region is a square as large as the panel's long side, because the service reads it in the panel's landscape frame. A portrait-shaped region missed the bottom quarter.
-  - Hovering (reported as the brush tool by this pen) arms the session before the nib touches.
-  - Fountain pen at 4 px is the default brush, because the pencil is textured and looked broken.
-  - The in-app service is built and starts cleanly, but hasn't yet been checked with a real pen.
+  - The route check also asks for the pen's pressure range, a device constant, so firmware with different codes fails the check instead of silently drawing nothing. A held side button counts as the eraser.
+  - It tries Onyx's own firmware helper (`android.onyx.ViewUpdateHelper`, the class the SDK calls) first, then direct display calls. On FW 4.3 Android blocks the helper for third-party apps, so the direct route is used; the Ink page shows which one.
+- **Power-off screen.** Sleep › *Use as power-off screen* makes the chosen face what the tablet shows when switched off, through the same Boox broadcast with type 17, in portrait and without the battery and put-down time. Boox confirms it saved the picture; how it looks at a real power-off is still to check.
+- **Works without Shizuku** in more places:
+  - **The whole tablet's font:** the font is written to `Documents/BooxUltimatum/` through MediaStore and the switch is broadcast by the app itself. Verified with Shizuku stopped.
+  - **Making BooxUltimatum the home screen:** opens Android's own Default home app page when Shizuku isn't running, still remembering the Boox home for going back.
+  - **Background restrictions:** each app's page links to Android's App battery usage page ("Allow background usage", the same switch Boox turns off) and to Boox's App Freeze page.
+- **Boox's hidden App Freeze page.** Firmware 4.3 still has the Freeze Settings page a Redditor described (Freeze new apps, Auto Freeze, a switch per app), but not in its menus. BooxUltimatum opens it directly. Thanks to the Redditors who described the freeze settings and the long-press Optimize › Others route.
+- **Setup scripts** for owners with a computer: `tools/host/grant-permissions` grants the four one-time permissions, and `tools/host/start-shizuku` starts Shizuku after a reboot, each for Windows (`.ps1`) and macOS or Linux (`.sh`).
 - **Screenshots** of the app and home screen in `docs/screenshots/`, taken on the tablet and anonymised.
-- **A landing page and technical guide** in `site/`, published to GitHub Pages: what it does, the access tiers, and how each part works, with links to the exact files.
+- **A landing page and technical guide** in `site/`, published to GitHub Pages: what it does, the access levels, and how each part works, with links to the exact files.
 - **GitHub project files:** issue forms (bug, device finding, idea), a pull request template, `SECURITY.md`, fuller contributing guidelines, a CI workflow that builds, lints and checks prose, and a Pages deploy workflow.
 - **Release signing:** `-Pbu.signing=<properties>` signs with a key kept outside the repository. Without it, builds stay debug-signed.
 - **A new icon.** An ordered-dither ramp: grey made only of black and white cells, the way e-ink draws it, with one 2×2 colour cell lit, since one Kaleido colour pixel covers four mono ones. It draws no outline of its own, so launcher masks never double it, and it has a themed single-colour layer. It was chosen from six concepts and replaces the needle-and-scale placeholder. The PNG versions are in `docs/brand/`.
@@ -26,15 +40,24 @@ All notable changes to BooxUltimatum. Newest first. The project follows [Semanti
   - Settings is a gear rather than a sun that read as brightness.
   - The battery terminal, slider knobs, app grid gaps and chevrons were fixed.
   - The header's BooxUltimatum key uses the new mark.
+- **The README explains Shizuku:** what it is, what each access level adds, and how to start it with the bundled scripts.
 
 ### Fixed
 
+- **Corrected: "undocumented" was wrong for Instant ink and the sleep screen.** The fast pen path is a documented Onyx feature, offered to app developers through Onyx's pen SDK ([onyx-intl/OnyxAndroidDemo](https://github.com/onyx-intl/OnyxAndroidDemo)) for drawing inside their own app, and the screensaver broadcast is in the same SDK. What Instant ink adds is using the path on behalf of apps that don't include the SDK, and handing the stroke back after the lift. The README, the website and `THIRD_PARTY.md` now say so and credit the SDK. Thanks to the Redditor who pointed it out.
+- **Corrected: the status bar claim.** Tablet-wide, BooxUltimatum shows or hides the system's status bar icons (and this needs only the one-time adb grants, not Shizuku). The custom Wi-Fi and battery designs are drawn in its own home header. Replacing the system's icon artwork would need a system overlay, which Android allows only with root.
+- **Corrected: Freeze Settings.** An earlier note said the option wasn't on firmware 4.3; the page is there, only hidden from the menus.
 - **Sleep screen after a rotation.** Turning the tablet and sleeping soon after showed the face cropped, because the face for the new shape was only drawn seconds later.
   - Each refresh now also prepares the other orientation, and a turn swaps it in at once.
   - A last check runs as the tablet starts to sleep.
   - Verified: rotate then sleep within 0.2 s in both directions, and rotate and sleep at the same instant from the lock screen.
+- **The sleep screen style switch is never sent while the tablet is asleep.** Other developers report that doing so blanks the sleep screen to white; it now waits for the next wake.
 - **Boox's bottom bar on the sleep screen** (battery and "Press power button to wake up") is now switched off through Boox's settings, and faces use that strip. Boox still forces the bar on while the tablet charges; the studio says so.
 - A new version redraws the sleep face on its own after installing.
+
+### Research
+
+- Three research passes: Onyx's SDK and open-source apps that use it (Notable, CalliPlus's notes, KOReader, Readest), getting Shizuku through restarts without a computer, and e-ink UI and sleep-screen tools. The findings behind this release are in `knowledge/experiments.md`. Shizuku surviving restarts and a full-refresh key are planned for 0.5 and 0.6.
 
 ## [0.3.0] (2026-09-26)
 

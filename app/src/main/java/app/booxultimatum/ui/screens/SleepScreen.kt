@@ -234,6 +234,20 @@ fun SleepScreen(readKey: Int, accessEvents: Int) {
                 )
                 Key(stringResource(R.string.sl_open_boox), onClick = { SleepPublisher.openScreensaverSettings(context) })
             }
+            // The power-off picture: the same face, set once, without the moment-bound battery and put-down time.
+            var powerOff by remember { mutableStateOf(SleepStudio.powerOffSet(context)) }
+            Spacer(Modifier.height(Space.s))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.s), verticalArrangement = Arrangement.spacedBy(Space.s), itemVerticalAlignment = Alignment.CenterVertically) {
+                Key(
+                    stringResource(if (powerOff) R.string.sl_poweroff_again else R.string.sl_poweroff),
+                    enabled = !busy && spec.mode == SleepMode.Image,
+                    onClick = { act(context.getString(R.string.sl_poweroff_done)) { SleepStudio.applyPowerOff(context).map { powerOff = true } } },
+                )
+                if (powerOff) Key(stringResource(R.string.sl_poweroff_restore), enabled = !busy, onClick = {
+                    act(context.getString(R.string.sl_poweroff_restored)) { SleepStudio.restorePowerOff(context).also { if (it.isSuccess) powerOff = false } }
+                })
+            }
+            Text(stringResource(R.string.sl_poweroff_note), style = MaterialTheme.typography.bodySmall, color = Ink.Legend, modifier = Modifier.padding(top = Space.xs))
             if (!shell) Text(stringResource(R.string.sl_shell_note), style = MaterialTheme.typography.bodySmall, color = Ink.Legend, modifier = Modifier.padding(top = Space.s))
             error?.let { ErrorLine(it) }
             message?.let { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.s)) }

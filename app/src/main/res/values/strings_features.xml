@@ -11,7 +11,7 @@
     <string name="action_use_launcher">Use this</string>
     <string name="action_back_to_boox">Back to Boox</string>
     <string name="home_only_boox">Only the Boox home is installed. Install any launcher, then come back here to try it with a safe way back.</string>
-    <string name="home_needs_shizuku">Switching in one tap needs Shizuku. Without it, Android’s own Home app page does the same.</string>
+    <string name="home_needs_shizuku">Shizuku isn’t running, so the keys above open Android’s own Default home app page, where you confirm the choice with one more tap. BooxUltimatum still remembers the Boox home so you can go back.</string>
     <string name="action_home_settings">Android Home app page</string>
     <string name="home_shortcuts">Boox functions · %1$d</string>
     <string name="home_shortcuts_explain">Open any Boox app from here, whichever launcher is in use.</string>
@@ -226,6 +226,9 @@
     <string name="app_background">Background activity</string>
     <string name="app_bucket">Standby group</string>
     <string name="app_needs_shizuku">Changing how this app sleeps needs Shizuku.</string>
+    <string name="app_needs_shizuku_bg">Shizuku isn’t running, so BooxUltimatum can’t read or change this directly. You can still fix it yourself: Android’s battery page for this app has an “Allow background usage” switch, the same one Boox turns off, and Boox’s hidden App Freeze page lets you unfreeze the app and stop Boox from freezing new apps. In the Boox home you can also long-press the app’s icon and choose Optimize › Others.</string>
+    <string name="action_battery_page">Open its battery page</string>
+    <string name="action_boox_freeze">Boox App Freeze</string>
     <string name="app_system_allow_note">The firmware itself exempts this app from Doze; that can’t be changed from an app.</string>
     <string name="app_disable_note">Disabling hides the app and stops it running. Nothing is uninstalled, and Enable brings it back.</string>
     <string name="allow_user">Never sleeps (exempt)</string>

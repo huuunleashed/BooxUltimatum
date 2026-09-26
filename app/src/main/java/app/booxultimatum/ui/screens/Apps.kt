@@ -228,9 +228,14 @@ private fun AppDetailScreen(pkg: String, readKey: Int, compact: Boolean, onBack:
                 SpecRow(stringResource(R.string.app_bucket), detail.bucket?.let { stringResource(bucketName(it)) } ?: stringResource(R.string.value_needs_shizuku))
                 Spacer(Modifier.height(Space.m))
                 if (!shell) {
-                    Paragraph(stringResource(R.string.app_needs_shizuku), color = Ink.Legend)
+                    // Android's own per-app battery page holds the same switch, so the fix works without Shizuku too.
+                    Paragraph(stringResource(R.string.app_needs_shizuku_bg), color = Ink.Legend)
                     Spacer(Modifier.height(Space.s))
-                    Key(stringResource(R.string.action_get_access), onClick = onOpenAccess)
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.s), verticalArrangement = Arrangement.spacedBy(Space.s)) {
+                        Key(stringResource(R.string.action_battery_page), primary = true, onClick = { openBatteryPage(context, pkg) })
+                        Key(stringResource(R.string.action_boox_freeze), onClick = { openBooxFreezePage(context) })
+                        Key(stringResource(R.string.action_get_access), onClick = onOpenAccess)
+                    }
                 } else {
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.s), verticalArrangement = Arrangement.spacedBy(Space.s)) {
                         when (detail.allow) {
@@ -303,6 +308,26 @@ private fun AppDetailScreen(pkg: String, readKey: Int, compact: Boolean, onBack:
             }
         }
     }
+}
+
+/**
+ * Android's App battery usage page for [pkg], where "Allow background usage" is the same switch Boox turns off
+ * (`RUN_ANY_IN_BACKGROUND`). Falls back to App info when a firmware lacks the direct page.
+ */
+fun openBatteryPage(context: android.content.Context, pkg: String) {
+    val direct = Intent("android.settings.VIEW_ADVANCED_POWER_USAGE_DETAIL", Uri.parse("package:$pkg")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    if (runCatching { context.startActivity(direct) }.isFailure) {
+        runCatching { context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$pkg")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+    }
+}
+
+/**
+ * Boox's App Freeze page, which FW 4.3 keeps but hides from its menus: *Freeze new apps* and a freeze switch per app.
+ * Opened by its Onyx settings action (verified 2026-09-27); falls back to Boox Settings.
+ */
+fun openBooxFreezePage(context: android.content.Context) {
+    val freeze = Intent("onyx.settings.action.APP_FREEZE_MANAGEMENT").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    if (runCatching { context.startActivity(freeze) }.isFailure) app.booxultimatum.launcher.BooxIntents.openSettings(context)
 }
 
 private fun allowName(a: AllowState) = when (a) {

@@ -87,7 +87,7 @@
     <string name="dest_appearance">Appearance</string>
     <string name="ap_subtitle">The system status bar everywhere, and how BooxUltimatum home looks</string>
     <string name="ap_statusbar">System status bar</string>
-    <string name="ap_statusbar_explain">Choose which icons the status bar shows. This applies across the whole tablet, the Boox home included, through Android’s own status bar setting.</string>
+    <string name="ap_statusbar_explain">Choose which icons the status bar shows. This applies across the whole tablet, the Boox home included, through Android’s own status bar setting. The icon designs you pick below are drawn in BooxUltimatum home’s header; the system’s own icon artwork can only be replaced with root.</string>
     <string name="ap_statusbar_note">Icons appear only while their feature is active, so a shown icon may still be absent. The icons’ design belongs to the firmware and can’t be changed without root.</string>
     <string name="ap_restore_boox">Restore Boox defaults</string>
     <string name="ap_show">Show</string>

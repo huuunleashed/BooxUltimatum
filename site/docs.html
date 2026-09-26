@@ -56,7 +56,7 @@
       <dl class="readings" aria-label="Where these facts come from">
         <div><dt>Device</dt><dd>BOOX Note Air6 C<span>One unit, the author's own</span></dd></div>
         <div><dt>Firmware</dt><dd>4.3, Android 16<span><code>2026-08-17_12-29_4.3-rel_0817_fd4f8e9fe</code></span></dd></div>
-        <div><dt>Status</dt><dd>Verified here, untested elsewhere<span>Boox interfaces are undocumented; an update can change them</span></dd></div>
+        <div><dt>Status</dt><dd>Verified here, untested elsewhere<span>Boox interfaces are unofficial here; an update can change them</span></dd></div>
       </dl>
     </div>
   </div>
@@ -86,9 +86,9 @@
           <table>
             <thead><tr><th scope="col">Tier</th><th scope="col">What it is</th><th scope="col">What it unlocks</th></tr></thead>
             <tbody>
-              <tr><th scope="row">T0</th><td>Just the app, as installed</td><td>Home screen, sleep screen (Sleep image mode), Instant ink, battery measurement, fonts, the settings hub</td></tr>
-              <tr><th scope="row">T1</th><td>Permissions granted once from a computer with <code>adb</code></td><td>Reading battery statistics in the app, and changing system settings</td></tr>
-              <tr><th scope="row">T2</th><td><a href="https://shizuku.rikka.app">Shizuku</a>: a small service with the rights of the shell user (uid 2000)</td><td>Most tweaks, tablet-wide status bar icons, the network name in the header, the tablet-wide font, the Over Transparent sleep mode</td></tr>
+              <tr><th scope="row">T0</th><td>Just the app, as installed</td><td>Home screen, sleep screen (Sleep image mode) and power-off screen, Instant ink, battery measurement, the tablet-wide font, the settings hub, and becoming the home screen through Android's own confirmation. For restricted apps, links to Android's battery page and Boox's hidden App Freeze page.</td></tr>
+              <tr><th scope="row">T1</th><td>Permissions granted once from a computer with <code>adb</code></td><td>Reading battery statistics in the app, showing or hiding status bar icons tablet-wide, and setting-based tweaks</td></tr>
+              <tr><th scope="row">T2</th><td><a href="https://shizuku.rikka.app">Shizuku</a>: a small service with the rights of the shell user (uid 2000)</td><td>Most tweaks, reading and lifting Boox's background restriction for every app, one-tap home switching, the network name in the header, <em>Sleep now</em>, the Over Transparent sleep mode</td></tr>
               <tr><th scope="row">T3</th><td>Root</td><td>Out of scope, by decision on 2026-09-25</td></tr>
             </tbody>
           </table>
@@ -98,6 +98,8 @@
 adb shell pm grant app.booxultimatum android.permission.DUMP
 adb shell pm grant app.booxultimatum android.permission.READ_LOGS
 adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
+        <p>The repository bundles these as scripts: <code>tools/host/grant-permissions.ps1</code> (or <code>.sh</code>) grants T1 once, and <code>tools/host/start-shizuku.ps1</code> (or <code>.sh</code>) starts Shizuku after each reboot. Shizuku needs <code>adb</code> to start, and firmware 4.3 hides the Wireless debugging switch, so for now that takes a computer.</p>
+        <p>Tablet-wide, the status bar can have icons shown or hidden (<code>icon_blacklist</code>, T1). The custom Wi-Fi and battery designs are drawn in the home screen's own header: replacing the system's icon artwork needs a system overlay, which the shell can't create (<code>cmd overlay fabricate</code> answers "must be root").</p>
         <p>For T2, the app binds a Shizuku user service (<code>ShellService</code>, over AIDL) that runs commands as the shell user. That helper costs about 66&nbsp;MB, and as a home screen the app process lives forever, so the service is unbound and its process removed after 45 seconds without calls. Shizuku itself stops on every reboot. With the tablet plugged into a computer, <code>tools\host\start-shizuku.ps1</code> restarts it; firmware 4.3 hides Wireless debugging, so restarting it from the tablet alone isn't possible yet.</p>
 
         <h3>Why no root</h3>
@@ -161,7 +163,8 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
   --ei type 16 \
   --es file '/storage/emulated/0/Pictures/booxultimatum-sleep.png' \
   --ez show_result_hint false</code></pre>
-        <p>Type 16 switches the style to Image, with that file as its only picture. The app sends the same intent from its own uid, which was verified on the tablet, so Sleep image mode is T0; with Shizuku it repeats it from the shell. Restore sends type 16 with Boox's own <code>/system/media/standby-1.png</code>, because the previous style can't be read back, and offers Boox's screensaver settings beside it.</p>
+        <p>Type 16 switches the style to Image, with that file as its only picture. This broadcast is part of Onyx's public SDK (<code>ScreenSaverUtils</code>, used by <a href="https://github.com/onyx-intl/OnyxAndroidDemo">OnyxAndroidDemo</a>'s screensaver sample), and other open-source apps such as KOReader cover tools use it too. The app sends it from its own uid, which was verified on the tablet, so Sleep image mode is T0; with Shizuku it repeats it from the shell. Restore sends type 16 with Boox's own <code>/system/media/standby-1.png</code>, because the previous style can't be read back, and offers Boox's screensaver settings beside it. The app never sends it while the tablet is asleep, because other developers report that doing so blanks the sleep screen to white; a switch that falls due then waits for the next wake.</p>
+        <p>The same broadcast with <strong>type 17</strong> sets the power-off picture. BooxUltimatum renders the chosen face in portrait, without the battery and put-down time that would be stale by the next power-on, and sends it on request. Boox saves its own copy (logcat: <code>SaveShutdownImageAction: Save shutdown image succeed</code>, for both the normal and the charging variant), so it changes only when set again; restore sends Boox's <code>/system/media/shutdown-default.png</code>.</p>
 
         <h3>Read fresh at every sleep, never while asleep</h3>
         <p>A file directly in <code>/sdcard/Pictures/</code> is used in place and decoded afresh each time the tablet goes to sleep, so overwriting it between sleeps changes the next sleep screen. A file anywhere else is copied once and later overwrites are ignored. Files above 10&nbsp;MB are dropped. Once asleep, nothing is read again: the only live element possible is Boox's own clock overlay, redrawn every 5 minutes. So the face is kept current while the tablet is awake, and only then:</p>
@@ -203,12 +206,13 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
           <span class="tag">Experimental</span>
         </div>
         <p>Boox Notes gets its ink under the nib in about 10&nbsp;ms because SurfaceFlinger draws the stroke itself. Its <code>touchReader</code> and <code>touchConsumer</code> threads read the pen's event node and push small <code>HANDWRITE</code> partial updates to the e-paper driver (<code>/dev/ebc</code>, open only to root and SurfaceFlinger). Apps don't draw that ink; they only arm it, with private <code>ISurfaceComposer</code> transactions for the pen state, the region, the stroke and the repaint.</p>
-        <p>Any process can arm that path for whichever app is in front. BooxUltimatum does it from its ordinary app uid, calling SurfaceFlinger directly; the Shizuku route in the code is only a fallback for firmware that refuses the direct one. The other app is untouched and still receives every pen event.</p>
+        <p>This is a documented Onyx feature. App developers get it through Onyx's <a href="https://github.com/onyx-intl/OnyxAndroidDemo/blob/master/doc/Onyx-Pen-SDK.md">pen SDK</a> (<code>onyxsdk-pen</code>, <code>TouchHelper</code>), which turns it on inside the calling app's own view. Under the hood the SDK calls the firmware helper <code>android.onyx.ViewUpdateHelper</code>, after lifting Android's hidden-API check with double reflection. Two things are not in the SDK, and they are what Instant ink adds: arming the path for another app that doesn't include the SDK, and handing the stroke back to that app after the lift. On firmware 4.3 (Android 16) the SDK's route is also closed to third-party apps (both calls are denied as <code>api=blocked</code>), so BooxUltimatum tries the firmware helper first and otherwise sends the same SurfaceFlinger transactions itself.</p>
+        <p>Any process can arm that path for whichever app is in front. BooxUltimatum does it from its ordinary app uid; the Shizuku route in the code is only a fallback for firmware that refuses the direct one. The other app is untouched and still receives every pen event.</p>
 
         <h3>One stroke</h3>
         <ol class="sequence">
-          <li><span class="when">Hover</span><span class="what">This pen reports hover as <code>BTN_TOOL_BRUSH</code>, about 0.5&nbsp;s before <code>BTN_TOUCH</code>. The app in front is read then, once, from usage events. If it's chosen, the session is armed before the nib lands.</span></li>
-          <li><span class="when">Touch</span><span class="what"><code>ENABLE_POST</code> with 0 holds the app's own frames back from the panel, so its drawing can't cut gaps into the preview. SurfaceFlinger draws the stroke.</span></li>
+          <li><span class="when">Hover</span><span class="what">This pen reports hover as <code>BTN_TOOL_BRUSH</code>, about 0.5&nbsp;s before <code>BTN_TOUCH</code>. The app in front is read then, once, from usage events. If it's chosen, the session is armed and, as Onyx's SDK does at hover, <code>ENABLE_POST</code> with 0 already holds the app's own frames back, so the first point of the stroke lands on a held screen.</span></li>
+          <li><span class="when">Touch</span><span class="what">SurfaceFlinger draws the stroke. The app still gets every pen event, but its frames can't cut gaps into the preview. A hovering pen that doesn't touch down lets the frames through again after 2.5&nbsp;s.</span></li>
           <li><span class="when">Lift + 500&nbsp;ms</span><span class="what"><code>ENABLE_POST</code> with 1 lets the frames through, and the app's real stroke replaces the preview. The pen session stays open.</span></li>
           <li><span class="when">Pen away</span><span class="what">Swap at once. The eraser end pauses the preview, since it would draw black under an eraser.</span></li>
         </ol>
@@ -224,7 +228,7 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
             <tbody>
               <tr><th scope="row"><code>SET_PEN_STATE</code></th><td class="num">16711693</td><td>Start, draw, pause or stop the session, with the owner pid</td></tr>
               <tr><th scope="row"><code>SET_REGION_LIMIT</code></th><td class="num">16711694</td><td>The square region, long side by long side</td></tr>
-              <tr><th scope="row"><code>SET_STROKE_WIDTH</code> / <code>COLOR</code> / <code>STYLE</code></th><td class="num">16711687 / 86 / 88</td><td>4&nbsp;px, black, fountain pen (style 1) by default</td></tr>
+              <tr><th scope="row"><code>SET_STROKE_STYLE</code> / <code>WIDTH</code> / <code>COLOR</code></th><td class="num">16711688 / 87 / 86</td><td>Sent in that order, after the pen state goes to start: choosing a style resets the width to that style's default, so a width sent first was lost. 4&nbsp;px, black, fountain pen (style 1) by default.</td></tr>
               <tr><th scope="row"><code>ENABLE_POST</code></th><td class="num">16711692</td><td>Hold app frames (0) and release them (1): the swap</td></tr>
               <tr><th scope="row"><code>GET_PEN_STATE</code></th><td class="num">1048643</td><td>Probe the route, and read the session state</td></tr>
               <tr><th scope="row"><code>REPAINT_EVERYTHING</code></th><td class="num">16711700</td><td>Only in <em>release</em>, handing the panel back to normal drawing</td></tr>
@@ -238,7 +242,7 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
           <ul>
             <li>The mechanism was found in test sessions from the shell and an in-app prototype, with the owner drawing in Sketchbook. The in-app service is built and starts cleanly, but hasn't yet been checked with a real pen.</li>
             <li>The preview is Boox's black pen, so a coloured brush or the eraser only shows once the app's stroke takes over.</li>
-            <li>About one stroke in ten loses the first few millimetres of its preview. That's open.</li>
+            <li>A stroke could lose the first few millimetres of its preview, about one in ten. Holding the app's frames from hover instead of pen-down fixed it in the owner's test on 2026-09-27; it's worth watching in other apps.</li>
             <li>Pen strokes can't be simulated: <code>input</code> injects through InputDispatcher, which SurfaceFlinger's pen reader doesn't read. Every test needs someone drawing.</li>
           </ul>
         </div>
@@ -247,7 +251,7 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
           <h3>In the repository</h3>
           <ul class="links">
             <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/app/src/main/java/app/booxultimatum/core/ink/InstantInk.kt"><strong>app/…/core/ink/InstantInk.kt</strong><span>The service: arm on hover, hold at touch, swap after the lift.</span></a></li>
-            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/app/src/main/java/app/booxultimatum/core/ink/SurfaceInk.kt"><strong>app/…/core/ink/SurfaceInk.kt</strong><span>The clean-room SurfaceFlinger client and its transaction codes.</span></a></li>
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/app/src/main/java/app/booxultimatum/core/ink/SurfaceInk.kt"><strong>app/…/core/ink/SurfaceInk.kt</strong><span>The firmware-helper route, and the SurfaceFlinger transactions it falls back to.</span></a></li>
             <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/app/src/main/java/app/booxultimatum/core/ink/PenInput.kt"><strong>app/…/core/ink/PenInput.kt</strong><span>The pen's event node, read in <code>poll()</code>: hover, touch, eraser.</span></a></li>
             <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/knowledge/experiments.md#device-findings"><strong>knowledge/experiments.md</strong><span>The Instant ink rows: the path, <code>ENABLE_POST</code>, the region, hover.</span></a></li>
           </ul>
@@ -371,13 +375,13 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
 <!-- 8 ============================================================== -->
       <section class="topic" id="clean-room" aria-labelledby="clean-h">
         <div class="engraved"><h2 id="clean-h">Clean-room interoperability</h2></div>
-        <p>BooxUltimatum contains no Onyx or BOOX code, SDKs or assets. The Boox interfaces it uses were learned by observing the tablet and by reading how Boox's own apps call the firmware:</p>
+        <p>BooxUltimatum contains no Onyx or BOOX code, SDKs or assets. The Boox interfaces it uses were learned from Onyx's public SDK documentation, by observing the tablet, and by reading how Boox's own apps call the firmware:</p>
         <ul>
-          <li>the sleep-picture and system-font broadcasts;</li>
-          <li>the SurfaceFlinger handwriting and post transactions behind Instant ink;</li>
+          <li>the sleep-picture and system-font broadcasts, which aren't publicly documented;</li>
+          <li>the SurfaceFlinger handwriting and post transactions behind Instant ink, which Onyx's <a href="https://github.com/onyx-intl/OnyxAndroidDemo">pen SDK</a> documents for an app's own views;</li>
           <li>the EinkWise configuration it reads.</li>
         </ul>
-        <p>Only the facts are used. They are called through small clients written from scratch in <code>core/sleep/</code>, <code>core/SystemFont.kt</code> and <code>core/ink/</code>. Onyx's pen SDK, <code>onyxsdk-pen</code>, is published as an obfuscated binary and deliberately isn't bundled. Because these interfaces are undocumented, a firmware update can change them without notice; when something stops working, the app says so rather than guessing.</p>
+        <p>Only the facts are used. They are called through small clients written from scratch in <code>core/sleep/</code>, <code>core/SystemFont.kt</code> and <code>core/ink/</code>. Onyx's SDK itself, <code>onyxsdk-pen</code> and <code>onyxsdk-device</code>, is published as obfuscated binaries without source, so it isn't bundled. Because these interfaces aren't a stable public API, a firmware update can change them without notice; when something stops working, the app says so rather than guessing.</p>
         <p>The dependencies are AndroidX and Jetpack Compose and the Shizuku API, all Apache-2.0. The one bundled asset is Archivo, under the SIL Open Font License. The app goes online for two things only: weather from Open-Meteo for the city you type, and Google Fonts when you open the fonts browser. There are no accounts, analytics, ads or trackers.</p>
         <div class="sources">
           <h3>In the repository</h3>
@@ -409,7 +413,7 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
   <div>
     <p class="sign"><img src="brand/mark-256.png" width="28" height="28" alt="">BooxUltimatum</p>
     <p><strong>Not affiliated with Onyx or BOOX.</strong> BooxUltimatum is an independent project, not endorsed or supported by Onyx International. “BOOX”, “Note Air” and related names are trademarks of their owners, used here only to say which device this is for.</p>
-    <p>Pre-release software that relies on undocumented behaviour: use it at your own risk. As the GPL says, it comes with <strong>no warranty</strong>.</p>
+    <p>Pre-release software that relies on unofficial behaviour: use it at your own risk. As the GPL says, it comes with <strong>no warranty</strong>.</p>
   </div>
   <div>
     <ul>

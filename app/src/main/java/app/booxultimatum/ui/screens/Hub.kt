@@ -193,7 +193,7 @@ private fun HomeScreenPlate(readKey: Int) {
                     if (!l.isDefault) {
                         app.booxultimatum.ui.Key(
                             stringResource(if (l.isBoox) R.string.action_back_to_boox else R.string.action_use_launcher),
-                            enabled = shell && !busy,
+                            enabled = !busy,
                             primary = l.isBoox,
                             onClick = { act { if (l.isBoox) app.booxultimatum.core.Launchers.restore(context) else app.booxultimatum.core.Launchers.setDefault(context, l.component) } },
                         )

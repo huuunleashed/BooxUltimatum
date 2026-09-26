@@ -74,18 +74,18 @@
       <li class="tier t0">
         <div class="band" aria-hidden="true"></div>
         <h3><span class="id">T0</span> Just the app</h3>
-        <p>Home screen, sleep screen, Instant ink, battery measurement, fonts and the settings hub.</p>
+        <p>Home screen, sleep and power-off screens, Instant ink, battery measurement, the tablet font and the settings hub.</p>
         <p class="lamp-note"><span class="lamp" aria-hidden="true"></span>Useful from the first open</p>
       </li>
       <li class="tier t1">
         <div class="band" aria-hidden="true"></div>
         <h3><span class="id">T1</span> adb grants</h3>
-        <p>A few permissions granted once from a computer. Unlocks battery statistics in the app and changing system settings.</p>
+        <p>Four permissions granted once from a computer. Adds battery statistics in the app, status bar icons shown or hidden tablet-wide, and setting-based tweaks.</p>
       </li>
       <li class="tier t2">
         <div class="band" aria-hidden="true"></div>
         <h3><span class="id">T2</span> Shizuku</h3>
-        <p>A small service with the same rights as <code>adb</code>. Unlocks most tweaks, tablet-wide status bar icons and the network name.</p>
+        <p>A small helper with the same rights as <code>adb</code>, started from a computer after each reboot. Adds most tweaks, one-tap background fixes and the network name.</p>
       </li>
       <li class="tier t3">
         <div class="band" aria-hidden="true"></div>
@@ -175,7 +175,7 @@
     <article class="feature" aria-labelledby="f-ink">
       <div class="text">
         <h3 id="f-ink">Instant ink for other apps <span class="tag">Experimental</span></h3>
-        <p>In Boox Notes, ink appears under the nib in about 10&nbsp;ms. In Sketchbook and most other apps, it trails behind. BooxUltimatum found how Notes does it, the display system drawing the stroke straight from the pen, and lends that path to apps you choose.</p>
+        <p>In Boox Notes, ink appears under the nib in about 10&nbsp;ms. In Sketchbook and most other apps, it trails behind. The display system draws the stroke straight from the pen, a firmware feature Onyx offers app developers through its public <a href="https://github.com/onyx-intl/OnyxAndroidDemo/blob/master/doc/Onyx-Pen-SDK.md">pen SDK</a>. Most apps don't include it, so BooxUltimatum switches that path on from the outside for apps you choose.</p>
         <ul class="ticks">
           <li>A preview stroke lands at once; half a second after you lift, the app's own brush takes its place.</li>
           <li>The app isn't modified in any way. No root and no Shizuku.</li>
@@ -277,7 +277,7 @@ adb install -r app\build\outputs\apk\release\app-release.apk</code></pre>
   <div>
     <p class="sign"><img src="brand/mark-256.png" width="28" height="28" alt="">BooxUltimatum</p>
     <p><strong>Not affiliated with Onyx or BOOX.</strong> BooxUltimatum is an independent project, not endorsed or supported by Onyx International. “BOOX”, “Note Air” and related names are trademarks of their owners, used here only to say which device this is for.</p>
-    <p>It changes system settings and, if you ask it to, the home screen, the sleep screen and how other apps draw. Every change is recorded and reversible, and nothing touches the system partitions or the bootloader. Still, this is pre-release software that relies on undocumented behaviour: use it at your own risk. As the GPL says, it comes with <strong>no warranty</strong>.</p>
+    <p>It changes system settings and, if you ask it to, the home screen, the sleep screen and how other apps draw. Every change is recorded and reversible, and nothing touches the system partitions or the bootloader. Still, this is pre-release software that relies on unofficial behaviour: use it at your own risk. As the GPL says, it comes with <strong>no warranty</strong>.</p>
   </div>
   <div>
     <ul>

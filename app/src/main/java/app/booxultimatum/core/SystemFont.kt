@@ -14,14 +14,16 @@ import org.json.JSONObject
  * `persist.sys.font.*` properties and hot-reloads the font in every app. No root and no reboot. Verified on
  * NA6C FW 4.3, 2026-09-26: Inter applied and Manrope restored from the shell.
  *
- * The font file must sit in shared storage where SystemUI can read it, so it is copied to `/sdcard/fonts`
- * (the folder NeoReader also reads) through Shizuku first.
+ * The font file must sit in shared storage where SystemUI can read it. With Shizuku it is copied to `/sdcard/fonts`
+ * (the folder NeoReader also reads); without it the app writes its own copy to `Documents/BooxUltimatum/` through
+ * MediaStore and sends the broadcast itself, since SystemUI's receiver asks for no permission.
  */
 object SystemFont {
     private const val ACTION_REPLACE = "onyx.action.font.replace.system"
     private const val ACTION_RESET = "onyx.action.font.reset.default"
     private const val JOURNAL_ID = "font.system"
     private const val SHARED = "/storage/emulated/0/fonts"
+    private const val OWN_FOLDER = "Documents/BooxUltimatum/"
 
     fun current(): String? = UiFonts.systemFontPath()
 
@@ -33,18 +35,43 @@ object SystemFont {
     /** The path in use before BooxUltimatum first changed the system font; empty means the Boox default. */
     fun previous(context: Context): String? = Journal.original(context, JOURNAL_ID)?.optString("path")
 
-    /** Copies [file] into shared storage and makes it the system font. Returns the new path. */
+    /** Puts [file] where SystemUI can read it and makes it the system font. Returns the new path. */
     suspend fun apply(context: Context, file: java.io.File, label: String): Result<String> = withContext(Dispatchers.IO) {
         runCatching {
-            check(Privileged.ready()) { context.getString(app.booxultimatum.R.string.fonts_needs_shizuku) }
             require(Regex("^[A-Za-z0-9_\\-.]+\\.ttf$").matches(file.name)) { "Unsafe file name ${file.name}" }
-            val target = "$SHARED/${file.name}"
-            Privileged.sh("mkdir -p $SHARED && cp '${file.absolutePath}' '$target' && chmod 664 '$target'").also { check(it.ok) { it.message } }
+            val target = if (Privileged.ready()) {
+                "$SHARED/${file.name}".also { t ->
+                    Privileged.sh("mkdir -p $SHARED && cp '${file.absolutePath}' '$t' && chmod 664 '$t'").also { check(it.ok) { it.message } }
+                }
+            } else publishOwnCopy(context, file)
             if (Journal.original(context, JOURNAL_ID) == null) Journal.rememberOriginal(context, JOURNAL_ID, JSONObject().put("path", current().orEmpty()))
             send(context, target)
             Journal.log(context, "system-font", label, "", true)
             target
         }
+    }
+
+    /**
+     * Writes [file] into `Documents/BooxUltimatum/` as the app's own MediaStore row, replacing an earlier copy with the
+     * same name, and returns its absolute path. No permission is needed for files the app owns.
+     */
+    private fun publishOwnCopy(context: Context, file: java.io.File): String {
+        val resolver = context.contentResolver
+        val files = android.provider.MediaStore.Files.getContentUri(android.provider.MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        val cols = arrayOf(android.provider.MediaStore.MediaColumns._ID, android.provider.MediaStore.MediaColumns.DATA)
+        val where = "${android.provider.MediaStore.MediaColumns.RELATIVE_PATH}=? AND ${android.provider.MediaStore.MediaColumns.DISPLAY_NAME}=?"
+        val existing = resolver.query(files, cols, where, arrayOf(OWN_FOLDER, file.name), null)?.use { c ->
+            if (c.moveToFirst()) android.content.ContentUris.withAppendedId(files, c.getLong(0)) to c.getString(1) else null
+        }
+        val uri = existing?.first ?: resolver.insert(files, android.content.ContentValues().apply {
+            put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, file.name)
+            put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "font/ttf")
+            put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, OWN_FOLDER)
+        }) ?: error("Android refused to create the font file")
+        resolver.openOutputStream(uri, "wt")!!.use { out -> file.inputStream().use { it.copyTo(out) } }
+        return existing?.second ?: resolver.query(uri, arrayOf(android.provider.MediaStore.MediaColumns.DATA), null, null, null)?.use { c ->
+            if (c.moveToFirst()) c.getString(0) else null
+        } ?: "/storage/emulated/0/$OWN_FOLDER${file.name}"
     }
 
     /** Back to the font the tablet had before BooxUltimatum changed it. */
@@ -61,7 +88,7 @@ object SystemFont {
         broadcast(context, Intent(ACTION_RESET), "am broadcast -a $ACTION_RESET")
     }
 
-    /** Latin (0) is the slot Boox Settings writes; SystemUI applies the same file to the CJK slot. */
+    /** Slot 0 sets every slot, Latin and CJK together (Onyx's SDK names it FONT_LANG_INDEX_ALL; 1 is CJK, 2 is Latin). */
     private suspend fun send(context: Context, path: String) {
         require(!path.contains('\'')) { "Bad path" }
         broadcast(

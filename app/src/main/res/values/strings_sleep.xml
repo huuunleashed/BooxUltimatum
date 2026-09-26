@@ -184,4 +184,12 @@
     <string name="sl_journal_image">Sleep screen set to the %1$s face, as the Boox sleep picture</string>
     <string name="sl_journal_overlay">Sleep screen set to the %1$s plate, over the Boox Transparent style</string>
     <string name="sl_journal_restore">Sleep screen handed back to the Boox default picture</string>
+    <string name="sl_journal_poweroff">Power-off screen set to the %1$s face</string>
+    <string name="sl_journal_poweroff_restore">Power-off screen handed back to the Boox default</string>
+    <string name="sl_poweroff">Use as power-off screen</string>
+    <string name="sl_poweroff_again">Update power-off screen</string>
+    <string name="sl_poweroff_restore">Boox power-off screen</string>
+    <string name="sl_poweroff_done">Set as the power-off screen</string>
+    <string name="sl_poweroff_restored">The Boox power-off screen is back</string>
+    <string name="sl_poweroff_note">What the tablet shows when it’s switched off. Boox keeps a copy of the picture, so it stays as it was when you set it: the battery and put-down time are left out, and after changing the face, update it again.</string>
 </resources>

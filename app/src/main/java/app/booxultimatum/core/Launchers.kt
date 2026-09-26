@@ -46,10 +46,20 @@ object Launchers {
 
     private fun isBoox(pkg: String) = pkg == "com.onyx" || pkg.startsWith("com.onyx.")
 
+    /**
+     * Makes [target] the home app. With Shizuku it switches directly. Without it, Android's own "Default home app"
+     * page opens for the owner to confirm, a one-tap T0 route, after the current home is recorded for restore.
+     */
     suspend fun setDefault(context: Context, target: ComponentName): ShellResult {
         val flat = target.flattenToShortString()
         require(COMPONENT.matches(flat)) { "Bad component: $flat" }
         current(context)?.let { Journal.rememberOriginal(context, JOURNAL_ID, JSONObject().put("component", it.flattenToShortString())) }
+        if (!Privileged.ready()) {
+            val opened = runCatching {
+                context.startActivity(Intent(android.provider.Settings.ACTION_HOME_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            }.isSuccess
+            return if (opened) ShellResult(0, "", "") else ShellResult(-1, "", "Android's home settings could not be opened")
+        }
         val r = Privileged.sh("cmd package set-home-activity --user 0 $flat")
         Journal.log(context, "launcher", target.packageName, if (r.ok) "" else r.message, r.ok)
         return r
