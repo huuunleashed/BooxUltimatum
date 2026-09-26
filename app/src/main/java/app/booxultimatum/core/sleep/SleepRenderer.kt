@@ -57,21 +57,21 @@ internal class SleepPage(
 
     /** No ink comes closer than this to any edge of the panel (177 px on the tablet). */
     val margin = short * 0.095f
-    /** Boox draws its clock top centre, over roughly the top 22 % of the image, and its status bar along the bottom. */
+    /** Boox draws its clock top centre, over roughly the top 22 % of the image, when its Clock style isn't None. */
     val clockZoneBottom = h * 0.22f
-    val statusZoneTop = h * 0.935f
 
     var dry = false
 
     /**
-     * The area a face may fill: inside the margins, above the Boox status bar, below the Boox clock when asked. Text
-     * is set on cap height, so the top and bottom keep a little extra for ascenders, accents and descenders.
+     * The area a face may fill: inside the margins, below the Boox clock when asked. The studio asks owners to turn
+     * the Boox status bar off, and the margins are wider than that bar anyway. Text is set on cap height, so the top
+     * and bottom keep a little extra for ascenders, accents and descenders.
      */
     fun frame(): RectF = RectF(
         margin,
         (if (spec.leavesClockRoom) clockZoneBottom + short * 0.035f else margin) + s * 0.014f,
         w - margin,
-        min(h - margin, statusZoneTop - short * 0.02f) - s * 0.014f,
+        h - margin - s * 0.014f,
     )
 
     // ---------- Paints ----------

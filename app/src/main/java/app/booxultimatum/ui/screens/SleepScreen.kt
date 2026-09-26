@@ -488,7 +488,7 @@ private fun SleepPlate(title: String, content: @Composable ColumnScope.() -> Uni
 private fun Prose(text: String, modifier: Modifier = Modifier, color: Color = Ink.Black) {
     Text(text, style = MaterialTheme.typography.bodyMedium, color = color, modifier = modifier.widthIn(max = 640.dp))
 }
-/** The sheet in a device rim. Over Transparent it sits on a mock page, and dashes mark the Boox clock and status bar. */
+/** The sheet in a device rim. Over Transparent it sits on a mock page; dashes mark the Boox clock when room is left for it. */
 @Composable
 private fun SheetPreview(bitmap: ImageBitmap?, landscape: Boolean, overlay: Boolean, clock: Boolean, modifier: Modifier) {
     val description = stringResource(R.string.sl_preview_description)
@@ -503,7 +503,6 @@ private fun SheetPreview(bitmap: ImageBitmap?, landscape: Boolean, overlay: Bool
             Canvas(Modifier.fillMaxSize()) {
                 val dash = PathEffect.dashPathEffect(floatArrayOf(7.dp.toPx(), 5.dp.toPx()))
                 val st = Stroke(1.5.dp.toPx(), pathEffect = dash)
-                drawRect(Ink.Rule, Offset(size.width * 0.02f, size.height * 0.94f), Size(size.width * 0.96f, size.height * 0.05f), style = st)
                 if (clock) drawRect(Ink.Rule, Offset(size.width * 0.22f, size.height * 0.03f), Size(size.width * 0.56f, size.height * 0.18f), style = st)
             }
         }

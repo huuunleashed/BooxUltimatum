@@ -126,13 +126,13 @@ object SleepStudio {
         val tmp = File(f.parentFile, f.name + ".tmp")
         tmp.writeBytes(bytes)
         if (!tmp.renameTo(f)) { tmp.delete(); return }
-        SleepStore.put(context, "cache_${sizeKey(w, h)}", JSONObject().put("key", key).put("spec", specHash(spec)).put("format", format.name).toString())
+        SleepStore.put(context, "cache_${sizeKey(w, h)}", JSONObject().put("key", key).put("spec", specHash(spec)).put("format", format.name).put("install", installStamp(context)).toString())
     }
 
-    /** The picture rendered ahead for [w] × [h], if it was made from the face as it is set now. */
+    /** The picture rendered ahead for [w] × [h], if it was made from the face as it is set now, by this install. */
     private fun cached(context: Context, w: Int, h: Int, spec: SleepFaceSpec): Cached? = runCatching {
         val meta = JSONObject(SleepStore.get(context, "cache_${sizeKey(w, h)}") ?: return null)
-        if (meta.getString("spec") != specHash(spec)) return null
+        if (meta.getString("spec") != specHash(spec) || meta.optLong("install") != installStamp(context)) return null
         val f = cacheFile(context, w, h)
         if (f.length() == 0L) return null
         Cached(f.readBytes(), SleepPublisher.Format.valueOf(meta.getString("format")), meta.getString("key"))
@@ -206,8 +206,16 @@ object SleepStudio {
         val fonts = SleepTypefaces.load(context, spec)
         val usesPhoto = spec.mode == SleepMode.Image && spec.face == SleepFace.Photo
         val photoStamp = if (usesPhoto) SleepPhoto.file(context).lastModified() else 0L
-        val key = sha(spec.copy(active = false).toJson().toString() + "|" + data.renderKey() + "|${w}x$h|" + fonts.stamp + "|" + photoStamp)
+        val key = sha(spec.copy(active = false).toJson().toString() + "|" + data.renderKey() + "|${w}x$h|" + fonts.stamp + "|" + photoStamp + "|" + installStamp(context))
         return Job(spec, data, fonts, w, h, usesPhoto, key)
+    }
+
+    /** Changes with every install, so a new version redraws once with its own layout instead of keeping the old picture. */
+    @Volatile private var installed: Long = 0L
+
+    private fun installStamp(context: Context): Long {
+        if (installed == 0L) installed = runCatching { context.packageManager.getPackageInfo(context.packageName, 0).lastUpdateTime }.getOrDefault(1L)
+        return installed
     }
 
     private fun draw(context: Context, j: Job, into: Bitmap?, shared: Boolean): Rendered {

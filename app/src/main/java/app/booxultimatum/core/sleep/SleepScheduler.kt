@@ -94,6 +94,8 @@ object SleepScheduler {
         watchCalendar(c)
         if (!watching.compareAndSet(false, true)) return
         lastRotation = rotation(c)
+        // A new process may be a new version, or a restart after the tablet turned: one guarded refresh settles both.
+        request(c, "start", 5_000)
         // Display events arrive as the panel turns, before any configuration reaches this process.
         c.getSystemService(DisplayManager::class.java)?.registerDisplayListener(object : DisplayManager.DisplayListener {
             override fun onDisplayAdded(displayId: Int) = Unit

@@ -31,7 +31,7 @@
     <string name="sl_note_instrument">A Braun tuning scale for the battery, with the date and ruled readings below.</string>
     <string name="sl_note_poster">The weekday set as large as the panel allows, over the quote of the day or your own.</string>
     <string name="sl_note_under_clock">Leaves the top of the screen to the live Boox clock, which Boox refreshes every 5 minutes while asleep. Set Clock style to Digital in Boox for this face.</string>
-    <string name="sl_note_photo">Your picture, filled or fitted, with an optional caption band that holds the Boox status bar.</string>
+    <string name="sl_note_photo">Your picture, filled or fitted, with an optional caption band along the bottom.</string>
     <string name="sl_note_note">Your note, set as large as it fits.</string>
     <string name="sl_note_return">Who to return the tablet to if it is found. Best on a tablet that leaves the house.</string>
     <string name="sl_note_minimal">Only the date and the lamp.</string>
@@ -126,12 +126,12 @@
     <string name="sl_status_skipped">Checked %1$s · nothing on the face changed, so the file was left as it is</string>
     <string name="sl_status_error">Failed %1$s · %2$s</string>
     <string name="sl_preview_ms">Preview drawn in %1$d ms</string>
-    <string name="sl_preview_legend">Drawn by the same renderer as the published picture. Dashes mark where Boox draws its status bar, and its clock when you leave room for it.</string>
+    <string name="sl_preview_legend">Drawn by the same renderer as the published picture. Dashes mark where Boox draws its clock when you leave room for it.</string>
     <string name="sl_preview_description">Preview of the sleep screen</string>
 
     <!-- Boox guidance -->
     <string name="sl_boox">Boox settings</string>
-    <string name="sl_boox_image">For a clean face, open Boox screensaver settings and set Clock style and Text display to None. To keep a live time instead, leave Clock style on Digital and turn on Leave room for the Boox clock, or use Under the clock.</string>
+    <string name="sl_boox_image">For a clean face, open Boox screensaver settings, set Clock style and Text display to None, and turn Bottom status bar off (it adds the battery and “Press power button to wake up”; Boox still shows it while the tablet is charging, whatever the setting). To keep a live time instead, leave Clock style on Digital and turn on Leave room for the Boox clock, or use Under the clock.</string>
     <string name="sl_boox_overlay_intro">Boox needs you to choose the sticker once. After that BooxUltimatum keeps it up to date.</string>
     <string name="sl_step_1">Tap Put in Sticker album below. The current plate appears in the gallery\'s Sticker album.</string>
     <string name="sl_step_2">Open Boox screensaver settings, choose Transparent, turn on Show lockscreen sticker, then Select sticker, the + tile, the Sticker album and the BooxUltimatum picture, and confirm the crop with OK.</string>
@@ -139,7 +139,7 @@
     <string name="sl_step_4">Come back here and tap Apply. BooxUltimatum finds the sticker Boox saved and redraws it for you.</string>
     <string name="sl_prepare">Put in Sticker album</string>
     <string name="sl_prepared">The plate is in the Sticker album.</string>
-    <string name="sl_boox_overlay_settings">The Boox clock, the motto and the status bar are drawn by Boox over any style. Restore can\'t read back the style you had before, so it sets the Boox default picture; pick your former style in Boox afterwards.</string>
+    <string name="sl_boox_overlay_settings">The Boox clock, the motto and the bottom status bar are drawn by Boox over any style; each can be turned off in Boox screensaver settings. Restore can\'t read back the style you had before, so it sets the Boox default picture; pick your former style in Boox afterwards.</string>
     <string name="sl_limits">With a PIN, a tablet put to sleep from the lock screen shows a black privacy screen instead. That is Boox\'s choice and outside this app.</string>
 
     <!-- Editing -->
