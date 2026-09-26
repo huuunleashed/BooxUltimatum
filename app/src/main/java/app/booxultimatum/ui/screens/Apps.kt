@@ -256,6 +256,8 @@ private fun AppDetailScreen(pkg: String, readKey: Int, compact: Boolean, onBack:
                                 act(context.getString(R.string.action_restrict_background), context.getString(R.string.done_restrict_background)) { SystemState.setBackgroundMode(pkg, BgMode.Ignore) }
                             })
                         }
+                        // Boox's own freeze switch is a separate layer from Android's background setting, so it's offered here too.
+                        Key(stringResource(R.string.action_boox_freeze), onClick = { openBooxFreezePage(context) })
                     }
                     if (detail.background == BgMode.Ignore && !detail.system) {
                         Spacer(Modifier.height(Space.s))

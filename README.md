@@ -4,7 +4,7 @@
 
 **A home screen, sleep-screen designer, battery doctor and tweak hub for the BOOX Note Air6 C, in one app, without root.**
 
-![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue) ![Status: public preview](https://img.shields.io/badge/status-public%20preview%200.4-orange) ![Android 11+](https://img.shields.io/badge/Android-11%2B-3ddc84) ![Tested on Note Air6 C, FW 4.3](https://img.shields.io/badge/tested%20on-Note%20Air6%20C%20%C2%B7%20FW%204.3-black)
+![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue) ![Status: public preview](https://img.shields.io/badge/status-public%20preview%200.4.1-orange) ![Android 11+](https://img.shields.io/badge/Android-11%2B-3ddc84) ![Tested on Note Air6 C, FW 4.3](https://img.shields.io/badge/tested%20on-Note%20Air6%20C%20%C2%B7%20FW%204.3-black)
 
 **[Website and technical guide](https://huuunleashed.github.io/BooxUltimatum/)** · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md) · [Report a bug or a finding](https://github.com/huuunleashed/BooxUltimatum/issues/new/choose)
 
@@ -98,7 +98,7 @@ Most of BooxUltimatum works straight after installing, with no computer, no Shiz
 
 | Level | What it is | What it adds |
 |---|---|---|
-| **T0: just the app** | Nothing to set up | The home screen, the sleep screen and power-off screen designer, **Instant ink**, battery measurement and the battery log, the Google Fonts browser, **the whole tablet's font**, the settings hub, and making BooxUltimatum your home screen (Android asks you to confirm). For apps Boox restricts, a one-tap link to Android's own battery page and to Boox's hidden App Freeze page. |
+| **T0: just the app** | Nothing to set up | The home screen, the sleep screen and power-off screen designer, **Instant ink**, battery measurement and the battery log, the Google Fonts browser, **the whole tablet's font**, the settings hub, and making BooxUltimatum your home screen (Android asks you to confirm). For apps Boox restricts, a one-tap link to Android's own battery page and to Boox's hidden App Freeze page (also in the Settings hub). |
 | **T1: a one-time setup from a computer** | Four permissions granted once over `adb`; they survive reboots | Reading battery statistics inside the app, showing or hiding status bar icons tablet-wide, and the tweaks that are system settings |
 | **T2: Shizuku** | [Shizuku](https://shizuku.rikka.app), a free app that runs a small helper with the same rights as `adb` | Most tweaks (Doze, Battery Saver, pausing Boox apps), reading and lifting Boox's background restriction for every app at once, switching the home screen in one tap, the Wi-Fi network name in the header, *Sleep now*, and the *Over Transparent* sleep mode |
 | T3: root | | Out of scope. BooxUltimatum doesn't need or ask for it |
@@ -139,7 +139,7 @@ Firmware 4.3 hides the Wireless debugging switch from Developer options, so rest
 
 ## Install
 
-**From a release:** download `BooxUltimatum-0.4.0.apk` from this repository's [Releases](https://github.com/huuunleashed/BooxUltimatum/releases) page, allow your browser or file manager to install apps, and open it. The Access page shows what each level unlocks and the exact commands for it. Releases are signed with the project's own key, so later releases update it in place.
+**From a release:** download `BooxUltimatum-0.4.1.apk` from this repository's [Releases](https://github.com/huuunleashed/BooxUltimatum/releases) page, allow your browser or file manager to install apps, and open it. The Access page shows what each level unlocks and the exact commands for it. Releases are signed with the project's own key, so later releases update it in place.
 
 **Test builds:** every commit on `main` also builds a debug-signed APK. Open the latest successful [Build run](https://github.com/huuunleashed/BooxUltimatum/actions/workflows/build.yml) and download `booxultimatum-debug-signed` under Artifacts (GitHub asks you to sign in). They use a different key from the releases, so Android won't install one over the other: uninstall first when switching, which also clears the app's settings.
 

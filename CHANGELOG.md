@@ -6,6 +6,12 @@ All notable changes to BooxUltimatum. Newest first. The project follows [Semanti
 
 Nothing yet.
 
+## [0.4.1] (2026-09-27)
+
+### Fixed
+
+- **Boox App Freeze is now always one tap away.** It's in BooxUltimatum's Settings hub (search "freeze"), and on every app's page whether or not Shizuku is running. In 0.4.0 the button only appeared when Shizuku wasn't running.
+
 ## [0.4.0] (2026-09-27, the first public preview)
 
 The first build published as an APK. It folds in the research from the Reddit launch thread, so the answers to it are fixes and features rather than apologies. Tested on one Note Air6 C, firmware 4.3, Android 16.

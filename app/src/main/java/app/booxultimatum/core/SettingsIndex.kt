@@ -47,6 +47,8 @@ object SettingsIndex {
             HubEntry(HubGroup.Apps, R.string.hs_files, R.string.hs_files_s, action(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)),
             HubEntry(HubGroup.Apps, R.string.hs_unknown_sources, R.string.hs_unknown_sources_s, action(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES)),
             HubEntry(HubGroup.Apps, R.string.hs_this_app, R.string.hs_this_app_s, Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, pkg)),
+            // Boox's App Freeze page: on FW 4.3 it's hidden from Boox Settings' menus but still opens by its action.
+            HubEntry(HubGroup.Apps, R.string.hs_boox_freeze, R.string.hs_boox_freeze_s, action("onyx.settings.action.APP_FREEZE_MANAGEMENT")),
             HubEntry(HubGroup.System, R.string.hs_stock_settings, R.string.hs_stock_settings_s, Intent().setComponent(ComponentName("com.android.settings", "com.android.settings.Settings"))),
             HubEntry(HubGroup.System, R.string.hs_storage, R.string.hs_storage_s, action(Settings.ACTION_INTERNAL_STORAGE_SETTINGS)),
             HubEntry(HubGroup.System, R.string.hs_date, R.string.hs_date_s, action(Settings.ACTION_DATE_SETTINGS)),
