@@ -85,7 +85,9 @@ fun AppsScreen(readKey: Int, compact: Boolean, onReadAgain: () -> Unit, onOpenAc
 private fun AppListScreen(readKey: Int, compact: Boolean, onReadAgain: () -> Unit, onOpen: (String) -> Unit) {
     val context = LocalContext.current
     val inventory = rememberReading(readKey) { PackageScanner.scan(context) }
-    var filter by rememberSaveable { mutableStateOf(AppFilter.Boox) }
+    val boox = remember { app.booxultimatum.core.Tablet.current(context).isBoox }
+    // On other tablets there are no Boox apps, and an empty first list reads as broken.
+    var filter by rememberSaveable { mutableStateOf(if (boox) AppFilter.Boox else AppFilter.All) }
     var query by rememberSaveable { mutableStateOf("") }
     var page by rememberSaveable { mutableIntStateOf(0) }
 
@@ -102,7 +104,7 @@ private fun AppListScreen(readKey: Int, compact: Boolean, onReadAgain: () -> Uni
         item {
             SearchField(query, { query = it; page = 0 }, stringResource(R.string.apps_search))
             Spacer(Modifier.height(Space.m))
-            val filters = AppFilter.entries
+            val filters = AppFilter.entries.filter { boox || it != AppFilter.Boox }
             SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                 filters.forEachIndexed { i, f ->
                     SegmentedButton(
@@ -181,6 +183,7 @@ private fun AppDetailScreen(pkg: String, readKey: Int, compact: Boolean, onBack:
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var changeKey by remember { mutableIntStateOf(0) }
+    val boox = remember { app.booxultimatum.core.Tablet.current(context).isBoox }
     val detail = rememberReading(Triple(pkg, readKey, changeKey)) { AppInspector.inspect(context, pkg) }
     val shell = rememberReading(Pair(readKey, changeKey)) { Privileged.ready() } ?: false
     var busy by remember { mutableStateOf(false) }
@@ -233,7 +236,7 @@ private fun AppDetailScreen(pkg: String, readKey: Int, compact: Boolean, onBack:
                     Spacer(Modifier.height(Space.s))
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.s), verticalArrangement = Arrangement.spacedBy(Space.s)) {
                         Key(stringResource(R.string.action_battery_page), primary = true, onClick = { openBatteryPage(context, pkg) })
-                        Key(stringResource(R.string.action_boox_freeze), onClick = { openBooxFreezePage(context) })
+                        if (boox) Key(stringResource(R.string.action_boox_freeze), onClick = { openBooxFreezePage(context) })
                         Key(stringResource(R.string.action_get_access), onClick = onOpenAccess)
                     }
                 } else {
@@ -257,7 +260,7 @@ private fun AppDetailScreen(pkg: String, readKey: Int, compact: Boolean, onBack:
                             })
                         }
                         // Boox's own freeze switch is a separate layer from Android's background setting, so it's offered here too.
-                        Key(stringResource(R.string.action_boox_freeze), onClick = { openBooxFreezePage(context) })
+                        if (boox) Key(stringResource(R.string.action_boox_freeze), onClick = { openBooxFreezePage(context) })
                     }
                     if (detail.background == BgMode.Ignore && !detail.system) {
                         Spacer(Modifier.height(Space.s))

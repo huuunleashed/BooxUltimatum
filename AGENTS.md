@@ -6,6 +6,17 @@ Guidance for AI agents and humans working in this repository. `.github/copilot-i
 
 BooxUltimatum is a GPL-3.0 Android app for the BOOX Note Air6 C: a home screen, sleep-screen designer, Instant ink layer, battery doctor and hub of measured, reversible tweaks. It also holds the reverse-engineering tooling and evidence behind them.
 
+## Skills: what earlier sessions learned
+
+Practical knowledge lives in [Agent Skills](https://agentskills.io) under `.agents/skills/`, which Claude Code, Codex, Gemini CLI, Cursor, GitHub Copilot and other agents read. Load the one that fits the task before starting, and keep it current: when you learn something the next session would otherwise have to rediscover, add it to the skill in the same change.
+
+- `boox-tablet-testing`: driving the connected tablet safely over adb, screenshots, both orientations, what only a person can test, and restoring the device.
+- `boox-firmware-interfaces`: the verified Onyx interfaces (sleep screen, live updates, power manager, SurfaceFlinger pen codes, fonts, status bar, charge limit) and how to find more.
+- `sleep-screen-faces`: the face pipeline, the typesetting grammar, pitfalls, and how to add a face.
+- `build-release-and-docs`: the build, lint, release and signing steps, the updater's expectations, PowerShell and Kotlin pitfalls, and which docs to update.
+
+This file holds the rules; the skills hold the how-to. When they disagree, this file wins.
+
 ## Hard rules
 
 1. **No hard-wrapped prose.** In Markdown and other prose, write each paragraph, list item and blockquote as one line. Line breaks are fine only in code comments and where they're needed: code blocks, tables, literal output, intentional Markdown line breaks. Run `python tools/dev/prose_wrap.py` before finishing, or `--fix` to repair.
@@ -34,7 +45,8 @@ BooxUltimatum is a GPL-3.0 Android app for the BOOX Note Air6 C: a home screen, 
   - `ui/`: the e-ink theme, components, glyphs and screens.
 - `docs/`: numbered design docs (`00` device research to `06` sleep screen) and `screenshots/` for the README.
 - `knowledge/`: `experiments.md` (the evidence log) and `onyx-packages.json` (bundled into app assets via `sourceSets`).
-- `tools/host/`: PowerShell scripts over adb (`common.ps1` holds shared helpers). `tools/dev/`: repository hygiene.
+- `tools/host/`: PowerShell scripts over adb (`common.ps1` holds shared helpers, `ui.ps1` drives the app's UI for tests and screenshots). `tools/dev/`: repository hygiene.
+- `.agents/skills/`: the Agent Skills described above.
 - **The GitHub side:**
   - Contribution rules are in `CONTRIBUTING.md` and the forms in `.github/ISSUE_TEMPLATE/`.
   - CI (`.github/workflows/build.yml`) builds, lints and checks prose on every push and pull request.

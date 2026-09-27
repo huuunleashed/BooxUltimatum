@@ -93,6 +93,7 @@
     <string name="ap_show">Show</string>
     <string name="ap_hide">Hide</string>
     <string name="ap_battery_pct">Battery percentage</string>
+    <string name="ap_battery_pct_with_icon">Hidden with the battery icon: Android draws the figure inside it, so the figure can’t show on its own.</string>
     <string name="ap_all_icons">Show all %d icons</string>
     <string name="ap_text">Text</string>
     <string name="ap_text_explain">E-ink thins every stroke, so BooxUltimatum and its home set text one weight heavier than designed. Choose how heavy.</string>

@@ -34,6 +34,7 @@ adb install -r app\build\outputs\apk\release\app-release.apk
 - **Signing:** builds from source are debug-signed, so they update your own copy in place and keep its grants. Only the maintainer's release key signs public releases.
 - **Access tiers:** to test T1 and T2 features, grant the permissions listed in the README and start Shizuku (`.\tools\host\start-shizuku.ps1` restarts it after a reboot).
 - **Code map:** the `app/` layout is in `AGENTS.md`; the design docs in `docs/` explain each area.
+- **Working with an AI agent:** the `.agents/skills/` folder holds [Agent Skills](https://agentskills.io) that most coding agents load on their own: how to test on the tablet safely, the firmware interfaces found so far, how sleep faces are built, and how to build and release. They save a new session from rediscovering all of it, so please update them when you learn something new.
 
 ## The rules for changes
 

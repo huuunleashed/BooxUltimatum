@@ -47,6 +47,10 @@ object SurfaceInk {
     @Volatile var route: Route? = null
         private set
 
+    /** The pressure range the display reported when the route was found; shown on the Ink page for reports. */
+    @Volatile var maxTouchPressure: Float? = null
+        private set
+
     /** The pid SurfaceFlinger sees as the caller: ours, or Shizuku's server when calls go through it. */
     @Volatile private var ownerPid = Process.myPid()
 
@@ -131,7 +135,7 @@ object SurfaceInk {
             data.writeInterfaceToken(TOKEN)
             if (!b.transact(GET_PEN_STATE, data, reply, 0)) null else reply.readInt()
         } finally { data.recycle(); reply.recycle() }
-    }.getOrNull()?.takeIf { maxPressure(b) > 0f }
+    }.getOrNull()?.takeIf { maxPressure(b).also { p -> if (p > 0f) maxTouchPressure = p } > 0f }
 
     /**
      * The pen's pressure range, a device constant (4096.0 on NA6C FW 4.3, 4095 on a 2022 Tab Ultra C per CalliPlus's

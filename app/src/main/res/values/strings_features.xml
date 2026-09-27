@@ -12,6 +12,7 @@
     <string name="action_back_to_boox">Back to Boox</string>
     <string name="home_only_boox">Only the Boox home is installed. Install any launcher, then come back here to try it with a safe way back.</string>
     <string name="home_needs_shizuku">Shizuku isn’t running, so the keys above open Android’s own Default home app page, where you confirm the choice with one more tap. BooxUltimatum still remembers the Boox home so you can go back.</string>
+    <string name="home_not_home_background">BooxUltimatum isn’t your home screen and its background use is restricted, so Android may stop it between uses. The sleep screen’s refreshes, live updates and the battery log need it to keep running: allow background usage on its battery page.</string>
     <string name="action_home_settings">Android Home app page</string>
     <string name="home_shortcuts">Boox functions · %1$d</string>
     <string name="home_shortcuts_explain">Open any Boox app from here, whichever launcher is in use.</string>

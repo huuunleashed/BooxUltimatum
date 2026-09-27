@@ -6,6 +6,79 @@ All notable changes to BooxUltimatum. Newest first. The project follows [Semanti
 
 Nothing yet.
 
+## [0.5.0] (2026-09-27)
+
+The sleep screen now updates while the tablet sleeps, with twenty-one faces to use it. Instant ink explains itself on other Boox models, and the app can update itself and file reports. Tested on a Note Air6 C with firmware 4.3 (Android 16).
+
+### Added
+
+- **Faces made for updates while asleep.** Three new faces read what a sleeping tablet can truthfully say every few minutes, each with its own portrait and landscape layout:
+  - **Dial:** a Braun-style wall clock with the date, time asleep and the battery.
+  - **Clock:** the time as large as the panel allows, with time asleep, the battery and the next event along the foot.
+  - **Monitor:** a readout of the sleep itself, with how long, the battery on a tuning scale with what it has used and its rate, the next event counted down and the next alarm.
+
+  Each carries an "Updated 10:25 · every 5 min" line. Without updates while asleep, they show the moment the tablet was put down and say so.
+- **The Sleep page puts live first.** Live faces lead the picker with a *Live* tab. *While asleep* sits right under the faces. The preview shows a live face as it reads 1 h 25 min into a sleep. New installs start on the Dial.
+- **Ten more faces**, nine of them made for updates while asleep:
+  - **Cube:** a cube clock in real 3D perspective, with a cast shadow.
+  - **Split-flap:** hours and minutes on flip cards.
+  - **Dashboard:** tiles you choose, such as battery, time asleep, alarm, events, day progress, moon, weather and year.
+  - **Word clock:** the time spelled out in a letter grid, in five-minute steps.
+  - **Day ring:** the whole day on one ring, with events, night and the sleep so far.
+  - **Timeline:** today as a line of events, with the sleep marked.
+  - **LCD:** a Braun-style display with drawn seven-segment figures.
+  - **Sky:** the sun's height through today, sunrise and sunset, and the moon's phase.
+  - **Broadsheet:** a newspaper front page, *The Daily Standby*.
+  - **Year:** the whole year as dots, and the only still face of the ten.
+- **Options for individual faces**, right under the picker:
+  - Dial styles: Braun, railway, all numerals, 24-hour.
+  - 12- or 24-hour time.
+  - The Dashboard's tiles.
+  - Cube shading.
+  - Word clock style and minute dots.
+  - Day ring orientation and night shading.
+  - Timeline span.
+  - LCD slant and unlit segments.
+  - The Broadsheet headline.
+  - The Year layout.
+- **The face picker is split** into *Live faces* and *Still faces*. Tap the preview to see the face at full size, with the time it took to draw.
+- **What faces can know:**
+  - The moon phase, worked out on the tablet.
+  - Sunrise and sunset for the home screen's weather city (never GPS).
+  - The week number and day of the year.
+  - The home screen's cached weather, with the time it was read. Nothing is fetched while the tablet sleeps.
+- **Live sleep screen (While asleep).** The face can now update while the tablet sleeps, every 5 to 60 minutes, so the date, battery and agenda stay true, and Boox's charging bar is covered. It's off by default. There are options for charging only and for no updates at night. It's been verified on battery on the Note Air6 C: the face goes up a few seconds after sleep and redraws at each step. It needs three things, all allowed on the tablet: an accessibility service (it only holds the picture and can't read the screen), background use, and exact alarms. The Sleep page lists each with a status lamp and a key. The battery cost isn't measured yet.
+- **In-app updates.** The Device page's *This app* plate checks GitHub Releases, at most once a day when the app opens or when you ask. It downloads the APK, checks its SHA-256 and signing key, and installs it through Android's installer. Development builds explain that they update from the computer instead.
+- **Report a problem or idea.** A form on the Device page fills in the GitHub issue form, or copies or shares the report. You pick what to include and can preview each part: device, app and access, feature status, input devices, battery, and this app's recent log. Nothing personal is included, and nothing is sent until you press a key.
+- **One answer to "which tablet is this".** A single device profile recognises Boox from the build and from Boox's system app, and takes the pen from Android's own list of input devices. The launcher, the Apps page, Instant ink and reports all use it.
+- **Instant ink diagnostics.** The Ink page shows the pen's input device, the display route, the pen's pressure range and a live pen test, so a report from an untested tablet says what's missing.
+
+### Fixed
+
+- **Instant ink stayed "Ready" and never switched on without usage access.** Android reports no foreground app without it, and raises no error. The Ink page now checks for it and opens the permission page, and the README no longer lists Instant ink as needing nothing.
+- **The pen could be misread on other models.** Android doesn't let apps read the kernel's input device names, so 0.4 always used `event5`, which on other tablets can be a different device. The app now listens to every readable input node, takes the one that reports a pen tool, and remembers it.
+- **On tablets other than Boox:**
+  - The Apps page opened on an empty *Boox* filter.
+  - The Boox shelf widget was offered and placed by default.
+  - The Sleep and Ink pages, which need Boox firmware, were shown.
+- **Large system fonts:**
+  - The left rail couldn't scroll, so its last tabs were unreachable on a 7" tablet.
+  - The clock's time overlapped its dial.
+  - Calendar days were clipped.
+  - Home widget text now follows the system font size up to 115 %.
+- **Background work when BooxUltimatum isn't the home screen.** Settings › Home screen now says when Boox's restriction could stop the sleep screen's refreshes and the battery log, and links to the switch that lifts it.
+- **The live face now goes up a few seconds after the tablet sleeps**, not only at the first update, and it carries on if the app is updated while the tablet sleeps.
+- **The status bar's battery percentage** can't be shown without the battery icon, because Android draws the figure inside the icon. The Appearance page now says so instead of offering a switch that does nothing.
+- **The Clock face** no longer cuts its readings short in either orientation. The **Monitor** face fills its landscape layout.
+
+### Research
+
+- **The sleep screen is Onyx's doze dream.** Any app can make it wake the display with `onyx_dream_refresh`, and only an accessibility overlay shows over it while the tablet is locked.
+- **Boox's power manager clears wake-up alarms during sleep** for apps that aren't on its full-access list. An app joins the list when its background usage changes to allowed.
+- **Boox's charge limit is fixed at 80 %.** Other levels would need root: the threshold files can't be read even by the shell, so Shizuku can't change them.
+- **Apps can't read `/sys/class/input`** (SELinux), but they can read the `/dev/input` nodes. Reports from a Note Air 2 Plus and a Go 10.3 Gen II Lumi (#1, #2) led to the Instant ink fixes above.
+- **Agent Skills for anyone working on the project with an AI agent**, in `.agents/skills/`: tablet testing, the firmware interfaces found so far, how sleep faces are built, and building and releasing. `tools/host/ui.ps1` drives the app over adb for tests and screenshots.
+
 ## [0.4.1] (2026-09-27)
 
 ### Fixed

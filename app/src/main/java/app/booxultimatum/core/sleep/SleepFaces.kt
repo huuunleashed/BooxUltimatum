@@ -44,7 +44,7 @@ internal object SleepFaces {
     }
 
     /** Up to [maxRows] events as when/what pairs, stopping above [bottom]. Returns where the next caps may start. */
-    private fun SleepPage.agenda(left: Float, right: Float, capTop: Float, bottom: Float, size: Float, maxRows: Int = 5): Float {
+    internal fun SleepPage.agenda(left: Float, right: Float, capTop: Float, bottom: Float, size: Float, maxRows: Int = 5): Float {
         val wp = paint(strong, size, figures = true)
         val tp = paint(body, size)
         if (data.events.isEmpty()) return text(data.labels.nothingPlanned, left, capTop, tp) + size * 1.2f
@@ -71,7 +71,7 @@ internal object SleepFaces {
     }
 
     /** A reading for a narrow column: the legend in small capitals above, the value below, a hairline under both. */
-    private fun SleepPage.stackedRow(legend: String, value: String, left: Float, right: Float, capTop: Float, size: Float, ruleBelow: Boolean = true): Float {
+    internal fun SleepPage.stackedRow(legend: String, value: String, left: Float, right: Float, capTop: Float, size: Float, ruleBelow: Boolean = true): Float {
         val lb = legend(clip(legend, paint(strong, s * 0.02f, tracking = 0.14f), right - left), left, capTop, s * 0.02f)
         val vp = paint(strong, size, figures = true)
         val base = text(clip(value, vp, right - left), left, lb + size * 0.55f, vp)
@@ -81,11 +81,11 @@ internal object SleepFaces {
     }
 
     /** A legend in small tracked capitals. Returns its baseline. */
-    private fun SleepPage.legend(t: String, x: Float, capTop: Float, size: Float = s * 0.022f, align: Paint.Align = Paint.Align.LEFT, color: Int = ink): Float =
+    internal fun SleepPage.legend(t: String, x: Float, capTop: Float, size: Float = s * 0.022f, align: Paint.Align = Paint.Align.LEFT, color: Int = ink): Float =
         text(upper(t), x, capTop, paint(strong, size, color, tracking = 0.14f), align)
 
     /** A lamp and the battery reading; the lamp is lit while charging. It steps down to fit [maxW]. Returns the baseline. */
-    private fun SleepPage.batteryLine(x: Float, capTop: Float, size0: Float, alignRight: Boolean = false, maxW: Float = Float.MAX_VALUE): Float {
+    internal fun SleepPage.batteryLine(x: Float, capTop: Float, size0: Float, alignRight: Boolean = false, maxW: Float = Float.MAX_VALUE): Float {
         val label = data.batteryLine
         val whole = width(paint(strong, size0, figures = true), label) + size0 * (0.72f + 0.5f)
         val size = if (whole > maxW) size0 * maxW / whole else size0
@@ -101,7 +101,7 @@ internal object SleepFaces {
      * The tuning scale: 0 to 100 engraved like a Braun receiver dial, the battery figure riding the needle, the needle
      * itself in the accent. Returns the bottom of the legend under it.
      */
-    private fun SleepPage.tuningScale(left: Float, right: Float, top: Float, figSize: Float): Float {
+    internal fun SleepPage.tuningScale(left: Float, right: Float, top: Float, figSize: Float): Float {
         val fig = paint(display, figSize, figures = true, tracking = -0.02f)
         val pct = paint(display, figSize * 0.4f)
         val figCap = cap(fig)

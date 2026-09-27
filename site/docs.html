@@ -167,13 +167,22 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
         <p>The same broadcast with <strong>type 17</strong> sets the power-off picture. BooxUltimatum renders the chosen face in portrait, without the battery and put-down time that would be stale by the next power-on, and sends it on request. Boox saves its own copy (logcat: <code>SaveShutdownImageAction: Save shutdown image succeed</code>, for both the normal and the charging variant), so it changes only when set again; restore sends Boox's <code>/system/media/shutdown-default.png</code>.</p>
 
         <h3>Read fresh at every sleep, never while asleep</h3>
-        <p>A file directly in <code>/sdcard/Pictures/</code> is used in place and decoded afresh each time the tablet goes to sleep, so overwriting it between sleeps changes the next sleep screen. A file anywhere else is copied once and later overwrites are ignored. Files above 10&nbsp;MB are dropped. Once asleep, nothing is read again: the only live element possible is Boox's own clock overlay, redrawn every 5 minutes. So the face is kept current while the tablet is awake, and only then:</p>
+        <p>A file directly in <code>/sdcard/Pictures/</code> is used in place and decoded afresh each time the tablet goes to sleep, so overwriting it between sleeps changes the next sleep screen. A file anywhere else is copied once and later overwrites are ignored. Files above 10&nbsp;MB are dropped. Once asleep, nothing is read again, and Boox itself only redraws its own clock overlay, every 5 minutes. So by default the face is kept current while the tablet is awake, and only then:</p>
         <ol class="sequence">
           <li><span class="when">While awake</span><span class="what">A non-wakeup inexact alarm (<code>ELAPSED_REALTIME</code>) every 1, 5, 15 or 30 minutes, plus battery, time, date and screen-on broadcasts the system sends anyway. Coalesced for 2&nbsp;s.</span></li>
           <li><span class="when">Each refresh</span><span class="what">The face's content and settings are fingerprinted; unchanged means no render, no encode, no write. The other orientation is rendered too and kept ready.</span></li>
           <li><span class="when">Going to sleep</span><span class="what"><code>ONYX_SYSTEM_<wbr>GOING_TO_<wbr>SLEEP</code> arrives tens of milliseconds before Boox decodes. If the picture doesn't match the rotation, the ready one is written at once.</span></li>
-          <li><span class="when">Asleep</span><span class="what">Nothing is read. The alarm never fires; a missed one is delivered on wake.</span></li>
+          <li><span class="when">Asleep</span><span class="what">Nothing is read. The alarm never fires; a missed one is delivered on wake. Unless live updates are on, below.</span></li>
         </ol>
+
+        <h3>Live updates while asleep <span class="tag">New</span></h3>
+        <p>The sleep screen is Android's doze dream, <code>com.onyx/.common.dream.OnyxDaydreamService</code>, fixed by <code>config_dozeComponent</code>. It never re-reads the picture, but it registers an exported receiver for <code>onyx_dream_refresh</code>: any app can send it, and the dream wakes the display for about 1.2&nbsp;s (<code>onyx.action.DISPLAY_CHANGED_STATE</code>, state 2, then 3). Frames drawn while it dozes are held until then. The lock screen hides every app window except an accessibility overlay, so an accessibility service that reads nothing holds the face.</p>
+        <ol class="sequence">
+          <li><span class="when">Going to sleep</span><span class="what">4&nbsp;s after Onyx has drawn and dozed, the first live face goes up, over the charging bar too.</span></li>
+          <li><span class="when">Every step</span><span class="what">An exact <code>RTC_WAKEUP</code> alarm on the round minute: render, send the refresh, show the face when Onyx reports the display on. About 1.4&nbsp;s awake. A full repaint every sixth update.</span></li>
+          <li><span class="when">Waking</span><span class="what">The overlay is removed at once, so the lock screen and PIN pad are never covered.</span></li>
+        </ol>
+        <p>Boox's power manager (<code>android.onyx.pm.OnyxAlarmHelper</code>) clears wake-up alarms at sleep unless the app is on its full-access list, which it joins when its background use changes to allowed. Verified on battery on firmware 4.3; the battery cost is still to be measured.</p>
 
         <h3>Both orientations, prepared</h3>
         <p>Boox centre-crops the picture to the rotation it sleeps in: 1860&nbsp;×&nbsp;2480 in portrait, 2480&nbsp;×&nbsp;1860 at rotation 90 or 270. A face drawn only after a turn left a few seconds in which a sleep showed the old shape cropped. Every refresh therefore also encodes the other orientation into <code>noBackupFilesDir/sleep-cache</code>, and a rotation, seen through a display listener before the configuration reaches the process, swaps that file in at once, with a fresh render 1.5&nbsp;s later. Tested by rotating and sleeping within 0.2&nbsp;s in both directions: the picture was written 100&nbsp;ms after Boox's going-to-sleep broadcast and 260&nbsp;ms before the dream decoded it.</p>
@@ -235,7 +244,7 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
             </tbody>
           </table>
         </div>
-        <p>The pen's event node (<code>/dev/input/event5</code>, <code>onyx_emp_istaric_pen</code>) is readable by apps on this firmware. The reader thread sleeps in <code>poll()</code> until the pen moves, so nothing wakes the tablet, and a 30-second watchdog never leaves app frames held back.</p>
+        <p>The pen's event node (<code>/dev/input/event5</code>, <code>onyx_emp_istaric_pen</code>) is readable by apps on this firmware, but its name isn't: SELinux closes <code>/sys/class/input</code> to apps. So the reader opens every readable node, takes the first that reports a pen tool and remembers it. The reader thread sleeps in <code>poll()</code> until the pen moves, so nothing wakes the tablet, and a 30-second watchdog never leaves app frames held back.</p>
 
         <div class="note">
           <h4><span class="lamp off" aria-hidden="true"></span>What isn't done yet</h4>
@@ -399,7 +408,7 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
         <ul class="links">
           <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/CONTRIBUTING.md"><strong>Contributing</strong><span>Evidence from other Boox models is the most valuable help: model, firmware, and what you measured.</span></a></li>
           <li><a href="https://github.com/huuunleashed/BooxUltimatum/issues"><strong>Issues</strong><span>Bug reports and findings.</span></a></li>
-          <li><a href="https://github.com/huuunleashed/BooxUltimatum/releases"><strong>Releases</strong><span>0.4, the first public preview, is planned. Build from source until then.</span></a></li>
+          <li><a href="https://github.com/huuunleashed/BooxUltimatum/releases"><strong>Releases</strong><span>Release-signed APKs, from 0.4 on. The app updates itself from here from 0.5.</span></a></li>
           <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/CHANGELOG.md"><strong>Changelog</strong><span>The dated history, newest first.</span></a></li>
           <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/LICENSE"><strong>License</strong><span>GPL-3.0-or-later.</span></a></li>
         </ul>

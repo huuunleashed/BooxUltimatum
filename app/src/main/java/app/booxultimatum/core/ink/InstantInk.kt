@@ -70,12 +70,31 @@ data class InkPrefs(
  * The app itself is untouched and still gets every pen event.
  */
 object InstantInk {
-    enum class Status { Off, NoPen, NoRoute, Ready, Armed }
+    enum class Status { Off, NoPen, NoRoute, NoUsageAccess, Ready, Armed }
 
     @Volatile var status: Status = Status.Off
         private set
     @Volatile var armedFor: String? = null
         private set
+
+    /**
+     * Instant ink arms only over the apps the owner picked, and Android tells an app which app is in front only with
+     * usage access. Without it the usage history reads as empty and no error is raised, so this is checked up front.
+     * The owner can grant it on the tablet (Settings › Apps › Special app access › Usage access); no computer needed.
+     */
+    fun usageAccess(context: Context): Boolean {
+        val ops = context.getSystemService(android.app.AppOpsManager::class.java) ?: return false
+        @Suppress("DEPRECATION") // the replacement needs API 36; minSdk is 30
+        return ops.unsafeCheckOpNoThrow(android.app.AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), context.packageName) ==
+            android.app.AppOpsManager.MODE_ALLOWED
+    }
+
+    /** Opens Android's usage access page, at this app's own entry where the firmware supports it. */
+    fun openUsageAccess(context: Context) {
+        val own = Intent(android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS, android.net.Uri.parse("package:${context.packageName}"))
+        val list = Intent(android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS)
+        listOf(own, list).firstOrNull { runCatching { context.startActivity(it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }.isSuccess }
+    }
 
     fun apply(context: Context, prefs: InkPrefs) {
         InkPrefs.save(context, prefs)
@@ -180,10 +199,11 @@ class InkService : Service() {
         prefs = InkPrefs.load(this)
         disarm()
         if (!prefs.enabled || prefs.apps.isEmpty()) { InstantInk.setStatus(InstantInk.Status.Off); stopSelf(); return }
+        if (!InstantInk.usageAccess(this)) { pen?.stop(); pen = null; InstantInk.setStatus(InstantInk.Status.NoUsageAccess); return }
         if (SurfaceInk.connect { InstantInk.serverPid() } == null) { InstantInk.setStatus(InstantInk.Status.NoRoute); return }
         android.util.Log.i("InstantInk", "route ${SurfaceInk.route}, pen state ${SurfaceInk.penState()}")
         if (pen == null) {
-            val p = PenInput { e -> handler.post { onPen(e) } }
+            val p = PenInput(this) { e -> handler.post { onPen(e) } }
             if (!p.start()) { InstantInk.setStatus(InstantInk.Status.NoPen); return }
             pen = p
         }

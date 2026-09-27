@@ -55,7 +55,7 @@
         <a class="key solid" href="https://github.com/huuunleashed/BooxUltimatum">Source on GitHub</a>
         <a class="key" href="docs.html">How it works</a>
       </div>
-      <p class="status-line"><span class="lamp" aria-hidden="true"></span><span><strong>Pre-release.</strong> It runs daily on the author's own tablet and nowhere else yet. The first public build, 0.4, is planned; until then, <a href="#get">build it from source</a>.</span></p>
+      <p class="status-line"><span class="lamp" aria-hidden="true"></span><span><strong>Public preview, 0.5.</strong> It runs daily on the author's own tablet (Note Air6 C, firmware 4.3) and hasn't been verified elsewhere yet. <a href="https://github.com/huuunleashed/BooxUltimatum/releases">Download the APK</a>, and from 0.5 on it can update itself.</span></p>
     </div>
     <figure>
       <div class="panel">
@@ -108,7 +108,7 @@
         <div><dt>Firmware</dt><dd>4.3, Android 16<span><code>4.3-rel_0817</code>, built 2026-08-17</span></dd></div>
         <div><dt>Other models</dt><dd>Untested<span>Likely close, not yet confirmed</span></dd></div>
         <div><dt>Bootloader</dt><dd>Locked, and it stays locked</dd></div>
-        <div><dt>Status</dt><dd>Pre-release<span>0.4, the first public preview, is next</span></dd></div>
+        <div><dt>Status</dt><dd>Public preview<span>0.5, the sleep screen while asleep</span></dd></div>
         <div><dt>License</dt><dd>GPL-3.0-or-later</dd></div>
       </dl>
       <ul class="principles">
@@ -152,11 +152,12 @@
     <article class="feature" aria-labelledby="f-sleep">
       <div class="text">
         <h3 id="f-sleep">Your own sleep screen</h3>
-        <p>Boox gives you six preset screensavers. BooxUltimatum gives you eight faces set in your tablet font, each with its own portrait and landscape layout.</p>
+        <p>Boox gives you six preset screensavers. BooxUltimatum gives you twenty-one faces set in your tablet font, each with its own portrait and landscape layout, and twelve of them keep time while the tablet sleeps.</p>
         <ul class="ticks">
-          <li><b>Faces:</b> Almanac, Instrument, Poster, Under the clock, Photo, Note, Return card and Minimal.</li>
+          <li><b>Live faces:</b> Dial, Clock, Monitor, Cube (a 3D cube clock), Split-flap, Dashboard, Word clock, Day ring, Timeline, LCD, Sky and Broadsheet. <b>Still faces:</b> Almanac, Year, Instrument, Poster, Under the clock, Photo, Note, Return card and Minimal. Many have options of their own.</li>
           <li><b>Fresh:</b> Boox reads the picture only as the tablet goes to sleep, so the studio redraws it while you use the tablet. The time it shows is honest: “put down around 4:30&nbsp;PM”.</li>
           <li><b>Both orientations</b> are kept ready, so turning the tablet never leaves a cropped face.</li>
+          <li><b>While asleep</b> (new, opt-in): the face can update every 5 to 60 minutes while the tablet sleeps, and cover Boox's charging bar. It needs an accessibility service that only holds the picture, and its battery cost isn't measured yet.</li>
         </ul>
         <a class="more" href="docs.html#sleep">How the picture reaches the sleep screen</a>
       </div>
@@ -178,8 +179,8 @@
         <p>In Boox Notes, ink appears under the nib in about 10&nbsp;ms. In Sketchbook and most other apps, it trails behind. The display system draws the stroke straight from the pen, a firmware feature Onyx offers app developers through its public <a href="https://github.com/onyx-intl/OnyxAndroidDemo/blob/master/doc/Onyx-Pen-SDK.md">pen SDK</a>. Most apps don't include it, so BooxUltimatum switches that path on from the outside for apps you choose.</p>
         <ul class="ticks">
           <li>A preview stroke lands at once; half a second after you lift, the app's own brush takes its place.</li>
-          <li>The app isn't modified in any way. No root and no Shizuku.</li>
-          <li>Still being tuned: the preview is black only, and about one stroke in ten loses its first millimetres.</li>
+          <li>The app isn't modified in any way. No root and no Shizuku, only usage access, allowed on the tablet, so it knows which app is in front.</li>
+          <li>Still being tuned: the preview is black only, and it's been tried in Sketchbook alone. On a Note Air 2 Plus and a Go 10.3 Gen II Lumi it had no effect; the Ink page now shows what it found, with a pen test.</li>
         </ul>
         <a class="more" href="docs.html#ink">What the display system is asked to do</a>
       </div>
@@ -246,7 +247,7 @@
     <div class="install">
       <div>
         <h3>From a release</h3>
-        <p>The first public preview, <strong>0.4</strong>, is planned for the <a href="https://github.com/huuunleashed/BooxUltimatum/releases">Releases page</a>: a release-signed APK, a first-run guide for the adb grants and Shizuku, and a week of daily use without crashes behind it. There are no dates promised; it ships when it works on the tablet.</p>
+        <p>Releases are on the <a href="https://github.com/huuunleashed/BooxUltimatum/releases">Releases page</a> as release-signed APKs. <strong>0.5</strong> brings the sleep screen while asleep and twenty-one faces; next come the battery cost of those updates measured overnight, refinements from how the faces look on the panel, and a first-run guide for the adb grants and Shizuku. There are no dates promised; each release ships when it works on the tablet.</p>
         <p>Until then there is nothing to download, and the honest way to try it is to build it.</p>
       </div>
       <div>

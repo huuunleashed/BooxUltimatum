@@ -205,11 +205,11 @@ object SleepStudio {
     private class Job(val spec: SleepFaceSpec, val data: SleepData, val fonts: SleepTypefaces, val w: Int, val h: Int, val usesPhoto: Boolean, val key: String)
 
     /** Gathers what the face will show and its fingerprint, without drawing anything. Blocking. */
-    private fun job(context: Context, spec: SleepFaceSpec, exact: Boolean, scale: Float, size: Pair<Int, Int>? = null): Job {
+    private fun job(context: Context, spec: SleepFaceSpec, exact: Boolean, scale: Float, size: Pair<Int, Int>? = null, putDownAt: Long? = null, levelAtSleep: Int? = null): Job {
         val (pw, ph) = size ?: panelSize(context)
         val w = (pw * scale).toInt().coerceAtLeast(16)
         val h = (ph * scale).toInt().coerceAtLeast(16)
-        val data = SleepData.gather(context, spec, exact)
+        val data = SleepData.gather(context, spec, exact, putDownAt = putDownAt, levelAtSleep = levelAtSleep)
         val fonts = SleepTypefaces.load(context, spec)
         val usesPhoto = spec.mode == SleepMode.Image && spec.face == SleepFace.Photo
         val photoStamp = if (usesPhoto) SleepPhoto.file(context).lastModified() else 0L
@@ -237,8 +237,23 @@ object SleepStudio {
      * Renders [spec] into [into] or a new bitmap, for previews and thumbnails. Blocking; call on a background
      * dispatcher. [scale] shrinks the sheet; the type scales with it, since every size is a fraction of the short side.
      */
-    fun render(context: Context, spec: SleepFaceSpec, exact: Boolean = false, scale: Float = 1f, into: Bitmap? = null): Rendered =
-        draw(context, job(context, spec, exact, scale), into, shared = false)
+    fun render(context: Context, spec: SleepFaceSpec, exact: Boolean = false, scale: Float = 1f, into: Bitmap? = null, asleepSample: Boolean = false): Rendered {
+        // A live face previewed as it reads part-way through a sleep: put down 1 h 25 min ago, with 2 % used since.
+        val sample = asleepSample && spec.mode == SleepMode.Image && spec.face.live
+        val now = System.currentTimeMillis()
+        val level = runCatching { context.getSystemService(android.os.BatteryManager::class.java).getIntProperty(android.os.BatteryManager.BATTERY_PROPERTY_CAPACITY) }.getOrDefault(80)
+        val j = if (sample) job(context, spec, exact, scale, putDownAt = now - 85 * 60_000L, levelAtSleep = (level + 2).coerceAtMost(100)) else job(context, spec, exact, scale)
+        return draw(context, j, into, shared = false)
+    }
+
+    /**
+     * The face as it should read now, for the live update while asleep: full panel size in the current rotation, the
+     * put-down moment pinned to [putDownAt]. Reuses [into] when it fits. Blocking.
+     */
+    fun renderLive(context: Context, putDownAt: Long, levelAtSleep: Int?, into: Bitmap?): Rendered {
+        val spec = SleepStore.load(context)
+        return draw(context, job(context, spec, exact = true, scale = 1f, putDownAt = putDownAt, levelAtSleep = levelAtSleep), into, shared = false)
+    }
 
     /** Photos without dither go out as JPEG (smaller, no visible loss); everything else as PNG, JPEG only above the limit. */
     private fun encode(b: Bitmap, spec: SleepFaceSpec): Pair<ByteArray, SleepPublisher.Format> {
@@ -309,6 +324,19 @@ object SleepStudio {
     )
 
     fun faceLabel(f: SleepFace) = when (f) {
+        SleepFace.Dial -> R.string.sl_face_dial
+        SleepFace.Clock -> R.string.sl_face_clock
+        SleepFace.Monitor -> R.string.sl_face_monitor
+        SleepFace.Cube -> R.string.sl_face_cube
+        SleepFace.Flip -> R.string.sl_face_flip
+        SleepFace.Dashboard -> R.string.sl_face_dashboard
+        SleepFace.WordClock -> R.string.sl_face_words
+        SleepFace.DayRing -> R.string.sl_face_ring
+        SleepFace.Timeline -> R.string.sl_face_timeline
+        SleepFace.Lcd -> R.string.sl_face_lcd
+        SleepFace.Sky -> R.string.sl_face_sky
+        SleepFace.Broadsheet -> R.string.sl_face_broadsheet
+        SleepFace.Year -> R.string.sl_face_year
         SleepFace.Almanac -> R.string.sl_face_almanac
         SleepFace.Instrument -> R.string.sl_face_instrument
         SleepFace.Poster -> R.string.sl_face_poster
@@ -411,7 +439,8 @@ object SleepStudio {
             val app = context.applicationContext
             val r = runCatching {
                 val base = SleepStore.load(app)
-                val spec = base.copy(mode = SleepMode.Image, elements = base.elements - MOMENT, clockRoom = false)
+                // A clock would stop at the minute the tablet was switched off, so a live face hands over to the Almanac here.
+                val spec = base.copy(mode = SleepMode.Image, face = if (base.face.live) SleepFace.Almanac else base.face, elements = base.elements - MOMENT - SleepElement.Asleep, clockRoom = false)
                 val (pw, ph) = panelSize(app).let { (w, h) -> minOf(w, h) to maxOf(w, h) }
                 val j = job(app, spec, exact = false, scale = 1f, size = pw to ph)
                 val drawn = draw(app, j, null, shared = false)

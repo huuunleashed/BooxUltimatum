@@ -108,10 +108,15 @@ fun AppearanceScreen(readKey: Int, compact: Boolean, onOpenFonts: () -> Unit) {
                     val common = setOf("wifi", "battery", "bluetooth", "clock", "refresh_mode", "tp_touch_mode", "zen", "alarm_clock", "volume", "airplane")
                     val shown = if (allSlots) slots else slots.filter { it.id in common || it.id in hidden }
                     shown.forEach { s -> SlotRow(s, s.id !in hidden) { show -> sb { StatusBar.setHidden(context, s.id, !show) } } }
+                    // SystemUI draws the figure inside the battery icon, so hiding the icon hides the figure too.
+                    val batteryHidden = "battery" in hidden
                     Row(Modifier.fillMaxWidth().heightIn(min = 64.dp).padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Lamp(pct == true)
-                        Text(stringResource(R.string.ap_battery_pct), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f).padding(start = Space.m))
-                        Key(stringResource(if (pct == true) R.string.ap_hide else R.string.ap_show), onClick = { sb { StatusBar.setBatteryPercent(context, pct != true) } })
+                        Lamp(pct == true && !batteryHidden)
+                        Column(Modifier.weight(1f).padding(start = Space.m)) {
+                            Text(stringResource(R.string.ap_battery_pct), style = MaterialTheme.typography.titleMedium)
+                            if (batteryHidden) Text(stringResource(R.string.ap_battery_pct_with_icon), style = MaterialTheme.typography.bodySmall, color = Ink.Legend)
+                        }
+                        Key(stringResource(if (pct == true) R.string.ap_hide else R.string.ap_show), enabled = !batteryHidden, onClick = { sb { StatusBar.setBatteryPercent(context, pct != true) } })
                     }
                     if (slots.size > shown.size || allSlots) {
                         Spacer(Modifier.height(Space.s))

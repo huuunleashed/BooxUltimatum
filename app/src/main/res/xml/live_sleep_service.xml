@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The live sleep screen's accessibility service. It needs the service only for its overlay window, the one kind the
+  lock screen doesn't hide. It can't read window content, subscribes to one rare event type it ignores, and asks for
+  no gestures, key events or touch exploration.
+-->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityEventTypes="typeAnnouncement"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:canRetrieveWindowContent="false"
+    android:notificationTimeout="1000"
+    android:isAccessibilityTool="false"
+    android:description="@string/live_service_description"
+    android:summary="@string/live_service_summary" />

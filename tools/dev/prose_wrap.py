@@ -38,7 +38,15 @@ def unwrap(text: str) -> tuple[str, int]:
     out: list[str] = []
     joins = 0
     in_fence = False
-    for line in text.split("\n"):
+    lines = text.split("\n")
+    # YAML front matter (Agent Skills' SKILL.md, for example) is data, one key per line, not prose.
+    start = 0
+    if lines and lines[0].strip() == "---":
+        end = next((i for i in range(1, len(lines)) if lines[i].strip() == "---"), None)
+        if end is not None:
+            out.extend(lines[: end + 1])
+            start = end + 1
+    for line in lines[start:]:
         fence = line.lstrip().startswith(("```", "~~~"))
         if in_fence:
             out.append(line)

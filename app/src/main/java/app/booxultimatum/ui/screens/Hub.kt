@@ -215,6 +215,16 @@ private fun HomeScreenPlate(readKey: Int) {
             })
         }
         error?.let { ErrorLine(it) }
+        // Android never stops the home app, so while ours is home its background work is safe. Otherwise Boox's
+        // restriction can stop the sleep screen's refreshes, live updates and the battery log.
+        val oursIsHome = launchers.any { it.isDefault && it.component.packageName == context.packageName }
+        val restricted = remember(launchers) { app.booxultimatum.core.sleep.LiveSleep.backgroundAllowed(context).not() }
+        if (!oursIsHome && restricted) {
+            Spacer(Modifier.height(Space.s))
+            Paragraph(stringResource(R.string.home_not_home_background), color = Ink.Legend)
+            Spacer(Modifier.height(Space.s))
+            app.booxultimatum.ui.Key(stringResource(R.string.sl_live_bg_open), onClick = { openBatteryPage(context, context.packageName) })
+        }
         Spacer(Modifier.height(Space.m))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(

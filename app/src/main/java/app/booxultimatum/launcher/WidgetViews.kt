@@ -130,19 +130,29 @@ fun BooxWidget(modifier: Modifier = Modifier) {
     }
 }
 
-/** The face every widget sits on: paper, a 1.5 dp rim, soft corners like a Braun housing. */
+/**
+ * The face every widget sits on: paper, a 1.5 dp rim, soft corners like a Braun housing. Faces have fixed heights,
+ * so their text follows the system font size only up to [MAX_FACE_FONT_SCALE]; beyond that digits and labels would
+ * spill out of the dial, the calendar grid and the rim. Pages and lists elsewhere keep the full size.
+ */
 @Composable
 fun WidgetFace(modifier: Modifier = Modifier, onClick: (() -> Unit)? = null, content: @Composable BoxScope.() -> Unit) {
     val shape = RoundedCornerShape(22.dp)
-    Box(
-        modifier
-            .clip(shape)
-            .border(Lines.rim, Ink.Black, shape)
-            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
-            .padding(20.dp),
-        content = content,
-    )
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val capped = androidx.compose.ui.unit.Density(density.density, density.fontScale.coerceAtMost(MAX_FACE_FONT_SCALE))
+    androidx.compose.runtime.CompositionLocalProvider(androidx.compose.ui.platform.LocalDensity provides capped) {
+        Box(
+            modifier
+                .clip(shape)
+                .border(Lines.rim, Ink.Black, shape)
+                .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+                .padding(20.dp),
+            content = content,
+        )
+    }
 }
+
+const val MAX_FACE_FONT_SCALE = 1.15f
 
 /** Braun AB1-style dial: minute ticks, heavier hour ticks, two hands. No second hand: it would repaint e-ink every second. */
 @Composable
@@ -155,14 +165,22 @@ fun ClockWidget(now: Long, wide: Boolean, modifier: Modifier = Modifier) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
             // The written time joins the dial whenever the face has room beside it, not only at full width.
             val roomy = wide || maxWidth > maxHeight * 1.55f
+            if (!roomy) {
+                // Narrow faces put the time under the dial, never over it: a large system font made them collide.
+                Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Canvas(Modifier.weight(1f).aspectRatio(1f).semantics { contentDescription = "$time, $date" }) { dial(cal) }
+                    Spacer(Modifier.height(Space.xs))
+                    Text(time, style = MaterialTheme.typography.labelLarge, maxLines = 1)
+                }
+                return@BoxWithConstraints
+            }
             Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.l)) {
                 Canvas(Modifier.fillMaxHeight().aspectRatio(1f).semantics { contentDescription = "$time, $date" }) { dial(cal) }
-                if (roomy) Column(Modifier.weight(1f)) {
+                Column(Modifier.weight(1f)) {
                     Text(time, style = if (wide) MaterialTheme.typography.displaySmall else MaterialTheme.typography.headlineMedium, maxLines = 1)
                     Text(date, style = MaterialTheme.typography.titleMedium, color = Ink.Legend, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 }
             }
-            if (!roomy) Text(time, style = MaterialTheme.typography.labelLarge, modifier = Modifier.align(Alignment.BottomEnd))
         }
     }
 }
@@ -229,10 +247,10 @@ fun CalendarWidget(now: Long, modifier: Modifier = Modifier) {
                             if (day in 1..days) {
                                 val isToday = day == today.dayOfMonth
                                 Box(
-                                    Modifier.size(30.dp).clip(CircleShape).then(if (isToday) Modifier.background(Ink.Black) else Modifier),
+                                    Modifier.fillMaxHeight(0.92f).aspectRatio(1f, matchHeightConstraintsFirst = true).clip(CircleShape).then(if (isToday) Modifier.background(Ink.Black) else Modifier),
                                     contentAlignment = Alignment.Center,
                                 ) {
-                                    Text(day.toString(), style = MaterialTheme.typography.labelMedium, color = if (isToday) Ink.Paper else Ink.Black)
+                                    Text(day.toString(), style = MaterialTheme.typography.labelMedium, color = if (isToday) Ink.Paper else Ink.Black, maxLines = 1, softWrap = false)
                                 }
                                 if (day in busy && !isToday) Box(Modifier.align(Alignment.BottomCenter).size(5.dp).clip(CircleShape).background(Ink.Black))
                             }

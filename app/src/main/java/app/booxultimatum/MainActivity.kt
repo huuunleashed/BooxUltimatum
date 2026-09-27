@@ -30,6 +30,7 @@ class MainActivity : ComponentActivity() {
         app.booxultimatum.core.BatteryLog.schedule(this)
         app.booxultimatum.core.BatteryLog.record(this, "open")
         app.booxultimatum.core.BatteryLog.ensureNotRestricted(this)
+        app.booxultimatum.core.update.UpdateManager.checkIfDue(this)
         Shizuku.addBinderReceivedListenerSticky(onBinder)
         Shizuku.addBinderDeadListener(onBinderDead)
         Shizuku.addRequestPermissionResultListener(onPermission)

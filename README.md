@@ -6,7 +6,7 @@
 
 ![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue) ![Status: public preview](https://img.shields.io/badge/status-public%20preview%200.4.1-orange) ![Android 11+](https://img.shields.io/badge/Android-11%2B-3ddc84) ![Tested on Note Air6 C, FW 4.3](https://img.shields.io/badge/tested%20on-Note%20Air6%20C%20%C2%B7%20FW%204.3-black)
 
-**[Website and technical guide](https://huuunleashed.github.io/BooxUltimatum/)** · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md) · [Report a bug or a finding](https://github.com/huuunleashed/BooxUltimatum/issues/new/choose)
+[**Website and technical guide**](https://huuunleashed.github.io/BooxUltimatum/) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md) · [Report a bug or a finding](https://github.com/huuunleashed/BooxUltimatum/issues/new/choose)
 
 <p align="center">
   <img src="docs/screenshots/home.png" width="300" alt="BooxUltimatum home screen in portrait: clock, Library and Boox shelf widgets, and a grid of apps">
@@ -18,7 +18,7 @@ The Note Air6 C is a lovely tablet with a frustrating side. Independent reviews 
 
 It's a single APK. Nothing is flashed, and the bootloader stays locked.
 
-> **Status: public preview (0.4).** It runs daily on the author's own tablet (Note Air6 C, firmware 4.3, Android 16), and hasn't been tested elsewhere yet. Download it from [Releases](https://github.com/huuunleashed/BooxUltimatum/releases), and please report how it behaves on your tablet.
+> **Status: public preview (0.5).** It runs daily on the author's own tablet (Note Air6 C, firmware 4.3, Android 16), and hasn't been tested elsewhere yet. Download it from [Releases](https://github.com/huuunleashed/BooxUltimatum/releases), and please report how it behaves on your tablet. From 0.5 on, the app can update itself and file a report for you from its Device page.
 
 ## What it does
 
@@ -46,9 +46,21 @@ A calm, paper-white launcher that uses about a third of the Boox home's memory a
   <img src="docs/screenshots/sleep-studio-landscape.png" width="480" alt="The Sleep screen studio in landscape, two panes">
 </p>
 
-Boox gives you six preset screensavers. BooxUltimatum gives you eight faces set in *your* tablet font: Almanac, Instrument, Poster, Under the clock, Photo, Note, Return card and Minimal. Each has its own portrait and landscape layout.
+Boox gives you six preset screensavers. BooxUltimatum gives you twenty-one faces set in *your* tablet font, from a Braun wall clock and a 3D cube to a split-flap board, a dashboard and a newspaper front page. Each has its own portrait and landscape layout.
 
 - **Freshness:** Boox only reads the picture as the tablet goes to sleep, so the studio quietly redraws it while you use the tablet. It updates every 5 minutes by default, and whenever the battery, date or rotation changes. The time it shows is honest: "put down around 4:30 PM".
+- **While asleep (new, off by default):** the face can also update while the tablet sleeps, every 5 to 60 minutes, and it covers Boox's charging bar. It needs an accessibility service (which only holds the picture and reads nothing), background use and exact alarms, all allowed on the tablet. Each update wakes the tablet for about a second and a half, and the battery cost isn't measured yet.
+- **Twenty-one faces, twelve of them live.**
+  - Dial, Clock, Monitor, Cube, Split-flap, Dashboard, Word clock, Day ring, Timeline, LCD, Sky and Broadsheet keep time while the tablet sleeps.
+  - Almanac, Year, Instrument, Poster, Under the clock, Photo, Note, Return card and Minimal are still faces.
+  - Many faces have options of their own, such as Dial styles, 12- or 24-hour time, the Dashboard's tiles and the Cube's shading.
+- **Faces show only what the tablet knows:**
+  - Calendar events, when you allow access.
+  - The home screen's weather, with how old it is.
+  - Sunrise and sunset for the home screen's weather city.
+  - The moon's phase, worked out on the tablet.
+
+  Without updates while asleep, a clock face shows when the tablet was put down and says so.
 - **Rotation:** both orientations are kept ready, so turning the tablet never leaves you with a cropped face.
 - **Keeping the Transparent style:** an *Over Transparent* mode lays a small paper plate over it instead.
 - **Power-off screen:** the same face can also be what the tablet shows when it's switched off, set with one tap through the same Boox interface.
@@ -59,7 +71,7 @@ Boox gives you six preset screensavers. BooxUltimatum gives you eight faces set 
 
 In Boox Notes, ink appears under the nib in about 10 ms. In Sketchbook and most other apps, it trails behind. The reason is that the display system draws the stroke straight from the pen, a firmware feature Onyx offers app developers through its public [pen SDK](https://github.com/onyx-intl/OnyxAndroidDemo/blob/master/doc/Onyx-Pen-SDK.md), for drawing inside their own app. Most apps don't include that SDK. BooxUltimatum switches the same path on from the outside for apps you choose, and hands the stroke back to them after you lift the pen.
 
-A preview stroke lands at once, and half a second after you lift, the app's own brush takes its place. The app isn't modified in any way, and it needs no root and no Shizuku. The brush and width of the preview are adjustable. It's new and has only been tried in Sketchbook so far; see [Known limits](#known-limits).
+A preview stroke lands at once, and half a second after you lift, the app's own brush takes its place. The app isn't modified in any way, and it needs no root and no Shizuku, only *usage access*, which you allow on the tablet so it knows which app is in front. The Ink page shows what it found (pen input, display route) and has a pen test, which is what helps most in a report from another tablet. The brush and width of the preview are adjustable. It's new and has only been tried in Sketchbook so far; see [Known limits](#known-limits).
 
 ### A battery doctor that doesn't drain the battery
 
@@ -97,11 +109,11 @@ A full **Google Fonts browser** (1946 families, with a Vietnamese filter) instal
 Most of BooxUltimatum works straight after installing, with no computer, no Shizuku and no root. Every feature declares the least access it needs, and when a higher level is missing, the app shows what it can still do and where the manual switch is.
 
 | Level | What it is | What it adds |
-|---|---|---|
-| **T0: just the app** | Nothing to set up | The home screen, the sleep screen and power-off screen designer, **Instant ink**, battery measurement and the battery log, the Google Fonts browser, **the whole tablet's font**, the settings hub, and making BooxUltimatum your home screen (Android asks you to confirm). For apps Boox restricts, a one-tap link to Android's own battery page and to Boox's hidden App Freeze page (also in the Settings hub). |
+| --- | --- | --- |
+| **T0: just the app** | Nothing to set up, or a switch you allow on the tablet itself | The home screen, the sleep screen and power-off screen designer, the sleep screen **while asleep** (an accessibility service and background use), **Instant ink** (usage access), battery measurement and the battery log, the Google Fonts browser, **the whole tablet's font**, the settings hub, and making BooxUltimatum your home screen (Android asks you to confirm). For apps Boox restricts, a one-tap link to Android's own battery page and to Boox's hidden App Freeze page (also in the Settings hub). |
 | **T1: a one-time setup from a computer** | Four permissions granted once over `adb`; they survive reboots | Reading battery statistics inside the app, showing or hiding status bar icons tablet-wide, and the tweaks that are system settings |
 | **T2: Shizuku** | [Shizuku](https://shizuku.rikka.app), a free app that runs a small helper with the same rights as `adb` | Most tweaks (Doze, Battery Saver, pausing Boox apps), reading and lifting Boox's background restriction for every app at once, switching the home screen in one tap, the Wi-Fi network name in the header, *Sleep now*, and the *Over Transparent* sleep mode |
-| T3: root | | Out of scope. BooxUltimatum doesn't need or ask for it |
+| T3: root |  | Out of scope. BooxUltimatum doesn't need or ask for it |
 
 **About the status bar:** tablet-wide, BooxUltimatum can show or hide the system's status bar icons (T1). The custom Wi-Fi and battery designs are drawn in BooxUltimatum's own home screen header. Replacing the system's own icon artwork would need a system overlay, which Android only allows with root, so that isn't possible.
 
@@ -139,7 +151,7 @@ Firmware 4.3 hides the Wireless debugging switch from Developer options, so rest
 
 ## Install
 
-**From a release:** download `BooxUltimatum-0.4.1.apk` from this repository's [Releases](https://github.com/huuunleashed/BooxUltimatum/releases) page, allow your browser or file manager to install apps, and open it. The Access page shows what each level unlocks and the exact commands for it. Releases are signed with the project's own key, so later releases update it in place.
+**From a release:** download `BooxUltimatum-0.5.0.apk` from this repository's [Releases](https://github.com/huuunleashed/BooxUltimatum/releases) page, allow your browser or file manager to install apps, and open it. The Access page shows what each level unlocks and the exact commands for it. Releases are signed with the project's own key, so later releases update it in place.
 
 **Test builds:** every commit on `main` also builds a debug-signed APK. Open the latest successful [Build run](https://github.com/huuunleashed/BooxUltimatum/actions/workflows/build.yml) and download `booxultimatum-debug-signed` under Artifacts (GitHub asks you to sign in). They use a different key from the releases, so Android won't install one over the other: uninstall first when switching, which also clears the app's settings.
 
@@ -171,13 +183,19 @@ Recents, gestures, NaviBall and EinkWise belong to the system, so they behave th
 - **Instant ink is experimental:**
   - The preview is Boox's own black pen, so a coloured brush or the eraser only shows once the app's stroke takes over.
   - It's been tested with a real pen in Sketchbook only. Other drawing and note apps are the next thing to try.
-- **The sleep screen can't tick while asleep.** Boox doesn't read the picture again until the tablet wakes. Boox's own clock overlay is the only thing that updates while asleep, and the studio can leave room for it. The power-off screen is a copy Boox keeps, so it changes only when you set it again.
-- **Charging:** while the tablet charges, Boox always draws its battery bar over the sleep screen.
+- **Updates while asleep are new.** They're verified on battery on the Note Air6 C, but their battery cost isn't measured yet, and the faces don't yet have much that changes while the tablet sleeps. Without them, Boox doesn't read the picture again until the tablet wakes. The power-off screen is a copy Boox keeps, so it changes only when you set it again.
+- **Charging:** without updates while asleep, Boox always draws its battery bar over the sleep screen while the tablet charges.
+- **Charge limit:** Boox's *Charging protection* stops at 80 %. Other levels would need root, because the threshold files are closed even to Shizuku.
+- **Other Boox models and other tablets:** the app recognises Boox tablets and, elsewhere, hides what needs Boox firmware (the sleep screen and Instant ink). Instant ink had no effect on a Note Air 2 Plus and a Go 10.3 Gen II Lumi; the Ink page now shows why, and those reports are open.
 - **Shizuku stops on every restart**, and starting it again needs a computer on firmware 4.3 (see [How much access it needs](#how-much-access-it-needs)). Everything in the T0 row works without it.
+
+### Updates and reports
+
+The Device page's *This app* plate checks this repository's releases, at most once a day when the app opens or when you tap *Check for updates*. It downloads the APK, checks its SHA-256 and signing key, and hands it to Android's installer. Development builds, which are signed differently, say so and don't offer updates. *Report a problem or idea* fills in a GitHub issue form, or copies or shares the report. You choose which parts to include and can preview each one.
 
 ## Privacy
 
-There are no accounts, analytics, ads or trackers. The app goes online for two things only: weather from [Open-Meteo](https://open-meteo.com) (the city you type), and fonts from Google Fonts when you open the browser. The battery log stays on the tablet until you choose to share it.
+There are no accounts, analytics, ads or trackers. The app goes online for three things only: weather from [Open-Meteo](https://open-meteo.com) (the city you type), fonts from Google Fonts when you open the browser, and GitHub's release list when it checks for updates. The battery log stays on the tablet until you choose to share it, and a problem report is only sent when you open it on GitHub or share it yourself.
 
 ## Disclaimer
 
@@ -189,22 +207,28 @@ The app changes system settings, and, if you ask it to, the home screen, the sle
 
 No dates promised; this is a spare-time project, and each release ships when it works on the tablet.
 
-- **0.4, first public preview (now)**
+- **0.4, first public preview (released)**
   - A release-signed APK on GitHub Releases.
   - Instant ink with hover-held frames and a working width, checked with a real pen in Sketchbook.
   - The sleep face as the power-off screen too.
   - More of the app working without Shizuku: the tablet font, becoming the home screen, and one-tap links to the background controls Boox hides.
-- **0.5, battery and setup**
+- **0.5, the sleep screen while asleep (released)**
+  - Updates while asleep, verified on battery, and twenty-one faces, twelve of them live, many with options of their own.
+  - In-app updates and problem reports.
+  - Instant ink diagnostics for other Boox models: the usage access check, pen detection by behaviour, and a pen test.
+  - One device profile, so tablets that aren't Boox get only what works there.
+- **0.6, battery, setup and polish**
+  - The battery cost of updates while asleep, measured overnight.
+  - Refinements to the faces from how they look on the panel.
   - A one-tap reading mode: Wi-Fi and Bluetooth off, Battery Saver on and sync paused, all undone together.
   - Shizuku that survives a restart without a computer, and an in-app first-run guide for the adb grants.
   - The first overnight and A/B results shown in the app.
-  - Instant ink tried in more drawing and note apps, with results from Note Air4 C and Air5 C testers.
+  - Instant ink tried in more drawing and note apps, and on the models testers reported.
   - Round trips recorded for the last three unverified tweaks.
-- **0.6, home and sleep polish**
+- **0.7, home polish**
   - Notification dots (opt-in).
   - Front-light and refresh-mode quick actions, and a full-refresh key.
   - Backing up and restoring the layout.
-  - Agenda events on the sleep screen, and more faces.
 - **1.0**
   - Confirmed on at least one more Boox model.
   - A Vietnamese translation.
@@ -219,7 +243,7 @@ Kotlin and Jetpack Compose, minSdk 30, target 36. The look is a "Braun Instrumen
 It is written by an owner of the tablet working with an AI pair programmer (GitHub Copilot). Every change is tested on the tablet before it's committed.
 
 | Path | What's there |
-|---|---|
+| --- | --- |
 | `app/` | The Android app. `core/` holds system readers, tweaks, the battery log, `sleep/` and `ink/`. `launcher/` is the home screen and `ui/` the screens |
 | `docs/` | Numbered design docs (`00` device research to `06` sleep screen), plus the screenshots |
 | `knowledge/` | The evidence log (`experiments.md`) and the Onyx package knowledge base bundled with the app |

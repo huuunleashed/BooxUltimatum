@@ -19,6 +19,8 @@
     <!-- Launcher: agenda and month widgets (asked at runtime), and the uninstall action. -->
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
+    <!-- In-app updates: Android still asks the owner unless this app is allowed to install packages. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <!-- Launcher indicators (normal permissions): Wi-Fi on/connected state. -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -27,6 +29,13 @@
     <!-- Instant ink: a small foreground service, so Android doesn't freeze it behind the drawing app. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <!--
+      Live sleep screen: an exact wake-up alarm every few minutes while asleep, and a short wake lock while the face
+      renders. USE_EXACT_ALARM is granted with the app (Android 13+); older versions grant SCHEDULE_EXACT_ALARM.
+    -->
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:name=".BooxUltimatumApplication"
@@ -98,6 +107,22 @@
 
         <!-- Sleep screen studio: the non-wakeup refresh alarm. -->
         <receiver android:name=".core.sleep.SleepReceiver" android:exported="false" />
+
+        <!-- Live sleep screen: the wake-up alarm while asleep, and the overlay over Boox's sleep screen. -->
+        <receiver android:name=".core.sleep.LiveSleepReceiver" android:exported="false" />
+        <service
+            android:name=".core.sleep.LiveSleepService"
+            android:exported="true"
+            android:label="@string/live_service_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data android:name="android.accessibilityservice" android:resource="@xml/live_sleep_service" />
+        </service>
+
+        <!-- In-app updates: receives PackageInstaller results and launches Android's confirmation screen when needed. -->
+        <receiver android:name=".core.update.UpdateInstallReceiver" android:exported="false" />
 
         <service
             android:name=".core.ink.InkService"

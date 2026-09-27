@@ -22,9 +22,14 @@ data class WidgetSpec(val id: String, val kind: WidgetKind, val span: Int, val a
 
 class WidgetStore(context: Context) {
     private val prefs = context.getSharedPreferences("launcher_widgets", Context.MODE_PRIVATE)
+    private val boox = app.booxultimatum.core.Tablet.current(context).isBoox
 
-    fun list(): List<WidgetSpec> {
-        val raw = prefs.getString("widgets", null) ?: return DEFAULT
+    /** The Boox shortcuts widget has nothing to open on other tablets, so it is left out there. */
+    fun list(): List<WidgetSpec> = read().filter { boox || it.kind != WidgetKind.Boox }
+
+    private fun read(): List<WidgetSpec> {
+        val default = defaults(boox)
+        val raw = prefs.getString("widgets", null) ?: return default
         return runCatching {
             val a = JSONArray(raw)
             (0 until a.length()).mapNotNull { i ->
@@ -32,7 +37,7 @@ class WidgetStore(context: Context) {
                 val kind = runCatching { WidgetKind.valueOf(o.getString("kind")) }.getOrNull() ?: return@mapNotNull null
                 WidgetSpec(o.getString("id"), kind, o.optInt("span", 1).coerceIn(1, 2), o.optInt("appWidgetId", -1), o.optInt("extra", 0).coerceIn(WidgetSpec.EXTRA_RANGE))
             }
-        }.getOrDefault(DEFAULT)
+        }.getOrDefault(default)
     }
 
     fun save(list: List<WidgetSpec>) {
@@ -47,7 +52,11 @@ class WidgetStore(context: Context) {
 
     companion object {
         fun newId() = UUID.randomUUID().toString()
-        val DEFAULT = listOf(WidgetSpec("clock", WidgetKind.Clock, 1), WidgetSpec("calendar", WidgetKind.Calendar, 1), WidgetSpec("boox", WidgetKind.Boox, 2))
+        fun defaults(boox: Boolean) = listOf(
+            WidgetSpec("clock", WidgetKind.Clock, 1),
+            WidgetSpec("calendar", WidgetKind.Calendar, 1),
+            if (boox) WidgetSpec("boox", WidgetKind.Boox, 2) else WidgetSpec("battery", WidgetKind.Battery, 2),
+        )
     }
 }
 

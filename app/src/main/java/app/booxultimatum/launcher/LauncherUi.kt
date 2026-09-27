@@ -1015,7 +1015,8 @@ private fun WidgetPicker(model: LauncherModel, onAddSystemWidget: (android.appwi
             }
             Spacer(Modifier.height(Space.xl))
             Plate(stringResource(R.string.l_builtin_widgets)) {
-                listOf(WidgetKind.Boox, WidgetKind.Clock, WidgetKind.Calendar, WidgetKind.Agenda, WidgetKind.Weather, WidgetKind.Battery, WidgetKind.Alarm, WidgetKind.Note).forEach { k ->
+                listOf(WidgetKind.Boox, WidgetKind.Clock, WidgetKind.Calendar, WidgetKind.Agenda, WidgetKind.Weather, WidgetKind.Battery, WidgetKind.Alarm, WidgetKind.Note)
+                    .filter { it != WidgetKind.Boox || app.booxultimatum.core.Tablet.current(context).isBoox }.forEach { k ->
                     Row(Modifier.fillMaxWidth().heightIn(min = 64.dp).padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f).padding(end = Space.m)) {
                             Text(stringResource(builtinName(k)), style = MaterialTheme.typography.titleMedium)

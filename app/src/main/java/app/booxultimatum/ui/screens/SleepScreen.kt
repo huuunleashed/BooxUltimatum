@@ -75,10 +75,13 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import app.booxultimatum.R
 import app.booxultimatum.core.AppWork
 import app.booxultimatum.core.Fonts
 import app.booxultimatum.core.exec.Privileged
+import app.booxultimatum.core.sleep.FaceOptions
 import app.booxultimatum.core.sleep.PhotoFit
 import app.booxultimatum.core.sleep.SleepAccent
 import app.booxultimatum.core.sleep.SleepElement
@@ -129,6 +132,7 @@ fun SleepScreen(readKey: Int, accessEvents: Int) {
     var photoKey by remember { mutableIntStateOf(0) }
     var calendarKey by remember { mutableIntStateOf(0) }
     var editing by rememberSaveable { mutableStateOf<SleepField?>(null) }
+    var liveGroup by rememberSaveable { mutableStateOf(spec.face.live) }
     val landscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     val shell = rememberReading(Pair(readKey, accessEvents)) { Privileged.ready() } ?: false
     val status = rememberReading(Triple(readKey, statusKey, spec.active)) { SleepStore.status(context) }
@@ -180,7 +184,7 @@ fun SleepScreen(readKey: Int, accessEvents: Int) {
     val renderSpec = spec.copy(active = false)
     LaunchedEffect(renderSpec, landscape, photoKey, calendarKey, readKey) {
         delay(120)
-        withContext(Dispatchers.Default) { runCatching { SleepStudio.render(context, renderSpec, scale = 0.5f) }.getOrNull() }?.let {
+        withContext(Dispatchers.Default) { runCatching { SleepStudio.render(context, renderSpec, scale = 0.5f, asleepSample = true) }.getOrNull() }?.let {
             preview = it.bitmap.asImageBitmap()
             previewMs = it.renderMs
         }
@@ -191,10 +195,34 @@ fun SleepScreen(readKey: Int, accessEvents: Int) {
     val styleKey = renderSpec.copy(face = SleepFace.Almanac, overlay = SleepOverlay.BottomBand)
     LaunchedEffect(styleKey, spec.mode, landscape, photoKey, calendarKey) {
         val items: List<Pair<String, SleepFaceSpec>> = if (spec.mode == SleepMode.Image) {
-            SleepFace.entries.map { it.name to renderSpec.copy(face = it) }
+            // The tab in view first, so its tiles fill in before the other's.
+            SleepFace.entries.sortedBy { it.live != liveGroup }.map { it.name to renderSpec.copy(face = it) }
         } else SleepOverlay.entries.map { "ov" + it.name to renderSpec.copy(overlay = it) }
         for ((id, s) in items) {
-            withContext(Dispatchers.Default) { runCatching { SleepStudio.render(context, s, scale = 0.1f) }.getOrNull() }?.let { thumbs[id] = it.bitmap.asImageBitmap() }
+            withContext(Dispatchers.Default) { runCatching { SleepStudio.render(context, s, scale = 0.1f, asleepSample = true) }.getOrNull() }?.let { thumbs[id] = it.bitmap.asImageBitmap() }
+        }
+    }
+
+    // Tapping the sheet shows the face at the panel's full size, 1:1, as the sleep screen will; a tap closes it.
+    var zoom by rememberSaveable { mutableStateOf(false) }
+    var full by remember { mutableStateOf<ImageBitmap?>(null) }
+    var fullMs by remember { mutableStateOf<Long?>(null) }
+    LaunchedEffect(zoom, renderSpec, landscape, photoKey) {
+        if (!zoom) { full = null; return@LaunchedEffect }
+        withContext(Dispatchers.Default) { runCatching { SleepStudio.render(context, renderSpec, scale = 1f, asleepSample = true) }.getOrNull() }?.let {
+            full = it.bitmap.asImageBitmap()
+            fullMs = it.renderMs
+        }
+    }
+    if (zoom) {
+        Dialog(onDismissRequest = { zoom = false }, properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
+            val closeLabel = stringResource(R.string.sl_zoom_close)
+            Box(
+                Modifier.fillMaxSize().background(Ink.Paper).clickable(onClickLabel = closeLabel) { zoom = false },
+                contentAlignment = Alignment.Center,
+            ) {
+                full?.let { Image(it, contentDescription = stringResource(R.string.sl_preview_description), modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Fit) }
+            }
         }
     }
 
@@ -205,18 +233,19 @@ fun SleepScreen(readKey: Int, accessEvents: Int) {
         }
     }
     val sheet: @Composable (Modifier) -> Unit = { m ->
-        SheetPreview(preview, landscape, spec.mode == SleepMode.Overlay, spec.leavesClockRoom, m)
+        val openLabel = stringResource(R.string.sl_zoom_open)
+        SheetPreview(preview, landscape, spec.mode == SleepMode.Overlay, spec.leavesClockRoom, m.clickable(onClickLabel = openLabel) { zoom = true })
     }
     val legend: @Composable () -> Unit = {
         Text(
-            stringResource(R.string.sl_preview_legend),
+            stringResource(if (spec.mode == SleepMode.Image && spec.face.live) R.string.sl_preview_legend_live else R.string.sl_preview_legend),
             style = MaterialTheme.typography.labelSmall, color = Ink.Legend,
             modifier = Modifier.padding(top = Space.xs),
         )
     }
     val keys: @Composable () -> Unit = {
         Column {
-            StateLine(spec, status, previewMs)
+            StateLine(spec, status, previewMs, fullMs)
             Spacer(Modifier.height(Space.s + Space.xs))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.s), verticalArrangement = Arrangement.spacedBy(Space.s)) {
                 Key(
@@ -271,12 +300,20 @@ fun SleepScreen(readKey: Int, accessEvents: Int) {
             }
             item {
                 SleepPlate(stringResource(if (spec.mode == SleepMode.Image) R.string.sl_face else R.string.sl_plate)) {
-                    // Every face on one page: small tiles in rows, no paging needed.
+                    // Small tiles in rows. The faces are split in two tabs, live and still, so each stays one glance.
                     val tile = if (landscape) 150.dp else 112.dp
+                    if (spec.mode == SleepMode.Image) {
+                        FlowRow(Modifier.padding(top = Space.xs, bottom = Space.s), horizontalArrangement = Arrangement.spacedBy(Space.s)) {
+                            val liveCount = SleepFace.entries.count { it.live }
+                            Key(pluralStringResource(R.plurals.sl_group_live, liveCount, liveCount), primary = liveGroup, onClick = { liveGroup = true })
+                            val stillCount = SleepFace.entries.size - liveCount
+                            Key(pluralStringResource(R.plurals.sl_group_still, stillCount, stillCount), primary = !liveGroup, onClick = { liveGroup = false })
+                        }
+                    }
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.m), verticalArrangement = Arrangement.spacedBy(Space.s)) {
                         if (spec.mode == SleepMode.Image) {
-                            SleepFace.entries.forEach { f ->
-                                FaceTile(stringResource(SleepStudio.faceLabel(f)), thumbs[f.name], landscape, spec.face == f, Modifier.width(tile)) { edit { it.copy(face = f) } }
+                            SleepFace.entries.filter { it.live == liveGroup }.forEach { f ->
+                                FaceTile(stringResource(SleepStudio.faceLabel(f)), thumbs[f.name], landscape, spec.face == f, Modifier.width(tile), live = f.live) { edit { it.copy(face = f) } }
                             }
                         } else {
                             SleepOverlay.entries.forEach { o ->
@@ -284,12 +321,48 @@ fun SleepScreen(readKey: Int, accessEvents: Int) {
                             }
                         }
                     }
+                    if (spec.mode == SleepMode.Image && spec.face.live != liveGroup) {
+                        Text(stringResource(R.string.sl_group_selected, stringResource(SleepStudio.faceLabel(spec.face))), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = Space.s))
+                    }
                     Text(stringResource(faceNote(spec)), style = MaterialTheme.typography.bodySmall, color = Ink.Legend, modifier = Modifier.padding(top = Space.s))
                 }
                 Spacer(Modifier.height(Space.l))
             }
+            // The selected face's own settings, right under the picker.
+            val own = if (spec.mode == SleepMode.Image) FaceOptions.of(spec.face) else emptyList()
+            if (own.isNotEmpty()) item {
+                SleepPlate(stringResource(R.string.sl_face_options, stringResource(SleepStudio.faceLabel(spec.face)))) {
+                    own.forEach { o ->
+                        if (o.multi) {
+                            val on = spec.optionSet(o)
+                            Column(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+                                Text(stringResource(o.label), style = MaterialTheme.typography.titleSmall)
+                                Spacer(Modifier.height(Space.xs + 2.dp))
+                                FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.s), verticalArrangement = Arrangement.spacedBy(Space.s)) {
+                                    o.values.forEach { v -> Key(stringResource(v.label), primary = v.id in on, onClick = { edit { it.toggleOption(o, v.id) } }) }
+                                }
+                            }
+                        } else {
+                            Choice(stringResource(o.label), o.values.map { stringResource(it.label) to it.id }, spec.option(o)) { v -> edit { it.withOption(o, v) } }
+                        }
+                        o.note?.let { Text(stringResource(it), style = MaterialTheme.typography.bodySmall, color = Ink.Legend, modifier = Modifier.padding(bottom = Space.xs)) }
+                    }
+                }
+                Spacer(Modifier.height(Space.l))
+            }
+            // Updates while asleep come straight after the faces: the live faces are what makes them worth having.
+            if (spec.mode == SleepMode.Image) item {
+                LivePlate(spec, shell, readKey)
+                Spacer(Modifier.height(Space.l))
+            }
             item {
                 SleepPlate(stringResource(R.string.sl_shows)) {
+                    // A face that picks its own readings still needs the calendar allowed to show events.
+                    if (spec.mode == SleepMode.Image && spec.face.usesCalendar && SleepElement.Agenda !in spec.options && !calendarAllowed) {
+                        ToggleRow(stringResource(R.string.sl_el_agenda), stringResource(R.string.sl_calendar_off), false) {
+                            Key(stringResource(R.string.sl_allow_calendar), onClick = { askCalendar.launch(Manifest.permission.READ_CALENDAR) })
+                        }
+                    }
                     SleepElement.entries.filter { it in spec.options }.forEach { e ->
                         val on = e in spec.elements
                         if (e == SleepElement.Agenda && !calendarAllowed) {
@@ -399,6 +472,7 @@ fun SleepScreen(readKey: Int, accessEvents: Int) {
                 }
                 Spacer(Modifier.height(Space.l))
             }
+
             item {
                 SleepPlate(stringResource(R.string.sl_boox)) {
                     if (spec.mode == SleepMode.Image) {
@@ -467,6 +541,96 @@ fun SleepScreen(readKey: Int, accessEvents: Int) {
 
 // ---------- Pieces ----------
 
+/**
+ * Live updates while asleep: the switch and its choices, then what it needs with a lamp each, then how the last
+ * sleep went. Everything re-reads when the page comes back to the front, so returning from Android's settings shows
+ * the new state without a manual refresh.
+ */
+@Composable
+private fun LivePlate(spec: SleepFaceSpec, shell: Boolean, readKey: Int) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var prefs by remember { mutableStateOf(app.booxultimatum.core.sleep.LivePrefs.load(context)) }
+    var tick by remember { mutableIntStateOf(0) }
+    androidx.lifecycle.compose.LifecycleResumeEffect(Unit) { tick++; onPauseOrDispose { } }
+    val a11y = remember(tick, readKey) { app.booxultimatum.core.sleep.LiveSleep.accessibilityOn(context) }
+    val running = remember(tick, readKey) { app.booxultimatum.core.sleep.LiveSleepService.running }
+    val background = remember(tick, readKey) { app.booxultimatum.core.sleep.LiveSleep.backgroundAllowed(context) }
+    val exact = remember(tick, readKey) { app.booxultimatum.core.sleep.LiveSleep.exactAlarms(context) }
+    val secure = remember(tick, readKey) { context.checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS) == PackageManager.PERMISSION_GRANTED }
+    val record = remember(tick, readKey) { app.booxultimatum.core.sleep.LiveSleep.record(context) }
+    var note by remember { mutableStateOf<String?>(null) }
+
+    fun save(next: app.booxultimatum.core.sleep.LivePrefs) {
+        prefs = next
+        app.booxultimatum.core.sleep.LivePrefs.save(context, next)
+        if (!next.enabled) app.booxultimatum.core.sleep.LiveSleep.cancel(context)
+    }
+
+    SleepPlate(stringResource(R.string.sl_live)) {
+        if (spec.face.live && !prefs.enabled) Prose(stringResource(R.string.sl_live_suggest), modifier = Modifier.padding(top = Space.s))
+        Prose(stringResource(R.string.sl_live_explain), color = Ink.Legend, modifier = Modifier.padding(vertical = Space.s))
+        when {
+            spec.mode != SleepMode.Image -> Prose(stringResource(R.string.sl_live_needs_image), modifier = Modifier.padding(bottom = Space.s))
+            !spec.active -> Prose(stringResource(R.string.sl_live_needs_apply), modifier = Modifier.padding(bottom = Space.s))
+        }
+        ToggleRow(stringResource(R.string.sl_live), null, prefs.enabled && spec.active && spec.mode == SleepMode.Image) {
+            Key(stringResource(if (prefs.enabled) R.string.sl_live_turn_off else R.string.sl_live_turn_on), primary = !prefs.enabled, onClick = { save(prefs.copy(enabled = !prefs.enabled)) })
+        }
+        Choice(
+            stringResource(R.string.sl_live_step),
+            app.booxultimatum.core.sleep.LivePrefs.STEPS.map { pluralStringResource(R.plurals.sl_minutes, it, it) to it },
+            prefs.stepMin,
+        ) { v -> save(prefs.copy(stepMin = v)) }
+        ToggleRow(stringResource(R.string.sl_live_charging), stringResource(R.string.sl_live_charging_detail), prefs.onlyCharging) {
+            Key(stringResource(if (prefs.onlyCharging) R.string.sl_live_on else R.string.sl_live_off), onClick = { save(prefs.copy(onlyCharging = !prefs.onlyCharging)) })
+        }
+        val from = "%02d:00".format(prefs.quietFrom)
+        val to = "%02d:00".format(prefs.quietTo)
+        ToggleRow(stringResource(R.string.sl_live_quiet), stringResource(R.string.sl_live_quiet_detail, from, to), prefs.quiet) {
+            Key(stringResource(if (prefs.quiet) R.string.sl_live_on else R.string.sl_live_off), onClick = { save(prefs.copy(quiet = !prefs.quiet)) })
+        }
+
+        Spacer(Modifier.height(Space.m))
+        Text(stringResource(R.string.sl_live_setup), style = MaterialTheme.typography.titleSmall)
+        ToggleRow(stringResource(R.string.sl_live_a11y), stringResource(R.string.sl_live_a11y_detail), a11y) {
+            when {
+                a11y && secure -> Key(stringResource(R.string.sl_live_a11y_off), onClick = { app.booxultimatum.core.sleep.LiveSleep.disableAccessibility(context); tick++ })
+                a11y -> Key(stringResource(R.string.sl_live_a11y_open), onClick = { app.booxultimatum.core.sleep.LiveSleep.openAccessibility(context) })
+                secure -> Key(stringResource(R.string.sl_live_a11y_direct), primary = true, onClick = { app.booxultimatum.core.sleep.LiveSleep.enableAccessibility(context); scope.launch { delay(1_500); tick++ } })
+                else -> Key(stringResource(R.string.sl_live_a11y_open), primary = true, onClick = { app.booxultimatum.core.sleep.LiveSleep.openAccessibility(context) })
+            }
+        }
+        if (a11y && !running) Text(stringResource(R.string.sl_live_waiting), style = MaterialTheme.typography.bodySmall, color = Ink.Legend, modifier = Modifier.padding(vertical = Space.xs))
+        ToggleRow(stringResource(R.string.sl_live_bg), stringResource(R.string.sl_live_bg_detail), background) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Space.s)) {
+                if (shell) Key(stringResource(R.string.sl_live_bg_register), onClick = {
+                    scope.launch {
+                        val ok = app.booxultimatum.core.AppWork.scope.async { app.booxultimatum.core.sleep.LiveSleep.registerWithBoox(context) }.await()
+                        note = if (ok) context.getString(R.string.sl_live_registered) else null
+                        tick++
+                    }
+                })
+                Key(stringResource(R.string.sl_live_bg_open), primary = !background, onClick = { openBatteryPage(context, context.packageName) })
+            }
+        }
+        ToggleRow(stringResource(R.string.sl_live_exact), stringResource(R.string.sl_live_exact_detail), exact) {
+            if (!exact) Key(stringResource(R.string.sl_live_exact_open), onClick = { app.booxultimatum.core.sleep.LiveSleep.openExactAlarms(context) })
+            else Text(stringResource(R.string.sl_live_allowed), style = MaterialTheme.typography.labelLarge, color = Ink.Legend)
+        }
+
+        Spacer(Modifier.height(Space.s))
+        val last = when {
+            record == null -> stringResource(R.string.sl_live_none)
+            record.updates > 0 -> pluralStringResource(R.plurals.sl_live_last, record.updates, record.updates, Format.clock(context, record.lastUpdate))
+            else -> stringResource(R.string.sl_live_last_none)
+        }
+        Text(last, style = MaterialTheme.typography.bodyMedium)
+        if (record?.missed == true) Prose(stringResource(R.string.sl_live_missed), color = Ink.Alert, modifier = Modifier.padding(top = Space.xs))
+        note?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Ink.Legend, modifier = Modifier.padding(top = Space.xs)) }
+    }
+}
+
 /** A compact section for this page: a small title over the engraved rule. The shared Plate stays as it is elsewhere. */
 @Composable
 private fun SleepPlate(title: String, content: @Composable ColumnScope.() -> Unit) {
@@ -523,7 +687,7 @@ private fun MockPage() {
 }
 
 @Composable
-private fun FaceTile(name: String, thumb: ImageBitmap?, landscape: Boolean, selected: Boolean, modifier: Modifier, overlay: Boolean = false, onClick: () -> Unit) {
+private fun FaceTile(name: String, thumb: ImageBitmap?, landscape: Boolean, selected: Boolean, modifier: Modifier, overlay: Boolean = false, live: Boolean = false, onClick: () -> Unit) {
     val shape = RoundedCornerShape(10.dp)
     Column(
         modifier.clickable(role = Role.RadioButton, onClick = onClick).padding(vertical = 4.dp),
@@ -536,6 +700,12 @@ private fun FaceTile(name: String, thumb: ImageBitmap?, landscape: Boolean, sele
         ) {
             if (overlay) MockPage()
             if (thumb != null) Image(thumb, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.FillBounds)
+            // Faces made for updates while asleep carry a small black tab, like a Braun function label.
+            if (live) Text(
+                stringResource(R.string.sl_live_badge),
+                style = MaterialTheme.typography.labelSmall, color = Ink.Paper,
+                modifier = Modifier.align(Alignment.TopEnd).padding(4.dp).clip(RoundedCornerShape(4.dp)).background(Ink.Black).padding(horizontal = 5.dp, vertical = 1.dp),
+            )
         }
         Spacer(Modifier.height(6.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -606,7 +776,7 @@ private fun Swatch(accent: SleepAccent, name: String, selected: Boolean, onClick
 
 /** On or off, when it last published, and what that cost: the numbers that keep the feature honest. */
 @Composable
-private fun StateLine(spec: SleepFaceSpec, status: SleepStatus?, previewMs: Long?) {
+private fun StateLine(spec: SleepFaceSpec, status: SleepStatus?, previewMs: Long?, fullMs: Long?) {
     val context = LocalContext.current
     val mode = stringResource(if (spec.mode == SleepMode.Image) R.string.sl_mode_image else R.string.sl_mode_overlay)
     Row(verticalAlignment = Alignment.Top) {
@@ -630,7 +800,12 @@ private fun StateLine(spec: SleepFaceSpec, status: SleepStatus?, previewMs: Long
                 }
             }
             if (line != null) Text(line, style = MaterialTheme.typography.bodySmall, color = if (status?.error != null) Ink.Alert else Ink.Legend)
+            val live = remember(spec) { app.booxultimatum.core.sleep.LivePrefs.load(context) }
+            if (spec.active && spec.mode == SleepMode.Image && live.enabled) {
+                Text(pluralStringResource(R.plurals.sl_state_live, live.stepMin, live.stepMin), style = MaterialTheme.typography.bodySmall)
+            }
             if (previewMs != null) Text(stringResource(R.string.sl_preview_ms, previewMs), style = MaterialTheme.typography.bodySmall, color = Ink.Legend)
+            if (fullMs != null) Text(stringResource(R.string.sl_full_ms, fullMs), style = MaterialTheme.typography.bodySmall, color = Ink.Legend)
         }
     }
 }
@@ -731,6 +906,7 @@ private fun elementLabel(e: SleepElement) = when (e) {
     SleepElement.Note -> R.string.sl_el_note
     SleepElement.Owner -> R.string.sl_el_owner
     SleepElement.Quote -> R.string.sl_el_quote
+    SleepElement.Asleep -> R.string.sl_element_asleep
 }
 
 @Composable
@@ -740,6 +916,7 @@ private fun elementDetail(e: SleepElement, spec: SleepFaceSpec): String? = when 
     SleepElement.Note -> spec.note.ifBlank { stringResource(R.string.sl_note_none) }
     SleepElement.Owner -> ownerDetail(spec)
     SleepElement.Quote -> if (spec.useOwnQuote && spec.ownQuote.isNotBlank()) spec.ownQuote else stringResource(R.string.sl_quote_daily_detail)
+    SleepElement.Asleep -> stringResource(R.string.sl_element_asleep_detail)
     else -> null
 }
 
@@ -748,6 +925,19 @@ private fun ownerDetail(spec: SleepFaceSpec): String =
     listOf(spec.ownerName, spec.ownerContact).filter { it.isNotBlank() }.joinToString("  ·  ").ifBlank { stringResource(R.string.sl_owner_none) }
 
 private fun faceNote(spec: SleepFaceSpec) = if (spec.mode == SleepMode.Overlay) R.string.sl_note_overlay else when (spec.face) {
+    SleepFace.Dial -> R.string.sl_note_dial
+    SleepFace.Clock -> R.string.sl_note_clock
+    SleepFace.Monitor -> R.string.sl_note_monitor
+    SleepFace.Cube -> R.string.sl_note_cube
+    SleepFace.Flip -> R.string.sl_note_flip
+    SleepFace.Dashboard -> R.string.sl_note_dashboard
+    SleepFace.WordClock -> R.string.sl_note_words
+    SleepFace.DayRing -> R.string.sl_note_ring
+    SleepFace.Timeline -> R.string.sl_note_timeline
+    SleepFace.Lcd -> R.string.sl_note_lcd
+    SleepFace.Sky -> R.string.sl_note_sky
+    SleepFace.Broadsheet -> R.string.sl_note_broadsheet
+    SleepFace.Year -> R.string.sl_note_year
     SleepFace.Almanac -> R.string.sl_note_almanac
     SleepFace.Instrument -> R.string.sl_note_instrument
     SleepFace.Poster -> R.string.sl_note_poster

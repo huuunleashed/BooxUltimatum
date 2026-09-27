@@ -6,7 +6,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -60,6 +63,9 @@ enum class Destination(@StringRes val label: Int, val glyph: ImageVector) {
     Access(R.string.dest_access, Glyphs.Access),
 }
 
+/** Pages that only work with Boox firmware; other tablets don't show them. */
+private val BOOX_ONLY = setOf(Destination.Sleep, Destination.Ink)
+
 /**
  * [accessEvents] ticks when Shizuku connects, disconnects or answers a permission request, so privilege
  * readings refresh on events rather than by polling.
@@ -70,6 +76,8 @@ enum class Destination(@StringRes val label: Int, val glyph: ImageVector) {
 @Composable
 fun BooxUltimatumApp(accessEvents: Int, initial: String? = null) {
     var destination by rememberSaveable { mutableStateOf(initial?.let { n -> Destination.entries.firstOrNull { it.name == n } } ?: Destination.Overview) }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val boox = androidx.compose.runtime.remember { app.booxultimatum.core.Tablet.current(context).isBoox }
     var readKey by rememberSaveable { mutableIntStateOf(0) }
     val readAgain: () -> Unit = { readKey++ }
     val go: (Destination) -> Unit = { destination = it }
@@ -90,12 +98,18 @@ fun BooxUltimatumApp(accessEvents: Int, initial: String? = null) {
                     Spacer(Modifier.height(Space.m))
                 },
             ) {
-                Destination.entries.forEach { d ->
+                // Eleven destinations don't fit every panel: a 7" tablet or a large system font pushes the last ones
+                // off the bottom, so the rail scrolls when it has to.
+                Column(
+                    Modifier.weight(1f).verticalScroll(rememberScrollState()),
+                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+                ) {
+                Destination.entries.filter { boox || it !in BOOX_ONLY }.forEach { d ->
                     NavigationRailItem(
                         selected = d == destination,
                         onClick = { destination = d },
                         icon = { Icon(d.glyph, contentDescription = null) },
-                        label = { Text(stringResource(d.label), style = MaterialTheme.typography.labelMedium) },
+                        label = { Text(stringResource(d.label), style = MaterialTheme.typography.labelMedium, maxLines = 1) },
                         alwaysShowLabel = true,
                         modifier = Modifier.padding(vertical = 2.dp),
                         colors = NavigationRailItemDefaults.colors(
@@ -103,6 +117,7 @@ fun BooxUltimatumApp(accessEvents: Int, initial: String? = null) {
                             unselectedIconColor = Ink.Black, unselectedTextColor = Ink.Legend,
                         ),
                     )
+                }
                 }
             }
             VerticalDivider(thickness = Lines.rim, color = Ink.Black)

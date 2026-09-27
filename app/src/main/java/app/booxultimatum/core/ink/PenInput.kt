@@ -1,36 +1,45 @@
 package app.booxultimatum.core.ink
 
+import android.content.Context
 import android.system.Os
 import android.system.OsConstants
 import android.system.StructPollfd
+import androidx.core.content.edit
 import java.io.File
 import java.io.FileDescriptor
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 /**
- * The stylus as the kernel reports it. The EMR pen's event node is world-readable on this firmware, so the app
- * can follow pen-down, lift and the eraser end without any privilege. The thread sleeps in poll() until the pen
- * moves or [stop] is called: nothing wakes the tablet.
+ * The stylus as the kernel reports it. Boox leaves the input nodes in `/dev/input` readable by apps, so the app can
+ * follow hover, pen-down, lift and the eraser end without any privilege. Which node is the pen can't be looked up:
+ * SELinux closes `/sys/class/input` (names and capabilities) to apps. So every readable node is opened, and the
+ * first one that reports a pen tool (hover, pen or eraser) is the pen: the others are closed and the node is
+ * remembered for next time. The thread sleeps in poll() until an input moves or [stop] is called, so nothing wakes
+ * the tablet.
  */
-class PenInput(private val onEvent: (Event) -> Unit) {
+class PenInput(private val context: Context? = null, private val onEvent: (Event) -> Unit) {
     enum class Event { Near, Away, Down, Up, EraserNear, EraserAway }
 
     @Volatile private var running = false
     private var thread: Thread? = null
-    private var wakeRead: FileDescriptor? = null
     private var wakeWrite: FileDescriptor? = null
 
-    val available: Boolean get() = device() != null
+    /** The node the pen was found on in this session, once it has reported a pen tool. */
+    @Volatile var node: String? = null
+        private set
 
     fun start(): Boolean {
         if (running) return true
-        val path = device() ?: return false
-        val fd = runCatching { Os.open(path, OsConstants.O_RDONLY or OsConstants.O_CLOEXEC, 0) }.getOrNull() ?: return false
-        val pipe = runCatching { Os.pipe() }.getOrNull() ?: run { Os.close(fd); return false }
-        wakeRead = pipe[0]; wakeWrite = pipe[1]
+        val remembered = context?.let { remembered(it) }
+        val paths = (listOfNotNull(remembered) + readableNodes()).distinct()
+        val opened = paths.mapNotNull { p -> runCatching { p to Os.open(p, OsConstants.O_RDONLY or OsConstants.O_CLOEXEC or OsConstants.O_NONBLOCK, 0) }.getOrNull() }
+        android.util.Log.i("PenInput", "readable ${paths.size}, opened ${opened.map { it.first.removePrefix("/dev/input/") }}")
+        if (opened.isEmpty()) return false
+        val pipe = runCatching { Os.pipe() }.getOrNull() ?: run { opened.forEach { runCatching { Os.close(it.second) } }; return false }
+        wakeWrite = pipe[1]
         running = true
-        thread = Thread({ loop(fd, pipe[0]) }, "pen-input").apply { isDaemon = true; start() }
+        thread = Thread({ loop(opened, pipe[0]) }, "pen-input").apply { isDaemon = true; start() }
         return true
     }
 
@@ -39,37 +48,56 @@ class PenInput(private val onEvent: (Event) -> Unit) {
         wakeWrite?.let { runCatching { Os.write(it, byteArrayOf(1), 0, 1) } }
     }
 
-    private fun loop(fd: FileDescriptor, wake: FileDescriptor) {
+    private fun loop(opened: List<Pair<String, FileDescriptor>>, wake: FileDescriptor) {
         val buf = ByteArray(EVENT_SIZE * 64)
         val bb = ByteBuffer.wrap(buf).order(ByteOrder.LITTLE_ENDIAN)
-        val fds = arrayOf(StructPollfd().apply { this.fd = fd; events = OsConstants.POLLIN.toShort() }, StructPollfd().apply { this.fd = wake; events = OsConstants.POLLIN.toShort() })
+        var inputs = opened
+        var locked: String? = null
         try {
             while (running) {
+                val fds = (inputs.map { it.second } + wake).map { f -> StructPollfd().apply { fd = f; events = OsConstants.POLLIN.toShort() } }.toTypedArray()
                 if (Os.poll(fds, -1) <= 0) continue
-                if (fds[1].revents.toInt() != 0 || !running) break
-                val n = Os.read(fd, buf, 0, buf.size)
-                if (n <= 0) break
-                var off = 0
-                while (off + EVENT_SIZE <= n) {
-                    val type = bb.getShort(off + 16).toInt() and 0xffff
-                    val code = bb.getShort(off + 18).toInt() and 0xffff
-                    val value = bb.getInt(off + 20)
-                    if (type == EV_KEY) when (code) {
-                        // This pen reports hover as the brush tool (seen on NA6C FW 4.3); the pen code is kept for others.
-                        BTN_TOOL_PEN, BTN_TOOL_BRUSH -> onEvent(if (value != 0) Event.Near else Event.Away)
-                        // Many drawing apps map a side button to erasing, so a held side button counts as the eraser.
-                        BTN_TOOL_RUBBER, BTN_STYLUS, BTN_STYLUS2 -> onEvent(if (value != 0) Event.EraserNear else Event.EraserAway)
-                        BTN_TOUCH -> onEvent(if (value != 0) Event.Down else Event.Up)
+                if (fds.last().revents.toInt() != 0 || !running) break
+                for ((i, pfd) in fds.dropLast(1).withIndex()) {
+                    if (pfd.revents.toInt() == 0) continue
+                    val (path, fd) = inputs[i]
+                    val n = runCatching { Os.read(fd, buf, 0, buf.size) }.getOrDefault(-1)
+                    if (n <= 0) continue
+                    var off = 0
+                    while (off + EVENT_SIZE <= n) {
+                        val type = bb.getShort(off + 16).toInt() and 0xffff
+                        val code = bb.getShort(off + 18).toInt() and 0xffff
+                        val value = bb.getInt(off + 20)
+                        off += EVENT_SIZE
+                        if (type != EV_KEY) continue
+                        if (locked == null) {
+                            // Touch panels also report BTN_TOUCH; only a pen tool says which node is the pen.
+                            if (code !in PEN_TOOLS) continue
+                            locked = path
+                            node = path
+                            android.util.Log.i("PenInput", "pen found on $path")
+                            context?.let { remember(it, path) }
+                            inputs.filter { it.first != path }.forEach { runCatching { Os.close(it.second) } }
+                            inputs = inputs.filter { it.first == path }
+                        } else if (path != locked) continue
+                        when (code) {
+                            // This pen reports hover as the brush tool (seen on NA6C FW 4.3); the pen code is kept for others.
+                            BTN_TOOL_PEN, BTN_TOOL_BRUSH -> onEvent(if (value != 0) Event.Near else Event.Away)
+                            // Many drawing apps map a side button to erasing, so a held side button counts as the eraser.
+                            BTN_TOOL_RUBBER, BTN_STYLUS, BTN_STYLUS2 -> onEvent(if (value != 0) Event.EraserNear else Event.EraserAway)
+                            BTN_TOUCH -> onEvent(if (value != 0) Event.Down else Event.Up)
+                        }
                     }
-                    off += EVENT_SIZE
+                    if (inputs.size == 1 && locked != null) break
                 }
             }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            android.util.Log.w("PenInput", "reader stopped", e)
         } finally {
-            runCatching { Os.close(fd) }
+            inputs.forEach { runCatching { Os.close(it.second) } }
             runCatching { Os.close(wake) }
             wakeWrite?.let { runCatching { Os.close(it) } }
-            wakeRead = null; wakeWrite = null
+            wakeWrite = null
             running = false
         }
     }
@@ -84,16 +112,18 @@ class PenInput(private val onEvent: (Event) -> Unit) {
         private const val BTN_STYLUS = 0x14b
         private const val BTN_STYLUS2 = 0x14c
         private const val BTN_TOUCH = 0x14a
+        private val PEN_TOOLS = setOf(BTN_TOOL_PEN, BTN_TOOL_RUBBER, BTN_TOOL_BRUSH)
+        private const val MAX_NODES = 32
+        private const val PREFS = "ink"
+        private const val KEY_NODE = "pen_node"
 
-        /** The pen's event node, found by its kernel name; event5 on the Note Air6 C. */
-        fun device(): String? {
-            val named = runCatching {
-                File("/sys/class/input").listFiles { f -> f.name.startsWith("event") }?.firstOrNull { dir ->
-                    val name = runCatching { File(dir, "device/name").readText().trim() }.getOrDefault("")
-                    name.contains("_pen") || name.contains("emp")
-                }?.let { "/dev/input/${it.name}" }
-            }.getOrNull()
-            return named ?: "/dev/input/event5".takeIf { File(it).canRead() }
-        }
+        /** Input nodes this app may read, probed by path: the directory itself may not be listable. */
+        fun readableNodes(): List<String> = (0 until MAX_NODES).map { "/dev/input/event$it" }.filter { File(it).canRead() }
+
+        fun remembered(context: Context): String? =
+            context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY_NODE, null)?.takeIf { File(it).canRead() }
+
+        private fun remember(context: Context, path: String) =
+            context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit { putString(KEY_NODE, path) }
     }
 }

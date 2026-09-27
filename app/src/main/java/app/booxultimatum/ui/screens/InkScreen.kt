@@ -16,6 +16,8 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -31,6 +33,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.booxultimatum.R
+import app.booxultimatum.core.TabletProfile
+import app.booxultimatum.core.Tablet
 import app.booxultimatum.core.exec.Privileged
 import app.booxultimatum.core.ink.InkPrefs
 import app.booxultimatum.core.ink.InkStyle
@@ -44,7 +48,9 @@ import app.booxultimatum.ui.Paragraph
 import app.booxultimatum.ui.Plate
 import app.booxultimatum.ui.Reading
 import app.booxultimatum.ui.ScreenHeader
+import app.booxultimatum.ui.SpecRow
 import app.booxultimatum.ui.rememberReading
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import app.booxultimatum.ui.theme.Ink
 import app.booxultimatum.ui.theme.Lines
 import app.booxultimatum.ui.theme.Space
@@ -73,8 +79,18 @@ fun InkScreen(readKey: Int, compact: Boolean) {
                 .sortedBy { it.label.lowercase() }
         }
     }
-    val penFound = remember { PenInput.device() != null }
+    val penFound = remember { Tablet.current(context).hasPen && PenInput.readableNodes().isNotEmpty() }
     val shizuku = remember(readKey) { Privileged.ready() }
+    val device = remember { Tablet.current(context) }
+    var resumes by remember { mutableIntStateOf(0) }
+    val usage = remember(readKey, statusKey, resumes) { InstantInk.usageAccess(context) }
+    // Coming back from Android's usage access page: the service re-reads its prerequisites.
+    LifecycleResumeEffect(Unit) {
+        resumes++
+        val p = InkPrefs.load(context)
+        if (p.enabled && p.apps.isNotEmpty()) { InstantInk.apply(context, p); scope.launch { delay(900); statusKey++ } }
+        onPauseOrDispose { }
+    }
 
     fun commit(next: InkPrefs) {
         prefs = next
@@ -92,15 +108,24 @@ fun InkScreen(readKey: Int, compact: Boolean) {
             Spacer(Modifier.height(Space.xl))
             val status = remember(statusKey, prefs) { InstantInk.status }
             Plate(stringResource(R.string.ink_status)) {
-                StatusLine(prefs.enabled && status != InstantInk.Status.Off, when {
+                StatusLine(prefs.enabled && status != InstantInk.Status.Off && usage && penFound, when {
+                    !device.isBoox -> stringResource(R.string.ink_status_not_boox)
                     !penFound -> stringResource(R.string.ink_status_nopen)
+                    !usage -> stringResource(R.string.ink_status_needs_usage)
                     !prefs.enabled -> stringResource(R.string.ink_status_off)
                     prefs.apps.isEmpty() -> stringResource(R.string.ink_status_noapps)
                     status == InstantInk.Status.NoRoute -> stringResource(if (shizuku) R.string.ink_status_noroute else R.string.ink_status_needs_shizuku)
                     status == InstantInk.Status.NoPen -> stringResource(R.string.ink_status_nopen)
+                    status == InstantInk.Status.NoUsageAccess -> stringResource(R.string.ink_status_needs_usage)
                     status == InstantInk.Status.Armed -> stringResource(R.string.ink_status_armed, InstantInk.armedFor.orEmpty())
                     else -> stringResource(R.string.ink_status_ready)
                 })
+                if (device.isBoox && penFound && !usage) {
+                    Spacer(Modifier.height(Space.s))
+                    Paragraph(stringResource(R.string.ink_usage_explain), color = Ink.Legend)
+                    Spacer(Modifier.height(Space.s))
+                    Key(stringResource(R.string.ink_usage_grant), primary = true, onClick = { InstantInk.openUsageAccess(context) })
+                }
                 val route = remember(statusKey, prefs) { app.booxultimatum.core.ink.SurfaceInk.route }
                 if (prefs.enabled && route != null) {
                     Text(
@@ -161,8 +186,74 @@ fun InkScreen(readKey: Int, compact: Boolean) {
             Plate(stringResource(R.string.ink_limits)) {
                 Paragraph(stringResource(R.string.ink_limits_body), color = Ink.Legend)
             }
+            Spacer(Modifier.height(Space.xl))
+            TabletPlate(device, usage, statusKey)
         }
     }
+}
+
+/** What Instant ink found on this tablet, in the words a report needs, plus a live pen test. */
+@Composable
+private fun TabletPlate(device: TabletProfile, usage: Boolean, statusKey: Int) {
+    val route = remember(statusKey) { app.booxultimatum.core.ink.SurfaceInk.route }
+    val pressure = remember(statusKey) { app.booxultimatum.core.ink.SurfaceInk.maxTouchPressure }
+    var testing by remember { mutableStateOf(false) }
+    var tested by remember { mutableStateOf(false) }
+    var seen by remember { mutableStateOf(emptyList<PenInput.Event>()) }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val node = remember(statusKey, testing) { PenInput.remembered(context) }
+    Plate(stringResource(R.string.ink_tablet)) {
+        SpecRow(
+            stringResource(R.string.ink_tablet_pen),
+            device.pen?.let { p -> if (node != null) "${p.name} · ${node.removePrefix("/dev/input/")}" else stringResource(R.string.ink_tablet_pen_unseen, p.name) }
+                ?: stringResource(R.string.ink_tablet_pen_none),
+        )
+        SpecRow(stringResource(R.string.ink_tablet_route), stringResource(when (route) {
+            null -> R.string.ink_tablet_route_none
+            app.booxultimatum.core.ink.SurfaceInk.Route.Firmware -> R.string.ink_tablet_route_firmware
+            app.booxultimatum.core.ink.SurfaceInk.Route.Direct -> R.string.ink_tablet_route_direct
+            app.booxultimatum.core.ink.SurfaceInk.Route.Shizuku -> R.string.ink_tablet_route_shizuku
+        }))
+        if (pressure != null) SpecRow(stringResource(R.string.ink_tablet_pressure), "%.0f".format(pressure))
+        SpecRow(stringResource(R.string.ink_tablet_usage), stringResource(if (usage) R.string.ink_yes else R.string.ink_no))
+        SpecRow(stringResource(R.string.ink_tablet_system), listOfNotNull(device.name, device.firmware, "Android ${device.android}").joinToString(" · "))
+        Spacer(Modifier.height(Space.s))
+        Text(stringResource(R.string.ink_tablet_hint), style = MaterialTheme.typography.bodySmall, color = Ink.Legend)
+        Spacer(Modifier.height(Space.m))
+        if (device.pen != null) {
+            Key(stringResource(if (testing) R.string.ink_pen_test_stop else R.string.ink_pen_test), onClick = { if (!testing) seen = emptyList(); testing = !testing; tested = true })
+            if (tested) {
+                Spacer(Modifier.height(Space.s))
+                val words = seen.map { stringResource(penWord(it)) }.distinct()
+                Text(
+                    when {
+                        words.isNotEmpty() -> stringResource(R.string.ink_pen_test_seen, words.joinToString(", "))
+                        testing -> stringResource(R.string.ink_pen_test_waiting)
+                        else -> stringResource(R.string.ink_pen_test_none)
+                    },
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            }
+        }
+    }
+    if (testing) {
+        // A second reader on the pen node is fine: the kernel hands every reader its own copy of the events.
+        DisposableEffect(Unit) {
+            val main = android.os.Handler(android.os.Looper.getMainLooper())
+            val input = PenInput(context) { e -> main.post { if (seen.size < 64) seen = seen + e } }
+            if (!input.start()) testing = false
+            onDispose { input.stop() }
+        }
+        LaunchedEffect(Unit) { delay(45_000); testing = false }
+    }
+}
+
+private fun penWord(e: PenInput.Event): Int = when (e) {
+    PenInput.Event.Near -> R.string.ink_pen_near
+    PenInput.Event.Down -> R.string.ink_pen_down
+    PenInput.Event.Up -> R.string.ink_pen_up
+    PenInput.Event.Away -> R.string.ink_pen_away
+    PenInput.Event.EraserNear, PenInput.Event.EraserAway -> R.string.ink_pen_eraser
 }
 
 @Composable
