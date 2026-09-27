@@ -18,7 +18,12 @@ import java.nio.ByteOrder
  * remembered for next time. The thread sleeps in poll() until an input moves or [stop] is called, so nothing wakes
  * the tablet.
  */
-class PenInput(private val context: Context? = null, private val onEvent: (Event) -> Unit) {
+class PenInput(
+    private val context: Context? = null,
+    /** Called on the reader thread if reading ends without [stop], so the owner can start a new reader. */
+    private val onLost: (() -> Unit)? = null,
+    private val onEvent: (Event) -> Unit,
+) {
     enum class Event { Near, Away, Down, Up, EraserNear, EraserAway }
 
     @Volatile private var running = false
@@ -53,11 +58,21 @@ class PenInput(private val context: Context? = null, private val onEvent: (Event
         val bb = ByteBuffer.wrap(buf).order(ByteOrder.LITTLE_ENDIAN)
         var inputs = opened
         var locked: String? = null
+        var lost = false
         try {
             while (running) {
                 val fds = (inputs.map { it.second } + wake).map { f -> StructPollfd().apply { fd = f; events = OsConstants.POLLIN.toShort() } }.toTypedArray()
                 if (Os.poll(fds, -1) <= 0) continue
                 if (fds.last().revents.toInt() != 0 || !running) break
+                // A node that errors or goes away would otherwise wake poll() over and over: drop it.
+                val broken = fds.dropLast(1).withIndex().filter { (_, p) -> p.revents.toInt() and (OsConstants.POLLERR or OsConstants.POLLHUP or OsConstants.POLLNVAL) != 0 }.map { it.index }.toSet()
+                if (broken.isNotEmpty()) {
+                    broken.forEach { i -> runCatching { Os.close(inputs[i].second) } }
+                    inputs = inputs.filterIndexed { i, _ -> i !in broken }
+                    if (locked != null && inputs.none { it.first == locked }) locked = null
+                    if (inputs.isEmpty()) { lost = true; break }
+                    continue
+                }
                 for ((i, pfd) in fds.dropLast(1).withIndex()) {
                     if (pfd.revents.toInt() == 0) continue
                     val (path, fd) = inputs[i]
@@ -79,6 +94,10 @@ class PenInput(private val context: Context? = null, private val onEvent: (Event
                             context?.let { remember(it, path) }
                             inputs.filter { it.first != path }.forEach { runCatching { Os.close(it.second) } }
                             inputs = inputs.filter { it.first == path }
+                            // A quick first stroke reports the touch just before the pen tool in the same batch, so the
+                            // batch is read again from its start now that this node is known to be the pen.
+                            off = 0
+                            continue
                         } else if (path != locked) continue
                         when (code) {
                             // This pen reports hover as the brush tool (seen on NA6C FW 4.3); the pen code is kept for others.
@@ -93,12 +112,15 @@ class PenInput(private val context: Context? = null, private val onEvent: (Event
             }
         } catch (e: Exception) {
             android.util.Log.w("PenInput", "reader stopped", e)
+            lost = true
         } finally {
             inputs.forEach { runCatching { Os.close(it.second) } }
             runCatching { Os.close(wake) }
             wakeWrite?.let { runCatching { Os.close(it) } }
             wakeWrite = null
+            val stoppedOnPurpose = !running
             running = false
+            if (lost && !stoppedOnPurpose) { android.util.Log.w("PenInput", "pen node lost"); onLost?.invoke() }
         }
     }
 

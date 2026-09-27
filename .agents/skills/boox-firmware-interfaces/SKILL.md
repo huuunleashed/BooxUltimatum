@@ -37,22 +37,25 @@ Everything here was verified on a Note Air6 C with firmware 4.3 (Android 16) unl
 
   | Code | What it does |
   |---|---|
-  | 16711693 | Pen state (0 stop, 1 start, 2 draw, 3 pause) |
+  | 16711693 | Pen state (0 stop, 1 start, 2 draw, 3 pause); `GET_PEN_STATE` reads a paused session back as 4 |
   | 16711694 | Region |
   | 16711688 | Stroke style |
   | 16711687 | Stroke width |
   | 16711686 | Stroke colour |
-  | 16711692 | `ENABLE_POST` |
+  | 16711692 | `ENABLE_POST` (int −1, int enable, int pid) |
   | 1048643 | `GET_PEN_STATE` |
   | 1048618 | `GET_MAX_TOUCH_PRESSURE` (returns 4096.0; used as a probe) |
   | 1048722 | Auto-sync |
   | 16711700 | Repaint everything |
 
 - Send the stroke settings after START, in the SDK's order: style, width, colour. Hold frames from hover (`BTN_TOOL_BRUSH` on this pen), not from pen-down.
-- SurfaceFlinger reads the region in the panel's landscape frame, so use a square with the long side (2480).
+- SurfaceFlinger reads the region in the panel's landscape frame, so use a square with the long side (2480). It then covers both orientations, so rotating needs no new session.
+- **The session has to exist before the touch.** A session started after the touch has begun misses that stroke, and one started about 35 ms before it can too. A paused session resumes instantly with DRAW, even at the touch. On a quick stroke this pen hovers only about 45 ms before touching, and a quick first touch arrives in the same batch as the hover, `BTN_TOUCH` first. So Instant ink opens its session as soon as it's on and keeps it paused (quiet: no preview, no held frames) whenever the pen is away or no chosen app is in front.
+- **The firmware holds app frames from every touch** (`HandlePenTrigger, sid: -1 value is: 0` in logcat, `onyx_android_refreash_enable() enable[0]`) until `ENABLE_POST` 1 lets them through, which is also the swap that replaces the preview. A pulse (0, then 1) swaps even if nothing held the frames. Letting frames through while the pen still draws ends the preview for the rest of that stroke, so the preview and the app's live stroke can't be shown together.
+- **Boox's apps run sessions of their own.** `com.onyx` stopped the session when Boox Notes opened; Notes starts its own and leaves it paused when you switch away. Never end a session over a `com.onyx.*` app; pause, and take over a paused one (region, stroke, DRAW) in a chosen app afterwards. `Pid N State change to: …` in logcat names who changed it.
 - `android.onyx.ViewUpdateHelper` and `VMRuntime.setHiddenApiExemptions` are blocked as hidden APIs for a targetSdk 36 app, so the app uses the Direct route.
-- **SELinux closes `/sys/class/input` to apps**: both listing it and reading `device/name` are denied. The `/dev/input/eventN` nodes are readable, so `PenInput` opens every readable node and takes the first one that reports `BTN_TOOL_PEN`, `BTN_TOOL_BRUSH` or `BTN_TOOL_RUBBER`. `InputManager` says whether a stylus exists at all.
-- Instant ink needs usage access to know which app is in front. Without it the usage history is silently empty.
+- **SELinux closes `/sys/class/input` to apps**: both listing it and reading `device/name` are denied. The `/dev/input/eventN` nodes are readable, so `PenInput` opens every readable node and takes the first one that reports `BTN_TOOL_PEN`, `BTN_TOOL_BRUSH` or `BTN_TOOL_RUBBER`, then re-reads that batch so a touch reported just before the tool isn't lost. `InputManager` says whether a stylus exists at all.
+- Instant ink needs usage access to know which app is in front. Without it the usage history is silently empty. A tap with the pen can open another app while the pen stays in range, so read the app in front again shortly after taps.
 
 ## Fonts, status bar, charging
 

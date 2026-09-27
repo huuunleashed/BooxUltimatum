@@ -178,8 +178,8 @@
         <h3 id="f-ink">Instant ink for other apps <span class="tag">Experimental</span></h3>
         <p>In Boox Notes, ink appears under the nib in about 10&nbsp;ms. In Sketchbook and most other apps, it trails behind. The display system draws the stroke straight from the pen, a firmware feature Onyx offers app developers through its public <a href="https://github.com/onyx-intl/OnyxAndroidDemo/blob/master/doc/Onyx-Pen-SDK.md">pen SDK</a>. Most apps don't include it, so BooxUltimatum switches that path on from the outside for apps you choose.</p>
         <ul class="ticks">
-          <li>A preview stroke lands at once; half a second after you lift, the app's own brush takes its place.</li>
-          <li>The app isn't modified in any way. No root and no Shizuku, only usage access, allowed on the tablet, so it knows which app is in front.</li>
+          <li>A preview stroke lands at once; half a second after you lift, the app's own brush takes its place. A session kept ready means even the first stroke after unlocking gets it.</li>
+          <li>The app isn't modified in any way. No root and no Shizuku, only usage access, allowed on the tablet, so it knows which app is in front. A Quick Settings switch turns it on and off.</li>
           <li>Still being tuned: the preview is black only, and it's been tried in Sketchbook alone. On a Note Air 2 Plus and a Go 10.3 Gen II Lumi it had no effect; the Ink page now shows what it found, with a pen test.</li>
         </ul>
         <a class="more" href="docs.html#ink">What the display system is asked to do</a>

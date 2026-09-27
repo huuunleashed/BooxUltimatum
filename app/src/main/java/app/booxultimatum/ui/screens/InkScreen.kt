@@ -84,10 +84,12 @@ fun InkScreen(readKey: Int, compact: Boolean) {
     val device = remember { Tablet.current(context) }
     var resumes by remember { mutableIntStateOf(0) }
     val usage = remember(readKey, statusKey, resumes) { InstantInk.usageAccess(context) }
-    // Coming back from Android's usage access page: the service re-reads its prerequisites.
+    // Coming back from Android's usage access page, or after the Quick Settings switch or the notification changed
+    // things: the page and the service both re-read the settings.
     LifecycleResumeEffect(Unit) {
         resumes++
         val p = InkPrefs.load(context)
+        prefs = p
         if (p.enabled && p.apps.isNotEmpty()) { InstantInk.apply(context, p); scope.launch { delay(900); statusKey++ } }
         onPauseOrDispose { }
     }
@@ -141,17 +143,21 @@ fun InkScreen(readKey: Int, compact: Boolean) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.s), verticalArrangement = Arrangement.spacedBy(Space.s)) {
                     Key(stringResource(R.string.ink_check), onClick = { statusKey++ })
                     Key(stringResource(R.string.ink_recover), onClick = { scope.launch(Dispatchers.IO) { InstantInk.recoverScreen(context) } })
+                    if (device.isBoox && android.os.Build.VERSION.SDK_INT >= 33) {
+                        val label = stringResource(R.string.ink_title)
+                        Key(stringResource(R.string.ink_tile_add), onClick = { requestTile(context, label) })
+                    }
                 }
                 Spacer(Modifier.height(Space.s))
                 Text(stringResource(R.string.ink_recover_hint), style = MaterialTheme.typography.bodySmall, color = Ink.Legend)
+                Text(stringResource(R.string.ink_tile_hint), style = MaterialTheme.typography.bodySmall, color = Ink.Legend, modifier = Modifier.padding(top = Space.xs))
             }
             Spacer(Modifier.height(Space.xl))
             Plate(stringResource(R.string.ink_stroke)) {
                 Choice(stringResource(R.string.ink_style), InkStyle.entries, prefs.style, { stringResource(when (it) { InkStyle.Fountain -> R.string.ink_style_fountain; InkStyle.Pencil -> R.string.ink_style_pencil; InkStyle.Marker -> R.string.ink_style_marker }) }) { commit(prefs.copy(style = it)) }
                 Choice(stringResource(R.string.ink_width), listOf(2, 3, 4, 6, 8), prefs.widthPx, { stringResource(R.string.ink_px, it) }) { commit(prefs.copy(widthPx = it)) }
                 Choice(stringResource(R.string.ink_latency), listOf(250, 400, 500, 800, 1200), prefs.latencyMs, { stringResource(R.string.ink_ms, it) }) { commit(prefs.copy(latencyMs = it)) }
-                Text(stringResource(R.string.ink_latency_hint), style = MaterialTheme.typography.bodySmall, color = Ink.Legend, modifier = Modifier.padding(bottom = Space.m))
-                Choice(stringResource(R.string.ink_hold), listOf(true, false), prefs.holdAppInk, { stringResource(if (it) R.string.ink_hold_on else R.string.ink_hold_off) }) { commit(prefs.copy(holdAppInk = it)) }
+                Text(stringResource(R.string.ink_latency_hint), style = MaterialTheme.typography.bodySmall, color = Ink.Legend)
             }
             Spacer(Modifier.height(Space.xl))
         }
@@ -245,6 +251,19 @@ private fun TabletPlate(device: TabletProfile, usage: Boolean, statusKey: Int) {
             onDispose { input.stop() }
         }
         LaunchedEffect(Unit) { delay(45_000); testing = false }
+    }
+}
+
+/** Asks Quick Settings to add the Instant ink switch; the system shows its own confirmation. */
+@androidx.annotation.RequiresApi(33)
+private fun requestTile(context: android.content.Context, label: String) {
+    runCatching {
+        context.getSystemService(android.app.StatusBarManager::class.java).requestAddTileService(
+            android.content.ComponentName(context, app.booxultimatum.core.ink.InkTileService::class.java),
+            label,
+            android.graphics.drawable.Icon.createWithResource(context, R.drawable.ic_tile_ink),
+            context.mainExecutor,
+        ) { }
     }
 }
 

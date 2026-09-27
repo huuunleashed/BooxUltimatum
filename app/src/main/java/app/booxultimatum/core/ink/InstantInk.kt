@@ -3,6 +3,7 @@ package app.booxultimatum.core.ink
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.KeyguardManager
 import android.app.PendingIntent
 import android.app.Service
 import android.app.usage.UsageEvents
@@ -13,10 +14,12 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.graphics.Point
+import android.graphics.drawable.Icon
 import android.hardware.display.DisplayManager
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.IBinder
+import android.os.SystemClock
 import android.view.Display
 import androidx.core.content.edit
 import app.booxultimatum.MainActivity
@@ -28,15 +31,17 @@ import kotlinx.coroutines.runBlocking
 /** The preview brushes SurfaceFlinger offers. Pencil is textured and reads as broken at small widths. */
 enum class InkStyle(val code: Int) { Fountain(1), Pencil(0), Marker(2) }
 
-/** What the owner chose on the Instant ink page. Stored in the "ink" preferences. */
+/**
+ * What the owner chose on the Instant ink page. Stored in the "ink" preferences. A "hold" key from 0.5.0's
+ * "While drawing" choice may still be there; it is ignored, since the firmware holds the app's drawing while the pen
+ * touches anyway, and letting it through mid-stroke ended the preview (tested on NA6C FW 4.3).
+ */
 data class InkPrefs(
     val enabled: Boolean = false,
     val apps: Set<String> = emptySet(),
     val widthPx: Int = 4,
     val style: InkStyle = InkStyle.Fountain,
     val latencyMs: Int = 500,
-    /** Hold the app's own drawing back while the pen draws, so it can't cut into the preview or show it twice. */
-    val holdAppInk: Boolean = true,
 ) {
     companion object {
         private const val FILE = "ink"
@@ -49,14 +54,13 @@ data class InkPrefs(
                 widthPx = p.getInt("width", 4),
                 style = runCatching { InkStyle.valueOf(p.getString("style", null) ?: "") }.getOrDefault(InkStyle.Fountain),
                 latencyMs = p.getInt("latency", 500),
-                holdAppInk = p.getBoolean("hold", true),
             )
         }
 
         fun save(context: Context, v: InkPrefs) {
             context.getSharedPreferences(FILE, Context.MODE_PRIVATE).edit {
                 putBoolean("enabled", v.enabled).putStringSet("apps", v.apps).putInt("width", v.widthPx).putString("style", v.style.name)
-                    .putInt("latency", v.latencyMs).putBoolean("hold", v.holdAppInk)
+                    .putInt("latency", v.latencyMs).remove("hold")
             }
         }
     }
@@ -101,6 +105,15 @@ object InstantInk {
         val intent = Intent(context, InkService::class.java)
         if (prefs.enabled && prefs.apps.isNotEmpty()) runCatching { context.startForegroundService(intent) }
         else context.stopService(intent)
+        refreshTile(context)
+    }
+
+    /** Whether the service is running in this process; set by the service itself. */
+    @Volatile internal var running = false
+
+    /** Asks Quick Settings to redraw the Instant ink tile, when the owner has added it. */
+    fun refreshTile(context: Context) {
+        runCatching { android.service.quicksettings.TileService.requestListeningState(context, android.content.ComponentName(context, InkTileService::class.java)) }
     }
 
     /** Called when the app starts: brings the service back if the owner left Instant ink on. */
@@ -109,8 +122,12 @@ object InstantInk {
         if (p.enabled && p.apps.isNotEmpty()) runCatching { context.startForegroundService(Intent(context, InkService::class.java)) }
     }
 
-    /** Clears any preview ink and returns the panel to normal drawing, whatever state it was left in. */
+    /**
+     * Clears any preview ink and returns the panel to normal drawing, whatever state it was left in. While the service
+     * runs, it does this itself, so its idea of the session stays true and the next approach opens a new one.
+     */
     fun recoverScreen(context: Context) {
+        if (running && runCatching { context.startService(Intent(context, InkService::class.java).setAction(InkService.ACTION_RECOVER)) }.isSuccess) return
         if (SurfaceInk.connect { serverPid() } != null) SurfaceInk.release()
         Journal.log(context, "undo", context.getString(R.string.ink_title), context.getString(R.string.ink_recovered), true)
     }
@@ -123,53 +140,99 @@ object InstantInk {
     }
 }
 
+/**
+ * The service behind Instant ink. It keeps one display pen session of its own, opened ahead of time and paused
+ * whenever the pen is away or no chosen app is in front, because on NA6C FW 4.3 a session opened only as the pen
+ * arrives misses the stroke that follows at once, while a paused session resumes instantly, even at the touch. Pen
+ * hover on a quick stroke lasts about 45 ms, and a quick first touch arrives together with the hover. A paused session
+ * stays quiet in other apps: no preview and no held frames (all tested with the owner drawing in Sketchbook and Boox
+ * Notes).
+ */
 class InkService : Service() {
     private lateinit var worker: HandlerThread
     private lateinit var handler: Handler
     private var pen: PenInput? = null
+    private var penRestarts = 0
     private var prefs = InkPrefs()
-    private var armed: String? = null
-    private var armedRotation = -1
-    private var lastForeground: String? = null
-    private var lastQuery = 0L
+    private val keyguard by lazy { getSystemService(KeyguardManager::class.java) }
+
+    /** Our pen session is open (started by this service and not ended since). */
+    private var open = false
+    /** Open but paused: screen off, the lock screen, the eraser, or no chosen app in front. */
+    private var paused = false
+    /**
+     * A Boox app came to the front while our session was paused. Boox's own apps start, stop and pause sessions of
+     * their own (Notes leaves its session paused when you switch away), so ours may have been replaced: the next
+     * chosen app opens a new one instead of resuming.
+     */
+    private var stale = false
     /** App frames are held back from the panel (the pen is near, a stroke is being drawn or waiting to be swapped). */
     private var holding = false
+    /** Preview ink may be on the panel that the app's own frames haven't replaced yet. */
+    private var inked = false
     private var touching = false
     private var near = false
+    private var downAt = 0L
     private var lastSwap = 0L
+    private var lastCheck = 0L
+    private var lastForeground: String? = null
+    private var lastQuery = 0L
+
+    private val drawing get() = open && !paused
 
     private fun hold() {
-        if (prefs.holdAppInk && !holding) { SurfaceInk.enablePost(false); holding = true }
+        if (!holding) { SurfaceInk.enablePost(false); holding = true }
         handler.removeCallbacks(watchdog)
-        handler.postDelayed(watchdog, 30_000)
-    }
-
-    private fun letThrough() {
-        handler.removeCallbacks(watchdog)
-        if (holding) { SurfaceInk.enablePost(true); holding = false }
-        lastSwap = android.os.SystemClock.uptimeMillis()
+        handler.postDelayed(watchdog, WATCHDOG_MS)
     }
 
     /**
-     * The swap: the app's frames reach the panel again and replace the preview, while the session stays open. If the
-     * pen is still hovering, the hold resumes shortly afterwards, so the next stroke's first points are never raced
-     * by the app's own frames (the likely cause of the preview sometimes missing a stroke's start).
+     * The swap: SurfaceFlinger replaces the preview with the app's own pixels when app frames go from held to let
+     * through, while the session stays open. The firmware itself holds app frames from each touch (its
+     * `HandlePenTrigger`) until they're let through, so a stroke that began unheld still needs a brief hold and
+     * release; without it the preview stayed on the panel for good (tested on NA6C FW 4.3). Letting frames through
+     * while the pen still draws ends the preview for the rest of that stroke, which is why this waits for the lift.
      */
-    private val swap = Runnable {
-        letThrough()
-        if (near && armed != null) { handler.removeCallbacks(rehold); handler.postDelayed(rehold, REHOLD_MS) }
+    private fun swap() {
+        handler.removeCallbacks(watchdog)
+        when {
+            holding -> { SurfaceInk.enablePost(true); holding = false }
+            inked -> { SurfaceInk.enablePost(false); SurfaceInk.enablePost(true) }
+        }
+        inked = false
+        lastSwap = SystemClock.uptimeMillis()
     }
 
-    private val rehold = Runnable { if (near && !touching && armed != null) { hold(); handler.postDelayed(hoverIdle, HOVER_IDLE_MS) } }
+    private val swapAfterLift = Runnable {
+        swap()
+        // With the pen still hovering, hold again shortly, so the next stroke's first points aren't raced by the app's frames.
+        if (near && drawing) { handler.removeCallbacks(rehold); handler.postDelayed(rehold, REHOLD_MS) }
+    }
 
-    /** A pen resting in range without drawing doesn't keep the app's screen frozen: its frames go through after a while. */
-    private val hoverIdle = Runnable { if (!touching && holding) letThrough() }
+    private val rehold = Runnable { if (near && !touching && drawing) { hold(); handler.postDelayed(hoverIdle, HOVER_IDLE_MS) } }
+
+    /** A pen resting in range without drawing doesn't keep the app's screen frozen or the preview on it. */
+    private val hoverIdle = Runnable { if (!touching && (holding || inked)) swap() }
 
     /** Never leave app frames held back for long, whatever the pen reports. */
-    private val watchdog = Runnable { if (holding) { SurfaceInk.enablePost(true); holding = false } }
+    private val watchdog = Runnable { if (holding) swap() }
 
-    private val screenOff = object : BroadcastReceiver() {
-        override fun onReceive(c: Context, i: Intent) { handler.post { disarm() } }
+    /**
+     * A tap with the pen often opens another app while the pen stays in range, so no new approach would say so. The
+     * app in front is read again a few times after a tap: a chosen app is ready before the pen lands, and any other
+     * app has the preview paused before it could draw there.
+     */
+    private val recheck = Runnable { if (near && !touching) target() }
+
+    private fun recheckSoon() {
+        handler.removeCallbacks(recheck)
+        RECHECK_AFTER_TAP_MS.forEach { handler.postDelayed(recheck, it) }
+    }
+
+    private fun cancelSwaps() { handler.removeCallbacks(swapAfterLift); handler.removeCallbacks(rehold); handler.removeCallbacks(hoverIdle) }
+
+    private val screen = object : BroadcastReceiver() {
+        override fun onReceive(c: Context, i: Intent) { if (i.action == Intent.ACTION_SCREEN_OFF) handler.post { pauseForScreen() } }
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -179,16 +242,33 @@ class InkService : Service() {
         worker = HandlerThread("instant-ink").apply { start() }
         handler = Handler(worker.looper)
         startInForeground()
-        registerReceiver(screenOff, IntentFilter(Intent.ACTION_SCREEN_OFF))
+        registerReceiver(screen, IntentFilter(Intent.ACTION_SCREEN_OFF))
+        InstantInk.running = true
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        handler.post { reload() }
+        when (intent?.action) {
+            ACTION_OFF -> handler.post {
+                InkPrefs.save(this, InkPrefs.load(this).copy(enabled = false))
+                disarm()
+                InstantInk.setStatus(InstantInk.Status.Off)
+                InstantInk.refreshTile(this)
+                stopSelf()
+            }
+            ACTION_RECOVER -> handler.post {
+                disarm()
+                SurfaceInk.release()
+                Journal.log(this, "undo", getString(R.string.ink_title), getString(R.string.ink_recovered), true)
+                if (prefs.enabled && SurfaceInk.penState() == SurfaceInk.STOP) standby()
+            }
+            else -> handler.post { reload() }
+        }
         return START_STICKY
     }
 
     override fun onDestroy() {
-        runCatching { unregisterReceiver(screenOff) }
+        InstantInk.running = false
+        runCatching { unregisterReceiver(screen) }
         pen?.stop(); pen = null
         handler.post { disarm(); InstantInk.setStatus(InstantInk.Status.Off) }
         worker.quitSafely()
@@ -201,87 +281,167 @@ class InkService : Service() {
         if (!prefs.enabled || prefs.apps.isEmpty()) { InstantInk.setStatus(InstantInk.Status.Off); stopSelf(); return }
         if (!InstantInk.usageAccess(this)) { pen?.stop(); pen = null; InstantInk.setStatus(InstantInk.Status.NoUsageAccess); return }
         if (SurfaceInk.connect { InstantInk.serverPid() } == null) { InstantInk.setStatus(InstantInk.Status.NoRoute); return }
-        android.util.Log.i("InstantInk", "route ${SurfaceInk.route}, pen state ${SurfaceInk.penState()}")
-        if (pen == null) {
-            val p = PenInput(this) { e -> handler.post { onPen(e) } }
-            if (!p.start()) { InstantInk.setStatus(InstantInk.Status.NoPen); return }
-            pen = p
-        }
+        var state = SurfaceInk.penState()
+        android.util.Log.i("InstantInk", "route ${SurfaceInk.route}, pen state $state")
+        val fg = foreground()
+        // A session left open by an earlier run that didn't end cleanly would keep the app's frames held. It's only
+        // cleared over this app or a chosen one, never over Boox's own apps, whose sessions are theirs.
+        if (state != null && state != SurfaceInk.STOP && (fg == packageName || fg in prefs.apps)) { SurfaceInk.release(); state = SurfaceInk.STOP }
+        if (pen == null && !startPen()) { InstantInk.setStatus(InstantInk.Status.NoPen); return }
+        // Opened now and paused, so the first stroke in a chosen app already finds a session to resume.
+        if (state == SurfaceInk.STOP) standby()
         InstantInk.setStatus(InstantInk.Status.Ready)
+        if (fg != null && fg in prefs.apps) target()
+    }
+
+    private fun startPen(): Boolean {
+        val p = PenInput(this, onLost = { handler.post { penLost() } }) { e -> handler.post { onPen(e) } }
+        if (!p.start()) return false
+        pen = p
+        return true
+    }
+
+    /** The pen's reader ended by itself: clear any preview and start a new reader, a few times at most. */
+    private fun penLost() {
+        pen = null
+        near = false; touching = false
+        if (open) { cancelSwaps(); swap() }
+        if (penRestarts++ >= MAX_PEN_RESTARTS) { InstantInk.setStatus(InstantInk.Status.NoPen); return }
+        handler.postDelayed({
+            if (pen != null || !prefs.enabled) return@postDelayed
+            if (!startPen()) InstantInk.setStatus(InstantInk.Status.NoPen)
+        }, 2_000)
     }
 
     private fun onPen(e: PenInput.Event) {
         when (e) {
-            // The pen comes into range about half a second before it touches. Arming and holding the app's frames now,
-            // as Onyx's SDK does at hover, means the first point of the stroke already lands on a held screen.
+            // The pen comes into range before it touches. Resuming the session and holding the app's frames now, as
+            // Onyx's SDK does at hover, means the stroke's first point already lands on a held screen.
             PenInput.Event.Near -> {
                 near = true
-                checkTarget()
-                if (armed != null) {
-                    hold()
-                    handler.removeCallbacks(hoverIdle); handler.postDelayed(hoverIdle, HOVER_IDLE_MS)
-                }
+                if (touching) return
+                if (!target()) return
+                hold()
+                handler.removeCallbacks(hoverIdle); handler.postDelayed(hoverIdle, HOVER_IDLE_MS)
             }
             PenInput.Event.Down -> {
-                touching = true; near = true
-                if (armed == null) checkTarget()
-                if (armed == null) return
+                touching = true; near = true; downAt = SystemClock.uptimeMillis()
                 // A swap still pending from the last stroke is dropped: letting frames through now would cover this stroke's start.
-                handler.removeCallbacks(swap); handler.removeCallbacks(rehold); handler.removeCallbacks(hoverIdle)
-                if (!holding) android.util.Log.d("InstantInk", "stroke began unheld, ${android.os.SystemClock.uptimeMillis() - lastSwap} ms after the last swap")
+                cancelSwaps()
+                // A quick touch arrives with the hover, and the app in front may have changed without the pen leaving.
+                if (!drawing || stale || downAt - lastCheck > CHECK_AGAIN_MS) { if (!target()) return }
+                if (!holding) android.util.Log.d("InstantInk", "stroke began unheld, ${downAt - lastSwap} ms after the last swap")
                 hold()
+                inked = true
             }
             PenInput.Event.Up -> {
                 touching = false
-                if (armed != null) { handler.removeCallbacks(swap); handler.postDelayed(swap, prefs.latencyMs.toLong()) }
+                if (drawing) { handler.removeCallbacks(swapAfterLift); handler.postDelayed(swapAfterLift, prefs.latencyMs.toLong()) }
+                if (SystemClock.uptimeMillis() - downAt < TAP_MS) recheckSoon()
             }
-            // Out of range means the owner is done for now: swap at once and stop holding.
+            // Out of range means the owner is done for now: swap at once, and pause, so the session is quiet whenever
+            // the pen is away (an app switch then finds nothing of ours drawing).
             PenInput.Event.Away -> {
                 near = false
-                if (armed != null && !touching) {
-                    handler.removeCallbacks(swap); handler.removeCallbacks(rehold); handler.removeCallbacks(hoverIdle)
-                    letThrough()
-                }
+                handler.removeCallbacks(recheck)
+                if (open && !touching) { cancelSwaps(); swap(); pause() }
             }
-            // The eraser end, or a side button that apps map to erasing, is the app's own tool; the preview would draw
-            // black under it, so the preview pauses and the app shows.
-            PenInput.Event.EraserNear -> if (armed != null) {
-                handler.removeCallbacks(swap); handler.removeCallbacks(rehold); handler.removeCallbacks(hoverIdle)
-                letThrough(); SurfaceInk.setPenState(SurfaceInk.PAUSE)
-            }
-            PenInput.Event.EraserAway -> if (armed != null) SurfaceInk.setPenState(SurfaceInk.DRAW)
+            // The eraser end, or a side button apps map to erasing, is the app's own tool: the preview would draw black
+            // under it, so the session pauses and the app shows. The tip's next approach resumes it.
+            PenInput.Event.EraserNear -> if (drawing) { cancelSwaps(); swap(); pause() }
+            PenInput.Event.EraserAway -> if (near) target()
         }
     }
 
-    private fun checkTarget() {
+    /** Makes sure the session is drawing when a chosen app is in front, and paused or ended otherwise. */
+    private fun target(): Boolean {
+        lastCheck = SystemClock.uptimeMillis()
+        // The lock screen sits over the app without replacing it in the usage history, so it's checked first.
+        if (keyguard?.isKeyguardLocked == true) { if (drawing) { cancelSwaps(); swap(); pause() }; return false }
         val fg = foreground()
-        val rotation = display()?.rotation ?: 0
-        if (fg != null && fg in prefs.apps) {
-            if (armed != fg || armedRotation != rotation) arm(fg, rotation)
-        } else if (armed != null) disarm()
+        if (fg == null || fg !in prefs.apps) { leave(fg); return false }
+        when {
+            !open -> arm()
+            // Boox's app may have replaced our session. Its paused session is taken over without a new start (a new
+            // one misses the stroke under way); a stopped or running one gets a session of our own.
+            stale -> if (SurfaceInk.penState() == SurfaceInk.PAUSED) takeOver() else arm()
+            paused -> resume()
+        }
+        if (drawing) InstantInk.setStatus(InstantInk.Status.Armed, fg)
+        return drawing
     }
 
-    private fun arm(pkg: String, rotation: Int) {
+    /**
+     * No chosen app in front: pause. Nothing is ever ended over Boox's own apps: they run sessions of their own, and
+     * by the time the pen shows up there, the one on the display may already be theirs.
+     */
+    private fun leave(fg: String?) {
+        if (!open) return
+        if (InstantInk.status == InstantInk.Status.Armed) InstantInk.setStatus(InstantInk.Status.Ready)
+        if (drawing) { cancelSwaps(); swap(); pause() }
+        if (fg != null && fg.startsWith(BOOX_PREFIX)) stale = true
+    }
+
+    /** Opens a session. The region and stroke go with it, so any session found or replaced gets this app's settings. */
+    private fun arm() {
         val (w, h) = screenSize() ?: return
         // SurfaceFlinger reads the region in the panel's own landscape frame, whatever the rotation: a portrait-shaped
-        // rectangle lost the bottom quarter. A square as large as the long side covers the panel in every orientation.
+        // rectangle lost the bottom quarter. A square as large as the long side covers the panel in every orientation,
+        // so turning the tablet needs no new session.
         val side = maxOf(w, h)
         SurfaceInk.setRegion(intArrayOf(0, 0, side, side))
         // The stroke goes after START, as in Onyx's demo: arming can reset the stroke to firmware defaults.
         SurfaceInk.setPenState(SurfaceInk.START)
         SurfaceInk.setStroke(prefs.widthPx.toFloat(), 0xFF000000.toInt(), prefs.style.code)
         SurfaceInk.setPenState(SurfaceInk.DRAW)
-        armed = pkg; armedRotation = rotation
-        InstantInk.setStatus(InstantInk.Status.Armed, pkg)
+        open = true; paused = false; stale = false
     }
 
-    private fun disarm() {
-        handler.removeCallbacks(swap); handler.removeCallbacks(watchdog); handler.removeCallbacks(rehold); handler.removeCallbacks(hoverIdle)
-        if (armed != null || holding) SurfaceInk.release()
-        armed = null; holding = false; touching = false
+    /** A session opened ahead of time and paused at once, ready to resume the moment a chosen app sees the pen. */
+    private fun standby() {
+        arm()
+        if (open) { SurfaceInk.setPenState(SurfaceInk.PAUSE); paused = true }
+    }
+
+    /** Resumes a paused session that may be another app's, with this app's region and stroke. */
+    private fun takeOver() {
+        val (w, h) = screenSize() ?: return
+        val side = maxOf(w, h)
+        SurfaceInk.setRegion(intArrayOf(0, 0, side, side))
+        SurfaceInk.setStroke(prefs.widthPx.toFloat(), 0xFF000000.toInt(), prefs.style.code)
+        SurfaceInk.setPenState(SurfaceInk.DRAW)
+        open = true; paused = false; stale = false
+    }
+
+    private fun pause() {
+        if (!drawing) return
+        SurfaceInk.setPenState(SurfaceInk.PAUSE)
+        paused = true
+    }
+
+    private fun resume() {
+        // If the firmware or another app closed the session meanwhile, open a new one.
+        if (SurfaceInk.penState() == SurfaceInk.STOP) { arm(); return }
+        SurfaceInk.setPenState(SurfaceInk.DRAW)
+        paused = false
+    }
+
+    /** Screen off: clear the preview and pause, keeping the session open for the stroke right after unlocking. */
+    private fun pauseForScreen() {
+        cancelSwaps(); handler.removeCallbacks(recheck)
+        near = false; touching = false
+        if (!drawing) return
+        swap()
+        pause()
         if (InstantInk.status == InstantInk.Status.Armed) InstantInk.setStatus(InstantInk.Status.Ready)
     }
 
+    private fun disarm() {
+        cancelSwaps(); handler.removeCallbacks(watchdog); handler.removeCallbacks(recheck)
+        if (open || holding) SurfaceInk.release()
+        open = false; paused = false; stale = false; holding = false; touching = false; inked = false
+        if (InstantInk.status == InstantInk.Status.Armed) InstantInk.setStatus(InstantInk.Status.Ready)
+    }
     private fun display(): Display? = getSystemService(DisplayManager::class.java).getDisplay(Display.DEFAULT_DISPLAY)
 
     @Suppress("DEPRECATION")
@@ -312,23 +472,42 @@ class InkService : Service() {
             Intent(this, MainActivity::class.java).putExtra(MainActivity.EXTRA_DESTINATION, "Ink").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
             PendingIntent.FLAG_IMMUTABLE,
         )
+        fun action(label: Int, act: String, code: Int) = Notification.Action.Builder(
+            Icon.createWithResource(this, R.drawable.ic_tile_ink), getString(label),
+            PendingIntent.getService(this, code, Intent(this, InkService::class.java).setAction(act), PendingIntent.FLAG_IMMUTABLE),
+        ).build()
         val n = Notification.Builder(this, CHANNEL)
-            .setSmallIcon(R.drawable.ic_mark)
+            .setSmallIcon(R.drawable.ic_tile_ink)
             .setContentTitle(getString(R.string.ink_title))
             .setContentText(getString(R.string.ink_notification))
             .setContentIntent(open)
             .setOngoing(true)
+            .addAction(action(R.string.ink_turn_off, ACTION_OFF, 1))
+            .addAction(action(R.string.ink_recover, ACTION_RECOVER, 2))
             .build()
         if (android.os.Build.VERSION.SDK_INT >= 34) startForeground(NOTIFICATION_ID, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
         else startForeground(NOTIFICATION_ID, n)
     }
 
     companion object {
+        const val ACTION_OFF = "app.booxultimatum.ink.OFF"
+        const val ACTION_RECOVER = "app.booxultimatum.ink.RECOVER"
         private const val CHANNEL = "instant_ink"
         private const val NOTIFICATION_ID = 42
         /** After a swap with the pen still in range, frames flow this long before the hold resumes: enough for one e-ink refresh. */
         private const val REHOLD_MS = 350L
-        /** A hovering pen that doesn't touch down releases the app's frames after this long. */
+        /** A hovering pen that doesn't touch down lets the app's frames through after this long. */
         private const val HOVER_IDLE_MS = 2_500L
+        /** App frames are never held longer than this, whatever the pen reports. */
+        private const val WATCHDOG_MS = 30_000L
+        /** A touch shorter than this is a tap, which may open another app. */
+        private const val TAP_MS = 400L
+        /** When the app in front is read again after a tap: app launches on e-ink take a moment. */
+        private val RECHECK_AFTER_TAP_MS = longArrayOf(350L, 1_000L, 2_000L)
+        /** At a touch, the app in front is read again if the last look is older than this. */
+        private const val CHECK_AGAIN_MS = 1_500L
+        /** Packages that run their own pen sessions: Boox's apps. */
+        private const val BOOX_PREFIX = "com.onyx"
+        private const val MAX_PEN_RESTARTS = 5
     }
 }

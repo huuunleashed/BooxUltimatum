@@ -6,6 +6,39 @@ All notable changes to BooxUltimatum. Newest first. The project follows [Semanti
 
 Nothing yet.
 
+## [0.5.1] (2026-09-27)
+
+A steadier Instant ink, rebuilt from measurements with a real pen: the first stroke is previewed, the preview never sticks, and it can be switched from Quick Settings. Tested on a Note Air6 C with firmware 4.3 (Android 16), in Sketchbook and alongside Boox Notes.
+
+### Added
+
+- **An Instant ink switch in Quick Settings.** Turn it on or off without leaving your drawing app. The Ink page has an *Add to Quick Settings* key, and with no app chosen yet the tile opens the Ink page.
+- **Turn off and Recover screen on Instant ink's notification**, one pull-down away while you draw.
+
+### Changed
+
+- **Instant ink keeps its display session ready.** It opens as soon as Instant ink is on and waits, paused, whenever the pen is away or another app is in front, then resumes the moment the pen comes near a chosen app. The first stroke now gets the preview: after unlocking, after tapping into the app with the pen, and on quick strokes. Before, the session opened only as the pen arrived, and the display missed the stroke that followed at once.
+- **The "While drawing" choice is gone.** The display holds the app's own drawing back while the pen touches, whatever the app does, and letting it through mid-stroke ended the preview. So "Show both" could never show both. The app's brush and colour now always take over after the lift, as *Show only the preview* did.
+- **Turning the tablet no longer restarts the session**, since its region already covers both orientations.
+- **Boox's own apps are left alone.** Instant ink pauses over them and never ends a session there, since Boox Notes and others run sessions of their own.
+
+### Fixed
+
+- **With "Show both", the black preview stayed on screen for good** and the app's own drawing was held back behind it.
+- **The first stroke after unlocking had no preview.** Instant ink now pauses at screen off and resumes, instead of ending and reopening.
+- **A quick first stroke lost its touch** while the pen reader was still finding which input is the pen.
+- **Recover screen while Instant ink is on** now resets the service's own record too, so the next stroke starts cleanly.
+- **A session left behind by an earlier run** (after a crash or an update) no longer keeps the app's frames held: it's cleared when Instant ink starts over this app or a chosen one.
+- **The pen reader restarts itself** if its input node goes away, instead of going quiet.
+- **The Ink page shows the right state** after the Quick Settings switch or the notification changed it.
+
+### Research
+
+- The firmware holds app frames from each touch by itself (SurfaceFlinger's `HandlePenTrigger`) until `ENABLE_POST` lets them through again. A hold-and-release pulse replaces the preview even when nothing held the frames.
+- Letting app frames through while the pen still draws ends the preview for the rest of that stroke.
+- A session started after the touch has begun misses that stroke, and one started about 35 ms before it can too. A paused session resumes instantly, even at the touch. On a quick stroke the pen hovers only about 45 ms before touching, and a quick first touch comes in the same batch as the hover.
+- A paused session is quiet in other apps: no preview and no held frames. Boox's system app stops the session when Boox Notes opens, and Notes leaves its own session paused when you switch away.
+
 ## [0.5.0] (2026-09-27)
 
 The sleep screen now updates while the tablet sleeps, with twenty-one faces to use it. Instant ink explains itself on other Boox models, and the app can update itself and file reports. Tested on a Note Air6 C with firmware 4.3 (Android 16).
