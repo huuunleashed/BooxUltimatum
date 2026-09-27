@@ -39,7 +39,10 @@ object SurfaceInk {
     const val START = 1
     const val DRAW = 2
     const val PAUSE = 3
-    /** What [penState] reads back for a paused session (set with [PAUSE]); seen on NA6C FW 4.3. */
+    /**
+     * What [penState] reads back for a paused session (set with [PAUSE]); seen on NA6C FW 4.3. A session paused
+     * straight after it opened can still read [PAUSE] ("toPause" in SurfaceFlinger's log) until the pen next moves.
+     */
     const val PAUSED = 4
 
     enum class Route { Firmware, Direct, Shizuku }

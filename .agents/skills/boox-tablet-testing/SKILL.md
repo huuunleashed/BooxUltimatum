@@ -25,8 +25,8 @@ The tablet is someone's real device, shared with the agent. Treat every write as
 
 ## Installing
 
-- The development tablet runs the **debug-signed** release build: `.\gradlew.bat assembleRelease` without `-Pbu.signing`, then `adb install -r app\build\outputs\apk\release\app-release.apk`.
-- Never install a release-signed APK over it: the signatures differ, Android refuses, and uninstalling loses the app's data and grants.
+- The owner's tablet runs the **published release** since 0.5.1 (release key), and updates itself from GitHub Releases. Test builds for it must be release-signed: `.\gradlew.bat assembleRelease -Pbu.signing=$env:USERPROFILE\.booxultimatum\signing.properties`, then `adb install -r`. A debug-signed build won't install over it.
+- Before 0.5.1 it ran the debug-signed release build. Moving between the two keys means uninstalling; the steps that keep the owner's data and grants are in the `build-release-and-docs` skill.
 - Reinstalling cancels the app's alarms and unbinds its accessibility service, which rebinds within seconds.
 
 ## Both orientations

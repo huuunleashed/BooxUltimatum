@@ -37,7 +37,17 @@ description: How to build, lint, version, sign, release and document BooxUltimat
 6. Download the asset anonymously, compare its SHA-256 with the local file, and check that the CI and Pages runs pass.
 7. Never publish a debug-signed build, and never install a release-signed build over the development tablet's debug-signed copy.
 
-The in-app updater (`core/update/UpdateManager.kt`) expects tags named `vX.Y.Z` and an asset named exactly `BooxUltimatum-X.Y.Z.apk`, with a SHA-256 from GitHub's asset `digest`, from a `.sha256` asset, or on a line of the notes. It refuses another package name, an older version or another signing key, and it's off in debug-signed builds.
+The in-app updater (`core/update/UpdateManager.kt`) expects tags named `vX.Y.Z` and an asset named exactly `BooxUltimatum-X.Y.Z.apk`, with a SHA-256 from GitHub's asset `digest`, from a `.sha256` asset, or on a line of the notes. It refuses another package name, an older version or another signing key, and it's off in debug-signed builds. Verified end to end on 2026-09-27 (0.5.0 to 0.5.1): Android asks once to allow installs from the app, then updates in place.
+
+## Moving a tablet from the debug-signed copy to a release
+
+Android refuses a release-signed APK over a debug-signed install, and uninstalling loses the data and grants. With the owner's agreement, this keeps both:
+
+1. Record the grants first (read-only): `dumpsys package app.booxultimatum` (the `granted=true` lines), `cmd appops get app.booxultimatum`, `settings get secure enabled_accessibility_services`, `cmd role get-role-holders android.app.role.HOME`, and any widgets the launcher hosts (`dumpsys appwidget`).
+2. `assembleDebug` (debuggable, same debug key) and `adb install -r` it over the development copy, then `run-as app.booxultimatum sh -c "cd /data/data/app.booxultimatum && tar -cf - files no_backup shared_prefs" > /data/local/tmp/bu.tar` and pull the tar into the session folder (it holds personal data; never into the repository).
+3. `adb uninstall app.booxultimatum`, then install a restore helper: `assembleDebug` signed with the release key through `-Pandroid.injected.signing.store.file=… -Pandroid.injected.signing.store.password=… -Pandroid.injected.signing.key.alias=… -Pandroid.injected.signing.key.password=…` (read from `signing.properties`, never printed). `android.injected.version.code` is ignored by AGP 8.13, so to match an older release set `versionCode` in `app/build.gradle.kts` for that one build and revert it at once.
+4. `run-as … tar -xf /data/local/tmp/bu.tar` in the data folder, delete the tar, then `adb install -r` the published APK of the same versionCode over the helper: same key, data kept, no longer debuggable.
+5. Re-apply the grants: `pm grant` (DUMP, READ_LOGS, WRITE_SECURE_SETTINGS, READ_CALENDAR), `appops set … GET_USAGE_STATS allow`, `RUN_ANY_IN_BACKGROUND` `ignore` then `allow` (Boox's full-access list), and the accessibility string as it was. The shell can't enable the home alias of a non-debuggable app (`Shell cannot change component state`), so the owner makes it the home screen again from the Hub. Hosted widgets must be added again, and Shizuku asks once more.
 
 ## Documentation after every meaningful change
 

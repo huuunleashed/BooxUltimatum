@@ -4,7 +4,13 @@ All notable changes to BooxUltimatum. Newest first. The project follows [Semanti
 
 ## [Unreleased]
 
-Nothing yet.
+### Fixed
+
+- **After a Boox app, Instant ink could open a new session instead of taking over the paused one**, when the display still reported the pause as in progress, and then miss that first stroke.
+
+### Research
+
+- **The in-app updater works end to end.** The published 0.5.0 found 0.5.1, downloaded it, checked it and handed it to Android's installer, which updated in place after one "allow installs from this app" prompt. The installed APK matched the published file byte for byte.
 
 ## [0.5.1] (2026-09-27)
 

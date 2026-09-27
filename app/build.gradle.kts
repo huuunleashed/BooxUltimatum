@@ -35,8 +35,8 @@ android {
     buildTypes {
         release {
             // Minified and non-debuggable for real-world memory and CPU. Without -Pbu.signing it is signed with the
-            // debug key, so it upgrades the developer's installed build in place and keeps its adb grants and Shizuku
-            // permission; a public build must use the release key.
+            // debug key, for CI and quick checks; a public build, and any build for a tablet running the published
+            // app, must use the release key.
             isMinifyEnabled = true
             isShrinkResources = true
             signingConfig = signingConfigs.getByName(if (publishSigning != null) "publish" else "debug")

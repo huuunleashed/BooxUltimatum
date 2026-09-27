@@ -59,7 +59,7 @@ This file holds the rules; the skills hold the how-to. When they disagree, this 
 ```powershell
 $env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.8.9-hotspot'   # JDK 21 (JDK 25 is too new for Gradle 8.14)
 .\gradlew.bat assembleDebug        # debug build
-.\gradlew.bat assembleRelease      # what the tablet runs: R8-minified, debug-signed so it updates in place
+.\gradlew.bat assembleRelease      # R8-minified release build, debug-signed without -Pbu.signing (CI and quick checks)
 .\gradlew.bat lintRelease          # lint (version-upgrade warnings are known and intentional)
 python tools\dev\prose_wrap.py     # prose rule check
 .\tools\host\recon.ps1 -Label <name> [-Quick]
@@ -94,7 +94,7 @@ Retake them when a screen changes noticeably, and never edit one to show a featu
   2. Update the README roadmap.
   3. Run lint and build.
   4. Tag `vX.Y.Z` and attach the APK to a GitHub Release.
-- **Signing:** public releases are signed with a release key kept outside the repository. Build them with `.\gradlew.bat assembleRelease -Pbu.signing=<path to signing.properties>`, where that file holds `storeFile`, `storePassword`, `keyAlias` and `keyPassword`; the maintainer's lives in `%USERPROFILE%\.booxultimatum\`. Without `-Pbu.signing` the build is debug-signed, which is what the development tablet runs. Never publish a debug-signed build, and never install a release-signed build over the development copy: the signatures differ, so Android refuses the update, and uninstalling loses the app's data and grants.
+- **Signing:** public releases are signed with a release key kept outside the repository. Build them with `.\gradlew.bat assembleRelease -Pbu.signing=<path to signing.properties>`, where that file holds `storeFile`, `storePassword`, `keyAlias` and `keyPassword`; the maintainer's lives in `%USERPROFILE%\.booxultimatum\`. Without `-Pbu.signing` the build is debug-signed. Since 0.5.1 the owner's tablet runs the published, release-signed app and updates itself, so builds for it must be release-signed too. Never publish a debug-signed build, and never install a build signed with one key over a copy signed with the other: Android refuses the update, and uninstalling loses the app's data and grants (the `build-release-and-docs` skill has the steps that keep them).
 - **Release notes** state which device and firmware were tested, and repeat the known limits.
 
 ## UI conventions (e-ink)

@@ -364,7 +364,7 @@ class InkService : Service() {
             !open -> arm()
             // Boox's app may have replaced our session. Its paused session is taken over without a new start (a new
             // one misses the stroke under way); a stopped or running one gets a session of our own.
-            stale -> if (SurfaceInk.penState() == SurfaceInk.PAUSED) takeOver() else arm()
+            stale -> if (SurfaceInk.penState().let { it == SurfaceInk.PAUSE || it == SurfaceInk.PAUSED }) takeOver() else arm()
             paused -> resume()
         }
         if (drawing) InstantInk.setStatus(InstantInk.Status.Armed, fg)
