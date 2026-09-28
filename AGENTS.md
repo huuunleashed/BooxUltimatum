@@ -4,16 +4,17 @@ Guidance for AI agents and humans working in this repository. `.github/copilot-i
 
 ## The project in one line
 
-BooxUltimatum is a GPL-3.0 Android app for the BOOX Note Air6 C: a home screen, sleep-screen designer, Instant ink layer, battery doctor and hub of measured, reversible tweaks. It also holds the reverse-engineering tooling and evidence behind them.
+BooxUltimatum is a GPL-3.0 suite of Android apps for the BOOX Note Air6 C, built on a shared kit. The hub holds a home screen, sleep-screen designer, Instant ink layer, battery doctor and measured, reversible tweaks, and manages the suite's other apps, starting with Nib, a drawing app. The repository also holds the reverse-engineering tooling and evidence behind them.
 
 ## Skills: what earlier sessions learned
 
 Practical knowledge lives in [Agent Skills](https://agentskills.io) under `.agents/skills/`, which Claude Code, Codex, Gemini CLI, Cursor, GitHub Copilot and other agents read. Load the one that fits the task before starting, and keep it current: when you learn something the next session would otherwise have to rediscover, add it to the skill in the same change.
 
-- `boox-tablet-testing`: driving the connected tablet safely over adb, screenshots, both orientations, what only a person can test, and restoring the device.
-- `boox-firmware-interfaces`: the verified Onyx interfaces (sleep screen, live updates, power manager, SurfaceFlinger pen codes, fonts, status bar, charge limit) and how to find more.
+- `boox-tablet-testing`: driving the connected tablet safely over adb, screenshots, both orientations, what only a person can test, restoring the device, and testing on the emulator and through test builds when the tablet isn't connected.
+- `boox-firmware-interfaces`: the verified Onyx interfaces (sleep screen, live updates, power manager, SurfaceFlinger pen codes and styles, fonts, status bar, charge limit), the leads still to verify, and how to find more.
 - `sleep-screen-faces`: the face pipeline, the typesetting grammar, pitfalls, and how to add a face.
-- `build-release-and-docs`: the build, lint, release and signing steps, the updater's expectations, PowerShell and Kotlin pitfalls, and which docs to update.
+- `build-release-and-docs`: the module layout, build, lint, test, release and signing steps for every suite app, the test channel, the updater's expectations, PowerShell and Kotlin pitfalls, and which docs to update.
+- `nib-drawing`: Nib's architecture, from pen sample to swapped frame, and how to add a brush.
 
 This file holds the rules; the skills hold the how-to. When they disagree, this file wins.
 
@@ -39,17 +40,20 @@ This file holds the rules; the skills hold the how-to. When they disagree, this 
 
 ## Layout
 
-- `app/`: the Android app. Kotlin and Jetpack Compose, package `app.booxultimatum`, minSdk 30, target 36.
-  - `core/`: platform readers, the journal, the battery log (`BatteryLog.kt`), the tablet font (`SystemFont.kt`, `UiFonts.kt`), `exec/` (the Shizuku executor), `tweaks/` (the framework and catalogue), `sleep/` (the sleep screen studio: spec, renderer, faces, publisher, scheduler) and `ink/` (Instant ink: SurfaceFlinger client, pen input, service).
-  - `launcher/`: the home screen.
-  - `ui/`: the e-ink theme, components, glyphs and screens.
-- `docs/`: numbered design docs (`00` device research to `06` sleep screen) and `screenshots/` for the README.
+- The suite is one Gradle build (Kotlin and Jetpack Compose, minSdk 30, target 36). `docs/07-suite.md` explains how the parts fit.
+  - `hub/`: the hub app, package `app.booxultimatum`.
+    - `core/`: platform readers, the journal, the battery log (`BatteryLog.kt`), the tablet font (`SystemFont.kt`, `UiFonts.kt`), `exec/` (the Shizuku executor), `tweaks/` (the framework and catalogue), `sleep/` (the sleep screen studio: spec, renderer, faces, publisher, scheduler), `ink/` (Instant ink's service) and `suite/` (the modules and the log export).
+    - `launcher/`: the home screen.
+    - `ui/`: the navigation and the hub's screens.
+  - `nib/`: Nib, the drawing app, package `app.booxultimatum.nib`. `nib-engine/`: its drawing model in pure Kotlin (strokes, brushes, layers, undo, files), tested on the JVM.
+  - `kit/`: the libraries every suite app builds on. `core` (the tablet profile and the suite registry), `log` (the logbook), `ui` (the e-ink design system), `ink` (the SurfaceFlinger pen path and pen input) and `update` (releases and installs). The kit never depends on an app.
+- `docs/`: numbered design docs (`00` device research to `08` Nib) and `screenshots/` for the README.
 - `knowledge/`: `experiments.md` (the evidence log) and `onyx-packages.json` (bundled into app assets via `sourceSets`).
-- `tools/host/`: PowerShell scripts over adb (`common.ps1` holds shared helpers, `ui.ps1` drives the app's UI for tests and screenshots). `tools/dev/`: repository hygiene.
+- `tools/host/`: PowerShell scripts over adb (`common.ps1` holds shared helpers, `ui.ps1` drives the app's UI for tests and screenshots). `tools/dev/`: repository hygiene and `publish.ps1`, which publishes a suite app's release or test build.
 - `.agents/skills/`: the Agent Skills described above.
 - **The GitHub side:**
   - Contribution rules are in `CONTRIBUTING.md` and the forms in `.github/ISSUE_TEMPLATE/`.
-  - CI (`.github/workflows/build.yml`) builds, lints and checks prose on every push and pull request.
+  - CI (`.github/workflows/build.yml`) runs the unit tests, builds and lints every app and checks prose on every push and pull request.
   - The landing page in `site/` deploys to GitHub Pages through `.github/workflows/pages.yml`, together with `docs/screenshots/` and `docs/brand/`.
   - Keep the landing page's claims in step with the README.
 - `README.md` (the front page), `CHANGELOG.md` (the history), `CONTRIBUTING.md`, `SECURITY.md`, `THIRD_PARTY.md` and `PRODUCT.md` (design context).
@@ -58,9 +62,11 @@ This file holds the rules; the skills hold the how-to. When they disagree, this 
 
 ```powershell
 $env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.8.9-hotspot'   # JDK 21 (JDK 25 is too new for Gradle 8.14)
-.\gradlew.bat assembleDebug        # debug build
-.\gradlew.bat assembleRelease      # R8-minified release build, debug-signed without -Pbu.signing (CI and quick checks)
+.\gradlew.bat assembleDebug        # debug builds of every app (hub\build\outputs\apk\debug, nib\build\outputs\apk\debug)
+.\gradlew.bat assembleRelease      # R8-minified release builds, debug-signed without -Pbu.signing (CI and quick checks)
+.\gradlew.bat testDebugUnitTest :nib-engine:test   # unit tests on the JVM
 .\gradlew.bat lintRelease          # lint (version-upgrade warnings are known and intentional)
+.\tools\dev\publish.ps1 -App hub|nib -Notes <file> [-Test] [-DryRun]   # publish a release or a test build (owner's say-so only)
 python tools\dev\prose_wrap.py     # prose rule check
 .\tools\host\recon.ps1 -Label <name> [-Quick]
 .\tools\host\start-shizuku.ps1     # after every tablet reboot (Shizuku doesn't survive reboots)
@@ -88,7 +94,7 @@ Retake them when a screen changes noticeably, and never edit one to show a featu
 
 ## Releases
 
-- **Versions:** `versionName` follows semantic versioning (pre-1.0: minor for features, patch for fixes), and `versionCode` goes up by one with every release. Both live in `app/build.gradle.kts`.
+- **Versions:** `versionName` follows semantic versioning (pre-1.0: minor for features, patch for fixes), and `versionCode` goes up by one with every release. Each suite app has its own, in its module's `build.gradle.kts` (`hub/`, `nib/`), and its own tag (see the `build-release-and-docs` skill).
 - **Cutting a release:**
   1. Move *[Unreleased]* in `CHANGELOG.md` under the new version with its date.
   2. Update the README roadmap.

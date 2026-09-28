@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <!-- Other suite apps read this app's logs through it; the hub declares the signature permission. -->
+        <provider
+            android:name="app.booxultimatum.kit.log.LogProvider"
+            android:authorities="${applicationId}.logs"
+            android:exported="true"
+            android:permission="app.booxultimatum.permission.SUITE" />
+    </application>
+
+</manifest>

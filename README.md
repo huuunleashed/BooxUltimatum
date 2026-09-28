@@ -2,7 +2,7 @@
 
 # BooxUltimatum
 
-**A home screen, sleep-screen designer, battery doctor and tweak hub for the BOOX Note Air6 C, in one app, without root.**
+**A suite of apps for the BOOX Note Air6 C, without root: a hub with a home screen, sleep-screen designer, battery doctor and reversible tweaks, and Nib, a drawing app with Boox's instant pen.**
 
 ![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue) ![Status: public preview](https://img.shields.io/badge/status-public%20preview%200.5.1-orange) ![Android 11+](https://img.shields.io/badge/Android-11%2B-3ddc84) ![Tested on Note Air6 C, FW 4.3](https://img.shields.io/badge/tested%20on-Note%20Air6%20C%20%C2%B7%20FW%204.3-black)
 
@@ -16,11 +16,26 @@
 
 The Note Air6 C is a lovely tablet with a frustrating side. Independent reviews such as [eWritable's](https://ewritable.net/brands/boox/tablets/boox-note-air6-c/) praise the screen and the pen, then point at the same two things owners complain about: battery life, and software that scatters useful settings across a dozen places. BooxUltimatum is one owner's attempt to fix that from the inside. It isn't a skin over the problem. Every change it makes is measured on the real tablet, explained in plain words, and one tap away from being undone.
 
-It's a single APK. Nothing is flashed, and the bootloader stays locked.
+Nothing is flashed, and the bootloader stays locked. The hub, BooxUltimatum, is one APK; the apps that build on it, starting with Nib, install and uninstall on their own.
 
 > **Status: public preview (0.5).** It runs daily on the author's own tablet (Note Air6 C, firmware 4.3, Android 16), and hasn't been tested elsewhere yet. Download it from [Releases](https://github.com/huuunleashed/BooxUltimatum/releases), and please report how it behaves on your tablet. From 0.5 on, the app can update itself and file a report for you from its Device page.
 
 ## What it does
+
+### A suite, not just a launcher
+
+BooxUltimatum is the hub of a small suite. Its Suite page installs, opens, updates and uninstalls the suite's other apps, and lists the modules built into the hub: the home screen, the sleep screen, Instant ink and the battery log. Removing a module stops it and undoes what it changed, and its pages leave the menu until you add it back. The apps share one kit of libraries: the same design, the same logbook, the same pen code and the same updater.
+
+### Nib: drawing with Boox's instant pen (in development)
+
+Nib draws the way Boox Notes writes. The display paints each stroke under the nib at once, and the moment you lift the pen, Nib's own rendering takes its place. It's built for drawing rather than notes:
+
+- **Brushes.** Pens, pencils, markers, brushes and textured charcoal, each previewed in the closest of the display's styles.
+- **Widths** down to a fraction of a millimetre.
+- **Layers.** As many as you need, with opacity, visibility and locking. Boox Notes stops at five.
+- **The rest.** Undo, zoom that keeps the preview and the result matching, crash-safe autosave, and PNG export.
+
+It works without BooxUltimatum, and without Shizuku or a computer. It isn't released yet: test builds are for checking it on the tablet, and nothing about its pen preview is verified there yet (see [Known limits](#known-limits) and [`docs/08-nib.md`](docs/08-nib.md)).
 
 ### A home screen made for e-ink
 
@@ -110,7 +125,7 @@ Most of BooxUltimatum works straight after installing, with no computer, no Shiz
 
 | Level | What it is | What it adds |
 | --- | --- | --- |
-| **T0: just the app** | Nothing to set up, or a switch you allow on the tablet itself | The home screen, the sleep screen and power-off screen designer, the sleep screen **while asleep** (an accessibility service and background use), **Instant ink** (usage access), battery measurement and the battery log, the Google Fonts browser, **the whole tablet's font**, the settings hub, and making BooxUltimatum your home screen (Android asks you to confirm). For apps Boox restricts, a one-tap link to Android's own battery page and to Boox's hidden App Freeze page (also in the Settings hub). |
+| **T0: just the app** | Nothing to set up, or a switch you allow on the tablet itself | Nib, the drawing app, entirely. The suite's logbook and installs. The home screen, the sleep screen and power-off screen designer, the sleep screen **while asleep** (an accessibility service and background use), **Instant ink** (usage access), battery measurement and the battery log, the Google Fonts browser, **the whole tablet's font**, the settings hub, and making BooxUltimatum your home screen (Android asks you to confirm). For apps Boox restricts, a one-tap link to Android's own battery page and to Boox's hidden App Freeze page (also in the Settings hub). |
 | **T1: a one-time setup from a computer** | Four permissions granted once over `adb`; they survive reboots | Reading battery statistics inside the app, showing or hiding status bar icons tablet-wide, and the tweaks that are system settings |
 | **T2: Shizuku** | [Shizuku](https://shizuku.rikka.app), a free app that runs a small helper with the same rights as `adb` | Most tweaks (Doze, Battery Saver, pausing Boox apps), reading and lifting Boox's background restriction for every app at once, switching the home screen in one tap, the Wi-Fi network name in the header, *Sleep now*, and the *Over Transparent* sleep mode |
 | T3: root |  | Out of scope. BooxUltimatum doesn't need or ask for it |
@@ -151,26 +166,28 @@ Firmware 4.3 hides the Wireless debugging switch from Developer options, so rest
 
 ## Install
 
-**From a release:** download `BooxUltimatum-0.5.1.apk` from this repository's [Releases](https://github.com/huuunleashed/BooxUltimatum/releases) page, allow your browser or file manager to install apps, and open it. The Access page shows what each level unlocks and the exact commands for it. Releases are signed with the project's own key, so later releases update it in place.
+**From a release:** download `BooxUltimatum-0.5.1.apk` from this repository's [Releases](https://github.com/huuunleashed/BooxUltimatum/releases) page, allow your browser or file manager to install apps, and open it. The Access page shows what each level unlocks and the exact commands for it. Releases are signed with the project's own key, so later releases update it in place. Once Nib is released, the hub's Suite page installs it for you; its releases are tagged `nib-v…` and named `Nib-<version>.apk`.
 
-**Test builds:** every commit on `main` also builds a debug-signed APK. Open the latest successful [Build run](https://github.com/huuunleashed/BooxUltimatum/actions/workflows/build.yml) and download `booxultimatum-debug-signed` under Artifacts (GitHub asks you to sign in). They use a different key from the releases, so Android won't install one over the other: uninstall first when switching, which also clears the app's settings.
+**Test builds for the tablet:** unfinished builds of the hub or Nib are sometimes published as `test-…` pre-releases so they can be checked on a real tablet. The hub offers them only when *Offer test builds* is on (Device page), and a release always replaces its own test build.
+
+**Development builds:** every commit on `main` also builds debug-signed APKs of the hub and Nib. Open the latest successful [Build run](https://github.com/huuunleashed/BooxUltimatum/actions/workflows/build.yml) and download `booxultimatum-debug-signed` or `nib-debug-signed` under Artifacts (GitHub asks you to sign in). They use a different key from the releases, so Android won't install one over the other, or a debug build of one suite app next to a release of another. Uninstall first when switching, which also clears the app's settings.
 
 **From source (today):**
 
 ```powershell
 # JDK 21 and the Android SDK (platform 36) are required.
 $env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.8.9-hotspot'
-.\gradlew.bat assembleRelease                  # -> app\build\outputs\apk\release\app-release.apk
-adb install -r app\build\outputs\apk\release\app-release.apk
+.\gradlew.bat assembleRelease                  # -> hub\build\outputs\apk\release\hub-release.apk
+adb install -r hub\build\outputs\apk\release\hub-release.apk
 ```
 
 Release builds from source are debug-signed for now, so they update an installed copy in place. Public releases will use a proper signing key.
 
 ### Using it as your home screen, and going back
 
-Settings › Home screen › *Use this* makes BooxUltimatum the home screen. It first records the Boox home, so going back never loses anything:
+Suite › Home screen › *Use this* makes BooxUltimatum the home screen. It first records the Boox home, so going back never loses anything:
 
-- **On the tablet:** Settings › Home screen › *Back to Boox*. You can also tap *Notes* on the Boox shelf to use the Boox home for a moment.
+- **On the tablet:** Suite › Home screen › *Back to Boox*. You can also tap *Notes* on the Boox shelf to use the Boox home for a moment.
 - **From a computer**, if BooxUltimatum ever won't open: `adb shell cmd package set-home-activity --user 0 com.onyx/.StartupActivity`.
 - **Without either:** Android Settings › Apps › Default apps › Home app › ONYX Launcher.
 
@@ -178,6 +195,8 @@ Recents, gestures, NaviBall and EinkWise belong to the system, so they behave th
 
 ## Known limits
 
+- **Nib is in development.** Its drawing works on an emulator, but the instant pen preview, the extra preview styles, the finest widths and colour previews all need checking on the tablet. Its Diagnostics page asks you what the panel shows and records your answers. Until then, treat every Nib claim above as a plan.
+- **One key for the whole suite.** Every suite app declares the same signature permission, so a development build (signed differently) can't be installed next to a release of another suite app. Install both from Releases, or both from the same build.
 - **One tablet, one firmware.** Everything is verified on a Note Air6 C with firmware 4.3. The Note Air4 C and Air5 C run very similar Boox software, so much of it may work there, but nothing is tested on them yet. Results from those tablets, and from other Boox models, are the most welcome contribution; use the *Device finding* issue form.
 - **Unofficial interfaces.** The sleep and power-off screen broadcast and the pen path appear in Onyx's own SDK, and the tablet font switch in Boox's own apps, but none of them is a stable, documented public API. Instant ink also uses the pen path in a way the SDK doesn't offer: on behalf of another app, through the firmware's display calls. A firmware update can change any of these without notice. When something stops working, the app says so rather than guessing.
 - **Instant ink is experimental:**
@@ -196,7 +215,7 @@ The Device page's *This app* plate checks this repository's releases, at most on
 
 ## Privacy
 
-There are no accounts, analytics, ads or trackers. The app goes online for three things only: weather from [Open-Meteo](https://open-meteo.com) (the city you type), fonts from Google Fonts when you open the browser, and GitHub's release list when it checks for updates. The battery log stays on the tablet until you choose to share it, and a problem report is only sent when you open it on GitHub or share it yourself.
+There are no accounts, analytics, ads or trackers. The app goes online for three things only: weather from [Open-Meteo](https://open-meteo.com) (the city you type), fonts from Google Fonts when you open the browser, and GitHub's release list when it checks for updates, for itself and the suite's apps. Nib goes online only to check GitHub for its own updates, at most once a day, and only when BooxUltimatum isn't installed to do it. Neither app sends its logs anywhere; you share them yourself. The battery log stays on the tablet until you choose to share it, and a problem report is only sent when you open it on GitHub or share it yourself.
 
 ## Disclaimer
 
@@ -219,7 +238,12 @@ No dates promised; this is a spare-time project, and each release ships when it 
   - Instant ink diagnostics for other Boox models: the usage access check, pen detection by behaviour, and a pen test.
   - One device profile, so tablets that aren't Boox get only what works there.
   - 0.5.1: a steadier Instant ink, with a session kept ready so the first stroke is previewed, and a Quick Settings switch.
-- **0.6, battery, setup and polish**
+- **0.6, the suite (in progress)**
+  - BooxUltimatum as a hub: a Suite page that installs and updates the suite's apps, and built-in modules that can be removed and added back.
+  - A logbook in every suite app, with crash capture and one shared export.
+  - Five-section navigation.
+  - Nib's first test builds: instant preview, many brushes, fine widths, unlimited layers, undo, autosave and PNG export, with a Diagnostics page for the tablet.
+- **0.7, battery, setup and polish**
   - The battery cost of updates while asleep, measured overnight.
   - Refinements to the faces from how they look on the panel.
   - A one-tap reading mode: Wi-Fi and Bluetooth off, Battery Saver on and sync paused, all undone together.
@@ -227,7 +251,11 @@ No dates promised; this is a spare-time project, and each release ships when it 
   - The first overnight and A/B results shown in the app.
   - Instant ink tried in more drawing and note apps, and on the models testers reported.
   - Round trips recorded for the last three unverified tweaks.
-- **0.7, home polish**
+- **Nib 0.2 and on**
+  - The rest of the display's preview styles, as the tablet confirms them.
+  - Lasso selection, move and transform, and moving strokes between layers.
+  - Image import, PDF and OpenRaster export, templates, and pages or an endless canvas.
+- **0.8, home polish**
   - Notification dots (opt-in).
   - Front-light and refresh-mode quick actions, and a full-refresh key.
   - Backing up and restoring the layout.
@@ -240,17 +268,19 @@ The full, dated history is in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## How it's built
 
-Kotlin and Jetpack Compose, minSdk 30, target 36. The look is a "Braun Instrument" design language: paper white, black ink, one green lamp, the Archivo typeface, and no animation, because e-ink punishes motion. Every device fact the app relies on is written down with its evidence in [`knowledge/experiments.md`](knowledge/experiments.md). The design docs in [`docs/`](docs) explain the research, the architecture, the launcher and the sleep screen.
+Kotlin and Jetpack Compose, minSdk 30, target 36, in one Gradle build with a module for each app and a shared kit. The look is a "Braun Instrument" design language: paper white, black ink, one green lamp, the Archivo typeface, and no animation, because e-ink punishes motion. Every device fact the app relies on is written down with its evidence in [`knowledge/experiments.md`](knowledge/experiments.md). The design docs in [`docs/`](docs) explain the research, the architecture, the launcher and the sleep screen.
 
 It is written by an owner of the tablet working with an AI pair programmer (GitHub Copilot). Every change is tested on the tablet before it's committed.
 
 | Path | What's there |
 | --- | --- |
-| `app/` | The Android app. `core/` holds system readers, tweaks, the battery log, `sleep/` and `ink/`. `launcher/` is the home screen and `ui/` the screens |
-| `docs/` | Numbered design docs (`00` device research to `06` sleep screen), plus the screenshots |
+| `hub/` | The hub app. `core/` holds system readers, tweaks, the battery log, `sleep/`, `ink/` and `suite/`. `launcher/` is the home screen and `ui/` the screens |
+| `nib/`, `nib-engine/` | Nib, the drawing app, and its drawing model in pure Kotlin |
+| `kit/` | The libraries every suite app builds on: `core`, `log`, `ui`, `ink` and `update` ([`docs/07-suite.md`](docs/07-suite.md)) |
+| `docs/` | Numbered design docs (`00` device research to `08` Nib), plus the screenshots |
 | `knowledge/` | The evidence log (`experiments.md`) and the Onyx package knowledge base bundled with the app |
 | `tools/host/` | PowerShell scripts run from a computer over adb (recon, battery logger, Shizuku start) |
-| `tools/dev/` | Repository hygiene (`prose_wrap.py`) |
+| `tools/dev/` | Repository hygiene (`prose_wrap.py`) and publishing (`publish.ps1`) |
 | `AGENTS.md` | The rules for anyone, human or AI, working in this repo |
 
 ## Contributing

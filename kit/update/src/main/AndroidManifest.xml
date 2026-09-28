@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- GitHub's release list and the APKs themselves. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Android still asks the owner once to allow installs from this app. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <application>
+        <!-- Receives PackageInstaller results and opens Android's confirmation screen when it needs one. -->
+        <receiver android:name="app.booxultimatum.kit.update.UpdateInstallReceiver" android:exported="false" />
+    </application>
+</manifest>

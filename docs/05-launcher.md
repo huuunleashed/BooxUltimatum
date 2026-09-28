@@ -9,7 +9,7 @@ Goal: a home screen that's as good as the Boox launcher or better, richer in fea
 3. **Don't own what we don't need.** Recents are provided by `com.android.onyxquickstep` (verified: `mRecentsComponent`), which doesn't depend on the home app. Boox gestures, NaviBall and EInkWise live in SystemUI and `com.onyx.floatingbutton`. The launcher doesn't replace any of them.
 4. **Boox functions are first-class.** Every launchable Onyx app is available, the Boox shelf widget opens Library, Notes (the Boox home) and Storage, and Boox's own widgets are listed first in the picker.
 5. **E-ink etiquette.** Refresh only on events: `ACTION_TIME_TICK`, battery and connectivity broadcasts while visible, and package callbacks. Use pages instead of scrolling, keep motion to zero, support side-button page turns, and never reflow the page while the keyboard is up.
-6. **Always reversible.** The launcher ships disabled (a HOME alias turned on from Settings › Home screen), the Boox home is journaled before the first switch, and the switcher returns to it in one tap. The adb fallback is `cmd package set-home-activity --user 0 com.onyx/.StartupActivity`.
+6. **Always reversible.** The launcher ships disabled (a HOME alias turned on from Suite › Home screen; before 0.6, Settings › Home screen), the Boox home is journaled before the first switch, and the switcher returns to it in one tap. The adb fallback is `cmd package set-home-activity --user 0 com.onyx/.StartupActivity`.
 
 ## What is built
 

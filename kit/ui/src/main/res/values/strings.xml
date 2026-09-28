@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_next">Next</string>
+    <string name="action_previous">Previous</string>
+    <string name="pager_position">Page %1$d of %2$d</string>
+    <string name="state_reading">Reading the tablet…</string>
+    <string name="scale_description">Battery level %1$d percent</string>
+    <string name="lamp_on">On</string>
+    <string name="lamp_off">Off</string>
+    <string name="duration_dh">%1$d d %2$d h</string>
+    <string name="duration_hm">%1$d h %2$d min</string>
+    <string name="duration_m">%1$d min</string>
+    <string name="unit_mah">%1$s mAh</string>
+    <string name="unit_percent">%1$s %%</string>
+    <string name="action_clear">Clear</string>
+</resources>

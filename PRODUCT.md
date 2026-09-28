@@ -12,7 +12,7 @@ The primary user is the project owner: a technical owner of a BOOX Note Air6 C w
 
 ## Product Purpose
 
-BooxUltimatum is one sideloadable APK that makes a Boox tablet last longer, feel simpler, and stay private. It measures where battery goes, explains it in plain language, and offers tweaks that can be reversed. Success means a user can see their standby and active drain, understand the top causes, apply a fix, and verify it actually helped, all without a PC after first setup.
+BooxUltimatum is a sideloadable suite for Boox tablets. Its hub makes the tablet last longer, feel simpler and stay private, and manages the suite's other apps, which build on the same kit. The first of those is Nib, a drawing app that uses Boox's instant pen preview in its own window. It measures where battery goes, explains it in plain language, and offers tweaks that can be reversed. Success means a user can see their standby and active drain, understand the top causes, apply a fix, and verify it actually helped, all without a PC after first setup.
 
 ## Positioning
 
@@ -28,7 +28,7 @@ It's the only tool built around evidence on this specific hardware. Every tweak 
 ## Capabilities and Constraints
 
 - Privilege tiers: T0 app, T1 adb-granted permissions, T2 Shizuku (shell uid). Root (T3) is out of scope by decision (2026-09-25).
-- Planned pillars: Battery Doctor (measure, attribute, fix, verify), Settings Hub (search and deep links into scattered Boox settings), E-Ink Profiles, Privacy & Debloat, and power-user actions.
+- Planned pillars: Battery Doctor (measure, attribute, fix, verify), Settings Hub (search and deep links into scattered Boox settings), E-Ink Profiles, Privacy & Debloat, power-user actions, and the suite's apps (Nib for drawing). The hub installs and removes apps, and its own modules can be removed and added back.
 - Every tweak has apply/revert, a tier, a risk level, and linked evidence.
 - No background polling. Data refreshes on user action or on scheduled inexact alarms, so the app must never cause the drain it measures.
 - Strings live in Android resources, English first, structured for later translation.

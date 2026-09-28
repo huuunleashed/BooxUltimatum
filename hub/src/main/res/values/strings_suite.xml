@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Navigation: five sections, some with several pages. -->
+    <string name="section_overview">Overview</string>
+    <string name="section_suite">Suite</string>
+    <string name="section_battery">Battery</string>
+    <string name="section_system">System</string>
+    <string name="section_device">Device</string>
+    <string name="dest_suite">Apps and modules</string>
+    <string name="dest_home">Home screen</string>
+    <string name="dest_logs">Logs</string>
+
+    <!-- The Suite page. -->
+    <string name="suite_title">BooxUltimatum suite</string>
+    <string name="suite_subtitle">Apps you install, and modules built into this app</string>
+    <string name="suite_apps">Apps</string>
+    <string name="suite_apps_explain">Separate apps that build on BooxUltimatum. Each installs, updates and uninstalls on its own, and works without this app.</string>
+    <string name="suite_modules">Built into BooxUltimatum</string>
+    <string name="suite_modules_explain">Removing a module stops it and undoes what it changed on the tablet, and its pages leave the menu. Add it back at any time.</string>
+    <string name="suite_installed">Installed: %1$s</string>
+    <string name="suite_not_installed">Not installed</string>
+    <string name="suite_install">Install</string>
+    <string name="suite_update">Update</string>
+    <string name="suite_open">Open</string>
+    <string name="suite_uninstall">Uninstall</string>
+    <string name="suite_uninstall_confirm">Uninstall</string>
+    <string name="suite_add">Add</string>
+    <string name="suite_remove">Remove</string>
+    <string name="suite_remove_confirm">Remove it</string>
+    <string name="suite_running">Running</string>
+    <string name="suite_idle">Added, not running</string>
+    <string name="suite_removed">Removed</string>
+    <string name="suite_go_to">Settings</string>
+    <string name="suite_nib_summary">Drawing with Boox’s instant pen: many brushes, very fine widths, unlimited layers.</string>
+
+    <string name="module_home">Home screen</string>
+    <string name="module_home_summary">BooxUltimatum’s home screen and its widgets. Removing it hands the home back to Boox first.</string>
+    <string name="module_home_blocked">Make Boox the home screen first: Android needs Shizuku to switch it from here, or use Android’s Home app setting.</string>
+    <string name="module_sleep">Sleep screen</string>
+    <string name="module_sleep_summary">Your own sleep and power-off screens. Removing it gives both back to Boox and stops the updates while asleep.</string>
+    <string name="module_ink">Instant ink</string>
+    <string name="module_ink_summary">Boox’s instant pen preview in other drawing apps. Removing it turns it off and takes its Quick Settings tile away.</string>
+    <string name="module_battery_log">Battery log</string>
+    <string name="module_battery_log_summary">Records screen, charge and level changes without waking the tablet. Removing it stops recording; past logs stay.</string>
+    <string name="module_journal_added">Added %1$s</string>
+    <string name="module_journal_removed">Removed %1$s</string>
+
+    <!-- Updates for every suite app. -->
+    <string name="updates_title">Updates</string>
+    <string name="updates_channel">Channel</string>
+    <string name="updates_channel_previews">Releases and pre-releases</string>
+    <string name="updates_channel_stable">Releases only</string>
+    <string name="updates_tests">Test builds</string>
+    <string name="updates_tests_on">Offered</string>
+    <string name="updates_tests_off">Not offered</string>
+    <string name="updates_tests_explain">Test builds are unfinished work, published so they can be checked on a real tablet. They may break things; turn this on only when asked to test.</string>
+    <string name="updates_tests_enable">Offer test builds</string>
+    <string name="updates_tests_disable">Stop offering test builds</string>
+    <string name="updates_last_check">Last checked %1$s</string>
+    <string name="updates_never_checked">Not checked yet</string>
+
+    <!-- The Logs page. -->
+    <string name="logs_title">Logs</string>
+    <string name="logs_subtitle">What every suite app recorded, kept on this tablet</string>
+    <string name="logs_explain">Each app keeps a log of what it did and what went wrong, including crashes, for about two weeks. The logs hold no drawings, typed text, or account and network names, and nothing leaves the tablet unless you share it.</string>
+    <string name="logs_detailed">Detailed logging</string>
+    <string name="logs_detailed_state">Now</string>
+    <string name="logs_detailed_off">Off</string>
+    <string name="logs_detailed_until">On until %1$s</string>
+    <string name="logs_detailed_on">Turn on for 24 hours</string>
+    <string name="logs_detailed_stop">Turn off</string>
+    <string name="logs_detailed_explain">Records much more, for tracking down a problem. It turns itself off after a day.</string>
+    <string name="logs_share">Share logs</string>
+    <string name="logs_sharing">Collecting logs…</string>
+    <string name="logs_share_failed">Couldn’t collect the logs: %1$s</string>
+    <string name="logs_recent">Recent entries</string>
+    <string name="logs_filter_all">All</string>
+    <string name="logs_filter_problems">Problems</string>
+    <string name="logs_empty">Nothing recorded yet.</string>
+    <plurals name="logs_files">
+        <item quantity="one">%1$d file, %2$s</item>
+        <item quantity="other">%1$d files, %2$s</item>
+    </plurals>
+    <string name="logs_crashes">Crashes and stops</string>
+    <string name="logs_no_crashes">None recorded</string>
+</resources>

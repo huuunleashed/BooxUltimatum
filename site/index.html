@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BooxUltimatum: home screen, sleep screen and battery tools for the BOOX Note Air6 C</title>
-<meta name="description" content="An open-source Android app for the BOOX Note Air6 C: an e-ink home screen, a sleep-screen designer, Instant ink, a battery log and reversible tweaks. No root. Verified on one tablet, firmware 4.3.">
+<title>BooxUltimatum: a suite of apps for the BOOX Note Air6 C</title>
+<meta name="description" content="An open-source suite of Android apps for the BOOX Note Air6 C: an e-ink home screen, a sleep-screen designer, Instant ink, a battery log and reversible tweaks, and Nib, a drawing app in development. No root. Verified on one tablet, firmware 4.3.">
 <link rel="canonical" href="https://huuunleashed.github.io/BooxUltimatum/">
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#ffffff">
@@ -13,7 +13,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="BooxUltimatum">
 <meta property="og:title" content="BooxUltimatum for the BOOX Note Air6 C">
-<meta property="og:description" content="A home screen, sleep-screen designer, battery doctor and tweak hub for the Note Air6 C, in one app, without root. Every change is recorded and can be undone.">
+<meta property="og:description" content="An open-source suite of Android apps for the BOOX Note Air6 C: an e-ink home screen, a sleep-screen designer, Instant ink, a battery log, reversible tweaks, and Nib for drawing.">
 <meta property="og:url" content="https://huuunleashed.github.io/BooxUltimatum/">
 <meta property="og:image" content="https://huuunleashed.github.io/BooxUltimatum/screenshots/home-landscape.png">
 <meta property="og:image:width" content="1000">
@@ -50,7 +50,7 @@
   <div class="wrap hero">
     <div>
       <h1>BooxUltimatum</h1>
-      <p class="lead">A home screen, sleep-screen designer, battery doctor and tweak hub for the BOOX Note Air6&nbsp;C, in one app, without root.</p>
+      <p class="lead">A suite of apps for the BOOX Note Air6&nbsp;C, without root: a hub with a home screen, sleep-screen designer, battery doctor and reversible tweaks, and Nib, a drawing app with Boox's instant pen.</p>
       <div class="keys">
         <a class="key solid" href="https://github.com/huuunleashed/BooxUltimatum">Source on GitHub</a>
         <a class="key" href="docs.html">How it works</a>
@@ -74,7 +74,7 @@
       <li class="tier t0">
         <div class="band" aria-hidden="true"></div>
         <h3><span class="id">T0</span> Just the app</h3>
-        <p>Home screen, sleep and power-off screens, Instant ink, battery measurement, the tablet font and the settings hub.</p>
+        <p>Home screen, sleep and power-off screens, Instant ink, battery measurement, the tablet font, the settings hub, the logbook, and Nib, the drawing app.</p>
         <p class="lamp-note"><span class="lamp" aria-hidden="true"></span>Useful from the first open</p>
       </li>
       <li class="tier t1">
@@ -101,7 +101,7 @@
     <div class="why">
       <div class="statement">
         <p>The Note Air6&nbsp;C is a lovely tablet with a frustrating side. Independent reviews such as <a href="https://ewritable.net/brands/boox/tablets/boox-note-air6-c/">eWritable's</a> praise the screen and the pen, then point at the same two things owners complain about: battery life, and software that scatters useful settings across a dozen places.</p>
-        <p>BooxUltimatum is one owner's attempt to fix that from the inside. It's a single APK. Nothing is flashed, and the bootloader stays locked.</p>
+        <p>BooxUltimatum is one owner's attempt to fix that from the inside. The hub is one APK, and the apps that build on it install on their own. Nothing is flashed, and the bootloader stays locked.</p>
       </div>
       <dl class="readings" aria-label="What it has been verified on">
         <div><dt>Verified on</dt><dd>BOOX Note Air6 C<span>One tablet, the author's own</span></dd></div>
@@ -192,6 +192,19 @@
       </div>
     </article>
 
+    <article class="feature" aria-labelledby="f-nib">
+      <div class="text">
+        <h3 id="f-nib">Nib, for drawing <span class="tag">In development</span></h3>
+        <p>Nib draws the way Boox Notes writes: the display paints each stroke under the nib at once, and Nib's own rendering takes its place the moment you lift. It's an app of its own, which BooxUltimatum's Suite page installs and updates, and it works without it.</p>
+        <ul class="ticks">
+          <li>Pens, pencils, markers, brushes and textured charcoal, each previewed in the closest of the display's own styles, and widths down to a fraction of a millimetre.</li>
+          <li>Unlimited layers, where Boox Notes stops at five, with undo, zoom that keeps the preview and the result matching, and autosave that survives a crash.</li>
+          <li>Not released yet. Test builds check it on the tablet, and nothing about its pen preview is verified there so far.</li>
+        </ul>
+        <a class="more" href="https://github.com/huuunleashed/BooxUltimatum/blob/main/docs/08-nib.md">How Nib is built</a>
+      </div>
+    </article>
+
     <article class="feature" aria-labelledby="f-battery">
       <div class="text">
         <h3 id="f-battery">A battery doctor that doesn't drain the battery</h3>
@@ -254,7 +267,7 @@
         <h3>From source, today</h3>
         <pre><code><span class="c"># JDK 21 and the Android SDK (platform 36)</span>
 .\gradlew.bat assembleRelease
-adb install -r app\build\outputs\apk\release\app-release.apk</code></pre>
+adb install -r hub\build\outputs\apk\release\hub-release.apk</code></pre>
         <p>Release builds from source are debug-signed for now, so they update an installed copy in place. The <a href="https://github.com/huuunleashed/BooxUltimatum#install">README</a> has the full steps, and how to go back to the Boox home.</p>
       </div>
     </div>

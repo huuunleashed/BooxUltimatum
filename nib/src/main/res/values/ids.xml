@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="nib_canvas" type="id" />
+    <item name="nib_probe" type="id" />
+</resources>

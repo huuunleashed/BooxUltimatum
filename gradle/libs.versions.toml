@@ -6,6 +6,17 @@ activityCompose = "1.11.0"
 coreKtx = "1.17.0"
 lifecycle = "2.9.4"
 shizuku = "13.1.5"
+coroutines = "1.9.0"
+junit = "4.13.2"
+orgJson = "20240303"
+androidxTestRunner = "1.6.2"
+androidxTestExtJunit = "1.2.1"
+androidxTestCore = "1.6.1"
+androidxTestRules = "1.6.1"
+# The platform levels every module builds against: Android 11 up, built and targeted for Android 16.
+compileSdk = "36"
+minSdk = "30"
+targetSdk = "36"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
@@ -18,8 +29,22 @@ androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling
 androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 shizuku-api = { module = "dev.rikka.shizuku:api", version.ref = "shizuku" }
 shizuku-provider = { module = "dev.rikka.shizuku:provider", version.ref = "shizuku" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+junit = { module = "junit:junit", version.ref = "junit" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+# Android's org.json is a stub in JVM unit tests; this is the real implementation for them.
+org-json = { module = "org.json:json", version.ref = "orgJson" }
+# Instrumented tests on the emulator.
+androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidxTestRunner" }
+androidx-test-ext-junit = { module = "androidx.test.ext:junit", version.ref = "androidxTestExtJunit" }
+androidx-test-core = { module = "androidx.test:core", version.ref = "androidxTestCore" }
+androidx-test-rules = { module = "androidx.test:rules", version.ref = "androidxTestRules" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

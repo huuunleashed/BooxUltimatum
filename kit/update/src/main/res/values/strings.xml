@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="update_idle">Ready to check for updates.</string>
+    <string name="update_development">Development build: update from the computer. Android would refuse the differently signed public APK, and uninstalling would lose data.</string>
+    <string name="update_checking">Checking GitHub Releases…</string>
+    <string name="update_up_to_date">Up to date.</string>
+    <string name="update_not_published">Not installed, and no release is published for this channel yet.</string>
+    <string name="update_available">Version %1$s is available.</string>
+    <string name="update_available_test">Test build %1$s is available.</string>
+    <string name="update_install_available">Version %1$s can be installed.</string>
+    <string name="update_no_checksum">Version %1$s is published without a SHA-256 checksum, so it won’t be installed.</string>
+    <string name="update_downloading">Downloading %1$d %%…</string>
+    <string name="update_verifying">Verifying the download…</string>
+    <string name="update_need_sources">Allow installs from this app in Android’s settings first.</string>
+    <string name="update_installing">Handed to Android’s installer…</string>
+    <string name="update_confirming">Android is asking you to confirm the install.</string>
+    <string name="update_installed">Installed.</string>
+    <string name="update_failed_check">Couldn’t check: %1$s</string>
+    <string name="update_failed_download">Download failed: %1$s</string>
+    <string name="update_failed_verify">The download didn’t pass the checks: %1$s</string>
+    <string name="update_failed_install">Install failed: %1$s</string>
+    <string name="update_android_refused">Android refused the install.</string>
+</resources>

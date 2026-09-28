@@ -13,7 +13,7 @@ BooxUltimatum is GPL-3.0-or-later. Every piece of upstream code or data that get
 
 | Asset | Source | License | Where |
 |---|---|---|---|
-| Archivo (variable TTF) | [Omnibus-Type/Archivo](https://github.com/Omnibus-Type/Archivo) via Google Fonts | SIL OFL-1.1 | `app/src/main/res/font/archivo.ttf`, license text in `app/src/main/assets/licenses/archivo-OFL.txt` |
+| Archivo (variable TTF) | [Omnibus-Type/Archivo](https://github.com/Omnibus-Type/Archivo) via Google Fonts | SIL OFL-1.1 | `kit/ui/src/main/res/font/archivo.ttf`, license text in `kit/ui/src/main/assets/licenses/archivo-OFL.txt` (shipped in every suite app) |
 
 ## Online services (used at runtime, nothing redistributed)
 
@@ -35,7 +35,19 @@ BooxUltimatum contains no Onyx/BOOX code, SDKs or assets. The Boox interfaces it
 - the SurfaceFlinger handwriting and post transactions behind Instant ink;
 - the EinkWise configuration it reads.
 
-They are called through small clients written from scratch in `core/sleep/`, `core/SystemFont.kt` and `core/ink/`. The sleep-picture and font broadcasts aren't publicly documented. The pen path is: Onyx documents it for app developers as its pen SDK, [onyx-intl/OnyxAndroidDemo](https://github.com/onyx-intl/OnyxAndroidDemo) (Apache-2.0, `doc/Onyx-Pen-SDK.md`), which Instant ink credits as the starting point. The SDK itself (`onyxsdk-pen`, `onyxsdk-device`) is published as obfuscated binaries without source, so it isn't bundled. `core/ink/SurfaceInk.kt` tries the same firmware helper the SDK uses (`android.onyx.ViewUpdateHelper`) and falls back to SurfaceFlinger's transactions where that helper is blocked. The evidence for each interface is in `knowledge/experiments.md`.
+They are called through small clients written from scratch in the hub's `core/sleep/` and `core/SystemFont.kt`, and in `kit/ink/`, which both Instant ink and Nib use. The sleep-picture and font broadcasts aren't publicly documented. The pen path is: Onyx documents it for app developers as its pen SDK, [onyx-intl/OnyxAndroidDemo](https://github.com/onyx-intl/OnyxAndroidDemo) (Apache-2.0, `doc/Onyx-Pen-SDK.md`), which Instant ink credits as the starting point. The SDK itself (`onyxsdk-pen`, `onyxsdk-device`) is published as obfuscated binaries without source, so it isn't bundled. `kit/ink/…/SurfaceInk.kt` tries the same firmware helper the SDK uses (`android.onyx.ViewUpdateHelper`) and falls back to SurfaceFlinger's transactions where that helper is blocked. The evidence for each interface is in `knowledge/experiments.md`.
+
+## Studied for Nib, nothing taken
+
+Nib's design was informed by reading these projects. No code, assets or binaries came from them.
+
+| Project | License | What was learned |
+|---|---|---|
+| [steffest/Boox-EinkDraw](https://github.com/steffest/Boox-EinkDraw) | None (all rights reserved) | How a Note Air4 C drawing app hands the preview over to its own canvas, and its open zoom problem. It bundles Onyx's AARs and a copy of the firmware's `libneo_pen.so`, which is why none of it can be used. |
+| [plateaukao/ADR](https://github.com/plateaukao/ADR), CalliPlus notes | None stated | The SurfaceFlinger transaction codes and style numbers on another Boox model, and a flash-free refresh recipe; facts only |
+| [hbmartin/onyx-android-sdk](https://github.com/hbmartin/onyx-android-sdk) | LGPL-3.0, but a reconstruction of Onyx's binary SDK | The `TouchHelper` style constants, used as a cross-check only |
+| [Ethran/notable](https://github.com/Ethran/notable) | GPL-3.0 | How an open-source Boox note app stores strokes and handles refresh; compatible, but nothing vendored so far |
+| [alexdremov/notate](https://github.com/alexdremov/notate) | MIT | Tiles with levels of detail and a spatial index for an infinite canvas; ideas only |
 
 ## Data
 

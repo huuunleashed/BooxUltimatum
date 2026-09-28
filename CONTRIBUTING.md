@@ -9,7 +9,7 @@ In rough order of value:
 1. **Findings from other Boox devices and firmware.** Does the sleep screen broadcast work on your Note Air 5 C, Tab Ultra or Go 10.3? Does Instant ink arm? What does `dumpsys oec_service` show? Use the *Device finding* issue form.
 2. **Bug reports** with device, firmware, orientation and steps. Use the *Bug report* form.
 3. **Battery measurements:** an overnight run with the in-app battery log and its exported zip, before and after a tweak.
-4. **Translations:** a Vietnamese translation is planned first. Strings live in `app/src/main/res/values/strings*.xml`.
+4. **Translations:** a Vietnamese translation is planned first. Strings live in `hub/src/main/res/values/strings*.xml` (and each `kit/*/src/main/res` for shared strings; Nib's are in `nib/src/main/res`).
 5. **Code:** start with an issue labelled `good first issue`, or open an *Idea* issue first so we can agree on the approach before you spend time on it.
 
 ## Reporting a bug or a finding
@@ -28,12 +28,12 @@ You'll need JDK 21, the Android SDK (platform 36, build-tools 36) and platform-t
 git clone https://github.com/huuunleashed/BooxUltimatum.git
 cd BooxUltimatum
 .\gradlew.bat assembleRelease lintRelease   # macOS/Linux: ./gradlew assembleRelease lintRelease
-adb install -r app\build\outputs\apk\release\app-release.apk
+adb install -r hub\build\outputs\apk\release\hub-release.apk
 ```
 
 - **Signing:** builds from source are debug-signed, so they update your own copy in place and keep its grants. Only the maintainer's release key signs public releases.
 - **Access tiers:** to test T1 and T2 features, grant the permissions listed in the README and start Shizuku (`.\tools\host\start-shizuku.ps1` restarts it after a reboot).
-- **Code map:** the `app/` layout is in `AGENTS.md`; the design docs in `docs/` explain each area.
+- **Code map:** the module layout is in `AGENTS.md` and `docs/07-suite.md`; the design docs in `docs/` explain each area.
 - **Working with an AI agent:** the `.agents/skills/` folder holds [Agent Skills](https://agentskills.io) that most coding agents load on their own: how to test on the tablet safely, the firmware interfaces found so far, how sleep faces are built, and how to build and release. They save a new session from rediscovering all of it, so please update them when you learn something new.
 
 ## The rules for changes

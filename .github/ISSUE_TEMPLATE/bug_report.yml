@@ -30,6 +30,8 @@ body:
         - Battery
         - Tweaks
         - Appearance or fonts
+        - Nib (drawing)
+        - Suite, updates or logs
         - Something else
     validations:
       required: true

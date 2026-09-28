@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+      The suite's apps trust each other through this permission. Every suite app declares it, so no other app can claim
+      the name first, and only apps signed with the same key hold it. It guards what they share, such as their logs.
+      A consequence: debug-signed and release-signed suite apps can't be installed side by side.
+    -->
+    <permission
+        android:name="app.booxultimatum.permission.SUITE"
+        android:protectionLevel="signature" />
+    <uses-permission android:name="app.booxultimatum.permission.SUITE" />
+
+    <!-- Every suite app can see the others (Android 11 package visibility), to find, open and update them. -->
+    <queries>
+        <package android:name="app.booxultimatum" />
+        <package android:name="app.booxultimatum.nib" />
+    </queries>
+</manifest>

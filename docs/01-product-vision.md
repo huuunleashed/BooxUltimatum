@@ -1,7 +1,6 @@
 # 01 · Product vision
 
-> **BooxUltimatum** is one sideloadable APK that makes a Boox tablet last longer, feel simpler,
-> and stay private. Every tweak can be measured, explained and undone.
+> **BooxUltimatum** is a sideloadable suite that makes a Boox tablet last longer, feel simpler, and stay private, with apps like Nib that use the tablet's best hardware. Every tweak can be measured, explained and undone.
 
 This vision is anchored on the most credible independent review of the NA6C (eWritable, FW 4.3). Its verdict: an *excellent, versatile device* held back by **poor battery life** and **complex, scattered software**. Those two problems are our north star.
 
@@ -34,7 +33,7 @@ This vision is anchored on the most credible independent review of the NA6C (eWr
 - Root tier: CPU governor/cap profiles, kernel wakeup analysis, and an Xposed module.
 
 ## Non-goals
-- Replacing Boox's Notes or NeoReader apps.
+- Replacing Boox's Notes or NeoReader apps. Nib, the suite's drawing app, is for drawing: it borrows Notes' instant pen but has no notebooks, handwriting recognition or sync, and isn't meant to replace Notes for writing.
 - Anything irreversible without an explicit, scary confirmation and a tested restore path.
 - Pirating or unlocking paid or region-locked Boox services.
 

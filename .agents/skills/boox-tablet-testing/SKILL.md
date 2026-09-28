@@ -1,6 +1,6 @@
 ---
 name: boox-tablet-testing
-description: How to test BooxUltimatum on a real BOOX tablet over adb without harming the owner's device. Use whenever a task involves a connected tablet, installing a build, taking screenshots, checking a feature on the device, reading logcat, testing portrait and landscape, testing the sleep screen or Instant ink, or restoring the tablet afterwards.
+description: How to test BooxUltimatum's suite apps (the hub and Nib) on a real BOOX tablet over adb without harming the owner's device, and how to test on the emulator and through the test channel when the tablet isn't connected. Use whenever a task involves a connected tablet, the emulator, installing a build, taking screenshots, checking a feature on the device, reading logcat or the logbook, testing portrait and landscape, testing the sleep screen, Instant ink or Nib's pen preview, or restoring the tablet afterwards.
 ---
 
 # Testing on the BOOX tablet
@@ -28,6 +28,18 @@ The tablet is someone's real device, shared with the agent. Treat every write as
 - The owner's tablet runs the **published release** since 0.5.1 (release key), and updates itself from GitHub Releases. Test builds for it must be release-signed: `.\gradlew.bat assembleRelease -Pbu.signing=$env:USERPROFILE\.booxultimatum\signing.properties`, then `adb install -r`. A debug-signed build won't install over it.
 - Before 0.5.1 it ran the debug-signed release build. Moving between the two keys means uninstalling; the steps that keep the owner's data and grants are in the `build-release-and-docs` skill.
 - Reinstalling cancels the app's alarms and unbinds its accessibility service, which rebinds within seconds.
+- **Every suite app on one tablet must share a key.** Each declares the signature permission `app.booxultimatum.permission.SUITE` (from `:kit:core`), and Android refuses to install an app that declares it with a different key from one already installed. So a debug-signed Nib won't install next to the release-signed hub; build both release-signed.
+- The APKs are `hub\build\outputs\apk\<type>\hub-<type>.apk` and `nib\build\outputs\apk\<type>\nib-<type>.apk`.
+
+## When the tablet isn't connected
+
+The owner may have the tablet with them, away from the computer. Then:
+
+- **Test here first.** Run the JVM tests (`.\gradlew.bat testDebugUnitTest :nib-engine:test`) and the `NoteAir6C` emulator: an Android 36 AVD at 1860 × 2480, 300 dpi. Start it headless with `emulator -avd NoteAir6C -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot-save` (WHPX works on this PC), then use `adb -e`.
+- **What the emulator can't show.** It isn't Boox firmware, so the Sleep and Ink pages are hidden and Nib draws without the display preview. Anything that touches SurfaceFlinger's pen path, the sleep screen or EinkWise needs the tablet.
+- **Screenshots.** `adb -e exec-out screencap -p > file.png` works in PowerShell 7. Downscale before viewing.
+- **Stylus input on the emulator.** `adb -e shell input stylus swipe x1 y1 x2 y2 ms` draws a stroke Android reports as a stylus. Instrumented tests can inject `MotionEvent`s with `TOOL_TYPE_STYLUS` and pressure.
+- **Reaching the tablet.** With the owner's agreement, publish a release-signed test build (`tools/dev/publish.ps1 -Test`). The owner turns on *Offer test builds* (Device page) and installs it from the hub. Then they run the checks listed in the release notes, including Nib's Diagnostics probes, and send back the zip from Device › Logs › *Share logs*. Turn the probe answers and log lines into rows in `knowledge/experiments.md`.
 
 ## Both orientations
 
@@ -47,7 +59,7 @@ The tablet is someone's real device, shared with the agent. Treat every write as
 
 - `input keyevent 223` puts the tablet to sleep and `224` wakes it (onto the PIN lock screen if there is one, so capture the sleep screen last).
 - `dumpsys power | grep mWakefulness` says Awake or Dozing; `dumpsys dreams` shows the Onyx dream.
-- Useful logcat tags: `LiveSleep`, `OnyxDaydreamService`, `InstantInk`, `PenInput`, `AlarmManager` (look for `Do not allow` and `clear alarm`), and `auditd` / `avc` for SELinux denials (`logcat -d -b all`).
+- Useful logcat tags: every suite app logs as `BU/<category>`, for example `BU/ink`, `BU/ink.pen`, `BU/ink.display`, `BU/ink.session`, `BU/sleep.live`, `BU/update`, `BU/suite` and `BU/nib.pen`. The same entries, and Debug for the pen and update categories, are in the app's logbook (`noBackupFilesDir/logs`, exported from Device › Logs). Boox's side logs as `OnyxDaydreamService` and `AlarmManager` (look for `Do not allow` and `clear alarm`); SELinux denials are under `auditd` and `avc` (`logcat -d -b all`).
 
 ## Recovering the screen after pen tests
 

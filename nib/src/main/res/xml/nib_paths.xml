@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What Nib can hand to another app: pictures the owner shares, log zips and pen recordings. Nothing else. -->
+<paths>
+    <cache-path name="exports" path="exports/" />
+    <cache-path name="logs" path="logs/" />
+    <cache-path name="recordings" path="recordings/" />
+</paths>

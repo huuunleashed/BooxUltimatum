@@ -109,9 +109,9 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
         <div class="sources">
           <h3>In the repository</h3>
           <ul class="links">
-            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/app/src/main/java/app/booxultimatum/core/PrivilegeStatus.kt"><strong>app/…/core/PrivilegeStatus.kt</strong><span>Which grants and which tier the app has right now.</span></a></li>
-            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/app/src/main/java/app/booxultimatum/core/exec/Privileged.kt"><strong>app/…/core/exec/Privileged.kt</strong><span>The Shizuku executor and its 45-second release.</span></a></li>
-            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/app/src/main/java/app/booxultimatum/core/exec/ShellService.kt"><strong>app/…/core/exec/ShellService.kt</strong><span>The user service that runs as the shell user.</span></a></li>
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/hub/src/main/java/app/booxultimatum/core/PrivilegeStatus.kt"><strong>hub/…/core/PrivilegeStatus.kt</strong><span>Which grants and which tier the app has right now.</span></a></li>
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/hub/src/main/java/app/booxultimatum/core/exec/Privileged.kt"><strong>hub/…/core/exec/Privileged.kt</strong><span>The Shizuku executor and its 45-second release.</span></a></li>
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/hub/src/main/java/app/booxultimatum/core/exec/ShellService.kt"><strong>hub/…/core/exec/ShellService.kt</strong><span>The user service that runs as the shell user.</span></a></li>
             <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/docs/00-device-research.md"><strong>docs/00-device-research.md</strong><span>§0: the facts verified on the device, boot security included.</span></a></li>
             <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/tools/host/start-shizuku.ps1"><strong>tools/host/start-shizuku.ps1</strong><span>Restarting Shizuku from a computer after a reboot.</span></a></li>
           </ul>
@@ -148,8 +148,8 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
           <h3>In the repository</h3>
           <ul class="links">
             <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/docs/05-launcher.md"><strong>docs/05-launcher.md</strong><span>Compatibility rules, what is built, the budget table.</span></a></li>
-            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/app/src/main/java/app/booxultimatum/launcher/LauncherActivity.kt"><strong>app/…/launcher/LauncherActivity.kt</strong><span>The home activity and its start/stop lifecycle.</span></a></li>
-            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/app/src/main/java/app/booxultimatum/launcher/AppCatalog.kt"><strong>app/…/launcher/AppCatalog.kt</strong><span>The app list through <code>LauncherApps</code>, and the Boox functions.</span></a></li>
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/hub/src/main/java/app/booxultimatum/launcher/LauncherActivity.kt"><strong>hub/…/launcher/LauncherActivity.kt</strong><span>The home activity and its start/stop lifecycle.</span></a></li>
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/hub/src/main/java/app/booxultimatum/launcher/AppCatalog.kt"><strong>hub/…/launcher/AppCatalog.kt</strong><span>The app list through <code>LauncherApps</code>, and the Boox functions.</span></a></li>
             <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/knowledge/experiments.md#device-findings"><strong>knowledge/experiments.md</strong><span>The 2026-09-26 rows: memory, CPU, the Shizuku helper, default home.</span></a></li>
           </ul>
         </div>
@@ -199,10 +199,10 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
           <h3>In the repository</h3>
           <ul class="links">
             <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/docs/06-sleep-screen.md"><strong>docs/06-sleep-screen.md</strong><span>How Boox draws the sleep screen, modes and tiers, and the refresh design.</span></a></li>
-            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/app/src/main/java/app/booxultimatum/core/sleep/SleepPublisher.kt"><strong>app/…/core/sleep/SleepPublisher.kt</strong><span>The MediaStore picture, the broadcast, the sticker copy and its backup.</span></a></li>
-            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/app/src/main/java/app/booxultimatum/core/sleep/SleepScheduler.kt"><strong>app/…/core/sleep/SleepScheduler.kt</strong><span>The non-wakeup alarm and the event receivers.</span></a></li>
-            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/app/src/main/java/app/booxultimatum/core/sleep/SleepStudio.kt"><strong>app/…/core/sleep/SleepStudio.kt</strong><span>Render, fingerprint skip, encode, publish, the orientation cache.</span></a></li>
-            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/app/src/main/java/app/booxultimatum/core/sleep/SleepRenderer.kt"><strong>app/…/core/sleep/SleepRenderer.kt</strong><span>Pure Canvas typesetting, with no Context and no I/O.</span></a></li>
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/hub/src/main/java/app/booxultimatum/core/sleep/SleepPublisher.kt"><strong>hub/…/core/sleep/SleepPublisher.kt</strong><span>The MediaStore picture, the broadcast, the sticker copy and its backup.</span></a></li>
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/hub/src/main/java/app/booxultimatum/core/sleep/SleepScheduler.kt"><strong>hub/…/core/sleep/SleepScheduler.kt</strong><span>The non-wakeup alarm and the event receivers.</span></a></li>
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/hub/src/main/java/app/booxultimatum/core/sleep/SleepStudio.kt"><strong>hub/…/core/sleep/SleepStudio.kt</strong><span>Render, fingerprint skip, encode, publish, the orientation cache.</span></a></li>
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/hub/src/main/java/app/booxultimatum/core/sleep/SleepRenderer.kt"><strong>hub/…/core/sleep/SleepRenderer.kt</strong><span>Pure Canvas typesetting, with no Context and no I/O.</span></a></li>
             <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/knowledge/experiments.md#device-findings"><strong>knowledge/experiments.md</strong><span>The sleep-screen rows: the broadcast, file rules, crop, sticker, the bar.</span></a></li>
           </ul>
         </div>
@@ -260,9 +260,9 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
         <div class="sources">
           <h3>In the repository</h3>
           <ul class="links">
-            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/app/src/main/java/app/booxultimatum/core/ink/InstantInk.kt"><strong>app/…/core/ink/InstantInk.kt</strong><span>The service: arm on hover, hold at touch, swap after the lift.</span></a></li>
-            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/app/src/main/java/app/booxultimatum/core/ink/SurfaceInk.kt"><strong>app/…/core/ink/SurfaceInk.kt</strong><span>The firmware-helper route, and the SurfaceFlinger transactions it falls back to.</span></a></li>
-            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/app/src/main/java/app/booxultimatum/core/ink/PenInput.kt"><strong>app/…/core/ink/PenInput.kt</strong><span>The pen's event node, read in <code>poll()</code>: hover, touch, eraser.</span></a></li>
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/hub/src/main/java/app/booxultimatum/core/ink/InstantInk.kt"><strong>hub/…/core/ink/InstantInk.kt</strong><span>The service: arm on hover, hold at touch, swap after the lift.</span></a></li>
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/kit/ink/src/main/java/app/booxultimatum/kit/ink/SurfaceInk.kt"><strong>kit/ink/…/SurfaceInk.kt</strong><span>The firmware-helper route, and the SurfaceFlinger transactions it falls back to.</span></a></li>
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/kit/ink/src/main/java/app/booxultimatum/kit/ink/PenInput.kt"><strong>kit/ink/…/PenInput.kt</strong><span>The pen's event node, read in <code>poll()</code>: hover, touch, eraser.</span></a></li>
             <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/knowledge/experiments.md#device-findings"><strong>knowledge/experiments.md</strong><span>The Instant ink rows: the path, <code>ENABLE_POST</code>, the region, hover.</span></a></li>
           </ul>
         </div>
@@ -299,7 +299,7 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
         <div class="sources">
           <h3>In the repository</h3>
           <ul class="links">
-            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/app/src/main/java/app/booxultimatum/core/BatteryLog.kt"><strong>app/…/core/BatteryLog.kt</strong><span>The alarm, the transition receiver, boot versus unstop, the export.</span></a></li>
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/hub/src/main/java/app/booxultimatum/core/BatteryLog.kt"><strong>hub/…/core/BatteryLog.kt</strong><span>The alarm, the transition receiver, boot versus unstop, the export.</span></a></li>
             <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/docs/03-architecture.md"><strong>docs/03-architecture.md</strong><span>The power sampler design: must not cause the drain it measures.</span></a></li>
             <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/knowledge/experiments.md#battery-ab-runs"><strong>knowledge/experiments.md</strong><span>Battery A/B runs (none yet) and the findings above.</span></a></li>
             <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/tools/host/power-logger.ps1"><strong>tools/host/power-logger.ps1</strong><span>The host-side logger for lab runs, with zero app code involved.</span></a></li>
@@ -325,9 +325,9 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
         <div class="sources">
           <h3>In the repository</h3>
           <ul class="links">
-            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/app/src/main/java/app/booxultimatum/core/SystemFont.kt"><strong>app/…/core/SystemFont.kt</strong><span>Copy, journal, broadcast, confirm, restore.</span></a></li>
-            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/app/src/main/java/app/booxultimatum/core/UiFonts.kt"><strong>app/…/core/UiFonts.kt</strong><span>Reading the system font path and loading it at any weight.</span></a></li>
-            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/app/src/main/java/app/booxultimatum/core/Fonts.kt"><strong>app/…/core/Fonts.kt</strong><span>The Google Fonts catalogue and installs.</span></a></li>
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/hub/src/main/java/app/booxultimatum/core/SystemFont.kt"><strong>hub/…/core/SystemFont.kt</strong><span>Copy, journal, broadcast, confirm, restore.</span></a></li>
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/hub/src/main/java/app/booxultimatum/core/UiFonts.kt"><strong>hub/…/core/UiFonts.kt</strong><span>Reading the system font path and loading it at any weight.</span></a></li>
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/hub/src/main/java/app/booxultimatum/core/Fonts.kt"><strong>hub/…/core/Fonts.kt</strong><span>The Google Fonts catalogue and installs.</span></a></li>
             <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/knowledge/experiments.md#device-findings"><strong>knowledge/experiments.md</strong><span>The font broadcast and the ExtraLight finding.</span></a></li>
           </ul>
         </div>
@@ -375,8 +375,8 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
         <div class="sources">
           <h3>In the repository</h3>
           <ul class="links">
-            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/app/src/main/java/app/booxultimatum/core/tweaks/Tweaks.kt"><strong>app/…/core/tweaks/Tweaks.kt</strong><span>The tweak class and the catalogue of 19.</span></a></li>
-            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/app/src/main/java/app/booxultimatum/core/Journal.kt"><strong>app/…/core/Journal.kt</strong><span>The originals and the log.</span></a></li>
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/hub/src/main/java/app/booxultimatum/core/tweaks/Tweaks.kt"><strong>hub/…/core/tweaks/Tweaks.kt</strong><span>The tweak class and the catalogue of 19.</span></a></li>
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/hub/src/main/java/app/booxultimatum/core/Journal.kt"><strong>hub/…/core/Journal.kt</strong><span>The originals and the log.</span></a></li>
             <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/knowledge/experiments.md#tweak-verification"><strong>knowledge/experiments.md</strong><span>Tweak verification: the full table, with each mechanism.</span></a></li>
           </ul>
         </div>
@@ -397,8 +397,8 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
           <h3>In the repository</h3>
           <ul class="links">
             <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/THIRD_PARTY.md"><strong>THIRD_PARTY.md</strong><span>Libraries, assets, services, and the interoperability statement.</span></a></li>
-            <li><a href="https://github.com/huuunleashed/BooxUltimatum/tree/main/app/src/main/java/app/booxultimatum/core/sleep"><strong>app/…/core/sleep/</strong><span>The sleep-screen client.</span></a></li>
-            <li><a href="https://github.com/huuunleashed/BooxUltimatum/tree/main/app/src/main/java/app/booxultimatum/core/ink"><strong>app/…/core/ink/</strong><span>The Instant ink client.</span></a></li>
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/tree/main/hub/src/main/java/app/booxultimatum/core/sleep"><strong>hub/…/core/sleep/</strong><span>The sleep-screen client.</span></a></li>
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/tree/main/hub/src/main/java/app/booxultimatum/core/ink"><strong>hub/…/core/ink/</strong><span>The Instant ink client.</span></a></li>
             <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/AGENTS.md"><strong>AGENTS.md</strong><span>The rules for anyone, human or AI, working in the repository.</span></a></li>
           </ul>
         </div>

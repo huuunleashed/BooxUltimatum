@@ -4,6 +4,28 @@ All notable changes to BooxUltimatum. Newest first. The project follows [Semanti
 
 ## [Unreleased]
 
+BooxUltimatum becomes a suite: the hub you know, a first separate app (Nib, for drawing), and a kit of libraries they share. Nothing in this section has been tried on the tablet yet; it's checked with unit tests and on an emulator shaped like the Note Air6 C.
+
+### Added
+
+- **Nib, a drawing app of its own** (in development, test builds only). It uses Boox's instant pen preview in its own window, like Boox Notes does, with many more brushes, very fine widths and unlimited layers. It installs and uninstalls on its own and works without BooxUltimatum. See `docs/08-nib.md`.
+- **A Suite page** (Suite › Apps and modules). It installs, opens, updates and uninstalls the suite's apps, and lists the modules built into BooxUltimatum: Home screen, Sleep screen, Instant ink and Battery log.
+  - **Removing a module stops it and undoes what it changed.** The home goes back to Boox, the sleep and power-off screens go back to Boox's own, Instant ink turns off and its Quick Settings tile goes away, and the battery log stops recording.
+  - **Its pages leave the menu until you add it back.**
+- **Logs for every suite app, in every build.** Each app keeps a logbook of what it did and what went wrong, including crashes and the reason Android gave for each stop, for about two weeks. Device › Logs shows the latest entries, turns on detailed logging for 24 hours, and shares one zip with every suite app's logs. The logs hold no drawings, typed text, or account or network names, and nothing leaves the tablet unless you share it. Problem reports now quote the logbook instead of Android's raw log.
+- **Test builds.** *Offer test builds* on the Device page lets the hub install unfinished builds published for checking on a real tablet. They're off by default, and a release always replaces its own test build.
+
+### Changed
+
+- **The menu is five sections instead of eleven pages:** Overview, Suite, Battery, System and Device. A section with several pages shows them as tabs. Links from the home screen, the Quick Settings tile and notifications still open the right page.
+- **Home screen switching has its own page** (Suite › Home screen), moved from Settings.
+- **The updater looks after every suite app.** It reads more releases, orders test builds correctly before their release, and still checks each APK's SHA-256, package, version and signing key before Android installs it.
+- **Instant ink steps aside for suite apps,** as it does for Boox's own, since Nib drives the pen preview itself. Suite apps can't be picked for Instant ink.
+- **For developers:**
+  - The code is split into modules. `hub/` (formerly `app/`) and `nib/` are the apps, `nib-engine/` holds Nib's drawing model in pure Kotlin, and `kit/` holds the shared libraries (`core`, `log`, `ui`, `ink`, `update`). `docs/07-suite.md` explains how they fit.
+  - Unit tests cover the logbook, the release feed and version order, the pen session's display calls and Nib's engine, and CI runs them on every push.
+  - `tools/dev/publish.ps1` publishes a release or a test build of either app, with its checksum and R8 mapping file.
+
 ### Fixed
 
 - **After a Boox app, Instant ink could open a new session instead of taking over the paused one**, when the display still reported the pause as in progress, and then miss that first stroke.
@@ -11,6 +33,8 @@ All notable changes to BooxUltimatum. Newest first. The project follows [Semanti
 ### Research
 
 - **The in-app updater works end to end.** The published 0.5.0 found 0.5.1, downloaded it, checked it and handed it to Android's installer, which updated in place after one "allow installs from this app" prompt. The installed APK matched the published file byte for byte.
+- **Firmware 4.3's display helper offers many more calls than Instant ink uses,** read from the decompiled framework: a full refresh, refreshes with a chosen mode, region exclusion, strokes the app feeds itself, stroke parameters. Its eight preview styles are numbered 0 to 7. None of the new calls has been tried on the tablet; Nib's Diagnostics page probes them.
+- **A study of steffest/Boox-EinkDraw,** a drawing app for the Note Air4 C. It has no licence and depends on Onyx's binary SDK and a copied system library, so Nib is a clean-room design. Its open zoom problem (the preview stops matching the stroke) shaped Nib's rendering.
 
 ## [0.5.1] (2026-09-27)
 

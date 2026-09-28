@@ -1,6 +1,7 @@
 name: Build
 
-# Checks that every push and pull request builds and passes lint and the prose rule. Uses the debug key; releases are signed locally.
+# Checks that every push and pull request builds every suite app, passes the unit tests, lint and the prose rule.
+# Uses the debug key; releases are signed locally.
 on:
   push:
     branches: [main]
@@ -21,10 +22,23 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Prose rule
         run: python3 tools/dev/prose_wrap.py
+      - name: Unit tests
+        run: ./gradlew testDebugUnitTest :nib-engine:test --console=plain
       - name: Build and lint
         run: ./gradlew assembleRelease lintRelease --console=plain
       - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports
+          path: "**/build/reports/tests/"
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
         with:
           name: booxultimatum-debug-signed
-          path: app/build/outputs/apk/release/app-release.apk
+          path: hub/build/outputs/apk/release/hub-release.apk
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nib-debug-signed
+          path: nib/build/outputs/apk/release/nib-release.apk
           retention-days: 14

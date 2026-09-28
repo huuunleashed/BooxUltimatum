@@ -1,5 +1,7 @@
 # 03 · Architecture
 
+> **Since 0.6 the project is a suite:** the hub (`:hub`, formerly `:app`), Nib (`:nib` with `:nib-engine`), and the shared kit (`:kit:core`, `:kit:log`, `:kit:ui`, `:kit:ink`, `:kit:update`). [`07-suite.md`](07-suite.md) describes the modules as built. The planned module table below is the original plan, kept for its upstream notes.
+
 ## Shape
 
 One APK (`app.booxultimatum`), Kotlin + Jetpack Compose, minSdk 30, target/compile SDK 36 (Android 16). The UI is e-ink-first: monochrome, no ripples or animations, large targets, and pagination instead of scrolling where practical.

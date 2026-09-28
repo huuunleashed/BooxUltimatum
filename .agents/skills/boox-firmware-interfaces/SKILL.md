@@ -1,6 +1,6 @@
 ---
 name: boox-firmware-interfaces
-description: The verified BOOX (Onyx) firmware interfaces BooxUltimatum relies on, how they were found and how to find more. Use whenever working on the sleep screen, live updates, the power-off screen, Instant ink, the tablet font, App Freeze, background restrictions, alarms, the charge limit, device detection or pen input, or when reverse-engineering anything new on Boox firmware.
+description: The verified BOOX (Onyx) firmware interfaces BooxUltimatum relies on, how they were found and how to find more. Use whenever working on the sleep screen, live updates, the power-off screen, Instant ink, Nib's pen preview, the tablet font, App Freeze, background restrictions, alarms, the charge limit, device detection or pen input, or when reverse-engineering anything new on Boox firmware.
 ---
 
 # BOOX firmware interfaces
@@ -54,6 +54,24 @@ Everything here was verified on a Note Air6 C with firmware 4.3 (Android 16) unl
 - **The firmware holds app frames from every touch** (`HandlePenTrigger, sid: -1 value is: 0` in logcat, `onyx_android_refreash_enable() enable[0]`) until `ENABLE_POST` 1 lets them through, which is also the swap that replaces the preview. A pulse (0, then 1) swaps even if nothing held the frames. Letting frames through while the pen still draws ends the preview for the rest of that stroke, so the preview and the app's live stroke can't be shown together.
 - **Boox's apps run sessions of their own.** `com.onyx` stopped the session when Boox Notes opened; Notes starts its own and leaves it paused when you switch away. Never end a session over a `com.onyx.*` app; pause, and take over a paused one (region, stroke, DRAW) in a chosen app afterwards. `Pid N State change to: …` in logcat names who changed it.
 - `android.onyx.ViewUpdateHelper` and `VMRuntime.setHiddenApiExemptions` are blocked as hidden APIs for a targetSdk 36 app, so the app uses the Direct route.
+- **More calls in the same class, decompiled from FW 4.3 but not yet tried on the tablet** (all *[verify]*; payloads as `ViewUpdateHelper` writes them after the interface token):
+
+  | Code | What it does | Payload |
+  |---|---|---|
+  | 16711681 | `REFRESH_SCREEN` | left, top, width, height, mode (`HAND_WRITING_REPAINT_MODE` is 524290, per CalliPlus's notes) |
+  | 16711714 | Region exclude | int hasView, int[] rects |
+  | 16711715 | Repaint everything with a mode | mode |
+  | 16711718 | `APPLY_GC_ONCE`, a full refresh | none |
+  | 16711690, 16711691, 16711696 | `MOVE_TO`, `LINE_TO`, `QUAD_TO`: strokes fed by the app | hasView, x, y, width or mode, pressure |
+  | 16711697 to 16711699 | Start, add to and finish a fed stroke | baseWidth, x, y, pressure, size, time |
+  | 1048833 | Eraser raw drawing | boolean enabled, int painter |
+  | 1048834 | Brush raw drawing | boolean |
+  | 1049088, 1049089 | Get and set a style's stroke parameters | style (and float[]) |
+  | 1049344 | EPD-to-view matrix | none; replies with floats |
+
+  The codes are plain statics a firmware can renumber, so probe each before use and log the result.
+- **Stroke styles:** 0 pencil, 1 fountain, 2 marker, 3 neo brush, 4 charcoal, 5 dash, 6 charcoal v2, 7 square pen. Three independent sources agree: Onyx's `TouchHelper` constants as reconstructed by hbmartin/onyx-android-sdk, steffest/Boox-EinkDraw's literals, and CalliPlus's notes. Only 0, 1 and 2 have been seen on this tablet; 3 to 7 are *[verify]*. `ViewUpdateHelper.setStrokeWidth` takes a raw float with no clamp; the smallest width the panel draws cleanly is *[verify]*. Other developers report that a preview colour that isn't opaque breaks the pencil's texture (only the marker uses alpha 128) *[verify]*, and whether the preview shows colour on Kaleido at all is unknown *[verify]*.
+- **Nib uses the path in its own window.** `kit:ink`'s `PenSession` opens the session paused when the canvas shows, draws while the pen is over the canvas, pauses over the app's controls, and pulses `ENABLE_POST` once its own frame with the finished stroke is drawn. Nothing about Nib's use is verified on the tablet yet *[verify]*; its Diagnostics page probes the open questions above.
 - **SELinux closes `/sys/class/input` to apps**: both listing it and reading `device/name` are denied. The `/dev/input/eventN` nodes are readable, so `PenInput` opens every readable node and takes the first one that reports `BTN_TOOL_PEN`, `BTN_TOOL_BRUSH` or `BTN_TOOL_RUBBER`, then re-reads that batch so a touch reported just before the tool isn't lost. `InputManager` says whether a stylus exists at all.
 - Instant ink needs usage access to know which app is in front. Without it the usage history is silently empty. A tap with the pen can open another app while the pen stays in range, so read the app in front again shortly after taps.
 
@@ -65,4 +83,4 @@ Everything here was verified on a Note Air6 C with firmware 4.3 (Android 16) unl
 
 ## Device detection
 
-`core/TabletProfile.kt` (`Tablet.current`) is the single answer. It recognises Boox from build fields that contain "onyx" or "boox", or from the `com.onyx` package, and reads the series from the model name. Gate Boox-only UI on it, and still probe each interface before use.
+`kit/core`'s `TabletProfile.kt` (`Tablet.current`, package `app.booxultimatum.kit.core`) is the single answer, shared by every suite app. It recognises Boox from build fields that contain "onyx" or "boox", or from the `com.onyx` package, and reads the series from the model name. Gate Boox-only UI on it, and still probe each interface before use.
