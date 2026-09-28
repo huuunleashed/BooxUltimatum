@@ -84,7 +84,7 @@ fun AppsScreen(readKey: Int, compact: Boolean, onReadAgain: () -> Unit, onOpenAc
 @Composable
 private fun AppListScreen(readKey: Int, compact: Boolean, onReadAgain: () -> Unit, onOpen: (String) -> Unit) {
     val context = LocalContext.current
-    val inventory = rememberReading(readKey) { PackageScanner.scan(context) }
+    val inventory = rememberReading(readKey) { timedRead("apps") { PackageScanner.scan(context) } }
     val boox = remember { app.booxultimatum.kit.core.Tablet.current(context).isBoox }
     // On other tablets there are no Boox apps, and an empty first list reads as broken.
     var filter by rememberSaveable { mutableStateOf(if (boox) AppFilter.Boox else AppFilter.All) }

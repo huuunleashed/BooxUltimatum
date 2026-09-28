@@ -31,6 +31,14 @@ Set as default through Settings › Home screen on NA6C FW 4.3. Checked on the t
 - Recents (`com.android.onyxquickstep`) opens and returns to home.
 - After the app process is killed, the Home key restarts home at once and the default is kept.
 
+## The window and the wallpaper
+
+- **Why the window is transparent.** In System wallpaper mode it has no background of its own and shows the wallpaper through `FLAG_SHOW_WALLPAPER`. That's the only way: since Android 13, reading the system wallpaper takes a permission ordinary apps aren't given.
+- **The ghost it caused.** A transparent home shows whatever Android leaves beneath it. Android keeps a picture of the home screen when the screen turns off, and on unlock it can show that picture as a starting window. Behind a transparent home it looked like a frozen, faded copy one status bar lower, and on other unlocks its white background hid the wallpaper (owner's report, 2026-09-28).
+- **The fix.** Home has its own theme, `Theme.BooxUltimatum.Home`: transparent, with the wallpaper declared and `windowDisablePreview`. It also calls `setRecentsScreenshotEnabled(false)`, so Android only ever keeps a picture of the transparent theme. Paper and Image modes paint an opaque background over it at runtime. The first frame after each start is logged under `home`, with whether the window shows the wallpaper.
+
+**Pen ink left over home.** The display doesn't notice when an app that opened a pen session dies, so an app killed mid-stroke (Nib during an update, for instance) left its preview drawing over home. No app draws over home and Instant ink pauses there, so 1.5 s after home comes to the front, `StrayInk` reads the display's pen state off the main thread and, if a session is still drawing, recovers the screen the way the Instant ink page's *Recover screen* does. It logs a warning under `ink` when it does.
+
 ## Resource budget (measured 2026-09-26, `knowledge/experiments.md`)
 
 | | BooxUltimatum home | Boox home (`com.onyx`) |

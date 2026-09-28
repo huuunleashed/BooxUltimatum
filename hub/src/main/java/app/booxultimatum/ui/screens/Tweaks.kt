@@ -55,7 +55,7 @@ fun TweaksScreen(readKey: Int, accessKey: Int, compact: Boolean, onReadAgain: ()
     var journalKey by remember { mutableIntStateOf(0) }
     val key = Triple(readKey, accessKey, changeKey)
     val access = rememberReading(key) { PrivilegeStatus.check(context) to Privileged.ready() }
-    val states = rememberReading(key) { Catalog.all.associate { it.id to it.state(context) } }
+    val states = rememberReading(key) { timedRead("tweaks") { Catalog.all.associate { it.id to it.state(context) } } }
     // Fresh readings of single tweaks after Apply/Undo, so a row answers at once instead of waiting for a full re-read.
     val fresh = remember(key) { mutableStateMapOf<String, TweakState>() }
     val journal = rememberReading(Pair(key, journalKey)) { Journal.entries(context).take(10) }

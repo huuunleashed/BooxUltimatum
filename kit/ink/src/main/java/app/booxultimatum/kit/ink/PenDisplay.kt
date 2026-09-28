@@ -12,6 +12,8 @@ interface PenDisplay {
     /** Left, top, right, bottom in the panel's own frame. */
     fun setRegion(rect: IntArray): Boolean
     fun setStroke(widthPx: Float, argb: Int, style: Int)
+    /** The one rectangle the preview leaves alone, in screen coordinates; null clears it. */
+    fun setExclude(screenRect: IntArray?): Boolean
     fun enablePost(on: Boolean): Boolean
     /** Ends any session and hands the panel back to normal drawing. */
     fun release()
@@ -24,6 +26,7 @@ object SurfaceInkDisplay : PenDisplay {
     override fun setPenState(state: Int) = SurfaceInk.setPenState(state)
     override fun setRegion(rect: IntArray) = SurfaceInk.setRegion(rect)
     override fun setStroke(widthPx: Float, argb: Int, style: Int) = SurfaceInk.setStroke(widthPx, argb, style)
+    override fun setExclude(screenRect: IntArray?) = SurfaceInk.setExclude(screenRect ?: IntArray(0), screen = true)
     override fun enablePost(on: Boolean) = SurfaceInk.enablePost(on)
     override fun release() = SurfaceInk.release()
 }

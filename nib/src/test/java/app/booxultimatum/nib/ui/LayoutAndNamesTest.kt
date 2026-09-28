@@ -27,7 +27,7 @@ class LayoutAndNamesTest {
     }
 
     @Test fun routesSurviveTheirSavedForm() {
-        for (r in listOf(Route.Library, Route.Editor("3f2a-11"), Route.Diagnostics, Route.About)) {
+        for (r in listOf(Route.Library, Route.Editor("3f2a-11"), Route.Diagnostics, Route.MatchPreview, Route.About, Route.Settings)) {
             assertEquals(r, Route.decode(r.encode()))
         }
         assertEquals(Route.Library, Route.decode("garbage"))
@@ -37,5 +37,7 @@ class LayoutAndNamesTest {
         assertEquals("100 %", zoomLabel(1f))
         assertEquals("85 %", zoomLabel(0.849f))
         assertEquals("1600 %", zoomLabel(16f))
+        assertEquals("85 % · 12°", viewLabel(app.booxultimatum.nib.engine.geom.Viewport(0.85f, rotation = Math.toRadians(12.0).toFloat())))
+        assertEquals("100 % · 270°", viewLabel(app.booxultimatum.nib.engine.geom.Viewport(1f, rotation = (-Math.PI / 2).toFloat())))
     }
 }

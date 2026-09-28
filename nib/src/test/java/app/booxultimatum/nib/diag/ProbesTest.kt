@@ -30,6 +30,14 @@ class ProbesTest {
         assertEquals(setOf(HardwareStyle.Fountain.code, HardwareStyle.Pencil.code), Probe.Colours.bands.filter { it.preview.argb == Probe.HALF_BLACK }.map { it.preview.style }.toSet())
     }
 
+    @Test fun markerColourProbeUsesTheMarkerStyleThroughout() {
+        val bands = Probe.MarkerColours.bands
+        assertEquals(8, bands.size)
+        assertTrue(bands.all { it.preview.style == HardwareStyle.Marker.code && it.preview.widthPx == 16f })
+        assertEquals(0x80D2232A.toInt(), bands.first().preview.argb, "the first band is the preview Nib sends today")
+        assertTrue(bands.any { it.preview.argb ushr 24 == 0xFF }, "opaque variants are included")
+    }
+
     @Test fun swapProbeStepsTheDelay() {
         assertEquals(listOf(0L, 16L, 50L, 120L), Probe.SwapDelay.bands.map { it.swapDelayMs })
     }

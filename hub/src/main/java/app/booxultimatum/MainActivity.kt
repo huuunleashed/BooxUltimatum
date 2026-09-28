@@ -13,7 +13,7 @@ import rikka.shizuku.Shizuku
 class MainActivity : ComponentActivity() {
     // Bumped by Shizuku callbacks so access readings refresh without polling.
     private val accessEvents = mutableIntStateOf(0)
-    private val onBinder = Shizuku.OnBinderReceivedListener { accessEvents.intValue++ }
+    private val onBinder = Shizuku.OnBinderReceivedListener { app.booxultimatum.core.exec.Privileged.retryNow(); accessEvents.intValue++ }
     private val onBinderDead = Shizuku.OnBinderDeadListener { accessEvents.intValue++ }
     private val onPermission = Shizuku.OnRequestPermissionResultListener { _, _ -> accessEvents.intValue++ }
 

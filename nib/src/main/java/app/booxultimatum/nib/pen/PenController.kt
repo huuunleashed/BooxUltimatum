@@ -46,6 +46,7 @@ class PenController(
     private var swapQueued = false
     private var pauseAfterSwap = false
     private var liftedAt = 0L
+    private var openedAt = 0L
     private var cancelExit: (() -> Unit)? = null
     private var cancelWatchdog: (() -> Unit)? = null
     private var cancelSwap: (() -> Unit)? = null
@@ -61,13 +62,21 @@ class PenController(
     /** Whether the display is holding this app's frames. */
     val holding: Boolean get() = session.holding
 
+    /**
+     * Opens the session drawing, unless something blocks it: opening paused and resuming at the first hover lost the
+     * start of the very first stroke now and then on the tablet.
+     */
     fun open(panelLongSide: Int, stroke: PreviewStroke): Boolean {
         preview = stroke
         pendingPreview = null
-        val ok = session.open(panelLongSide, stroke)
+        val ok = session.open(panelLongSide, stroke, drawing = blocks.isEmpty())
+        openedAt = clockMs()
         log.d("session open", "ok" to ok, "state" to session.state.name, "style" to stroke.style, "width" to stroke.widthPx)
         return ok
     }
+
+    /** How long the session has been open, for the per-stroke log: the first strokes after opening are the fragile ones. */
+    val msSinceOpen: Long get() = if (openedAt == 0L) -1L else clockMs() - openedAt
 
     fun close() {
         cancelTimers()
@@ -88,22 +97,38 @@ class PenController(
         session.recover()
     }
 
-    /** The pen hovers: over this surface or not, and with its eraser end or button or not. */
-    fun hover(inside: Boolean, eraser: Boolean) {
+    /**
+     * The pen hovers: over this surface or not, and with its eraser end or button or not. Over one of the app's controls,
+     * [control] gives its rectangle in screen coordinates: the preview then leaves that rectangle alone and the session
+     * goes on drawing, so the next stroke on the canvas needs no resume (a resume sometimes lost a stroke's start on the
+     * tablet). Without a rectangle, the session pauses as before.
+     */
+    fun hover(inside: Boolean, eraser: Boolean, control: IntArray? = null) {
         cancelExit?.invoke()
         cancelExit = null
         if (touching) return
-        if (!inside || eraser || blocks.isNotEmpty()) pause() else session.resume()
+        when {
+            eraser || blocks.isNotEmpty() -> pause()
+            inside -> session.resume()
+            control != null && session.available -> { session.exclude(control); session.resume() }
+            else -> pause()
+        }
     }
 
-    /** The pen left the hover range, or is about to touch: pause unless a touch follows soon. */
+    /** The rectangle the preview leaves alone now, in screen coordinates, if any. */
+    val exclusion: IntArray? get() = session.exclusion
+
+    /** The pen is back over the canvas where a control used to be (it closed or moved): let the preview draw there again. */
+    fun clearExclusion() = session.exclude(null)
+
+    /**
+     * The pen left the hover range over the surface, or is about to touch. The session keeps drawing: in this app's own
+     * window nothing is held until the pen touches, and a session still drawing when the pen comes back catches a quick
+     * first stroke whose hover and touch arrive together. Hovering over the app's controls pauses it through [hover].
+     */
     fun hoverExit() {
-        if (touching) return
         cancelExit?.invoke()
-        cancelExit = scheduler.post(EXIT_PAUSE_MS) {
-            cancelExit = null
-            if (!touching) pause()
-        }
+        cancelExit = null
     }
 
     fun block(reason: String) {
@@ -188,11 +213,23 @@ class PenController(
         session.setStroke(stroke)
     }
 
-    /** The pen touched something other than this surface (a toolbar key): let frames through and stop previewing. */
-    fun touchedOutside() {
+    /**
+     * The pen touched something other than this surface (a key or a card). With the control's rectangle excluded, the
+     * session keeps drawing; without one, it pauses. Either way frames held for an earlier stroke are let through first.
+     */
+    fun touchedOutside(control: IntArray? = null) {
         if (touching) return
         if (session.holding) swapNow(watchdog = false)
-        session.pause()
+        if (control != null && session.available && blocks.isEmpty()) session.exclude(control) else session.pause()
+    }
+
+    /**
+     * A pen touch on the controls ended. The firmware may have held this app's frames during it, as it does for any pen
+     * touch while the session draws, so they're let through at once: the control shows it was pressed.
+     */
+    fun touchOutsideEnded() {
+        if (touching || !previewing) return
+        session.swap()
     }
 
     private fun pause() {
@@ -240,9 +277,6 @@ class PenController(
     }
 
     companion object {
-        /** A hover exit followed by a touch within this long was the pen touching down, not leaving. */
-        const val EXIT_PAUSE_MS = 120L
-
         /** How long frames may stay held after a lift before the watchdog swaps. */
         const val WATCHDOG_MS = 1500L
     }

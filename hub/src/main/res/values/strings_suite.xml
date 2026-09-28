@@ -83,4 +83,31 @@
     </plurals>
     <string name="logs_crashes">Crashes and stops</string>
     <string name="logs_no_crashes">None recorded</string>
+
+    <!-- The Storage page. -->
+    <string name="dest_storage">Storage</string>
+    <string name="storage_title">Storage</string>
+    <string name="storage_subtitle">%1$s kept by the suite’s apps</string>
+    <string name="storage_explain">Each app keeps its own leftovers in check by itself: cache files go after three days, downloaded updates after a day, shared exports after a week, and logs stay under 8 MB and two weeks. Drawings, fonts, the battery log and settings are yours, so they’re counted here but never cleared.</string>
+    <string name="storage_freed">Freed %1$s.</string>
+    <string name="storage_unreachable">This app didn’t answer. It may be signed with another key, or not have started yet since it was installed.</string>
+    <plurals name="storage_files">
+        <item quantity="one">%1$d file</item>
+        <item quantity="other">%1$d files</item>
+    </plurals>
+    <string name="storage_clearable">can be cleared</string>
+    <string name="storage_kept">kept</string>
+    <string name="storage_clear_temporary">Clear temporary files</string>
+    <string name="storage_clear_logs">Clear logs and reports</string>
+    <string name="storage_clear_logs_confirm">Clear them</string>
+    <string name="storage_area_logs">Logs</string>
+    <string name="storage_area_reports">Crash and stop reports</string>
+    <string name="storage_area_cache">Cache</string>
+    <string name="storage_area_downloads">Downloaded updates</string>
+    <string name="storage_area_exports">Shared files and exports</string>
+    <string name="storage_area_data">Settings and other data</string>
+    <string name="storage_area_drawings">Drawings</string>
+    <string name="storage_area_battery_log">Battery log</string>
+    <string name="storage_area_sleep">Sleep screen pictures</string>
+    <string name="storage_area_fonts">Installed fonts</string>
 </resources>

@@ -187,8 +187,14 @@ object SurfaceInk {
     fun setRegion(rect: IntArray) = fwCall { setRegion.invoke(null, null, rect) }
         ?: call(SET_REGION_LIMIT) { writeInt(0); writeIntArray(rect) }
 
-    fun setExclude(rects: IntArray) = fwCall { setExclude.invoke(null, null, rects) }
-        ?: call(SET_REGION_EXCLUDE) { writeInt(0); writeIntArray(rects) }
+    /**
+     * The one rectangle the preview leaves alone, as left, top, right, bottom; an empty array clears it. With [screen]
+     * the rectangle is in screen coordinates and the display turns it into its own frame; without, it's in the panel's
+     * landscape frame. The display keeps a single rectangle: each call replaces the last, and only the last rectangle
+     * of an array counts (tested on NA6C FW 4.3 with the owner drawing, 2026-09-28).
+     */
+    fun setExclude(rects: IntArray, screen: Boolean = false) = (if (screen) null else fwCall { setExclude.invoke(null, null, rects) })
+        ?: call(SET_REGION_EXCLUDE) { writeInt(if (screen) 1 else 0); writeIntArray(rects) }
 
     /**
      * Style first: choosing a style loads that style's default width, so a width sent before it is lost (CalliPlus's
@@ -220,6 +226,7 @@ object SurfaceInk {
 
     /** Ends any session and hands the panel back to normal drawing. Safe to call at any time. */
     fun release() {
+        setExclude(IntArray(0))
         enablePost(true)
         setPenState(STOP)
         setAutoSync(true)

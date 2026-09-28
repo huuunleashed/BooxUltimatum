@@ -20,7 +20,7 @@ data class PreviewStroke(val style: Int, val widthPx: Float, val argb: Int)
  * Every call is made on one thread (the main thread in the app). Nothing here waits or schedules; the caller decides
  * when its frame is ready and calls [swap].
  */
-class PenSession(private val display: PenDisplay = SurfaceInkDisplay) {
+class PenSession(private val display: PenDisplay = SurfaceInkDisplay, private val lease: PenLease = PenLease.None) {
     enum class State { Closed, Unavailable, Paused, Drawing }
 
     private val log = Logbook.logger("ink.session")
@@ -33,17 +33,23 @@ class PenSession(private val display: PenDisplay = SurfaceInkDisplay) {
         private set
 
     private var stroke: PreviewStroke? = null
+    private var excluded: IntArray? = null
+
+    /** The rectangle the preview currently leaves alone, in screen coordinates, if any. */
+    val exclusion: IntArray? get() = excluded?.copyOf()
     private var side = 0
     private var strokesSinceOpen = 0
 
     val available: Boolean get() = state == State.Paused || state == State.Drawing
 
     /**
-     * Opens the session, paused, ready for the pen. [panelLongSide] is the panel's long side in pixels. Returns false,
-     * leaving [state] Unavailable, when the firmware has no route: the app then draws without a preview.
+     * Opens the session, ready for the pen. [panelLongSide] is the panel's long side in pixels. With [drawing] it
+     * starts drawing at once rather than paused: a session paused straight after it opened can stay in the firmware's
+     * "to pause" state until the pen next moves, and the first stroke then lost its start (owner's report, NA6C).
+     * Returns false, leaving [state] Unavailable, when the firmware has no route: the app then draws without a preview.
      */
-    fun open(panelLongSide: Int, preview: PreviewStroke): Boolean {
-        if (available) { setStroke(preview); return true }
+    fun open(panelLongSide: Int, preview: PreviewStroke, drawing: Boolean = false): Boolean {
+        if (available) { setStroke(preview); if (drawing) resume(); return true }
         if (!display.connect()) {
             state = State.Unavailable
             log.w("no display route")
@@ -52,13 +58,17 @@ class PenSession(private val display: PenDisplay = SurfaceInkDisplay) {
         side = panelLongSide
         stroke = preview
         display.setRegion(intArrayOf(0, 0, side, side))
+        // A rectangle left by an earlier session would silently hide part of the preview.
+        display.setExclude(null)
+        excluded = null
         display.setPenState(SurfaceInk.START)
         send(preview)
-        display.setPenState(SurfaceInk.PAUSE)
-        state = State.Paused
+        display.setPenState(if (drawing) SurfaceInk.DRAW else SurfaceInk.PAUSE)
+        state = if (drawing) State.Drawing else State.Paused
+        lease.taken()
         holding = false
         strokesSinceOpen = 0
-        log.i("opened", "side" to side, "style" to preview.style, "width" to preview.widthPx)
+        log.i("opened", "side" to side, "style" to preview.style, "width" to preview.widthPx, "drawing" to drawing)
         return true
     }
 
@@ -74,6 +84,19 @@ class PenSession(private val display: PenDisplay = SurfaceInkDisplay) {
         }
         display.setPenState(SurfaceInk.DRAW)
         state = State.Drawing
+    }
+
+    /**
+     * Keeps the preview off one area, in screen coordinates, while the session goes on drawing; null clears it. Over the
+     * app's controls this replaces [pause]: a paused session sometimes lost the start of the stroke that followed on the
+     * canvas (owner's report, NA6C FW 4.3), and an excluded area needs no resume. The display keeps one rectangle.
+     */
+    fun exclude(screenRect: IntArray?) {
+        if (!available) return
+        if (screenRect == null && excluded == null) return
+        if (screenRect != null && excluded?.contentEquals(screenRect) == true) return
+        display.setExclude(screenRect)
+        excluded = screenRect?.copyOf()
     }
 
     /** The pen is over the app's controls, a panel is open, or fingers are moving the canvas: no preview. */
@@ -117,7 +140,9 @@ class PenSession(private val display: PenDisplay = SurfaceInkDisplay) {
     /** Ends the session and hands the panel back to normal drawing. */
     fun close() {
         if (state == State.Closed || state == State.Unavailable) { state = State.Closed; return }
+        if (excluded != null) { display.setExclude(null); excluded = null }
         display.release()
+        lease.given()
         log.i("closed", "strokes" to strokesSinceOpen)
         state = State.Closed
         holding = false
@@ -128,6 +153,7 @@ class PenSession(private val display: PenDisplay = SurfaceInkDisplay) {
         val was = state
         val s = stroke ?: return
         display.release()
+        lease.given()
         state = State.Closed
         holding = false
         log.i("recovered", "was" to was)

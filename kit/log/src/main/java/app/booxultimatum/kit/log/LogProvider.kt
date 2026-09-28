@@ -21,6 +21,8 @@ import java.io.FileNotFoundException
  * - query `content://<package>.logs/files`: rows of [COLUMN_NAME], [COLUMN_SIZE], [COLUMN_MODIFIED].
  * - openFile `content://<package>.logs/files/<name>` with mode "r": one file [Logbook.files] lists.
  * - call [METHOD_SET_DETAILED_UNTIL] (arg: wall-clock ms), [METHOD_DETAILED_UNTIL] and [METHOD_FLUSH].
+ * - call [METHOD_USAGE]: [Housekeeping.usage] as parallel arrays; [METHOD_CLEAN] (arg: comma-separated area ids)
+ *   clears those areas and returns the bytes freed.
  */
 class LogProvider : ContentProvider() {
     override fun onCreate(): Boolean = true
@@ -73,6 +75,20 @@ class LogProvider : ContentProvider() {
                 Logbook.flush()
                 bundleOf(EXTRA_OK to true)
             }
+            METHOD_USAGE -> {
+                val usage = Housekeeping.usage(ctx)
+                bundleOf(
+                    EXTRA_OK to true,
+                    EXTRA_IDS to usage.map { it.id }.toTypedArray(),
+                    EXTRA_BYTES to usage.map { it.bytes }.toLongArray(),
+                    EXTRA_FILES to usage.map { it.files }.toIntArray(),
+                    EXTRA_CLEANABLE to usage.map { it.cleanable }.toBooleanArray(),
+                )
+            }
+            METHOD_CLEAN -> {
+                val ids = arg.orEmpty().split(',').map { it.trim() }.filter { it.isNotEmpty() }.toSet()
+                bundleOf(EXTRA_OK to true, EXTRA_BYTES to Housekeeping.clean(ctx, ids))
+            }
             else -> null
         }
     }
@@ -101,6 +117,12 @@ class LogProvider : ContentProvider() {
         const val METHOD_SET_DETAILED_UNTIL = "setDetailedUntil"
         const val METHOD_DETAILED_UNTIL = "detailedUntil"
         const val METHOD_FLUSH = "flush"
+        const val METHOD_USAGE = "storageUsage"
+        const val METHOD_CLEAN = "storageClean"
+        const val EXTRA_IDS = "ids"
+        const val EXTRA_BYTES = "bytes"
+        const val EXTRA_FILES = "files"
+        const val EXTRA_CLEANABLE = "cleanable"
         const val EXTRA_OK = "ok"
         const val EXTRA_DETAILED_UNTIL = "detailed_until"
 

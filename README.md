@@ -4,7 +4,7 @@
 
 **A suite of apps for the BOOX Note Air6 C, without root: a hub with a home screen, sleep-screen designer, battery doctor and reversible tweaks, and Nib, a drawing app with Boox's instant pen.**
 
-![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue) ![Status: public preview](https://img.shields.io/badge/status-public%20preview%200.5.1-orange) ![Android 11+](https://img.shields.io/badge/Android-11%2B-3ddc84) ![Tested on Note Air6 C, FW 4.3](https://img.shields.io/badge/tested%20on-Note%20Air6%20C%20%C2%B7%20FW%204.3-black)
+![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue) ![Status: public preview](https://img.shields.io/badge/status-public%20preview%200.6.0-orange) ![Android 11+](https://img.shields.io/badge/Android-11%2B-3ddc84) ![Tested on Note Air6 C, FW 4.3](https://img.shields.io/badge/tested%20on-Note%20Air6%20C%20%C2%B7%20FW%204.3-black)
 
 [**Website and technical guide**](https://huuunleashed.github.io/BooxUltimatum/) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md) · [Report a bug or a finding](https://github.com/huuunleashed/BooxUltimatum/issues/new/choose)
 
@@ -24,9 +24,9 @@ Nothing is flashed, and the bootloader stays locked. The hub, BooxUltimatum, is 
 
 ### A suite, not just a launcher
 
-BooxUltimatum is the hub of a small suite. Its Suite page installs, opens, updates and uninstalls the suite's other apps, and lists the modules built into the hub: the home screen, the sleep screen, Instant ink and the battery log. Removing a module stops it and undoes what it changed, and its pages leave the menu until you add it back. The apps share one kit of libraries: the same design, the same logbook, the same pen code and the same updater.
+BooxUltimatum is the hub of a small suite. Its Suite page installs, opens, updates and uninstalls the suite's other apps, and lists the modules built into the hub: the home screen, the sleep screen, Instant ink and the battery log. Removing a module stops it and undoes what it changed, and its pages leave the menu until you add it back. The apps share one kit of libraries: the same design, the same logbook, the same pen code and the same updater. Every suite app keeps a log of what it did and what went wrong, and keeps its own cache, downloads and exports bounded. Device › Logs shares every app's logs as one zip, and Device › Storage shows and clears what each app keeps.
 
-### Nib: drawing with Boox's instant pen (in development)
+### Nib: drawing with Boox's instant pen (new)
 
 Nib draws the way Boox Notes writes. The display paints each stroke under the nib at once, and the moment you lift the pen, Nib's own rendering takes its place. It's built for drawing rather than notes:
 
@@ -35,7 +35,7 @@ Nib draws the way Boox Notes writes. The display paints each stroke under the ni
 - **Layers.** As many as you need, with opacity, visibility and locking. Boox Notes stops at five.
 - **The rest.** Undo, zoom that keeps the preview and the result matching, crash-safe autosave, and PNG export.
 
-It works without BooxUltimatum, and without Shizuku or a computer. It isn't released yet: test builds are for checking it on the tablet, and nothing about its pen preview is verified there yet (see [Known limits](#known-limits) and [`docs/08-nib.md`](docs/08-nib.md)).
+Its tools float over a full-screen page like cut cards on a desk. The pens are drawn as their own strokes, and every brush property has a slider with − and + keys and a typed value. The Brushes, Colour and Layers cards can be pinned and moved. There's also a lasso that moves, scales and turns strokes, a page you can turn, paper guides, and exports with or without the paper or layer by layer. It works without BooxUltimatum, and without Shizuku or a computer. On the Note Air6 C the preview feels clearly faster than other drawing apps, the first stroke is whole, and the preview stays off the cards while strokes next to them start at once. It's the first release, so see [Known limits](#known-limits) and [`docs/08-nib.md`](docs/08-nib.md).
 
 ### A home screen made for e-ink
 
@@ -117,7 +117,7 @@ There are 19 reversible tweaks across apps, sleep, power, radios, interface and 
 
 <p align="center"><img src="docs/screenshots/fonts.png" width="300" alt="Fonts: a Google Fonts browser with Vietnamese previews"></p>
 
-A full **Google Fonts browser** (1946 families, with a Vietnamese filter) installs fonts for the tablet, NeoReader, the home screen or the app.
+A full **Google Fonts browser** (1946 families, with a Vietnamese filter) installs fonts for the tablet, NeoReader, the home screen or the app. Its **font manager** lists what's installed, where each font is used, and its size. It turns fonts off and on, and deletes them, handing every use back first, and it never touches fonts it didn't install.
 
 ## How much access it needs
 
@@ -166,7 +166,7 @@ Firmware 4.3 hides the Wireless debugging switch from Developer options, so rest
 
 ## Install
 
-**From a release:** download `BooxUltimatum-0.5.1.apk` from this repository's [Releases](https://github.com/huuunleashed/BooxUltimatum/releases) page, allow your browser or file manager to install apps, and open it. The Access page shows what each level unlocks and the exact commands for it. Releases are signed with the project's own key, so later releases update it in place. Once Nib is released, the hub's Suite page installs it for you; its releases are tagged `nib-v…` and named `Nib-<version>.apk`.
+**From a release:** download `BooxUltimatum-0.6.0.apk` from this repository's [Releases](https://github.com/huuunleashed/BooxUltimatum/releases) page, allow your browser or file manager to install apps, and open it. The Access page shows what each level unlocks and the exact commands for it. Releases are signed with the project's own key, so later releases update it in place. The hub's Suite page installs Nib for you, or download `Nib-0.2.0.apk` from the same page; Nib's releases are tagged `nib-v…`.
 
 **Test builds for the tablet:** unfinished builds of the hub or Nib are sometimes published as `test-…` pre-releases so they can be checked on a real tablet. The hub offers them only when *Offer test builds* is on (Device page), and a release always replaces its own test build.
 
@@ -195,7 +195,11 @@ Recents, gestures, NaviBall and EinkWise belong to the system, so they behave th
 
 ## Known limits
 
-- **Nib is in development.** Its drawing works on an emulator, but the instant pen preview, the extra preview styles, the finest widths and colour previews all need checking on the tablet. Its Diagnostics page asks you what the panel shows and records your answers. Until then, treat every Nib claim above as a plan.
+- **Nib is new:**
+  - Its preview can look a little wider than the stroke that replaces it. Diagnostics › *Match preview* tunes it per preview style.
+  - The display's preview styles 3 to 7 (neo brush, charcoal, dash, charcoal v2, square pen) aren't verified, so brushes that ask for them are previewed in the closest verified style. How thin a preview the panel draws cleanly isn't measured yet.
+  - Marker and highlighter previews are in solid colour, covering what's under the stroke until you lift the pen, because the display drops translucent colours. Blue looks grey in the preview. Settings › Display preview offers a see-through grey instead.
+  - Its Diagnostics page asks what the panel shows and records your answers, which is the most useful thing to send from another tablet.
 - **One key for the whole suite.** Every suite app declares the same signature permission, so a development build (signed differently) can't be installed next to a release of another suite app. Install both from Releases, or both from the same build.
 - **One tablet, one firmware.** Everything is verified on a Note Air6 C with firmware 4.3. The Note Air4 C and Air5 C run very similar Boox software, so much of it may work there, but nothing is tested on them yet. Results from those tablets, and from other Boox models, are the most welcome contribution; use the *Device finding* issue form.
 - **Unofficial interfaces.** The sleep and power-off screen broadcast and the pen path appear in Onyx's own SDK, and the tablet font switch in Boox's own apps, but none of them is a stable, documented public API. Instant ink also uses the pen path in a way the SDK doesn't offer: on behalf of another app, through the firmware's display calls. A firmware update can change any of these without notice. When something stops working, the app says so rather than guessing.
@@ -238,11 +242,12 @@ No dates promised; this is a spare-time project, and each release ships when it 
   - Instant ink diagnostics for other Boox models: the usage access check, pen detection by behaviour, and a pen test.
   - One device profile, so tablets that aren't Boox get only what works there.
   - 0.5.1: a steadier Instant ink, with a session kept ready so the first stroke is previewed, and a Quick Settings switch.
-- **0.6, the suite (in progress)**
+- **0.6, the suite (released)**
   - BooxUltimatum as a hub: a Suite page that installs and updates the suite's apps, and built-in modules that can be removed and added back.
   - A logbook in every suite app, with crash capture and one shared export.
   - Five-section navigation.
-  - Nib's first test builds: instant preview, many brushes, fine widths, unlimited layers, undo, autosave and PNG export, with a Diagnostics page for the tablet.
+  - Nib 0.2, the first release: instant preview, many brushes, fine widths, unlimited layers, a lasso, a page that turns, paper guides, undo, autosave and exports, with floating cards and a Diagnostics page for the tablet.
+  - A font manager, a Storage page, and logs and leftovers kept bounded in every suite app.
 - **0.7, battery, setup and polish**
   - The battery cost of updates while asleep, measured overnight.
   - Refinements to the faces from how they look on the panel.
@@ -251,9 +256,8 @@ No dates promised; this is a spare-time project, and each release ships when it 
   - The first overnight and A/B results shown in the app.
   - Instant ink tried in more drawing and note apps, and on the models testers reported.
   - Round trips recorded for the last three unverified tweaks.
-- **Nib 0.2 and on**
-  - The rest of the display's preview styles, as the tablet confirms them.
-  - Lasso selection, move and transform, and moving strokes between layers.
+- **Nib 0.3 and on**
+  - The rest of the display's preview styles, as the tablet confirms them, and the thinnest clean preview.
   - Image import, PDF and OpenRaster export, templates, and pages or an endless canvas.
 - **0.8, home polish**
   - Notification dots (opt-in).

@@ -406,8 +406,10 @@ object LauncherWallpaper {
 }
 
 class LauncherActivity : ComponentActivity() {
+    private val homeLog = app.booxultimatum.kit.log.Logbook.logger("home")
     private lateinit var model: LauncherModel
     private var pendingWidgetId = -1
+    private val strayInkCheck = Runnable { app.booxultimatum.core.ink.StrayInk.check(this) }
     private var pendingProvider: AppWidgetProviderInfo? = null
 
     private val receiver = object : BroadcastReceiver() {
@@ -467,7 +469,12 @@ class LauncherActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge(SystemBarStyle.dark(Color.BLACK), SystemBarStyle.light(Color.WHITE, Color.WHITE))
         super.onCreate(savedInstanceState)
+        // Android shows a picture of the home screen taken at screen-off as a placeholder on unlock. Behind this
+        // window's transparent wallpaper mode it could stay as a frozen, shifted ghost of the home, so only the theme
+        // (transparent) is ever used for that picture.
+        if (android.os.Build.VERSION.SDK_INT >= 33) setRecentsScreenshotEnabled(false)
         model = LauncherModel(this)
+        homeLog.i("created", "wallpaper" to model.prefs.value.wallMode, "veil" to model.prefs.value.wallDim)
         model.catalog.register(model.launcherCallback)
         model.reloadApps()
         applyWindow()
@@ -520,6 +527,35 @@ class LauncherActivity : ComponentActivity() {
         app.booxultimatum.core.BatteryLog.ensureNotRestricted(this)
     }
 
+    override fun onResume() {
+        super.onResume()
+        val started = android.os.SystemClock.elapsedRealtime()
+        val decor = window.decorView
+        // An app killed mid-session leaves the display's pen preview drawing everywhere; apps end theirs as they
+        // pause, well before this runs.
+        decor.removeCallbacks(strayInkCheck)
+        decor.postDelayed(strayInkCheck, STRAY_INK_CHECK_MS)
+        decor.viewTreeObserver.addOnDrawListener(object : android.view.ViewTreeObserver.OnDrawListener {
+            private var done = false
+            override fun onDraw() {
+                if (done) return
+                done = true
+                val p = model.prefs.value
+                val showsWallpaper = window.attributes.flags and android.view.WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER != 0
+                homeLog.i("first frame", "ms" to android.os.SystemClock.elapsedRealtime() - started, "wallpaper" to p.wallMode, "window shows wallpaper" to showsWallpaper,
+                    "image loaded" to (model.wallpaper.value != null))
+                decor.post { runCatching { decor.viewTreeObserver.removeOnDrawListener(this) } }
+                if (p.wallMode == WallMode.System && !showsWallpaper) homeLog.w("system wallpaper asked for but the window doesn't show it")
+                if (p.wallMode == WallMode.Image && model.wallpaper.value == null) homeLog.w("picture wallpaper not loaded yet at the first frame")
+            }
+        })
+    }
+
+    override fun onPause() {
+        window.decorView.removeCallbacks(strayInkCheck)
+        super.onPause()
+    }
+
     override fun onStop() {
         runCatching { unregisterReceiver(receiver) }
         runCatching { getSystemService(android.net.ConnectivityManager::class.java).unregisterNetworkCallback(network) }
@@ -530,6 +566,11 @@ class LauncherActivity : ComponentActivity() {
     override fun onDestroy() {
         model.catalog.unregister(model.launcherCallback)
         super.onDestroy()
+    }
+
+    private companion object {
+        /** How long after home appears the stray pen session check runs. */
+        const val STRAY_INK_CHECK_MS = 1_500L
     }
 
     override fun onNewIntent(intent: Intent) {

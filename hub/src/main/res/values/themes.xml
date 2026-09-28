@@ -7,4 +7,16 @@
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:windowAnimationStyle">@null</item>
     </style>
+
+    <!--
+      The home screen. Its window is transparent when it shows the system wallpaper, so nothing may be left beneath it.
+      Android keeps a picture of the home screen when the screen turns off and can show it again as a placeholder on
+      unlock; seen through the transparent window it looked like a frozen, faded, shifted copy of the home (owner's
+      report, NA6C FW 4.3). So: no placeholder window, and LauncherActivity opts out of those pictures.
+    -->
+    <style name="Theme.BooxUltimatum.Home">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowShowWallpaper">true</item>
+        <item name="android:windowDisablePreview">true</item>
+    </style>
 </resources>

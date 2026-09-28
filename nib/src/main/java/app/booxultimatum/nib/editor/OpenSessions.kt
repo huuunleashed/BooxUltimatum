@@ -22,7 +22,9 @@ class OpenSessions(private val store: DrawingStore) {
             opened.journal.close()
             return it
         }
-        val s = EditorSession(opened.info, opened.document, AutoSaver(store, id, opened))
+        val s = EditorSession(opened.info, opened.document, AutoSaver(store, id, opened)) { paper ->
+            Thread({ store.setPaper(id, paper) }, "nib-paper").start()
+        }
         open[id] = s
         return s
     }

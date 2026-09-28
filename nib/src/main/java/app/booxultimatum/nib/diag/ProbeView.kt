@@ -13,6 +13,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import app.booxultimatum.kit.ink.PenSession
+import app.booxultimatum.kit.ink.PreviewStroke
 import app.booxultimatum.kit.log.Logbook
 import app.booxultimatum.nib.engine.doc.Stroke
 import app.booxultimatum.nib.engine.input.InputSample
@@ -54,6 +55,15 @@ class ProbeView(context: Context) : View(context), PenRouter.Target {
             band = -1
             invalidate()
         }
+
+    /** What the display is asked to preview in a band; the band's own stroke when null (Match preview sizes it). */
+    var previewFor: ((Band) -> PreviewStroke)? = null
+
+    /** Sends the current band's preview again (its size was changed). */
+    fun refreshPreview() {
+        val b = probe.bands.getOrNull(band) ?: return
+        controller.setPreview(previewFor?.invoke(b) ?: b.preview)
+    }
 
     /** Band labels, set by the screen from its strings. */
     var labels: List<String> = emptyList()
@@ -109,7 +119,7 @@ class ProbeView(context: Context) : View(context), PenRouter.Target {
         if (want) {
             if (controller.state == PenSession.State.Closed) {
                 val first = probe.bands.first()
-                val ok = controller.open(NibPen.panelLongSide(context), first.preview)
+                val ok = controller.open(NibPen.panelLongSide(context), previewFor?.invoke(first) ?: first.preview)
                 log.i("probe session", "probe" to probe.id, "opened" to ok, "state" to controller.state.name)
             }
             PenRouter.attach(this)
@@ -160,11 +170,15 @@ class ProbeView(context: Context) : View(context), PenRouter.Target {
             getLocationOnScreen(location)
             enterBand(bandAt(event.rawY - location[1]))
         }
-        controller.hover(inside, NibPen.isErasing(event, 0))
+        controller.hover(inside, NibPen.isErasing(event, 0), if (inside) null else PenRouter.stripOutside(this, event.rawX, event.rawY))
     }
 
-    override fun onStylusTouchOutside() {
-        controller.touchedOutside()
+    override fun onStylusTouchOutside(x: Float, y: Float) {
+        controller.touchedOutside(PenRouter.stripOutside(this, x, y))
+    }
+
+    override fun onStylusTouchOutsideEnded() {
+        controller.touchOutsideEnded()
     }
 
     private fun bandAt(y: Float): Int {
@@ -177,7 +191,7 @@ class ProbeView(context: Context) : View(context), PenRouter.Target {
         if (i == band) return
         band = i
         val b = probe.bands[i]
-        controller.setPreview(b.preview)
+        controller.setPreview(previewFor?.invoke(b) ?: b.preview)
         controller.extraSwapDelayMs = b.swapDelayMs
     }
 
@@ -223,7 +237,7 @@ class ProbeView(context: Context) : View(context), PenRouter.Target {
                 val b = probe.bands[builderBand]
                 log.d(
                     "probe stroke",
-                    "probe" to probe.id, "band" to b.key, "style" to b.preview.style, "width" to b.preview.widthPx,
+                    "probe" to probe.id, "band" to b.key, "style" to (controller.preview ?: b.preview).style, "width" to (controller.preview ?: b.preview).widthPx,
                     "argb" to Integer.toHexString(b.preview.argb), "points" to stroke.size, "ms" to ms,
                     "hz" to if (ms > 0) ((samples - 1) * 1000f / ms).roundToInt() else 0,
                     "previewed" to previewed, "held" to controller.holding, "delay ms" to b.swapDelayMs,

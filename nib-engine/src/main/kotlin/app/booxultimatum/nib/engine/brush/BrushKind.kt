@@ -64,6 +64,12 @@ enum class BrushKind(val id: String) {
     /** False for the erasers that act on whole strokes and leave nothing in the document. */
     val isRendered: Boolean get() = this != StrokeEraser && this != LassoEraser
 
+    /** True for the brushes drawn as stamped dabs, whose spacing, flow, grain and scatter shape the ink. */
+    val rendersAsDabs: Boolean get() = this == Pencil || this == Graphite || this == Charcoal || this == CharcoalV2 || this == Airbrush
+
+    /** True for the flat-nib brushes, whose width depends on the stroke's direction against [BrushSpec.nibAngle]. */
+    val usesNib: Boolean get() = this == Calligraphy || this == SquarePen || this == Highlighter
+
     companion object {
         fun fromId(id: String): BrushKind? = entries.firstOrNull { it.id == id }
     }

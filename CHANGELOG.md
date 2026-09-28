@@ -4,11 +4,31 @@ All notable changes to BooxUltimatum. Newest first. The project follows [Semanti
 
 ## [Unreleased]
 
-BooxUltimatum becomes a suite: the hub you know, a first separate app (Nib, for drawing), and a kit of libraries they share. Nothing in this section has been tried on the tablet yet; it's checked with unit tests and on an emulator shaped like the Note Air6 C.
+## [0.6.0] (2026-09-28)
+
+BooxUltimatum becomes a suite: the hub you know, a first separate app, Nib 0.2.0 for drawing, and a kit of libraries they share. Tested on a Note Air6 C with firmware 4.3 (Android 16), with a real pen for Nib, and on an emulator shaped like it. Known limits: Nib's preview can still look a little wider than the stroke (Diagnostics › *Match preview* tunes it), the display's preview styles 3 to 7 are still unverified and stand-ins show instead, and neither app has been tried on another Boox model.
 
 ### Added
 
-- **Nib, a drawing app of its own** (in development, test builds only). It uses Boox's instant pen preview in its own window, like Boox Notes does, with many more brushes, very fine widths and unlimited layers. It installs and uninstalls on its own and works without BooxUltimatum. See `docs/08-nib.md`.
+- **Nib's new look and tools.** The canvas fills the screen, with the page lying on a grey desk, and the tools float over it like cut cards: hard black outlines and solid shadows, which stay crisp on e-ink.
+  - **The editor:** a pill with Library, Undo and Redo, and one with Brushes, Colour, Layers and the menu. A tool rail holds six pen slots, each drawn as its own stroke, the eraser, lasso, eyedropper and hand, and upright size and opacity sliders. A view chip shows the zoom and the turn, with *Reset view*. There's also a full-screen mode, and the rail can move to the right for left-handers.
+  - **Panels** open next to their key. Drag them by the header, pin them to keep them open, and they remember where they were in each orientation.
+  - **Every brush shows itself:** the Brushes panel draws each brush's own sample stroke. Brush settings has sliders with − and + keys and typed values for width (with a dot to scale), opacity, pressure (with its curve), smoothing, texture, nib angle, speed and taper.
+  - **Colour:** a saturation square and hue strip, a palette tuned for Kaleido, recent colours, hex entry and an eyedropper.
+  - **Layers:** thumbnails, opacity, Normal, Multiply or Clip, and keep-transparency.
+  - **Turn the page** with a two-finger twist or the hand tool. It snaps upright within 5°.
+  - **The lasso** moves, scales and turns strokes, duplicates, recolours or deletes them, and moves them to another layer.
+  - **Also:** paper colours and guides (dots, grid, lines); exports with paper, transparent, or each layer as a PNG in a zip; and a straight line when you hold the pen still at the end of a stroke.
+  - **The library** has search, sorting, a New card with page sizes (including custom px or mm), and choosing several drawings at once.
+  - Everything is undoable, and drawings from 0.1 still open.
+- **A font manager** (System › Fonts › Installed), which opens first once anything is installed. It lists every font BooxUltimatum installed: set in its own face, with its styles, size, where it's in use and a lamp for on or off.
+  - **Turn off and on.** Turning a font off hands every use back first: the tablet font goes back through the usual restore, the home screen and this app to their own fonts, the sleep screen to the tablet font. The files are then kept aside, so nothing offers the font. Turning it on puts it back.
+  - **Delete** does the same hand-back, then removes every copy BooxUltimatum made. Fonts in NeoReader's folder that came from elsewhere are listed but never touched.
+  - Also: *Delete unused fonts*, *Turn all off*, sorting, filters, pages, *Use for → Sleep screen*, and an *Installed* filter in the browser.
+  - Every change is journaled.
+- **Storage** (Device › Storage). It shows what each suite app keeps (logs, crash reports, cache, downloaded updates, shared exports, and your own data such as drawings, fonts and the battery log) and clears temporary files, or logs and reports, per app. Your data is counted but never cleared.
+- **Each suite app keeps its leftovers bounded by itself.** Cache files go after three days or past 64 MB, downloaded updates after a day, and shared exports after a week (keeping the newest five). Logs already stay under 8 MB and two weeks.
+- **Nib, a drawing app of its own.** It uses Boox's instant pen preview in its own window, like Boox Notes does, with many more brushes, very fine widths and unlimited layers. It installs and uninstalls on its own and works without BooxUltimatum. See `docs/08-nib.md`.
 - **A Suite page** (Suite › Apps and modules). It installs, opens, updates and uninstalls the suite's apps, and lists the modules built into BooxUltimatum: Home screen, Sleep screen, Instant ink and Battery log.
   - **Removing a module stops it and undoes what it changed.** The home goes back to Boox, the sleep and power-off screens go back to Boox's own, Instant ink turns off and its Quick Settings tile goes away, and the battery log stops recording.
   - **Its pages leave the menu until you add it back.**
@@ -28,10 +48,26 @@ BooxUltimatum becomes a suite: the hub you know, a first separate app (Nib, for 
 
 ### Fixed
 
+- **Home: a faded, shifted copy of the home screen could show under it, and the wallpaper sometimes didn't show.** When the screen turns off, Android keeps a picture of the home screen, and on unlock it can show that picture as a placeholder. Seen through home's transparent wallpaper mode, the picture was a frozen copy from the moment the tablet slept, shifted by the status bar. On other unlocks its white background hid the wallpaper. Home now opts out of those pictures and placeholders, and declares its wallpaper from the start. It's in every refresh mode because it isn't an e-ink effect.
+- **System › Tweaks and System › Apps could load forever** once Shizuku was in use (checked on the tablet: with Shizuku running, both pages now load at once). A shell command that never finished blocked the page for good, and a Shizuku service that couldn't be reached cost every call its own ten-second wait.
+  - Commands now always time out, and a service that can't be reached makes calls fail at once for a short while.
+  - Background restriction is read for every app in one call instead of one call per app.
+  - Slow pages and failed commands are logged.
+- **Nib: the preview stroke was wider than the stroke that replaced it.** The preview is now sent at the brush's width at your usual pressure, which Nib learns from your strokes, and Diagnostics › *Match preview* tunes it per preview style. On the tablet the preview matched the stroke in the three styles checked, with no extra factor.
+- **Nib: the first stroke could lose its start.** The display session now opens drawing rather than paused, and it no longer pauses when the pen leaves hover range over the canvas. On the tablet, the first strokes after opening were whole three times out of three.
+- **Nib: a stroke started just after the pen passed over a panel could lose its start.** Nib used to pause the pen preview over its floating panels and resume it at the canvas, and the resume came too late for a quick stroke. Now the preview keeps running and the display is told to leave out the panel under the pen, so the panel stays clean and the next stroke starts at once.
+- **Nib: Diagnostics showed the first probe's bands on every tab** and logged no answers for the others. Each tab now has its own surface. The Styles probe sizes its previews like the editor does, so it compares shapes rather than widths.
+- **Nib: the marker and highlighter previews didn't show in most colours.** The display drops a translucent preview in any colour but grey or yellow. They're now previewed in solid colour, which covers what's under the stroke until you lift the pen. Settings › Display preview can switch them to a see-through grey as light as the colour instead. Diagnostics has a *Marker colours* probe for this.
+- **If Nib was stopped in the middle of drawing, by an update or a crash, the pen preview went on drawing over every app, the home screen included,** until something reset the display. Nib now notes when it holds the display, and its next start ends a session left behind. The home screen also ends any session still drawing a moment after it appears.
+- **Fonts › Use for the home screen now switches the home screen's font;** before, it only saved the file. Removing a font from NeoReader no longer removes other fonts whose names start the same way.
 - **After a Boox app, Instant ink could open a new session instead of taking over the paused one**, when the display still reported the pause as in progress, and then miss that first stroke.
 
 ### Research
 
+- **Region exclusion works on firmware 4.3** (tested on the tablet). One call tells the display to leave a rectangle out of the pen preview: it keeps only the last rectangle sent, an empty list clears it, and it can be given in screen coordinates, which the display turns into its own. Nib uses it for its panels. See `knowledge/experiments.md`.
+- **The display's marker style drops translucent colours** (tested on the tablet): at half alpha it shows only greys and yellow, while opaque colours show, very pale ones excepted.
+- **The display doesn't notice when the app that opened a pen session dies** (tested on the tablet): the session goes on drawing until any app sets the pen state to stop.
+- **Android's list of background-restricted apps comes back one package per line**, which is how the one-call read above parses it.
 - **The in-app updater works end to end.** The published 0.5.0 found 0.5.1, downloaded it, checked it and handed it to Android's installer, which updated in place after one "allow installs from this app" prompt. The installed APK matched the published file byte for byte.
 - **Firmware 4.3's display helper offers many more calls than Instant ink uses,** read from the decompiled framework: a full refresh, refreshes with a chosen mode, region exclusion, strokes the app feeds itself, stroke parameters. Its eight preview styles are numbered 0 to 7. None of the new calls has been tried on the tablet; Nib's Diagnostics page probes them.
 - **A study of steffest/Boox-EinkDraw,** a drawing app for the Note Air4 C. It has no licence and depends on Onyx's binary SDK and a copied system library, so Nib is a clean-room design. Its open zoom problem (the preview stops matching the stroke) shaped Nib's rendering.

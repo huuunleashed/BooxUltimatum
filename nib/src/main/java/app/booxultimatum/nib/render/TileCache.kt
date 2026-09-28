@@ -212,6 +212,63 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
         return ms
     }
 
+    /**
+     * Re-renders [layer]'s tiles touching [bounds] here and now, from [strokesIn] (the layer's strokes reaching a
+     * document box, in layer order), so a moved or recoloured selection never shows its old self while the worker
+     * catches up. More than [RENDER_NOW_MAX] tiles are left to the worker instead; returns whether it rendered.
+     */
+    fun renderNow(layer: Layer, bounds: Box, strokesIn: (Box) -> List<Stroke>): Boolean {
+        val tiles = layers[layer.id] ?: return true
+        if (bounds.isEmpty) return true
+        dropOtherLevels(layer.id, bounds)
+        val keys = grid.range(bounds, level).filter { tiles[it] != null }
+        if (keys.size > RENDER_NOW_MAX) {
+            invalidate(layer.id, bounds)
+            return false
+        }
+        val start = SystemClock.elapsedRealtimeNanos()
+        val tolerance = 0.25f / TileGrid.bucketScale(level)
+        for (key in keys) {
+            val t = tiles[key]!!
+            t.gen++
+            t.inFlight = false
+            val box = grid.docBox(key)
+            val reaching = strokesIn(box).filter { reaches(it, box) }
+            if (reaching.isEmpty()) {
+                lru.remove(t.ref)
+                t.bitmap?.let { graveyard.add(it) }
+                t.bitmap = null
+                t.state = State.Ready
+                continue
+            }
+            var bmp = t.bitmap
+            if (bmp == null) {
+                bmp = obtain()
+                t.bitmap = bmp
+                lru.put(t.ref, bmp.allocationByteCount.toLong())
+            } else {
+                bmp.eraseColor(0)
+            }
+            tileCanvas.setBitmap(bmp)
+            tileCanvas.setMatrix(tileMatrix(key))
+            for (s in reaching) {
+                if (s.brush.kind in DAB_KINDS) {
+                    val rec = DabRecording()
+                    StrokeRenderer.render(s, rec, tolerance)
+                    if (!rec.general) {
+                        rec.replay(sink.on(tileCanvas), box)
+                        continue
+                    }
+                }
+                StrokeRenderer.render(s, sink.on(tileCanvas), tolerance)
+            }
+            tileCanvas.setBitmap(null)
+            t.state = State.Ready
+        }
+        log.d("tiles rendered at once", "tiles" to keys.size, "ms" to round2((SystemClock.elapsedRealtimeNanos() - start) / 1e6))
+        return true
+    }
+
     /** Marks [layerId]'s tiles touching [bounds] out of date; they re-render from the vectors. */
     fun invalidate(layerId: Long, bounds: Box) {
         val tiles = layers[layerId] ?: return
@@ -257,14 +314,14 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
         }
     }
 
-    /** Where a tile lands on screen, rounded so neighbours share their edges exactly. */
+    /** Where a tile lands in an upright [viewport], rounded so neighbours share their edges exactly. */
     fun viewRect(key: TileKey, viewport: Viewport, out: Rect) {
         val size = grid.tileSize / TileGrid.bucketScale(key.level)
         out.set(
-            viewport.toViewX(key.tx * size).roundToInt(),
-            viewport.toViewY(key.ty * size).roundToInt(),
-            viewport.toViewX((key.tx + 1) * size).roundToInt(),
-            viewport.toViewY((key.ty + 1) * size).roundToInt(),
+            viewport.toViewX(key.tx * size, 0f).roundToInt(),
+            viewport.toViewY(0f, key.ty * size).roundToInt(),
+            viewport.toViewX((key.tx + 1) * size, 0f).roundToInt(),
+            viewport.toViewY(0f, (key.ty + 1) * size).roundToInt(),
         )
     }
 
@@ -338,7 +395,10 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
         private const val WARM_AFTER_MS = 400L
 
         /** The brushes the engine draws as dabs (its StrokeRenderer's Dabs mode). */
-        val DAB_KINDS = setOf(BrushKind.Pencil, BrushKind.Graphite, BrushKind.Charcoal, BrushKind.CharcoalV2, BrushKind.Airbrush)
+        val DAB_KINDS = BrushKind.entries.filter { it.rendersAsDabs }.toSet()
+
+        /** The most tiles [renderNow] draws on the main thread. */
+        const val RENDER_NOW_MAX = 24
         private val TMP = Rect()
 
         /** A third of the app's memory class for tiles, within sensible limits. */

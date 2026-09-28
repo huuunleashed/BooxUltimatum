@@ -22,6 +22,7 @@ private class FakeDisplay(var routable: Boolean = true) : PenDisplay {
         return true
     }
     override fun setRegion(rect: IntArray): Boolean = true
+    override fun setExclude(screenRect: IntArray?): Boolean { calls += "exclude ${screenRect?.joinToString(",") ?: "none"}"; return true }
     override fun setStroke(widthPx: Float, argb: Int, style: Int) {
         calls += "stroke $style $widthPx"
     }
@@ -159,18 +160,31 @@ class PenControllerTest {
         assertTrue(display.calls.last().startsWith("stroke 0 5.0"))
     }
 
-    @Test fun hoverExitPausesUnlessATouchFollows() {
+    @Test fun opensDrawingSoTheFirstStrokeIsCaught() {
+        val c = PenController(PenSession(FakeDisplay()), scheduler) { scheduler.now }
+        assertTrue(c.open(2480, pen))
+        assertEquals(PenSession.State.Drawing, c.state)
+    }
+
+    @Test fun opensPausedWhenBlocked() {
+        val c = PenController(PenSession(FakeDisplay()), scheduler) { scheduler.now }
+        c.block("panel")
+        assertTrue(c.open(2480, pen))
+        assertEquals(PenSession.State.Paused, c.state)
+    }
+
+    @Test fun leavingHoverRangeKeepsDrawing() {
         val c = opened()
         c.hover(true, false)
         c.hoverExit()
+        scheduler.advance(1000)
+        assertEquals(PenSession.State.Drawing, c.state, "a quick stroke from out of range must still be previewed")
         c.down()
-        scheduler.advance(PenController.EXIT_PAUSE_MS * 2)
-        assertEquals(PenSession.State.Drawing, c.state)
         c.up()
         c.frameShown()
         c.hoverExit()
-        scheduler.advance(PenController.EXIT_PAUSE_MS)
-        assertEquals(PenSession.State.Paused, c.state)
+        scheduler.advance(1000)
+        assertEquals(PenSession.State.Drawing, c.state)
     }
 
     @Test fun aTouchOnTheControlsLetsFramesThrough() {
@@ -191,5 +205,48 @@ class PenControllerTest {
         scheduler.advance(5_000)
         assertEquals(listOf("connect"), none.calls)
         assertFalse(c.available)
+    }
+
+    @Test fun overAControlThePreviewLeavesItAloneAndKeepsDrawing() {
+        val c = opened()
+        c.hover(true, false)
+        val card = intArrayOf(100, 200, 500, 900)
+        c.hover(inside = false, eraser = false, control = card)
+        assertEquals(PenSession.State.Drawing, c.state, "no pause, so the next stroke needs no resume")
+        assertTrue(display.calls.contains("exclude 100,200,500,900"))
+        c.hover(inside = true, eraser = false)
+        assertTrue(c.down(), "the stroke on the canvas is previewed straight away")
+    }
+
+    @Test fun withoutAControlRectangleItStillPauses() {
+        val c = opened()
+        c.hover(inside = false, eraser = false, control = null)
+        assertEquals(PenSession.State.Paused, c.state)
+    }
+
+    @Test fun aBlockStillPausesEvenOverAControl() {
+        val c = opened()
+        c.block("panel")
+        c.hover(inside = false, eraser = false, control = intArrayOf(0, 0, 10, 10))
+        assertEquals(PenSession.State.Paused, c.state)
+    }
+
+    @Test fun aTouchOnAControlKeepsDrawingAndLetsItsFramesThroughAfter() {
+        val c = opened()
+        c.hover(true, false)
+        c.touchedOutside(intArrayOf(0, 0, 50, 50))
+        assertEquals(PenSession.State.Drawing, c.state)
+        val before = display.swaps
+        c.touchOutsideEnded()
+        assertEquals(before + 1, display.swaps, "the pressed control shows at once")
+    }
+
+    @Test fun theExclusionClearsWhenAsked() {
+        val c = opened()
+        c.hover(false, false, intArrayOf(1, 2, 3, 4))
+        assertTrue(c.exclusion != null)
+        c.clearExclusion()
+        assertEquals(null, c.exclusion)
+        assertEquals("exclude none", display.calls.last())
     }
 }

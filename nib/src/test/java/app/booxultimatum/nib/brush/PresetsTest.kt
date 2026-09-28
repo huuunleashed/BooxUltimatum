@@ -4,6 +4,7 @@ import app.booxultimatum.nib.engine.brush.BrushCatalog
 import app.booxultimatum.nib.engine.brush.BrushKind
 import app.booxultimatum.nib.engine.brush.BrushSpec
 import app.booxultimatum.nib.engine.brush.HardwareStyle
+import app.booxultimatum.nib.engine.brush.MarkerPreview
 import app.booxultimatum.nib.engine.input.PressureCurve
 import org.junit.Test
 import kotlin.test.assertEquals
@@ -76,9 +77,18 @@ class PresetsTest {
         assertNotNull(PreviewPolicy.preview(b, -0x1000000, 0.25f, false).widthPx.takeIf { it >= 1f }, "never thinner than the minimum")
     }
 
-    @Test fun previewColourIsOpaqueExceptTheMarker() {
+    @Test fun previewColourIsOpaqueExceptTheSeeThroughMarker() {
         val red = 0x80D2232A.toInt()
         assertEquals(0xFF, PreviewPolicy.preview(BrushSpec.defaults(BrushKind.Fountain), red, 1f, false).argb ushr 24)
-        assertEquals(128, PreviewPolicy.preview(BrushSpec.defaults(BrushKind.Marker), red, 1f, false).argb ushr 24)
+        assertEquals(128, PreviewPolicy.preview(BrushSpec.defaults(BrushKind.Marker), red, 1f, false, marker = MarkerPreview.SeeThroughGrey).argb ushr 24)
+    }
+
+    @Test fun markerPreviewsFollowTheMarkerSetting() {
+        val red = 0xFFD2232A.toInt()
+        val marker = BrushSpec.defaults(BrushKind.Marker)
+        assertEquals(red, PreviewPolicy.preview(marker, red, 1f, false).argb, "solid colour by default")
+        assertEquals(0x80585858.toInt(), PreviewPolicy.preview(marker, red, 1f, false, marker = MarkerPreview.SeeThroughGrey).argb)
+        assertEquals(0x80585858.toInt(), PreviewPolicy.preview(BrushSpec.defaults(BrushKind.Highlighter), red, 1f, false, marker = MarkerPreview.SeeThroughGrey).argb, "the highlighter previews in the marker style too")
+        assertEquals(red, PreviewPolicy.preview(BrushSpec.defaults(BrushKind.Fountain), red, 1f, false, marker = MarkerPreview.SeeThroughGrey).argb, "other styles keep their colour")
     }
 }

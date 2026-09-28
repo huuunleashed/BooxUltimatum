@@ -21,6 +21,7 @@ import app.booxultimatum.nib.editor.ToolMode
 import app.booxultimatum.nib.editor.ToolState
 import app.booxultimatum.nib.engine.brush.Blend
 import app.booxultimatum.nib.engine.brush.BrushKind
+import app.booxultimatum.nib.engine.geom.Vec
 import app.booxultimatum.nib.engine.io.Journal
 import app.booxultimatum.nib.engine.io.NibFile
 import app.booxultimatum.nib.engine.record.PenAction
@@ -56,6 +57,7 @@ class EditorTest {
         instrumentation.runOnMainSync {
             val tools = ToolState.get(context)
             tools.setSlot(0, BrushPreset.DEFAULTS[0])
+            tools.setSlot(1, BrushPreset.DEFAULTS[1])
             tools.selected = 0
             tools.mode = ToolMode.Pen
             NibSettings.get(context).fingerDrawing = false
@@ -136,7 +138,7 @@ class EditorTest {
         assertTrue(s.points.pressure(s.points.size - 1) > 0.5f, "the lift's zero pressure doesn't thin the end")
         // The stroke is in document pixels: the canvas starts fitted, so it maps back onto the view.
         val vp = v.viewport
-        assertTrue(abs(vp.toViewX(s.points.x(0)) - 200f) < 1f)
+        assertTrue(abs(vp.toView(Vec(s.points.x(0), s.points.y(0))).x - 200f) < 1f)
     }
 
     @Test fun aStrokeThroughTheWindowReachesTheCanvas() {
@@ -234,8 +236,7 @@ class EditorTest {
         stroke(v, 200f, 300f, 900f, 700f)
         val s = session(v)
         val doc = s.document
-        val cx = v.viewport.toDocX(v.width / 2f)
-        val cy = v.viewport.toDocY(v.height / 2f)
+        val centre = v.viewport.toDoc(Vec(v.width / 2f, v.height / 2f))
         // Android 16 ignores apps' orientation requests on large screens, so the test turns the display itself.
         instrumentation.uiAutomation.setRotation(UiAutomation.ROTATION_FREEZE_90)
         waitFor("landscape") { canvas()?.takeIf { it.width > it.height } }
@@ -243,8 +244,9 @@ class EditorTest {
         assertSame(v, after, "the canvas isn't recreated")
         assertSame(s, after.session)
         assertSame(doc, after.session!!.document)
-        assertTrue(abs(after.viewport.toDocX(after.width / 2f) - cx) < 1f)
-        assertTrue(abs(after.viewport.toDocY(after.height / 2f) - cy) < 1f)
+        val now = after.viewport.toDoc(Vec(after.width / 2f, after.height / 2f))
+        assertTrue(abs(now.x - centre.x) < 1f)
+        assertTrue(abs(now.y - centre.y) < 1f)
         stroke(after, 300f, 300f, 900f, 500f)
         assertEquals(2, s.document.strokeCount)
         instrumentation.uiAutomation.setRotation(UiAutomation.ROTATION_FREEZE_0)

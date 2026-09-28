@@ -79,6 +79,64 @@ object Palette {
         return 0.299 * r + 0.587 * g + 0.114 * b > 200
     }
 
+    /** How many recent colours are kept. */
+    const val RECENT_MAX = 8
+
+    /** [argb] at the front of [recent], without repeats, at most [RECENT_MAX] long. */
+    fun pushRecent(recent: List<Int>, argb: Int, max: Int = RECENT_MAX): List<Int> =
+        (listOf(argb) + recent.filter { it != argb }).take(max)
+
+    /** An opaque colour from hue in degrees and saturation and value 0..1 (the picker's square). */
+    fun hsv(hue: Float, saturation: Float, value: Float): Int {
+        val h = ((hue % 360f) + 360f) % 360f
+        val s = saturation.coerceIn(0f, 1f)
+        val v = value.coerceIn(0f, 1f)
+        val c = v * s
+        val x = c * (1f - abs((h / 60f) % 2f - 1f))
+        val m = v - c
+        val (r, g, b) = when {
+            h < 60f -> Triple(c, x, 0f)
+            h < 120f -> Triple(x, c, 0f)
+            h < 180f -> Triple(0f, c, x)
+            h < 240f -> Triple(0f, x, c)
+            h < 300f -> Triple(x, 0f, c)
+            else -> Triple(c, 0f, x)
+        }
+        return argb(r + m, g + m, b + m)
+    }
+
+    /** Hue in degrees, saturation and value 0..1 of an ARGB colour. A grey keeps hue 0. */
+    fun toHsv(argb: Int): Triple<Float, Float, Float> {
+        val r = ((argb shr 16) and 0xFF) / 255f
+        val g = ((argb shr 8) and 0xFF) / 255f
+        val b = (argb and 0xFF) / 255f
+        val mx = max(r, max(g, b))
+        val mn = min(r, min(g, b))
+        val d = mx - mn
+        val h = when {
+            d == 0f -> 0f
+            mx == r -> 60f * (((g - b) / d) % 6f)
+            mx == g -> 60f * ((b - r) / d + 2f)
+            else -> 60f * ((r - g) / d + 4f)
+        }
+        return Triple((h + 360f) % 360f, if (mx == 0f) 0f else d / mx, mx)
+    }
+
+    /** "#1F4FB8" for an ARGB colour (its alpha left out). */
+    fun toHex(argb: Int): String = "#%06X".format(argb and 0xFFFFFF)
+
+    /** An opaque colour from "#1F4FB8", "1f4fb8" or "#1FB"; null for anything else. */
+    fun parseHex(text: String): Int? {
+        val t = text.trim().removePrefix("#")
+        val six = when (t.length) {
+            3 -> t.map { "$it$it" }.joinToString("")
+            6 -> t
+            else -> return null
+        }
+        if (!six.all { it.isDigit() || it.lowercaseChar() in 'a'..'f' }) return null
+        return OPAQUE or six.toInt(16)
+    }
+
     private fun argb(r: Float, g: Float, b: Float): Int =
         OPAQUE or (channel(r) shl 16) or (channel(g) shl 8) or channel(b)
 

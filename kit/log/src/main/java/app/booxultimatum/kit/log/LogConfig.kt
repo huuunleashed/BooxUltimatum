@@ -5,7 +5,7 @@ data class LogConfig(
     /** The lowest level written to the file. */
     val fileLevel: Level = Level.Info,
     /** Categories that write Debug to the file even when fileLevel is Info (diagnosis-critical subsystems). */
-    val debugCategories: Set<String> = setOf("ink", "nib.pen", "nib.render", "update", "suite"),
+    val debugCategories: Set<String> = setOf("ink", "nib.pen", "nib.render", "nib.probe", "update", "suite", "home", "exec"),
     /** Logcat level; null = Debug for debuggable builds, Info otherwise. */
     val logcatLevel: Level? = null,
     /** An event file is rotated once it would grow past this size. */

@@ -64,6 +64,7 @@ object PackageScanner {
         val power = context.getSystemService(PowerManager::class.java)
         val kb = loadKnowledge(context)
         val shell = app.booxultimatum.core.exec.Privileged.ready()
+        val restricted = if (shell) SystemState.restrictedInBackground() else null
         val apps = if (Build.VERSION.SDK_INT >= 33) {
             pm.getInstalledApplications(PackageManager.ApplicationInfoFlags.of(PackageManager.MATCH_DISABLED_COMPONENTS.toLong()))
         } else {
@@ -80,7 +81,7 @@ object PackageScanner {
                 dozeExempt = power.isIgnoringBatteryOptimizations(it.packageName),
                 kb = kb[it.packageName],
                 // Boox restricts apps you install, so only those are checked: one shell call each.
-                bgRestricted = if (shell && !system) SystemState.backgroundMode(it.packageName) == BgMode.Ignore else null,
+                bgRestricted = if (shell && !system) restricted?.contains(it.packageName) ?: (SystemState.backgroundMode(it.packageName) == BgMode.Ignore) else null,
             )
         }.sortedWith(compareBy({ it.label.lowercase() }, { it.id }))
         return AppInventory(entries)

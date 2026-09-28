@@ -6,12 +6,23 @@ import android.os.Looper
 import android.view.InputDevice
 import android.view.MotionEvent
 import android.view.WindowManager
+import app.booxultimatum.kit.ink.FileLease
+import app.booxultimatum.kit.ink.PenLease
 import app.booxultimatum.kit.ink.PenSession
 import app.booxultimatum.kit.ink.SurfaceInk
 
 /** The one display pen session this process has: the firmware keeps a single session, so the canvas and the probes share it. */
 object NibPen {
-    val session: PenSession by lazy { PenSession() }
+    @Volatile private var lease: FileLease? = null
+
+    val session: PenSession by lazy { PenSession(lease = lease ?: PenLease.None) }
+
+    /** At process start: ends a session an earlier Nib process left drawing (see [FileLease]), then keeps the lease. */
+    fun start(context: Context) {
+        val l = FileLease(java.io.File(context.noBackupFilesDir, "pen-session.lease"))
+        lease = l
+        runCatching { l.recoverStale() }
+    }
 
     /** Main-thread [PenScheduler]. */
     val mainScheduler: PenScheduler by lazy {
@@ -66,14 +77,18 @@ object PenRouter {
         /** A stylus hover anywhere in the window, in screen coordinates. */
         fun onWindowHover(event: MotionEvent)
 
-        /** A stylus touch that began outside this surface. */
-        fun onStylusTouchOutside()
+        /** A stylus touch that began outside this surface, at this screen point. */
+        fun onStylusTouchOutside(x: Float, y: Float)
+
+        /** That touch ended. */
+        fun onStylusTouchOutsideEnded()
 
         /** Whether the screen point lies on this surface. */
         fun containsScreenPoint(x: Float, y: Float): Boolean
     }
 
     private var target: Target? = null
+    private var outsideTouch = false
 
     fun attach(t: Target) {
         target = t
@@ -94,9 +109,39 @@ object PenRouter {
     fun onTouch(event: MotionEvent) {
         val t = target ?: return
         val action = event.actionMasked
-        if (action != MotionEvent.ACTION_DOWN && action != MotionEvent.ACTION_POINTER_DOWN) return
         val i = event.actionIndex
         if (!NibPen.isStylus(event.getToolType(i))) return
-        if (!t.containsScreenPoint(event.getRawX(i), event.getRawY(i))) t.onStylusTouchOutside()
+        when (action) {
+            MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
+                val x = event.getRawX(i)
+                val y = event.getRawY(i)
+                if (!t.containsScreenPoint(x, y)) { outsideTouch = true; t.onStylusTouchOutside(x, y) }
+            }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_CANCEL -> if (outsideTouch) {
+                outsideTouch = false
+                t.onStylusTouchOutsideEnded()
+            }
+        }
+    }
+
+    /**
+     * The strip of the screen beyond [view]'s edge that holds the screen point, as left, top, right, bottom: the one
+     * rectangle the preview can leave alone when the pen is over controls around a surface.
+     */
+    fun stripOutside(view: android.view.View, x: Float, y: Float): IntArray? {
+        val loc = IntArray(2)
+        view.getLocationOnScreen(loc)
+        val root = IntArray(2)
+        view.rootView.getLocationOnScreen(root)
+        val w = root[0] + view.rootView.width
+        val h = root[1] + view.rootView.height
+        val l = loc[0]; val t = loc[1]; val r = loc[0] + view.width; val b = loc[1] + view.height
+        return when {
+            x >= r -> intArrayOf(r, 0, w, h)
+            x < l -> intArrayOf(0, 0, l, h)
+            y < t -> intArrayOf(0, 0, w, t)
+            y >= b -> intArrayOf(0, b, w, h)
+            else -> null
+        }
     }
 }

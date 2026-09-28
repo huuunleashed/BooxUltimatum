@@ -18,20 +18,26 @@ sealed interface Route {
     data object Library : Route
     data class Editor(val id: String) : Route
     data object Diagnostics : Route
+    data object MatchPreview : Route
     data object About : Route
+    data object Settings : Route
 
     fun encode(): String = when (this) {
         Library -> "library"
         is Editor -> "editor:$id"
         Diagnostics -> "diagnostics"
+        MatchPreview -> "match"
         About -> "about"
+        Settings -> "settings"
     }
 
     companion object {
         fun decode(s: String): Route = when {
             s.startsWith("editor:") -> Editor(s.removePrefix("editor:"))
             s == "diagnostics" -> Diagnostics
+            s == "match" -> MatchPreview
             s == "about" -> About
+            s == "settings" -> Settings
             else -> Library
         }
     }
@@ -62,15 +68,19 @@ fun NibApp(initialDrawing: String?) {
             onOpen = { push(Route.Editor(it)) },
             onDiagnostics = { push(Route.Diagnostics) },
             onAbout = { push(Route.About) },
+            onSettings = { push(Route.Settings) },
         )
         is Route.Editor -> EditorScreen(
             drawingId = current.id,
             sessions = sessions,
             onBack = { pop() },
-            onDiagnostics = { push(Route.Diagnostics) },
+            onDiagnostics = { match -> push(if (match) Route.MatchPreview else Route.Diagnostics) },
             onAbout = { push(Route.About) },
+            onSettings = { push(Route.Settings) },
         )
         Route.Diagnostics -> DiagnosticsScreen(onBack = { pop() })
+        Route.MatchPreview -> DiagnosticsScreen(onBack = { pop() }, startOnMatch = true)
         Route.About -> AboutScreen(onBack = { pop() })
+        Route.Settings -> SettingsScreen(onBack = { pop() }, onMatchPreview = { push(Route.MatchPreview) })
     }
 }

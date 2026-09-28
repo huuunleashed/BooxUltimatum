@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Fonts library: browse, preview and apply Google Fonts. -->
+<!-- Fonts: manage what BooxUltimatum installed, and browse, preview and use Google Fonts. -->
 <resources>
     <string name="dest_fonts">Fonts</string>
     <string name="fonts_subtitle">%1$d families from Google Fonts, free and open</string>
@@ -32,8 +32,6 @@
         <item quantity="one">%1$d style</item>
         <item quantity="other">%1$d styles</item>
     </plurals>
-    <string name="fonts_in_reader">In NeoReader</string>
-    <string name="fonts_in_app">In this app</string>
     <string name="fonts_back">All fonts</string>
     <string name="fonts_specimen">Specimen</string>
     <string name="fonts_size">%1$d sp</string>
@@ -41,7 +39,6 @@
     <string name="fonts_style">Weight %1$d</string>
     <string name="fonts_style_italic">Weight %1$d italic</string>
     <string name="fonts_style_sample">Handgloves 0123 Ăâđêôơư</string>
-    <string name="fonts_apply">Apply</string>
     <string name="fonts_apply_reader">NeoReader and Boox reading</string>
     <string name="fonts_apply_reader_s">Installs regular, italic and bold into the Boox fonts folder. Pick it in NeoReader’s font settings.</string>
     <string name="fonts_apply_home">BooxUltimatum home</string>
@@ -74,4 +71,129 @@
     <string name="fonts_home_set">BooxUltimatum home now uses %1$s.</string>
     <string name="fonts_home_reset">BooxUltimatum home follows the system font again.</string>
     <string name="fonts_needs_shizuku">Installing into the Boox fonts folder needs Shizuku.</string>
+
+    <!-- The font manager: what the app installed, where it sits, and what uses it. -->
+    <string name="fonts_tab_installed">Installed · %1$d</string>
+    <string name="fonts_tab_browse">Google Fonts</string>
+    <plurals name="fonts_installed_subtitle">
+        <item quantity="one">%1$d font installed by BooxUltimatum, %2$s</item>
+        <item quantity="other">%1$d fonts installed by BooxUltimatum, %2$s</item>
+    </plurals>
+    <string name="fonts_installed_subtitle_none">Nothing installed by BooxUltimatum yet</string>
+    <string name="fonts_check_again">Check again</string>
+    <string name="fonts_scan_failed">Couldn’t read the installed fonts: %1$s</string>
+    <string name="fonts_lib_title">On this tablet</string>
+    <string name="fonts_lib_count">Fonts installed</string>
+    <string name="fonts_lib_on_off">%1$d on, %2$d off</string>
+    <string name="fonts_lib_size">Space used</string>
+    <string name="fonts_lib_size_note">Every copy the app made: its own storage, the Boox fonts folder and Documents</string>
+    <string name="fonts_lib_in_use">In use</string>
+    <plurals name="fonts_n_fonts">
+        <item quantity="one">%1$d font</item>
+        <item quantity="other">%1$d fonts</item>
+    </plurals>
+    <plurals name="fonts_delete_unused">
+        <item quantity="one">Delete %1$d unused font</item>
+        <item quantity="other">Delete %1$d unused fonts</item>
+    </plurals>
+    <string name="fonts_delete_unused_none">No unused fonts</string>
+    <plurals name="fonts_delete_unused_confirm">
+        <item quantity="one">Tap again to delete %1$d font</item>
+        <item quantity="other">Tap again to delete %1$d fonts</item>
+    </plurals>
+    <string name="fonts_turn_all_off">Turn all off</string>
+    <plurals name="fonts_turn_all_off_confirm">
+        <item quantity="one">Tap again to turn %1$d font off</item>
+        <item quantity="other">Tap again to turn %1$d fonts off</item>
+    </plurals>
+    <string name="fonts_turn_all_on">Turn all on</string>
+    <string name="fonts_bulk_note">Unused means on but used nowhere: not the tablet font, not in the Boox fonts folder, and not chosen for the home screen, this app or the sleep screen. Fonts you turned off are kept. Turning fonts off hands every use back first.</string>
+    <plurals name="fonts_bulk_deleted">
+        <item quantity="one">Deleted %1$d font and freed %2$s.</item>
+        <item quantity="other">Deleted %1$d fonts and freed %2$s.</item>
+    </plurals>
+    <plurals name="fonts_bulk_off">
+        <item quantity="one">Turned %1$d font off.</item>
+        <item quantity="other">Turned %1$d fonts off.</item>
+    </plurals>
+    <plurals name="fonts_bulk_on">
+        <item quantity="one">Turned %1$d font on.</item>
+        <item quantity="other">Turned %1$d fonts on.</item>
+    </plurals>
+    <string name="fonts_bulk_failed">Not done for %1$s: %2$s</string>
+    <string name="fonts_sort_size">Largest</string>
+    <string name="fonts_sort_recent">Newest</string>
+    <string name="fonts_show_in_use">In use</string>
+    <string name="fonts_show_unused">Not in use</string>
+    <string name="fonts_show_off">Off</string>
+    <string name="fonts_lib_empty">No fonts installed yet. Find one in Google Fonts and use it for the tablet, NeoReader, the home screen, this app or the sleep screen, and it will be listed here.</string>
+    <string name="fonts_lib_empty_filter">No installed font matches.</string>
+    <string name="fonts_browse">Browse Google Fonts</string>
+    <string name="fonts_row_on_unused">On · not in use</string>
+    <string name="fonts_row_on_uses">On · in use: %1$s</string>
+    <string name="fonts_meta_in_use">In use: %1$s</string>
+    <string name="fonts_row_off">Off · the files wait in app storage</string>
+    <string name="fonts_row_partial">Partly off · open it to finish</string>
+    <string name="fonts_use_tablet">tablet font</string>
+    <string name="fonts_use_reader">NeoReader</string>
+    <string name="fonts_use_home">home screen</string>
+    <string name="fonts_use_app">this app</string>
+    <string name="fonts_use_sleep">sleep screen</string>
+    <string name="fonts_style_italic_short">%1$d italic</string>
+    <string name="fonts_tag_installed">Installed</string>
+    <string name="fonts_tag_off">Installed, off</string>
+    <string name="fonts_manage_title">Installed</string>
+    <string name="fonts_state_on">On</string>
+    <string name="fonts_state_off">Off</string>
+    <string name="fonts_state_partial">Partly off</string>
+    <string name="fonts_state_on_s">The home screen, this app and the sleep screen can pick it, and NeoReader lists it once it’s in the Boox fonts folder.</string>
+    <string name="fonts_state_off_s">The files stay on the tablet, in app storage, and nothing offers or uses the font until you turn it on.</string>
+    <string name="fonts_state_partial_s">Some files are still off, perhaps after an interruption. Turn it on or off again to finish.</string>
+    <string name="fonts_spec_styles">Styles on disk</string>
+    <string name="fonts_spec_size">Size</string>
+    <plurals name="fonts_files">
+        <item quantity="one">%1$d file</item>
+        <item quantity="other">%1$d files</item>
+    </plurals>
+    <string name="fonts_spec_where">Where</string>
+    <string name="fonts_spec_in_use">In use</string>
+    <string name="fonts_spec_installed">Installed</string>
+    <string name="fonts_nowhere">Nowhere</string>
+    <string name="fonts_place_app">App storage</string>
+    <string name="fonts_place_reader">The Boox fonts folder</string>
+    <string name="fonts_place_documents">Documents/BooxUltimatum</string>
+    <string name="fonts_place_off">Turned-off copies in app storage</string>
+    <string name="fonts_place_unchecked">%1$s (not checked without Shizuku)</string>
+    <string name="fonts_turn_off">Turn off</string>
+    <string name="fonts_turn_on">Turn on</string>
+    <string name="fonts_delete">Delete</string>
+    <string name="fonts_delete_confirm">Tap again to delete</string>
+    <string name="fonts_manage_note">Turning it off hands every use back first: the tablet goes back to the font it had before, or the Boox default; the home screen follows the system font; this app goes back to Archivo; the sleep screen uses the tablet font. Then the files move into app storage, out of the Boox fonts folder and Documents, so nothing offers it. Turning it on puts them back and gives back those uses, unless you’ve chosen something else since. Delete hands back the same uses, then removes every copy this app made.</string>
+    <string name="fonts_turned_off">%1$s is off. Its files wait in app storage.</string>
+    <string name="fonts_turned_off_released">%1$s is off, and no longer used for: %2$s.</string>
+    <string name="fonts_turned_on">%1$s is on again.</string>
+    <string name="fonts_turned_on_restored">%1$s is on again, and back in use for: %2$s.</string>
+    <string name="fonts_deleted">%1$s deleted; %2$s freed.</string>
+    <string name="fonts_needs_shizuku_manage">This font has copies in the Boox fonts folder, which only Shizuku can change. Start Shizuku and try again.</string>
+    <string name="fonts_is_off">%1$s is turned off. Turn it on to use it.</string>
+    <string name="fonts_not_found">That font is no longer installed.</string>
+    <string name="fonts_no_upright">This font has no upright style on the tablet.</string>
+    <string name="fonts_journal_off">Font turned off: %1$s</string>
+    <string name="fonts_journal_on">Font turned on: %1$s</string>
+    <string name="fonts_journal_delete">Font deleted: %1$s</string>
+    <string name="fonts_foreign_title">Not installed by BooxUltimatum</string>
+    <string name="fonts_foreign_note">Other fonts in the Boox fonts folder. BooxUltimatum lists them but never moves or deletes them.</string>
+    <string name="fonts_reader_unchecked">Start Shizuku to see what’s in the Boox fonts folder. Until then, the app’s copies there are shown as it last knew them.</string>
+    <string name="fonts_use_for">Use for…</string>
+    <string name="fonts_off_use_note">Turned off. Turn it on to use it anywhere.</string>
+    <string name="fonts_apply_reader_disk">Copies the styles on the tablet into the Boox fonts folder. Pick it in NeoReader’s font settings.</string>
+    <string name="fonts_apply_sleep">Sleep screen</string>
+    <string name="fonts_apply_sleep_s">Sets the typeface of the sleep screen faces.</string>
+    <string name="fonts_use_tablet_font">Use the tablet font</string>
+    <string name="fonts_sleep_set">The sleep screen now uses %1$s.</string>
+    <string name="fonts_sleep_reset">The sleep screen uses the tablet font again.</string>
+    <string name="fonts_app_set">BooxUltimatum now uses %1$s.</string>
+    <string name="fonts_app_reset">BooxUltimatum is back to Archivo.</string>
+    <string name="fonts_sys_stop">Stop using</string>
+    <string name="fonts_sys_back">The tablet font is back to %1$s.</string>
 </resources>

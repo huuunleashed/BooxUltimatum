@@ -7,15 +7,24 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.edit
 import app.booxultimatum.nib.brush.BrushPreset
+import app.booxultimatum.nib.brush.Palette
 import app.booxultimatum.nib.engine.brush.BrushKind
 import app.booxultimatum.nib.engine.brush.BrushSpec
 
-/** Whether the pen draws or erases. */
-enum class ToolMode { Pen, Eraser }
+/**
+ * What the pen does on the canvas: draw with the chosen slot, erase, pick strokes with the lasso, take a colour from
+ * the page, or turn the page.
+ */
+enum class ToolMode {
+    Pen, Eraser, Lasso, Eyedropper, Hand;
+
+    /** Whether the display's preview stays off: only drawing previews; the others draw their own marks. */
+    val quiet: Boolean get() = this != Pen
+}
 
 /**
- * The toolbar's state: four favourite pens, which one is chosen, the eraser and its widths. Kept across launches and
- * readable as Compose state; the canvas reads it at the start of each stroke.
+ * The rail's state: the favourite pens, which one is chosen, the tool, the eraser and its widths, and the colours
+ * used lately. Kept across launches and readable as Compose state; the canvas reads it at the start of each stroke.
  */
 class ToolState private constructor(context: Context) {
     private val prefs = context.getSharedPreferences("nib.tools", Context.MODE_PRIVATE)
@@ -42,6 +51,12 @@ class ToolState private constructor(context: Context) {
         ERASERS.associateWith { k -> prefs.getFloat("eraser_width_${k.id}", BrushSpec.defaults(k).width) },
     )
 
+    /** The colours used lately, newest first. */
+    var recentColours: List<Int> by mutableStateOf(
+        prefs.getString("recent_colours", null)?.split(',')?.mapNotNull { it.toLongOrNull(16)?.toInt() }?.take(Palette.RECENT_MAX) ?: emptyList(),
+    )
+        private set
+
     val current: BrushPreset get() = slots[selected]
 
     fun setSlot(index: Int, preset: BrushPreset) {
@@ -50,6 +65,18 @@ class ToolState private constructor(context: Context) {
     }
 
     fun updateCurrent(change: (BrushPreset) -> BrushPreset) = setSlot(selected, change(current))
+
+    /** Gives the chosen pen [argb] and remembers it among the recent colours. */
+    fun useColour(argb: Int) {
+        updateCurrent { it.copy(color = argb or Palette.OPAQUE) }
+        remember(argb)
+    }
+
+    /** Puts [argb] at the front of the recent colours. */
+    fun remember(argb: Int) {
+        recentColours = Palette.pushRecent(recentColours, argb or Palette.OPAQUE)
+        prefs.edit { putString("recent_colours", recentColours.joinToString(",") { Integer.toHexString(it) }) }
+    }
 
     fun chooseEraser(kind: BrushKind) {
         require(kind.isEraser)
@@ -69,7 +96,7 @@ class ToolState private constructor(context: Context) {
     fun eraserSpec(kind: BrushKind = eraser): BrushSpec = BrushSpec.defaults(kind).withWidth(eraserWidth(kind))
 
     companion object {
-        const val SLOTS = 4
+        const val SLOTS = 6
         val ERASERS = listOf(BrushKind.PixelEraser, BrushKind.StrokeEraser, BrushKind.LassoEraser)
 
         @Volatile private var instance: ToolState? = null

@@ -73,7 +73,7 @@
             android:taskAffinity="app.booxultimatum.home"
             android:windowSoftInputMode="adjustResize"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|density|uiMode|locale|layoutDirection"
-            android:theme="@style/Theme.BooxUltimatum" />
+            android:theme="@style/Theme.BooxUltimatum.Home" />
 
         <activity-alias
             android:name=".launcher.Home"

@@ -7,18 +7,17 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import app.booxultimatum.kit.core.Suite
 import app.booxultimatum.kit.core.SuiteApp
-import app.booxultimatum.kit.ui.theme.Ink
 import app.booxultimatum.kit.ui.theme.InstrumentTheme
 import app.booxultimatum.kit.update.Updates
 import app.booxultimatum.nib.pen.PenRouter
 import app.booxultimatum.nib.ui.NibApp
+import app.booxultimatum.nib.ui.studio.Studio
 
 /**
  * Nib's one activity. It handles rotation itself (see the manifest), and it sees every pen event before Compose does,
@@ -41,7 +40,8 @@ class MainActivity : ComponentActivity() {
         val open = intent?.getStringExtra(EXTRA_OPEN_DRAWING)
         setContent {
             InstrumentTheme {
-                Box(Modifier.fillMaxSize().background(Ink.Paper).navigationBarsPadding().imePadding()) { NibApp(initialDrawing = open) }
+                // No IME padding: every text field sits at the top, and a keyboard must never shrink the canvas.
+                Box(Modifier.fillMaxSize().background(Studio.Desk).navigationBarsPadding()) { NibApp(initialDrawing = open) }
             }
         }
     }

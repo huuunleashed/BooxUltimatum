@@ -69,6 +69,7 @@ import app.booxultimatum.ui.screens.InkScreen
 import app.booxultimatum.ui.screens.LogsScreen
 import app.booxultimatum.ui.screens.OverviewScreen
 import app.booxultimatum.ui.screens.SleepScreen
+import app.booxultimatum.ui.screens.StorageScreen
 import app.booxultimatum.ui.screens.SuiteScreen
 import app.booxultimatum.ui.screens.TweaksScreen
 
@@ -101,6 +102,7 @@ enum class Destination(val section: Section, @StringRes val label: Int, val modu
     Device(Section.Device, R.string.dest_device),
     Access(Section.Device, R.string.dest_access),
     Logs(Section.Device, R.string.dest_logs),
+    Storage(Section.Device, R.string.dest_storage),
 }
 
 /**
@@ -156,6 +158,7 @@ fun BooxUltimatumApp(accessEvents: Int, initial: String? = null) {
                             Destination.Device -> DeviceScreen(readKey, compact, readAgain)
                             Destination.Access -> AccessScreen(readKey, accessEvents, compact, readAgain)
                             Destination.Logs -> LogsScreen(readKey, compact)
+                            Destination.Storage -> StorageScreen(readKey, compact)
                         }
                     }
                 }

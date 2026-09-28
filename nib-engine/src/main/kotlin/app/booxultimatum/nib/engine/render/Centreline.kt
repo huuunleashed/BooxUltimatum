@@ -225,8 +225,7 @@ internal class Centreline {
         const val SPEED_SMOOTHING = 0.35f
         const val TAPER_MIN = 0.15f
 
-        fun usesNib(kind: BrushKind): Boolean =
-            kind == BrushKind.Calligraphy || kind == BrushKind.SquarePen || kind == BrushKind.Highlighter
+        fun usesNib(kind: BrushKind): Boolean = kind.usesNib
 
         fun dist(ax: Float, ay: Float, bx: Float, by: Float): Float {
             val dx = bx - ax

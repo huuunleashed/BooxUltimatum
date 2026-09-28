@@ -133,6 +133,7 @@ object Logbook {
             LogFiles.pruneCount(dir, LogFiles::isCrash, config.keepCrashes)
         }
         runCatching { recordExits(app, dir) }
+        runCatching { Housekeeping.tidyIfDue(app) }
         return LogFileWriter(dir, SystemLogClock, h, config.maxFileBytes, config.maxFiles)
     }
 

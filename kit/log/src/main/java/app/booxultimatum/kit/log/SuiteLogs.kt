@@ -51,6 +51,23 @@ object SuiteLogs {
     fun flush(context: Context, packageName: String): Boolean =
         call(context, packageName, LogProvider.METHOD_FLUSH, null)?.getBoolean(LogProvider.EXTRA_OK) == true
 
+    /** The app's storage by area ([Housekeeping.usage]), or null when it can't be asked. */
+    fun usage(context: Context, packageName: String): List<StorageUsage>? {
+        val b = call(context, packageName, LogProvider.METHOD_USAGE, null)?.takeIf { it.getBoolean(LogProvider.EXTRA_OK) } ?: return null
+        val ids = b.getStringArray(LogProvider.EXTRA_IDS) ?: return null
+        val bytes = b.getLongArray(LogProvider.EXTRA_BYTES) ?: return null
+        val files = b.getIntArray(LogProvider.EXTRA_FILES) ?: return null
+        val cleanable = b.getBooleanArray(LogProvider.EXTRA_CLEANABLE) ?: return null
+        if (bytes.size != ids.size || files.size != ids.size || cleanable.size != ids.size) return null
+        return ids.indices.map { StorageUsage(ids[it], bytes[it], files[it], cleanable[it]) }
+    }
+
+    /** Asks the app to clear the given areas ([Housekeeping.clean]); the bytes freed, or null when it can't be asked. */
+    fun clean(context: Context, packageName: String, ids: Set<String>): Long? =
+        call(context, packageName, LogProvider.METHOD_CLEAN, ids.joinToString(","))
+            ?.takeIf { it.getBoolean(LogProvider.EXTRA_OK) }
+            ?.getLong(LogProvider.EXTRA_BYTES)
+
     private fun filesUri(packageName: String): Uri = Uri.Builder()
         .scheme(ContentResolver.SCHEME_CONTENT)
         .authority(authority(packageName))

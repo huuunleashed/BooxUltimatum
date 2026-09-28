@@ -80,7 +80,38 @@ object SystemState {
         }
     }
 
+    @Volatile private var restrictedCache: Pair<Long, Set<String>>? = null
+
+    /**
+     * Every package whose RUN_ANY_IN_BACKGROUND is "ignore", from one shell call (`cmd appops query-op`) instead of one
+     * per app, kept for a few seconds so one page read asks once. Null when the command isn't there or answers in an
+     * unexpected form *[verify]*; callers then ask per app with [backgroundMode].
+     */
+    suspend fun restrictedInBackground(): Set<String>? {
+        restrictedCache?.let { (at, set) -> if (android.os.SystemClock.elapsedRealtime() - at < RESTRICTED_CACHE_MS) return set }
+        val r = Privileged.sh("cmd appops query-op --user 0 RUN_ANY_IN_BACKGROUND ignore")
+        if (!r.ok) return null
+        val lines = r.out.lineSequence().map { it.trim() }.filter { it.isNotEmpty() }.toList()
+        val set = when {
+            lines.isEmpty() || lines.singleOrNull()?.startsWith("No operations", ignoreCase = true) == true -> emptySet()
+            lines.all { PACKAGE_NAME.matches(it) } -> lines.toSet()
+            else -> return null
+        }
+        restrictedCache = android.os.SystemClock.elapsedRealtime() to set
+        return set
+    }
+
+    /** Which of [pkgs] Boox or Android keeps from running in the background. */
+    suspend fun restrictedAmong(pkgs: List<String>): List<String> {
+        val all = restrictedInBackground() ?: return pkgs.filter { backgroundMode(it) == BgMode.Ignore }
+        return pkgs.filter { it in all }
+    }
+
+    private const val RESTRICTED_CACHE_MS = 5_000L
+    private val PACKAGE_NAME = Regex("""^[A-Za-z][\w]*(\.[\w]+)+$""")
+
     suspend fun setBackgroundMode(pkg: String, mode: BgMode): ShellResult {
+        restrictedCache = null
         checkPkg(pkg)
         val m = when (mode) {
             BgMode.Ignore -> "ignore"

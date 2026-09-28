@@ -10,6 +10,7 @@ import app.booxultimatum.kit.log.Redact
 import app.booxultimatum.nib.engine.doc.Document
 import app.booxultimatum.nib.engine.io.Journal
 import app.booxultimatum.nib.engine.io.NibFile
+import app.booxultimatum.nib.engine.io.NibSummary
 import app.booxultimatum.nib.engine.io.ReplayStop
 import app.booxultimatum.nib.render.DocumentPainter
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,11 +18,22 @@ import kotlinx.coroutines.flow.StateFlow
 import java.io.File
 import java.util.Properties
 import java.util.UUID
-import java.util.zip.ZipFile
 import kotlin.random.Random
 
-/** One drawing in the library. */
-data class DrawingInfo(val id: String, val name: String, val modified: Long, val width: Int, val height: Int)
+/**
+ * One drawing in the library. [layers] is as of its last snapshot (0 when unknown), [bytes] what it takes on disk,
+ * snapshot and journal together.
+ */
+data class DrawingInfo(
+    val id: String,
+    val name: String,
+    val modified: Long,
+    val width: Int,
+    val height: Int,
+    val layers: Int = 0,
+    val bytes: Long = 0L,
+    val paper: Paper = Paper.PLAIN,
+)
 
 /** A drawing read back for editing: the document with its journal replayed, and the journal open for appending. */
 class OpenedDrawing(
@@ -41,6 +53,7 @@ class DrawingStore(context: Context) {
     private val log = Logbook.logger("nib.doc")
     val dir: File = File(context.filesDir, "drawings").apply { mkdirs() }
     private val thumbs = LruCache<String, Bitmap>(24)
+    private val summaries = HashMap<String, Pair<Long, NibSummary>>()
     private val _changes = MutableStateFlow(0)
 
     /** Counts snapshots written, renames and deletions, so the library can read itself again. */
@@ -59,31 +72,59 @@ class DrawingStore(context: Context) {
         val nib = nibFile(id)
         if (!nib.isFile) return null
         val meta = readMeta(id)
-        val modified = maxOf(nib.lastModified(), journalFile(id).takeIf { it.isFile }?.lastModified() ?: 0L)
+        val journal = journalFile(id).takeIf { it.isFile }
+        val modified = maxOf(nib.lastModified(), journal?.lastModified() ?: 0L)
+        // 0.1 wrote no layer count beside the drawing: its manifest says, without reading a stroke.
+        val layers = meta.getProperty(KEY_LAYERS)?.toIntOrNull() ?: summary(id, nib)?.layers ?: 0
         return DrawingInfo(
             id,
             meta.getProperty(KEY_NAME).orEmpty(),
             modified,
             meta.getProperty(KEY_WIDTH)?.toIntOrNull() ?: 0,
             meta.getProperty(KEY_HEIGHT)?.toIntOrNull() ?: 0,
+            layers,
+            nib.length() + (journal?.length() ?: 0L),
+            paperOf(meta),
         )
     }
 
+    private fun summary(id: String, nib: File): NibSummary? {
+        val stamp = nib.lastModified()
+        synchronized(summaries) { summaries[id]?.takeIf { it.first == stamp }?.let { return it.second } }
+        val s = runCatching { NibFile.readSummary(nib) }.getOrNull() ?: return null
+        synchronized(summaries) { summaries[id] = stamp to s }
+        return s
+    }
+
     /** A new, empty drawing with one layer named [layerName]: its snapshot and an empty journal are written at once. */
-    fun create(name: String, width: Int, height: Int, layerName: String): DrawingInfo {
+    fun create(name: String, width: Int, height: Int, layerName: String, paper: Paper = Paper.PLAIN): DrawingInfo {
         val id = UUID.randomUUID().toString()
         val doc = Document.blank(width, height, id = id, layerName = layerName)
+        writeMeta(id, name, width, height, paper = paper)
         writeSnapshot(id, doc, freshToken()).close()
-        writeMeta(id, name, width, height)
         log.i("drawing created", "id" to Redact.hash(id), "width" to width, "height" to height)
         return info(id)!!
     }
 
     fun rename(id: String, name: String) {
-        val m = readMeta(id)
-        writeMeta(id, name, m.getProperty(KEY_WIDTH)?.toIntOrNull() ?: 0, m.getProperty(KEY_HEIGHT)?.toIntOrNull() ?: 0)
+        updateMeta(id) { setProperty(KEY_NAME, name) }
         _changes.value++
         log.i("drawing renamed", "id" to Redact.hash(id))
+    }
+
+    /** The drawing's paper, as the library and the editor show it. */
+    fun paper(id: String): Paper = paperOf(readMeta(id))
+
+    fun setPaper(id: String, paper: Paper) {
+        updateMeta(id) {
+            setProperty(KEY_PAPER_COLOUR, Integer.toHexString(paper.colour))
+            setProperty(KEY_PAPER_GUIDES, paper.guides.key)
+            setProperty(KEY_PAPER_SPACING, paper.spacing.toString())
+            setProperty(KEY_PAPER_EXPORT, paper.guidesInExport.toString())
+        }
+        thumbs.remove(id)
+        _changes.value++
+        log.i("paper set", "id" to Redact.hash(id), "guides" to paper.guides.key, "spacing" to paper.spacing, "export guides" to paper.guidesInExport)
     }
 
     /** A copy of the drawing as it stands, journal included, under a new id. */
@@ -92,8 +133,8 @@ class DrawingStore(context: Context) {
         source.journal.close()
         val newId = UUID.randomUUID().toString()
         val doc = source.document.copy(id = newId)
+        writeMeta(newId, name, doc.width, doc.height, paper = paperOf(readMeta(id)))
         writeSnapshot(newId, doc, freshToken()).close()
-        writeMeta(newId, name, doc.width, doc.height)
         log.i("drawing duplicated", "id" to Redact.hash(id), "copy" to Redact.hash(newId), "strokes" to doc.strokeCount)
         return info(newId)
     }
@@ -139,9 +180,11 @@ class DrawingStore(context: Context) {
      */
     fun writeSnapshot(id: String, doc: Document, token: Long): Journal {
         val start = SystemClock.elapsedRealtime()
-        val thumb = runCatching { DocumentPainter.thumbnailPng(doc) }.getOrNull()
+        val meta = readMeta(id)
+        val thumb = runCatching { DocumentPainter.thumbnailPng(doc, paperOf(meta)) }.getOrNull()
         NibFile.writeAtomically(doc, nibFile(id), thumb, token)
         val journal = Journal.create(journalFile(id), token)
+        if (meta.getProperty(KEY_LAYERS) != doc.layers.size.toString()) updateMeta(id) { setProperty(KEY_LAYERS, doc.layers.size.toString()) }
         thumbs.remove(id)
         _changes.value++
         log.i(
@@ -156,10 +199,8 @@ class DrawingStore(context: Context) {
     fun thumbnail(id: String): Bitmap? {
         thumbs.get(id)?.let { return it }
         val bmp = runCatching {
-            ZipFile(nibFile(id)).use { zip ->
-                val entry = zip.getEntry("thumb.png") ?: return null
-                zip.getInputStream(entry).use { BitmapFactory.decodeStream(it) }
-            }
+            val png = NibFile.readThumbnail(nibFile(id)) ?: return null
+            BitmapFactory.decodeByteArray(png, 0, png.size)
         }.getOrNull() ?: return null
         thumbs.put(id, bmp)
         return bmp
@@ -171,11 +212,40 @@ class DrawingStore(context: Context) {
         runCatching { metaFile(id).inputStream().use { load(it) } }
     }
 
-    private fun writeMeta(id: String, name: String, width: Int, height: Int) {
+    private fun paperOf(meta: Properties): Paper {
+        val colour = meta.getProperty(KEY_PAPER_COLOUR)?.toLongOrNull(16)?.toInt() ?: return Paper.PLAIN
+        return Paper(
+            colour = colour or -0x1000000,
+            guides = Guides.of(meta.getProperty(KEY_PAPER_GUIDES)),
+            spacing = meta.getProperty(KEY_PAPER_SPACING)?.toFloatOrNull()?.takeIf { it.isFinite() }
+                ?.coerceIn(Paper.SPACING_RANGE.start, Paper.SPACING_RANGE.endInclusive) ?: Paper.DEFAULT_SPACING,
+            guidesInExport = meta.getProperty(KEY_PAPER_EXPORT).toBoolean(),
+        )
+    }
+
+    private fun updateMeta(id: String, change: Properties.() -> Unit) {
+        synchronized(this) {
+            val p = readMeta(id)
+            p.change()
+            storeMeta(id, p)
+        }
+    }
+
+    private fun writeMeta(id: String, name: String, width: Int, height: Int, paper: Paper = Paper.PLAIN) {
         val p = Properties()
         p.setProperty(KEY_NAME, name)
         p.setProperty(KEY_WIDTH, width.toString())
         p.setProperty(KEY_HEIGHT, height.toString())
+        if (paper != Paper.PLAIN) {
+            p.setProperty(KEY_PAPER_COLOUR, Integer.toHexString(paper.colour))
+            p.setProperty(KEY_PAPER_GUIDES, paper.guides.key)
+            p.setProperty(KEY_PAPER_SPACING, paper.spacing.toString())
+            p.setProperty(KEY_PAPER_EXPORT, paper.guidesInExport.toString())
+        }
+        storeMeta(id, p)
+    }
+
+    private fun storeMeta(id: String, p: Properties) {
         val tmp = File(dir, "$id.meta.tmp")
         tmp.outputStream().use { p.store(it, null) }
         if (!tmp.renameTo(metaFile(id))) {
@@ -188,6 +258,11 @@ class DrawingStore(context: Context) {
         private const val KEY_NAME = "name"
         private const val KEY_WIDTH = "width"
         private const val KEY_HEIGHT = "height"
+        private const val KEY_LAYERS = "layers"
+        private const val KEY_PAPER_COLOUR = "paper.colour"
+        private const val KEY_PAPER_GUIDES = "paper.guides"
+        private const val KEY_PAPER_SPACING = "paper.spacing"
+        private const val KEY_PAPER_EXPORT = "paper.export_guides"
 
         @Volatile private var instance: DrawingStore? = null
 

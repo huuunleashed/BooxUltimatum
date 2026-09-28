@@ -198,7 +198,7 @@ object Catalog {
 
             override suspend fun state(context: Context): TweakState {
                 if (!Privileged.ready()) return TweakState.Unknown
-                val restricted = userApps(context).filter { SystemState.backgroundMode(it) == BgMode.Ignore }
+                val restricted = SystemState.restrictedAmong(userApps(context))
                 return when {
                     restricted.isNotEmpty() -> TweakState.Off
                     Journal.original(context, id) != null -> TweakState.On
@@ -207,7 +207,7 @@ object Catalog {
             }
 
             override suspend fun doApply(context: Context): Result<Unit> {
-                val restricted = userApps(context).filter { SystemState.backgroundMode(it) == BgMode.Ignore }
+                val restricted = SystemState.restrictedAmong(userApps(context))
                 val prior = Journal.original(context, id)?.optJSONArray("released") ?: org.json.JSONArray()
                 val known = (0 until prior.length()).map { prior.getString(it) }.toMutableSet()
                 restricted.forEach { pkg -> SystemState.setBackgroundMode(pkg, BgMode.Allow).toResult().onFailure { return Result.failure(it) }; known += pkg }
@@ -271,7 +271,7 @@ object Catalog {
                 if (!Privileged.ready()) return TweakState.Unknown
                 val p = present(context)
                 if (p.isEmpty()) return TweakState.NotApplicable
-                return p.all { SystemState.backgroundMode(it) == BgMode.Ignore }.toState()
+                return (SystemState.restrictedAmong(p).size == p.size).toState()
             }
 
             override suspend fun doApply(context: Context): Result<Unit> {

@@ -15,6 +15,7 @@ private class FakeDisplay(var routable: Boolean = true) : PenDisplay {
     override fun setPenState(state: Int): Boolean { calls += "state $state"; this.state = state; return true }
     override fun setRegion(rect: IntArray): Boolean { calls += "region ${rect.joinToString(",")}"; return true }
     override fun setStroke(widthPx: Float, argb: Int, style: Int) { calls += "stroke $style $widthPx ${Integer.toHexString(argb)}" }
+    override fun setExclude(screenRect: IntArray?): Boolean { calls += "exclude ${screenRect?.joinToString(",") ?: "none"}"; return true }
     override fun enablePost(on: Boolean): Boolean { calls += "post $on"; return true }
     override fun release() { calls += "release"; state = SurfaceInk.STOP }
 }
@@ -26,8 +27,16 @@ class PenSessionTest {
         val d = FakeDisplay()
         val s = PenSession(d)
         assertTrue(s.open(2480, pen))
-        assertEquals(listOf("connect", "region 0,0,2480,2480", "state 1", "stroke 1 4.0 ff000000", "state 3"), d.calls)
+        assertEquals(listOf("connect", "region 0,0,2480,2480", "exclude none", "state 1", "stroke 1 4.0 ff000000", "state 3"), d.calls)
         assertEquals(PenSession.State.Paused, s.state)
+    }
+
+    @Test fun opensDrawingWhenAsked() {
+        val d = FakeDisplay()
+        val s = PenSession(d)
+        assertTrue(s.open(2480, pen, drawing = true))
+        assertEquals(listOf("connect", "region 0,0,2480,2480", "exclude none", "state 1", "stroke 1 4.0 ff000000", "state 2"), d.calls)
+        assertEquals(PenSession.State.Drawing, s.state)
     }
 
     @Test fun withoutARouteItStaysOutOfTheWay() {
@@ -105,5 +114,86 @@ class PenSessionTest {
         assertFalse(s.holding)
         assertTrue("release" in d.calls)
         assertEquals(SurfaceInk.DRAW, d.state)
+    }
+
+    @Test fun anExcludedAreaKeepsTheSessionDrawingAndIsSentOnce() {
+        val d = FakeDisplay()
+        val s = PenSession(d).apply { open(2480, pen, drawing = true) }
+        d.calls.clear()
+        s.exclude(intArrayOf(10, 20, 300, 400))
+        s.exclude(intArrayOf(10, 20, 300, 400))
+        assertEquals(listOf("exclude 10,20,300,400"), d.calls)
+        assertEquals(PenSession.State.Drawing, s.state)
+        s.exclude(null)
+        s.exclude(null)
+        assertEquals(listOf("exclude 10,20,300,400", "exclude none"), d.calls)
+    }
+
+    @Test fun closingClearsTheExcludedArea() {
+        val d = FakeDisplay()
+        val s = PenSession(d).apply { open(2480, pen, drawing = true); exclude(intArrayOf(1, 2, 3, 4)) }
+        d.calls.clear()
+        s.close()
+        assertEquals(listOf("exclude none", "release"), d.calls)
+    }
+
+    private class RecordingLease : PenLease {
+        val calls = mutableListOf<String>()
+        override fun taken() { calls += "taken" }
+        override fun given() { calls += "given" }
+    }
+
+    @Test fun theLeaseIsHeldExactlyWhileTheSessionIsOpen() {
+        val lease = RecordingLease()
+        val s = PenSession(FakeDisplay(), lease)
+        s.open(2480, pen)
+        assertEquals(listOf("taken"), lease.calls)
+        s.close()
+        assertEquals(listOf("taken", "given"), lease.calls)
+        s.close()
+        assertEquals(listOf("taken", "given"), lease.calls, "closing twice gives it once")
+    }
+
+    @Test fun noRouteTakesNoLease() {
+        val lease = RecordingLease()
+        PenSession(FakeDisplay(routable = false), lease).open(2480, pen)
+        assertEquals(emptyList(), lease.calls)
+    }
+
+    @Test fun aLeaseFromAnEndedProcessEndsItsDrawingSession() {
+        val f = java.io.File.createTempFile("lease", null).apply { writeText("12345 1790600000000") }
+        val d = FakeDisplay().apply { state = SurfaceInk.DRAW }
+        assertTrue(FileLease(f).recoverStale(d))
+        assertTrue("release" in d.calls)
+        assertFalse(f.exists(), "the stale lease is dropped")
+    }
+
+    @Test fun aLeaseFromAnEndedProcessLeavesAPausedSessionAlone() {
+        val f = java.io.File.createTempFile("lease", null).apply { writeText("12345 1790600000000") }
+        val d = FakeDisplay().apply { state = SurfaceInk.PAUSED }
+        assertFalse(FileLease(f).recoverStale(d), "a paused session draws nothing, and may be another app's by now")
+        assertFalse("release" in d.calls)
+        assertFalse(f.exists())
+    }
+
+    @Test fun noLeaseOrThisProcessesOwnLeaseChangesNothing() {
+        val missing = java.io.File(System.getProperty("java.io.tmpdir"), "no-such-lease-${System.nanoTime()}")
+        val d = FakeDisplay().apply { state = SurfaceInk.DRAW }
+        assertFalse(FileLease(missing).recoverStale(d))
+        val own = java.io.File.createTempFile("lease", null).apply { writeText("${android.os.Process.myPid()} 1") }
+        assertFalse(FileLease(own).recoverStale(d))
+        assertTrue(d.calls.isEmpty())
+        assertTrue(own.exists(), "this process's own lease stays")
+        own.delete()
+    }
+
+    @Test fun theFileLeaseWritesAndRemovesItsNote() {
+        val f = java.io.File(System.getProperty("java.io.tmpdir"), "lease-${System.nanoTime()}")
+        val lease = FileLease(f)
+        lease.taken()
+        assertTrue(f.exists())
+        assertEquals(android.os.Process.myPid(), f.readText().substringBefore(' ').toInt())
+        lease.given()
+        assertFalse(f.exists())
     }
 }

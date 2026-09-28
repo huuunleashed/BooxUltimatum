@@ -31,7 +31,7 @@ flowchart TB
 | `:nib` | `app.booxultimatum.nib` | Nib, the drawing app |
 | `:nib-engine` | `app.booxultimatum.nib.engine` | Nib's strokes, brushes, layers, undo and file format, with no Android code, so it's tested on the JVM |
 | `:kit:core` | `app.booxultimatum.kit.core` | `Tablet` (the tablet profile), `SuiteApp` and `Suite` (the registry, certificates, open and uninstall), `AppWork`, `PenNodes`. Its manifest declares the suite permission and package visibility for every app. |
-| `:kit:log` | `app.booxultimatum.kit.log` | `Logbook`, `Logger`, crash and exit capture, the log provider other suite apps read from, `Redact` |
+| `:kit:log` | `app.booxultimatum.kit.log` | `Logbook`, `Logger`, crash and exit capture, `Housekeeping` (storage limits and cleanup), the provider other suite apps read logs and storage through, `Redact` |
 | `:kit:ui` | `app.booxultimatum.kit.ui` | The theme, components and glyphs, the Archivo font and its licence |
 | `:kit:ink` | `app.booxultimatum.kit.ink` | `SurfaceInk` (the display calls), `PenInput` (the pen's kernel node), `PenDisplay` and `PenSession` (a session for an app drawing in its own window) |
 | `:kit:update` | `app.booxultimatum.kit.update` | `Version`, `ReleaseFeed`, `Updates` (check, download, verify, install), `UpdateText` |
@@ -64,7 +64,7 @@ The rail has five sections, and a section with several pages shows them as tabs.
 | Suite | Apps and modules, Home screen, Sleep, Ink |
 | Battery | Battery |
 | System | Tweaks, Apps, Appearance, Fonts, Settings |
-| Device | Device (this tablet and this app's updates), Access, Logs |
+| Device | Device (this tablet and this app's updates), Access, Logs, Storage |
 
 ## Trust between the apps
 
@@ -102,6 +102,19 @@ Every suite app writes a logbook in every build, release or debug (`:kit:log`).
 - **Where it's kept.** `noBackupFilesDir/logs/`, eight files of 1 MB at most, and nothing older than 14 days.
 - **Privacy.** No drawing content, typed text, or account or network names. File names are hashed, and package names are kept only for suite and Boox apps.
 - **Sharing.** Device › Logs › *Share logs* makes one zip with the hub's logs, every other suite app's logs (read through its provider) and a device summary. Problem reports quote the latest entries.
+
+## Storage
+
+No suite app may fill the tablet over time. `Housekeeping` in `:kit:log` runs by itself at most every 12 hours, when the logbook starts:
+
+| Area | Limit |
+|---|---|
+| Cache (`cacheDir`, `externalCacheDir`) | Files older than three days go, then the oldest until it's under 64 MB |
+| Downloaded updates (`cache/updates`) | Older than a day |
+| Shared exports (log zips, shared pictures, pen recordings) | Older than a week, and all but the newest five |
+| Logs and reports | At most 8 files of 1 MB, nothing older than 14 days, the newest 20 crash and 10 exit reports |
+
+The owner's data is registered with `Housekeeping.registerData` so it's counted, and it's never cleared: Nib's drawings, and the hub's battery log, sleep-screen pictures and installed fonts. Device › Storage shows each app's areas (other apps answer through their provider, which only apps signed with the suite key may call). It clears temporary files, or logs and reports, per app.
 
 ## Testing without the tablet
 

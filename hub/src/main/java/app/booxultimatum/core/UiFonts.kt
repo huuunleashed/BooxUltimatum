@@ -88,4 +88,11 @@ object UiFonts {
         stamp.writeText(src)
         return dst
     }
+
+    /** Deletes the app's readable copy of the system font when it was made from [base]'s files; it's made again on demand. */
+    fun dropSystemFontCopy(context: Context, base: String) {
+        val dir = File(context.filesDir, "sysfont")
+        val src = File(dir, "source.txt").takeIf { it.exists() }?.readText() ?: return
+        if (FontNames.baseOf(src.substringAfterLast('/')) == base) dir.listFiles()?.forEach { it.delete() }
+    }
 }

@@ -15,6 +15,7 @@ import java.nio.file.AtomicMoveNotSupportedException
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 
@@ -39,6 +40,12 @@ class NibFileContents(val document: Document, val thumbnailPng: ByteArray?, val 
 
     override fun hashCode(): Int = document.hashCode() * 31 + (thumbnailPng?.contentHashCode() ?: 0)
 }
+
+/**
+ * What a `.nib` file says about itself without its strokes being read: the page, how many layers and strokes it
+ * holds (as of the snapshot; a journal written since may have changed them) and whether it has a thumbnail.
+ */
+data class NibSummary(val width: Int, val height: Int, val layers: Int, val strokes: Int, val hasThumbnail: Boolean)
 
 /**
  * The `.nib` document format: a zip holding `manifest.bin` (magic `NIB1`, format version, document fields and the
@@ -144,18 +151,48 @@ object NibFile {
     /** Reads a document from [file]. */
     fun read(file: File): NibFileContents = file.inputStream().buffered().use { read(it) }
 
+    /** Reads only [file]'s manifest: cheap enough for a library listing, since no stroke is decoded. */
+    fun readSummary(file: File): NibSummary {
+        val manifest = try {
+            ZipFile(file).use { zip ->
+                val entry = zip.getEntry(MANIFEST) ?: throw NibFileException.NotNibFile("not a Nib document")
+                zip.getInputStream(entry).use { readEntry(it) }
+            }
+        } catch (e: NibFileException) {
+            throw e
+        } catch (e: IOException) {
+            throw NibFileException.Corrupt("damaged container: ${e.message}", e)
+        }
+        try {
+            return summarize(manifest)
+        } catch (e: NibFileException) {
+            throw e
+        } catch (e: RuntimeException) {
+            throw NibFileException.Corrupt("damaged manifest: ${e.message}", e)
+        }
+    }
+
+    /** The thumbnail PNG kept in [file], or null when it has none. Reads that one entry only. */
+    fun readThumbnail(file: File): ByteArray? = try {
+        ZipFile(file).use { zip -> zip.getEntry(THUMBNAIL)?.let { e -> zip.getInputStream(e).use { readEntry(it) } } }
+    } catch (e: NibFileException) {
+        throw e
+    } catch (e: IOException) {
+        throw NibFileException.Corrupt("damaged container: ${e.message}", e)
+    }
+
     private fun putEntry(zip: ZipOutputStream, name: String, bytes: ByteArray, len: Int) {
         zip.putNextEntry(ZipEntry(name))
         zip.write(bytes, 0, len)
         zip.closeEntry()
     }
 
-    private fun readEntry(zip: ZipInputStream): ByteArray {
+    private fun readEntry(input: InputStream): ByteArray {
         val out = ByteArrayOutputStream()
         val buf = ByteArray(1 shl 14)
         var total = 0L
         while (true) {
-            val n = zip.read(buf)
+            val n = input.read(buf)
             if (n < 0) break
             total += n
             if (total > MAX_ENTRY_BYTES) throw NibFileException.Corrupt("entry too large")
@@ -190,6 +227,34 @@ object NibFile {
             }
         }
         return strokes
+    }
+
+    private fun summarize(manifest: ByteArray): NibSummary {
+        val r = ByteReader(manifest)
+        if (manifest.size < MANIFEST_MAGIC.size || MANIFEST_MAGIC.indices.any { manifest[it] != MANIFEST_MAGIC[it] }) {
+            throw NibFileException.NotNibFile("bad magic")
+        }
+        r.raw(MANIFEST_MAGIC.size)
+        val major = r.count()
+        val minor = r.count()
+        if (major > FORMAT_MAJOR) throw NibFileException.UnsupportedVersion(major, minor)
+        var width = 0
+        var height = 0
+        var layers = 0
+        var strokes = 0
+        var hasThumbnail = false
+        r.fields { tag, f ->
+            when (tag) {
+                2 -> width = f.count()
+                3 -> height = f.count()
+                6 -> {
+                    layers++
+                    Codecs.readLayerProps(f) { t, g -> if (t == 8) strokes += g.count() }
+                }
+                8 -> hasThumbnail = f.bool()
+            }
+        }
+        return NibSummary(width, height, layers, strokes, hasThumbnail)
     }
 
     private fun parse(manifest: ByteArray, entries: Map<String, ByteArray>): NibFileContents {

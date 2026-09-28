@@ -55,7 +55,7 @@ object SystemFont {
      * Writes [file] into `Documents/BooxUltimatum/` as the app's own MediaStore row, replacing an earlier copy with the
      * same name, and returns its absolute path. No permission is needed for files the app owns.
      */
-    private fun publishOwnCopy(context: Context, file: java.io.File): String {
+    fun publishOwnCopy(context: Context, file: java.io.File): String {
         val resolver = context.contentResolver
         val files = android.provider.MediaStore.Files.getContentUri(android.provider.MediaStore.VOLUME_EXTERNAL_PRIMARY)
         val cols = arrayOf(android.provider.MediaStore.MediaColumns._ID, android.provider.MediaStore.MediaColumns.DATA)
@@ -82,6 +82,64 @@ object SystemFont {
             Journal.forget(context, JOURNAL_ID)
             Journal.log(context, "system-font", nameOf(prev) ?: context.getString(app.booxultimatum.R.string.fonts_sys_default), "", true)
         }
+    }
+
+    /**
+     * Hands the tablet font back because the file in use is going away: to the font from before BooxUltimatum changed
+     * it, or to the Boox default when there was none, or when [avoid] says that one is going too. Waits until the
+     * tablet has switched, so the file can be moved safely. Returns the path in use afterwards, null for the default.
+     */
+    suspend fun release(context: Context, avoid: (String) -> Boolean): Result<String?> = withContext(Dispatchers.IO) {
+        runCatching {
+            val was = current()
+            val prev = previous(context)
+            val back = prev.takeIf { changed(context) && !it.isNullOrEmpty() && !avoid(it) }
+            if (back != null) send(context, back) else {
+                reset(context)
+                for (i in 0 until 10) { if (current() != was) break; delay(500) }
+                check(was == null || current() != was) { "The tablet did not switch fonts" }
+            }
+            Journal.forget(context, JOURNAL_ID)
+            Journal.log(context, "system-font", nameOf(back) ?: context.getString(app.booxultimatum.R.string.fonts_sys_default), "", true)
+            current()
+        }
+    }
+
+    // ---------- The app's own copies in Documents/BooxUltimatum ----------
+
+    private fun filesUri() = android.provider.MediaStore.Files.getContentUri(android.provider.MediaStore.VOLUME_EXTERNAL_PRIMARY)
+
+    /**
+     * The font files this app published into `Documents/BooxUltimatum/`, or null when MediaStore can't be asked.
+     * Only rows the app owns are returned, so nothing else in Documents is ever touched.
+     */
+    fun ownCopies(context: Context): List<FontFileEntry>? = runCatching {
+        val cols = arrayOf(
+            android.provider.MediaStore.MediaColumns._ID, android.provider.MediaStore.MediaColumns.DISPLAY_NAME,
+            android.provider.MediaStore.MediaColumns.DATA, android.provider.MediaStore.MediaColumns.SIZE,
+            android.provider.MediaStore.MediaColumns.DATE_MODIFIED, android.provider.MediaStore.MediaColumns.OWNER_PACKAGE_NAME,
+        )
+        val where = "${android.provider.MediaStore.MediaColumns.RELATIVE_PATH}=?"
+        context.contentResolver.query(filesUri(), cols, where, arrayOf(OWN_FOLDER), null)?.use { c ->
+            buildList<FontFileEntry> {
+                while (c.moveToNext()) {
+                    val name = c.getString(1) ?: continue
+                    val owner = c.getString(5)
+                    if (owner != null && owner != context.packageName) continue
+                    if (FontNames.baseOf(name) == null) continue
+                    val size = c.getLong(3)
+                    if (size <= 0) continue
+                    add(FontFileEntry(FontPlace.Documents, false, name, c.getString(2) ?: "/storage/emulated/0/$OWN_FOLDER$name", size, c.getLong(4) * 1000, id = c.getLong(0)))
+                }
+            }
+        } ?: error("MediaStore gave no answer")
+    }.getOrNull()
+
+    fun openOwnCopy(context: Context, id: Long): java.io.InputStream =
+        context.contentResolver.openInputStream(android.content.ContentUris.withAppendedId(filesUri(), id)) ?: error("Couldn’t read the copy in Documents")
+
+    fun deleteOwnCopy(context: Context, id: Long) {
+        context.contentResolver.delete(android.content.ContentUris.withAppendedId(filesUri(), id), null, null)
     }
 
     private suspend fun reset(context: Context) {

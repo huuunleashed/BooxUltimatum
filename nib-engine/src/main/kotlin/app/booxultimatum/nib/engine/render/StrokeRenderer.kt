@@ -38,10 +38,10 @@ object StrokeRenderer {
 
     private val scratch = ThreadLocal.withInitial { Scratch() }
 
-    internal fun mode(kind: BrushKind): Mode = when (kind) {
-        BrushKind.Pencil, BrushKind.Graphite, BrushKind.Charcoal, BrushKind.CharcoalV2, BrushKind.Airbrush -> Mode.Dabs
-        BrushKind.Dash -> Mode.Dashed
-        BrushKind.StrokeEraser, BrushKind.LassoEraser -> Mode.None
+    internal fun mode(kind: BrushKind): Mode = when {
+        kind.rendersAsDabs -> Mode.Dabs
+        kind == BrushKind.Dash -> Mode.Dashed
+        !kind.isRendered -> Mode.None
         else -> Mode.Outline
     }
 

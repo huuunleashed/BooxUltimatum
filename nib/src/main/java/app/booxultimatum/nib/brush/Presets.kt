@@ -1,8 +1,10 @@
 package app.booxultimatum.nib.brush
 
+import app.booxultimatum.nib.pen.PreviewMatch
 import app.booxultimatum.nib.engine.brush.BrushKind
 import app.booxultimatum.nib.engine.brush.BrushSpec
 import app.booxultimatum.nib.engine.brush.HardwareStyle
+import app.booxultimatum.nib.engine.brush.MarkerPreview
 import app.booxultimatum.nib.engine.input.PressureCurve
 import app.booxultimatum.kit.ink.PreviewStroke
 
@@ -28,36 +30,165 @@ enum class PressurePreset(val key: String, private val exponentFactor: Float) {
     }
 }
 
-/** One favourite pen: a brush, a width, a pressure preset and a colour. What a toolbar slot holds. */
-data class BrushPreset(val kind: BrushKind, val width: Float, val pressure: PressurePreset, val color: Int) {
-    /** The full brush this preset draws with. */
-    fun spec(): BrushSpec = BrushSpec.defaults(kind).withWidth(width).copy(curve = pressure.curve(kind))
+/**
+ * The owner's own settings for a brush, over its factory ones: null leaves a property as the brush has it. Values are
+ * clamped to [TuneRange]s when read, so a damaged preference can't make an unusable brush.
+ */
+data class BrushTune(
+    val opacity: Float? = null,
+    val exponent: Float? = null,
+    val floor: Float? = null,
+    val ceiling: Float? = null,
+    val smoothing: Float? = null,
+    val spacing: Float? = null,
+    val flow: Float? = null,
+    val grain: Float? = null,
+    val jitter: Float? = null,
+    val nibAngle: Float? = null,
+    val nibFromOrientation: Boolean? = null,
+    val speedInfluence: Float? = null,
+    val taper: Float? = null,
+) {
+    val isEmpty: Boolean get() = this == EMPTY
 
-    fun encode(): String = listOf(kind.id, width.toString(), pressure.key, Integer.toHexString(color)).joinToString(SEP)
+    fun encode(): String = buildList {
+        opacity?.let { add("o=$it") }
+        exponent?.let { add("e=$it") }
+        floor?.let { add("f=$it") }
+        ceiling?.let { add("c=$it") }
+        smoothing?.let { add("s=$it") }
+        spacing?.let { add("sp=$it") }
+        flow?.let { add("fl=$it") }
+        grain?.let { add("g=$it") }
+        jitter?.let { add("j=$it") }
+        nibAngle?.let { add("a=$it") }
+        nibFromOrientation?.let { add("ao=$it") }
+        speedInfluence?.let { add("v=$it") }
+        taper?.let { add("t=$it") }
+    }.joinToString(";")
+
+    companion object {
+        val EMPTY = BrushTune()
+
+        /** Reads [encode]'s text; unknown or damaged entries are skipped, values clamped to their ranges. */
+        fun decode(text: String): BrushTune {
+            var t = EMPTY
+            for (part in text.split(';')) {
+                val eq = part.indexOf('=')
+                if (eq <= 0) continue
+                val key = part.substring(0, eq)
+                val raw = part.substring(eq + 1)
+                if (key == "ao") {
+                    raw.toBooleanStrictOrNull()?.let { t = t.copy(nibFromOrientation = it) }
+                    continue
+                }
+                val v = raw.toFloatOrNull()?.takeIf { it.isFinite() } ?: continue
+                t = when (key) {
+                    "o" -> t.copy(opacity = TuneRange.OPACITY.clamp(v))
+                    "e" -> t.copy(exponent = TuneRange.EXPONENT.clamp(v))
+                    "f" -> t.copy(floor = TuneRange.FLOOR.clamp(v))
+                    "c" -> t.copy(ceiling = TuneRange.CEILING.clamp(v))
+                    "s" -> t.copy(smoothing = TuneRange.SMOOTHING.clamp(v))
+                    "sp" -> t.copy(spacing = TuneRange.SPACING.clamp(v))
+                    "fl" -> t.copy(flow = TuneRange.FLOW.clamp(v))
+                    "g" -> t.copy(grain = TuneRange.GRAIN.clamp(v))
+                    "j" -> t.copy(jitter = TuneRange.JITTER.clamp(v))
+                    "a" -> t.copy(nibAngle = TuneRange.NIB_ANGLE.clamp(v))
+                    "v" -> t.copy(speedInfluence = TuneRange.SPEED.clamp(v))
+                    "t" -> t.copy(taper = TuneRange.TAPER.clamp(v))
+                    else -> t
+                }
+            }
+            return t
+        }
+    }
+}
+
+/** How far each tunable property may go. */
+enum class TuneRange(val min: Float, val max: Float) {
+    OPACITY(0.05f, 1f),
+    EXPONENT(0.25f, 4f),
+    FLOOR(0f, 1f),
+    CEILING(0.1f, 1.5f),
+    SMOOTHING(0f, 1f),
+    SPACING(0.02f, 1f),
+    FLOW(0.02f, 1f),
+    GRAIN(0f, 1f),
+    JITTER(0f, 1f),
+    NIB_ANGLE(0f, Math.PI.toFloat()),
+    SPEED(0f, 1f),
+    TAPER(0f, 6f),
+    ;
+
+    fun clamp(v: Float): Float = if (v.isNaN()) min else v.coerceIn(min, max)
+}
+
+/** One favourite pen: a brush, a width, a pressure preset, a colour and the owner's tuning. What a rail slot holds. */
+data class BrushPreset(
+    val kind: BrushKind,
+    val width: Float,
+    val pressure: PressurePreset,
+    val color: Int,
+    val tune: BrushTune = BrushTune.EMPTY,
+) {
+    /** The full brush this preset draws with. */
+    fun spec(): BrushSpec {
+        val base = BrushSpec.defaults(kind).withWidth(width)
+        var curve = pressure.curve(kind)
+        tune.floor?.let { curve = curve.copy(floor = it) }
+        tune.ceiling?.let { curve = curve.copy(ceiling = it) }
+        tune.exponent?.let { curve = curve.copy(exponent = it) }
+        return base.copy(
+            curve = curve,
+            opacity = tune.opacity ?: base.opacity,
+            smoothing = tune.smoothing ?: base.smoothing,
+            spacing = tune.spacing ?: base.spacing,
+            flow = tune.flow ?: base.flow,
+            grain = tune.grain ?: base.grain,
+            jitter = tune.jitter ?: base.jitter,
+            nibAngle = tune.nibAngle ?: base.nibAngle,
+            nibFromOrientation = tune.nibFromOrientation ?: base.nibFromOrientation,
+            speedInfluence = tune.speedInfluence ?: base.speedInfluence,
+            taper = tune.taper ?: base.taper,
+        )
+    }
+
+    /** The same pen with a pressure preset chosen: the preset's curve replaces any tuned sensitivity. */
+    fun withPressure(p: PressurePreset): BrushPreset = copy(pressure = p, tune = tune.copy(exponent = null))
+
+    /** Whether the curve has been tuned away from the preset. */
+    val customCurve: Boolean get() = tune.exponent != null || tune.floor != null || tune.ceiling != null
+
+    fun encode(): String {
+        val base = listOf(kind.id, width.toString(), pressure.key, Integer.toHexString(color))
+        return (if (tune.isEmpty) base else base + tune.encode()).joinToString(SEP)
+    }
 
     companion object {
         private const val SEP = ":"
 
-        /** Reads [encode]'s text; null for anything damaged or naming a brush this version lacks. */
+        /** Reads [encode]'s text (with or without a tune, as 0.1 wrote it); null for anything damaged or naming a brush this version lacks. */
         fun decode(text: String?): BrushPreset? {
             val parts = text?.split(SEP) ?: return null
-            if (parts.size != 4) return null
+            if (parts.size != 4 && parts.size != 5) return null
             val kind = BrushKind.fromId(parts[0])?.takeIf { !it.isEraser } ?: return null
             val width = parts[1].toFloatOrNull()?.takeIf { it.isFinite() } ?: return null
             val color = parts[3].toLongOrNull(16)?.toInt() ?: return null
-            return BrushPreset(kind, BrushSpec.widthRange(kind).let { width.coerceIn(it) }, PressurePreset.of(parts[2]), color)
+            val tune = if (parts.size == 5) BrushTune.decode(parts[4]) else BrushTune.EMPTY
+            return BrushPreset(kind, BrushSpec.widthRange(kind).let { width.coerceIn(it) }, PressurePreset.of(parts[2]), color, tune)
         }
 
-        /** The slots on a first start: a fountain pen, a fineliner, a pencil and a highlighter, as in Boox Notes. */
+        /** The slots on a first start: a fountain pen, a fineliner, a pencil, a highlighter, a brush pen and a marker. */
         val DEFAULTS: List<BrushPreset> = listOf(
             BrushPreset(BrushKind.Fountain, 3f, PressurePreset.Medium, 0xFF000000.toInt()),
             BrushPreset(BrushKind.Fineliner, 0.75f, PressurePreset.Medium, 0xFF000000.toInt()),
             BrushPreset(BrushKind.Pencil, 2.5f, PressurePreset.Medium, 0xFF404040.toInt()),
             BrushPreset(BrushKind.Highlighter, 20f, PressurePreset.Medium, 0xFFF2C300.toInt()),
+            BrushPreset(BrushKind.BrushPen, 6f, PressurePreset.Medium, 0xFF1F4FB8.toInt()),
+            BrushPreset(BrushKind.Marker, 16f, PressurePreset.Medium, 0xFFD2232A.toInt()),
         )
     }
 }
-
 /** The pen panel's groups, in order, and which brushes each holds. Erasers live in the eraser panel. */
 enum class BrushGroup(val key: String, val kinds: List<BrushKind>) {
     Pens("pens", listOf(BrushKind.Fineliner, BrushKind.Fountain, BrushKind.Ballpoint, BrushKind.Calligraphy, BrushKind.SquarePen, BrushKind.Dash)),
@@ -78,9 +209,15 @@ enum class BrushGroup(val key: String, val kinds: List<BrushKind>) {
  * Fountain for most, Pencil for the charcoals), unless the owner turns on *Try unverified preview styles*.
  */
 object PreviewPolicy {
-    fun preview(brush: BrushSpec, color: Int, viewScale: Float, tryUnverified: Boolean): PreviewStroke {
+    /** With [match], the width is sized to the stroke Nib will draw at the owner's usual pressure. */
+    fun preview(
+        brush: BrushSpec, color: Int, viewScale: Float, tryUnverified: Boolean, match: PreviewMatch? = null,
+        marker: MarkerPreview = MarkerPreview.SolidColour,
+    ): PreviewStroke {
         val p = brush.hardwarePreview(color, viewScale, verifiedOnly = !tryUnverified)
-        return PreviewStroke(p.style.code, p.widthPx, p.argb)
+        val width = match?.width(brush, p.style.code, p.widthPx) ?: p.widthPx
+        val argb = if (p.style == HardwareStyle.Marker) marker.adapt(p.argb) else p.argb
+        return PreviewStroke(p.style.code, width, argb)
     }
 
     /** The style shown instead of the brush's own because that one is unverified, or null when none stands in. */

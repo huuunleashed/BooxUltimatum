@@ -32,6 +32,47 @@ enum class HardwareStyle(val code: Int, val verified: Boolean) {
     }
 }
 
+/**
+ * How the [HardwareStyle.Marker] preview carries colour. On the Note Air6 C (FW 4.3) the display drops a translucent
+ * marker preview in red, blue, green or teal, but shows every grey from black to #BBBBBB and shows opaque colours
+ * (tested with the Marker colours probe, 2026-09-28).
+ */
+enum class MarkerPreview(val id: String) {
+    /**
+     * Opaque, in the colour itself: it covers what's under the stroke until the lift, and pale colours may not show.
+     * The default, which the owner preferred on the tablet.
+     */
+    SolidColour("solid_colour"),
+
+    /** Translucent, in a grey as light as the colour: what's under the stroke stays visible. */
+    SeeThroughGrey("see_through_grey"),
+    ;
+
+    /** The ARGB to send for a marker preview of [argb], as [Preview.argb] resolved it. */
+    fun adapt(argb: Int): Int {
+        val rgb = argb and 0xFFFFFF
+        return when (this) {
+            SolidColour -> OPAQUE or rgb
+            SeeThroughGrey -> {
+                val r = (rgb shr 16) and 0xFF
+                val g = (rgb shr 8) and 0xFF
+                val b = rgb and 0xFF
+                val grey = if (r == g && g == b) r else ((299 * r + 587 * g + 114 * b + 500) / 1000)
+                val v = grey.coerceAtMost(LIGHTEST_GREY)
+                (Preview.MARKER_ALPHA shl 24) or (v shl 16) or (v shl 8) or v
+            }
+        }
+    }
+
+    companion object {
+        /** The lightest grey seen showing at half alpha; lighter ones are sent at this. */
+        const val LIGHTEST_GREY = 0xBB
+        private const val OPAQUE = -0x1000000
+
+        fun of(id: String?): MarkerPreview = entries.firstOrNull { it.id == id } ?: SolidColour
+    }
+}
+
 /** A resolved hardware preview: what to pass to the firmware for one stroke. */
 data class HardwarePreview(val style: HardwareStyle, val widthPx: Float, val argb: Int)
 

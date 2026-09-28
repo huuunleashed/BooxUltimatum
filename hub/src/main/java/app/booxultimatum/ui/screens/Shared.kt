@@ -138,3 +138,17 @@ fun PlannedRow(name: String, purpose: String) {
         HorizontalDivider(thickness = Lines.hairline, color = Ink.Rule)
     }
 }
+
+private val readLog = app.booxultimatum.kit.log.Logbook.logger("ui")
+private const val SLOW_READ_MS = 3_000L
+
+/** Runs a page's reading and logs how long it took; a slow one is logged as a warning, so it shows in every build. */
+internal suspend fun <T> timedRead(page: String, block: suspend () -> T): T {
+    val started = android.os.SystemClock.elapsedRealtime()
+    return try {
+        block()
+    } finally {
+        val ms = android.os.SystemClock.elapsedRealtime() - started
+        if (ms >= SLOW_READ_MS) readLog.w("slow page", "page" to page, "ms" to ms) else readLog.d("page read", "page" to page, "ms" to ms)
+    }
+}
