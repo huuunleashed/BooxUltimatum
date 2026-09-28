@@ -29,6 +29,8 @@ description: How to build, lint, version, sign, release and document BooxUltimat
 - `R` is a built-in alias (`Invoke-History`), so don't name a helper function `R`.
 - Typographic apostrophes (’) inside single-quoted PowerShell strings break parsing; edit those files with an editing tool.
 - Write files as UTF-8 without a BOM: `[IO.File]::WriteAllText($p, $text, (New-Object Text.UTF8Encoding $false))`.
+- Don't pipe a long Gradle run into `Select-Object -First N`: it stops the pipeline and with it the build, so reports go missing. Redirect to a file (`*> build.log`) and read that instead.
+- The first test build of the hub reaches a 0.5.x tablet only by hand (download the `test-BooxUltimatum-…apk` from its release page), since 0.5.x updaters can't see test builds. From then on, *Offer test builds* lets the hub find the next ones.
 
 ## Releases
 
