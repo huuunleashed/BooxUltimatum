@@ -20,8 +20,8 @@ import app.booxultimatum.nib.ui.NibApp
 import app.booxultimatum.nib.ui.studio.Studio
 
 /**
- * Nib's one activity. It handles rotation itself (see the manifest), and it sees every pen event before Compose does,
- * so the pen session pauses the moment the pen hovers over anything but the canvas.
+ * Nib's one activity. It handles rotation itself (see the manifest), and it sees every pen event and touch before
+ * Compose does ([PenRouter]), so the canvas knows when the pen is over a control and when a control is pressed.
  */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

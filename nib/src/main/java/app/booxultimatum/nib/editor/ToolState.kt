@@ -18,8 +18,11 @@ import app.booxultimatum.nib.engine.brush.BrushSpec
 enum class ToolMode {
     Pen, Eraser, Lasso, Eyedropper, Hand;
 
-    /** Whether the display's preview stays off: only drawing previews; the others draw their own marks. */
-    val quiet: Boolean get() = this != Pen
+    /**
+     * Whether the display's preview stays off: the pen draws and the lasso's path is previewed (in the dashed style);
+     * the eraser tool, the eyedropper and the hand draw their own marks.
+     */
+    val quiet: Boolean get() = this != Pen && this != Lasso
 }
 
 /**

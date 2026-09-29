@@ -1,6 +1,7 @@
 package app.booxultimatum.nib.engine.render
 
 import app.booxultimatum.nib.engine.brush.BrushKind
+import app.booxultimatum.nib.engine.brush.TiltShading
 import app.booxultimatum.nib.engine.doc.Stroke
 import kotlin.math.abs
 import kotlin.math.ceil
@@ -12,7 +13,7 @@ import kotlin.math.sqrt
 
 /**
  * The line a stroke is drawn along: the stroke's points without near duplicates, with a radius per point (pressure,
- * speed, taper and nib applied), and extra points on long segments along a centripetal Catmull-Rom curve so fast
+ * tilt, speed, taper and nib applied), and extra points on long segments along a centripetal Catmull-Rom curve so fast
  * strokes stay round. Reused between strokes.
  */
 internal class Centreline {
@@ -27,6 +28,10 @@ internal class Centreline {
     var p = FloatArray(256)
         private set
 
+    /** Each point's coverage factor from the pen's tilt, 0..1 (1 when upright or when the brush ignores tilt). */
+    var shade = FloatArray(256)
+        private set
+
     private var m = 0
     private var ix = FloatArray(256)
     private var iy = FloatArray(256)
@@ -34,6 +39,8 @@ internal class Centreline {
     private var ip = FloatArray(256)
     private var io = FloatArray(256)
     private var it = FloatArray(256)
+    private var itl = FloatArray(256)
+    private var ia = FloatArray(256)
 
     fun build(stroke: Stroke) {
         collect(stroke)
@@ -65,6 +72,7 @@ internal class Centreline {
             ip[m] = pp
             io[m] = pts.orientation(i)
             it[m] = time
+            itl[m] = pts.tilt(i)
             m++
         }
     }
@@ -72,8 +80,15 @@ internal class Centreline {
     private fun radii(stroke: Stroke) {
         val brush = stroke.brush
         val half = brush.width * 0.5f
-        for (k in 0 until m) ir[k] = half * brush.curve.factor(ip[k])
-        if (brush.speedInfluence > 0f && m > 1) {
+        val tiltScale = brush.tiltScale
+        val response = brush.tiltResponse
+        for (k in 0 until m) {
+            val tilt = TiltShading.widthFactor(itl[k], tiltScale, response)
+            ir[k] = half * brush.curve.factor(ip[k]) * tilt
+            ia[k] = TiltShading.coverage(tilt, response)
+        }
+        val damping = if (brush.speedDamping > 0f) brush.speedDamping else 0f
+        if ((brush.speedInfluence > 0f || damping > 0f) && m > 1) {
             var speed = 0f
             var accD = 0f
             var accT = 0f
@@ -86,10 +101,15 @@ internal class Centreline {
                     accD = 0f
                     accT = 0f
                 }
-                val u = (speed / REFERENCE_SPEED).coerceIn(0f, 1f)
-                ir[k] *= 1f - influence * u * u * (3f - 2f * u)
+                if (influence > 0f) {
+                    val u = (speed / REFERENCE_SPEED).coerceIn(0f, 1f)
+                    ir[k] *= 1f - influence * u * u * (3f - 2f * u)
+                }
+                if (damping > 0f) ir[k] /= 1f + damping * speed
             }
         }
+        val floor = brush.widthFloor * 0.5f
+        if (floor > 0f) for (k in 0 until m) if (!(ir[k] >= floor)) ir[k] = floor
         if (brush.taper > 0f && m > 1) {
             var total = 0f
             for (k in 1 until m) total += dist(ix[k - 1], iy[k - 1], ix[k], iy[k])
@@ -111,11 +131,11 @@ internal class Centreline {
         if (m == 0) return
         ensureOutput(m)
         if (m == 1) {
-            put(ix[0], iy[0], ir[0], ip[0])
+            put(ix[0], iy[0], ir[0], ip[0], ia[0])
             return
         }
         for (k in 0 until m - 1) {
-            put(ix[k], iy[k], ir[k], ip[k])
+            put(ix[k], iy[k], ir[k], ip[k], ia[k])
             val len = dist(ix[k], iy[k], ix[k + 1], iy[k + 1])
             if (len <= SUBDIVIDE) continue
             val pieces = min(MAX_PIECES, ceil(len / SUBDIVIDE).toInt())
@@ -145,10 +165,10 @@ internal class Centreline {
                         qy = iy[k] + (iy[k + 1] - iy[k]) * u
                     }
                 }
-                put(qx, qy, ir[k] + (ir[k + 1] - ir[k]) * u, ip[k] + (ip[k + 1] - ip[k]) * u)
+                put(qx, qy, ir[k] + (ir[k + 1] - ir[k]) * u, ip[k] + (ip[k + 1] - ip[k]) * u, ia[k] + (ia[k + 1] - ia[k]) * u)
             }
         }
-        put(ix[m - 1], iy[m - 1], ir[m - 1], ip[m - 1])
+        put(ix[m - 1], iy[m - 1], ir[m - 1], ip[m - 1], ia[m - 1])
     }
 
     private fun applyNib(stroke: Stroke) {
@@ -182,12 +202,13 @@ internal class Centreline {
         }
     }
 
-    private fun put(px: Float, py: Float, pr: Float, pp: Float) {
+    private fun put(px: Float, py: Float, pr: Float, pp: Float, pa: Float) {
         if (n == x.size) ensureOutput(n + 1)
         x[n] = px
         y[n] = py
         r[n] = pr
         p[n] = pp
+        shade[n] = pa
         n++
     }
 
@@ -200,6 +221,8 @@ internal class Centreline {
         ip = ip.copyOf(c)
         io = io.copyOf(c)
         it = it.copyOf(c)
+        itl = itl.copyOf(c)
+        ia = ia.copyOf(c)
     }
 
     private fun ensureOutput(size: Int) {
@@ -209,6 +232,7 @@ internal class Centreline {
         y = y.copyOf(c)
         r = r.copyOf(c)
         p = p.copyOf(c)
+        shade = shade.copyOf(c)
     }
 
     companion object {

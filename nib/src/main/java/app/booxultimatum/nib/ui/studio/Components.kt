@@ -27,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -88,11 +89,19 @@ fun Modifier.slab(
     }
 
 /**
- * Marks this control's area as not the canvas: the pen hovering or touching it pauses the display's session. The
- * shadow's reach is included.
+ * Marks this control's area as not the canvas: the display's preview leaves it alone, and the pen over it doesn't
+ * draw. The shadow's reach is included. [shows] is what the control displays (undo's enablement, a value): when it
+ * changes during a writing session, the control's new look is pushed to the display, whose frames are held.
  */
-fun Modifier.penShield(shields: PenShields?, key: Any, reach: Dp = Studio.ShadowCard): Modifier = if (shields == null) this else composed {
+fun Modifier.penShield(shields: PenShields?, key: Any, reach: Dp = Studio.ShadowCard, shows: Any? = null): Modifier = if (shields == null) this else composed {
     DisposableEffect(key) { onDispose { shields.remove(key) } }
+    val last = remember(key) { arrayOf(shows) }
+    SideEffect {
+        if (last[0] != shows) {
+            last[0] = shows
+            shields.changed(key)
+        }
+    }
     val extra = with(LocalDensity.current) { reach.toPx() }
     onGloballyPositioned { c ->
         val b = c.boundsInWindow()

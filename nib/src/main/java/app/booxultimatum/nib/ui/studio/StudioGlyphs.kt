@@ -297,6 +297,13 @@ object StudioGlyphs {
         ink { circle(12f, 12.5f, 1.8f) }
     }
 
+    /** A screen with a wipe across it and its last streak of ink: refresh the whole screen. */
+    val CleanScreen = glyph("clean-screen") {
+        line { moveTo(4f, 5f); lineTo(20f, 5f); lineTo(20f, 19f); lineTo(4f, 19f); close() }
+        line { moveTo(7.5f, 15.5f); lineTo(13.5f, 9.5f) }
+        ink { moveTo(13.5f, 15.8f); lineTo(17f, 12.3f); lineTo(17f, 15.8f); close() }
+    }
+
     /** A pen nib with a bead of ink at its tip: the pens. */
     val PenNib = glyph("pen-nib") {
         line { moveTo(12f, 3f); lineTo(17.5f, 10f); lineTo(12f, 19.5f); lineTo(6.5f, 10f); close() }

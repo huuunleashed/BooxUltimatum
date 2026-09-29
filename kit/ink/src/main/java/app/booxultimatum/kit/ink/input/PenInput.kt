@@ -1,4 +1,4 @@
-package app.booxultimatum.kit.ink
+package app.booxultimatum.kit.ink.input
 
 import android.content.Context
 import android.system.Os

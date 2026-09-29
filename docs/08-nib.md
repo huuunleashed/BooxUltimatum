@@ -2,24 +2,24 @@
 
 Nib (`:nib`, package `app.booxultimatum.nib`) is the suite's drawing app for BOOX tablets, built on the pure-Kotlin engine in `:nib-engine` and the kit libraries (see [`07-suite.md`](07-suite.md)). Its aim is Boox Notes' instant pen with an interface at Sketchbook's level: many brushes, very thin widths, unlimited layers, and tools that float over a full-screen canvas. This document describes Nib as built after the redesign that followed 0.1; its visual world is recorded in [`DESIGN.md`](../DESIGN.md).
 
-Nib's pen preview was tested on the owner's Note Air6 C (firmware 4.3) for 0.2.0: the preview, its width, the first stroke, the cards left out of the preview, and marker colours (`knowledge/experiments.md`, 2026-09-28). The rest of the preview follows the firmware behaviour verified with Instant ink (the `boox-firmware-interfaces` skill), and *Verified and not* below says what's still open. Nib's own Diagnostics page exists to check it. On the emulator and on tablets without the pen path, Nib is a software-only drawing app, and that mode is what the automated tests cover.
+Nib's pen preview was tested on the owner's Note Air6 C (firmware 4.3) for 0.2.0: the preview, its width, the first stroke, the cards left out of the preview, and marker colours (`knowledge/experiments.md`, 2026-09-28). From 0.3 Nib writes the way BOOX's own apps do, on `kit:ink`'s ink framework ([`09-ink.md`](09-ink.md)); *Verified and not* below says what's still open. Nib's own Diagnostics page exists to check it. On the emulator and on tablets without the pen path, Nib is a software-only drawing app, and that mode is what the automated tests cover.
 
 ## The pieces
 
 | Area | Files (under `nib/src/main/java/app/booxultimatum/nib/`) | What they do |
 |---|---|---|
 | Shell | `NibApplication`, `MainActivity`, `NibSettings` | Logbook start, the one activity (it handles rotation itself and sees every pen event first), the switches |
-| Pen session | `pen/PenController`, `pen/NibPen` (with `PenRouter`), `pen/PenShields`, `pen/PreviewMatch`, `pen/PressureNormalizer`, `pen/PenRecorderStore` | Nib's policy over `kit:ink`'s `PenSession`, the window-level pen router, where the floating controls lie, the preview's size, pressure scaling, the pen recorder |
+| Pen session | `pen/NibPen` (with `PenRouter`), `pen/PenShields` (with `ScreenAreas`), `pen/RevealPolicy`, `pen/PenParts`, `pen/PanelKind`, `pen/PreviewMatch`, `pen/PressureNormalizer`, `pen/PenRecorderStore` | The process's `InkSession`, the window-level pen router, where the floating controls lie, when the finished ink replaces the preview, what each part of the pen draws, the panel's re-arm wait, the preview's size, pressure scaling, the pen recorder |
 | Canvas | `editor/CanvasView`, `editor/EditorSession`, `editor/ToolState`, `editor/Selection`, `editor/StraightLine`, `editor/OpenSessions`, `editor/MultiTapDetector` | Input, the view of the page, one open drawing with its history and autosave, the rail's state, the lasso's selection and its math, the held straight line, multi-finger taps |
 | Rendering | `render/CanvasSink`, `render/TileCache`, `render/TileLru`, `render/DabRecording`, `render/DocumentPainter`, `render/GuidesPainter` | The engine's `RenderSink` on an Android `Canvas`, per-layer tiles, their memory policy, per-tile dab replay, whole-page pictures, the paper's guides |
 | Files | `store/DrawingStore`, `store/Paper`, `store/AutoSaver`, `store/CompactionPolicy` | The library on disk, a drawing's paper, journaling and snapshots |
 | Brushes | `brush/Presets` (presets and their tuning, pressure presets, groups, preview policy), `brush/WidthSteps`, `brush/Palette` | What the pens hold |
 | Design system | `ui/studio/Studio` (tokens and type), `Components`, `Sliders`, `FloatingPanel`, `PanelPlacement`, `Entry`, `Samples`, `StudioGlyphs`, `ValueScale` | Nib's cut-card world: slabs, keys, pills, sliders and their math, floating panels and their placement, the entry bar, engine-drawn pictures, the glyphs |
 | Screens | `ui/NibApp`, `ui/LibraryScreen`, `ui/EditorScreen`, `ui/BrushPanels`, `ui/ColourPanel`, `ui/LayersPanel`, `ui/DocumentPanels`, `ui/SettingsScreen`, `ui/DiagnosticsScreen`, `ui/AboutScreen`, `ui/Screens`, `ui/Names` | The shelf, the editor and its floating panels, Settings, Diagnostics, About |
-| Diagnostics | `diag/Probes`, `diag/ProbeView` | The probes and their banded pen surface |
+| Diagnostics | `diag/Probes`, `diag/ProbeView`, `diag/Lab`, `ui/LabScreen` | The probes and their banded pen surface, and the Lab, which checks each display call not yet verified |
 | Export | `export/Exporter`, `export/LogShare` | PNG with or without paper and layer zips, to the gallery and to other apps, the log zip |
 
-## From pen to swapped frame
+## From pen to finished ink
 
 ```mermaid
 sequenceDiagram
@@ -27,34 +27,41 @@ sequenceDiagram
     participant SF as SurfaceFlinger (firmware)
     participant Act as MainActivity / PenRouter
     participant View as CanvasView
-    participant Ctl as PenController
+    participant Ctl as InkCanvasController (kit:ink)
     participant Doc as EditorSession (History)
-    participant Save as AutoSaver (thread)
-    Note over Ctl,SF: canvas shown with focus: open(2480, stroke, drawing unless blocked)
-    Pen->>Act: hover over the canvas (not over a floating card)
-    Act->>View: onWindowHover
-    View->>Ctl: hover(inside = true)
-    Ctl->>SF: DRAW (resume)
-    Pen->>SF: touch: SF paints the preview from the pen node and holds the app's frames
-    Pen->>View: ACTION_DOWN, MOVE (historical samples), unbuffered
-    View->>Ctl: down() → holding
+    Note over Ctl,SF: canvas shown with focus: open in multi-region mode, every control excluded, stroke and pen parts sent, drawing
+    Pen->>SF: first touch: SF paints the preview and holds the app's frames (one hold for the writing session)
+    Pen->>View: ACTION_DOWN, MOVE (historical samples, tilt), unbuffered
+    View->>Ctl: down()
     Pen->>View: ACTION_UP
-    View->>Doc: AddStroke
-    Doc->>View: edit event: stroke drawn into its tiles (main thread)
-    Doc->>Save: journal append + sync
-    View->>Ctl: up() → awaiting frame, 1500 ms watchdog armed
-    View->>View: invalidate → onDraw → Choreographer frame callback
-    View->>Ctl: frameShown() (+ extra delay from Diagnostics)
-    Ctl->>SF: ENABLE_POST pulse (swap): the preview is replaced by the app's pixels
+    View->>Ctl: up(stroke's screen bounds)
+    View->>Doc: AddStroke: drawn into its tiles behind the hold
+    View->>Ctl: frameShown()
+    Note over Pen,SF: more strokes: nothing reaches the panel between them
+    Act->>Ctl: a break: a touch on a control, a panel, undo, a tool change, a gesture
+    Ctl->>SF: ENABLE_POST 1: the frames go through and replace every preview at once
 ```
 
-- **Opening.** The canvas opens the session once it's attached, the activity is resumed and the window has focus, and closes it on `ON_PAUSE` and when it leaves the screen. It opens drawing, not paused, unless something blocks it: opening paused and resuming at the first hover lost the start of the very first stroke now and then on the tablet. Only one session exists per process (`NibPen.session`); the canvas and the Diagnostics probes take turns with it. While it's open, a lease file (`FileLease`, `pen-session.lease` in the no-backup folder) names the process: the display doesn't notice when that process dies, and a Nib killed mid-session (an update, a crash) left the preview drawing over every app. `NibApplication` calls `NibPen.start`, which ends a drawing session left by an earlier process.
-- **Over the cards: exclusion, not pausing.** `MainActivity` hands every stylus hover and touch to `PenRouter` before Compose sees it. The floating controls (pills, the rail, the view chip, open panels, the entry bar, messages) record where they lie in `PenShields` as they are laid out, and the canvas counts those areas as not its own. With the pen over one, the session keeps drawing and the display is told to leave that card out of the preview (`PenSession.exclude`, screen coordinates; the display keeps one rectangle). Pausing there, as 0.1 did, sometimes lost the start of the next stroke on the canvas, since the resume came too late for a quick stroke. A pen touch outside the canvas excludes what it lands on and, at the lift, swaps (`touchOutsideEnded()`), so nothing held stays held. Back over the canvas the exclusion is cleared, and a pinned panel doesn't block the canvas around it. A hover exit no longer pauses. The session is blocked (paused, and hover doesn't resume it) while an unpinned panel, the menu or the entry bar is open (the pen's next touch closes them instead of drawing), during two-finger gestures, while a tool other than the pen is chosen (eraser, lasso, eyedropper, hand), while strokes are selected, while the active layer is locked or hidden, and while the window lacks focus. The pen's eraser end or side button pauses it too.
-- **Never mid-stroke.** Blocks and preview changes that arrive while the pen touches, or while a finished stroke still waits for its swap, are deferred until after the swap, since letting frames through mid-stroke would end the preview for that stroke.
-- **Quick strokes.** A stroke that starts before the previous one was swapped keeps the frames held; one swap after its lift replaces both previews.
-- **The watchdog.** If frames are still held 1500 ms after a lift, the controller swaps anyway and logs a warning.
-- **The preview's size.** The display draws its preview at the width it's sent, but Nib's brushes thin with pressure, so a preview sent at the full width looked wider than the stroke that replaced it (owner's report). `PreviewMatch` sends the brush's width at the owner's typical pressure (a slow average of each stroke's mean pressure), times a factor per preview style that the owner can tune in Diagnostics › Match preview. Each stroke's log has `p mean`, `typical p`, `size factor` and `since open ms`.
-- **Software-only.** When `open()` finds no route (the emulator, other tablets, a changed firmware), the session stays `Unavailable`, every call is a no-op, and the canvas draws the stroke under way itself on every move.
+- **One hold per writing session.** The display holds Nib's frames from the first touch, and quick strokes follow each other with nothing reaching the panel in between, as in BOOX Notes and NeoReader (traced on the tablet). Nib draws each stroke behind the hold. The hold ends at a break: a pen or finger touch on a control; tool, brush, colour or size changes; undo and redo and any other edit that isn't a stroke; layer, paper and rotation changes; export, share and the library. The following block the preview: panels, focus loss, selection, a locked or hidden layer, the eraser tool, the eyedropper and the hand. A release waits for the frame that holds the last stroke.
+- **Showing the finished ink** (Settings › Display preview) can happen in four ways:
+  - At breaks, as the native apps do.
+  - After a pause (400 to 2000 ms, 800 by default): Nib pushes its exact rendering of the strokes since the last one into the display's layer (`HandwritingLayer`, from the whole window so a card over the ink stays on top), keeping the hold. It lets the frames through instead when the area is over 4 MB or the push is refused.
+  - After every stroke, as 0.2 did.
+  - **Auto**, the default: at breaks for the nine pens the display previews faithfully (fineliner, fountain, ballpoint, marker, brush pen, neo brush, both calligraphies, square pen), and after a pause for the rest. That includes textured brushes, translucent ink, a layer that isn't plain, and a see-through-grey marker on a colour panel.
+- **Controls stay current during a hold.** Each pill declares what it shows (undo and redo, the active slot, the sizes, the view chip, the selection bar). When that changes, only that pill's area is pushed into the display's layer.
+- **Every control is excluded.** All shielded controls, plus the strips of screen around the canvas, go to the display in one call, so the preview never lands on them. They're resent when the layout changes, and held back while the pen touches.
+- **Pen parts.** The display gets a configuration for the canvas area:
+  - The tip draws exactly the stroke sent, with the brush's own style parameters: fountain sensitivity and smoothing, charcoal tilt, the calligraphy nib's angle.
+  - The eraser end draws the eraser track (style 8). Nib erases from the eraser end's samples at the lift and then releases.
+  - With Diagnostics › *Preview the eraser end on the display* off, the eraser end blocks the preview and erases live, as before.
+- **The lasso** is drawn by the display in its dashed style and released at the lift, before the selection appears.
+- **Finger gestures.** Once fingers move the page about 4 dp, the display switches to its fast mode (A2 quality). The fast mode ends 600 ms after the gesture, or at once when the pen touches, with a reset that cleans the screen. It can be turned off in Settings › Fingers.
+- **Palm guard** (Settings › Fingers, off by default until verified): while the pen is near, finger touch is switched off over the canvas except the controls. It comes back 500 ms after the pen leaves.
+- **Refreshes.** One Regal refresh after a drawing opens or a panel closes, at most every 1.5 s and never during a hold. Menu › *Refresh screen* cleans the whole panel.
+- **Re-arming.** After a pause the preview resumes 500 ms later on colour panels (200 ms on others), as NeoReader waits for the panel, unless the pen touches first.
+- **Opening and crashes.** The canvas opens the session once it's attached, resumed and focused, and closes it on `ON_PAUSE` and when it leaves the screen. It opens drawing unless something blocks it. One session exists per process (`NibPen.session`); the canvas and the Diagnostics pages take turns with it, and a view that attaches just as another leaves retries opening once. `NibApplication` attaches `InkGuard`, which undoes whatever a Nib that died mid-session left on the display. It also ends a session recorded by 0.2's lease file.
+- **The preview's size.** The display gets the brush's width × zoom. For styles whose preview follows pressure itself (fountain, brush, square pen, charcoals) nothing more is done. For constant-width previews (pencil, marker) of brushes that thin with pressure, `PreviewMatch` still sends the width at the owner's typical pressure. The per-style factor in Diagnostics › Match preview applies to all.
+- **Software-only.** When the display offers no route (the emulator, other tablets, a changed firmware), the session stays unavailable, every call is a no-op, and the canvas draws the stroke under way itself.
 
 ## Input
 
@@ -88,13 +95,20 @@ sequenceDiagram
 - The Brushes panel shows every non-eraser brush of the engine's catalogue by family (Pens, Pencils, Markers, Brushes, Textured), each family drawn as its own tool down the panel's side. Each brush is a tile with a sample stroke the engine draws at the pen's width and colour (an S with the pressure rising and falling, rendered off the main thread through `CanvasSink` and cached, one document pixel to one screen pixel), its name, and the display style that previews it, marked ≈ when a verified style stands in.
 - A pen (`BrushPreset`) is a brush, a width, a pressure preset, a colour and the owner's tuning (`BrushTune`): opacity, the pressure curve's exponent, floor and ceiling, smoothing, dab spacing, flow, grain and scatter, the nib's angle and whether it follows the pen, speed thinning and taper. Untuned pens are written in 0.1's text form; tuned ones add one field, and damaged values are skipped or clamped.
 - **Brush settings** has three pages below a live sample that follows every control as it moves. Size and ink: width on a logarithmic track snapped to a quarter pixel at the thin end, with a dot drawn to scale at the current zoom, and opacity over a checkerboard; what the display previews and at what width, with a link to Match preview. Pressure: Soft, Medium and Firm as tiles showing their curve and a sample, then sensitivity (the exponent), the lightest touch (the floor) and the hardest press (the ceiling), with the curve plotted; a brush that ignores pressure can be made to follow it. Feel: smoothing with a before-and-after sample of a shaky line, texture (grain, spacing, density, scatter) for the dab brushes, a nib dial for calligraphy, the square pen and the highlighter, and speed and taper for the brush pens. Every slider has − and + keys and a value to type.
-- Widths, pressure presets and preview stand-ins behave as in 0.1. Only Pencil, Fountain and Marker are verified preview styles today.
+- **Native-matched pens** (`nib-engine`, from the study of BOOX Notes, see [`09-ink.md`](09-ink.md)):
+  - The fineliner is the native plain pen (style 0, constant width). The fountain's pressure sensitivity (0.3) and smoothing (0.6) are also sent to the display.
+  - The marker is laid down opaque and composited at alpha 128.
+  - The pens follow BOOX's measured laws ([`09-ink.md`](09-ink.md) › *Measured pens*): the fountain p^(2s) with speed thinning and a 2 px minimum, the brushes √p, the marker 0.8 + 0.2p, and the pencil a constant width with opacity 0.6p. Both charcoals broaden with tilt by BOOX's measured curve (tilt response Native) without getting lighter, and pressure sets their coverage.
+  - Pencil and graphite don't use tilt, as in BOOX Notes. New brush fields (tilt response, speed damping, minimum width) are format 1.2; strokes saved before keep the old eased tilt and draw exactly as before.
+  - Latin (+45°) and Asian (−45°) calligraphy use a flat nib.
+  - Every display style the native app uses is offered; only dash still needs *Try unverified preview styles*. Drawings from 0.2 and the 0.3 test builds open unchanged (golden-file tests for formats 1.0 and 1.1); files are now format 1.2.
+- **Input.** Tilt and orientation come with every sample. As in the native pen reader, a move sample is dropped when it's slower than 0.005 px/ms with the pressure within 2 of 4096 levels, but only within 2 px of the last sample kept, so a slow, careful line keeps its shape.
 - **Marker colours.** The display's Marker style drops a translucent preview in any colour but grey or yellow (tested on the tablet). So the Marker style's colour goes through `MarkerPreview` (engine): *Solid colour*, the default, sends the colour opaque, which covers what's under the stroke until the swap; *See-through grey* sends a half-alpha grey as light as the colour, never lighter than #BBBBBB, the lightest seen showing. It's a choice in Settings › Display preview, and applies to the marker, highlighter and airbrush.
 - **Colours**: a saturation and value square with a hue strip, the twelve swatches tuned for Kaleido 3, the eight colours used lately, a hex field, and the eyedropper.
 
 ## The view
 
-Zoom runs from 25 % to 1600 % by pinching or from the View panel (Fit page, 100 %, closer and further by √2). The page turns by twisting two fingers, with the hand tool, or from the View panel (quarter turns or a typed angle), and snaps upright within 5°. The engine's `Viewport` holds the turn: `view = R(rotation) · (doc · scale) + offset`, with `rotateAround`, `rotatedTo`, `unrotated`, `turn` and `fit`, which stands the page upright again; quarter turns map exactly. The view chip reads "78 % · 12°"; Reset view fits the page and sets the turn to 0°. The display's preview width is `Preview.widthPx(brush width, scale)` through `PreviewMatch`, which a turn doesn't change. When the tablet rotates, a page that was fitted and left alone is fitted again; otherwise the document point at the centre stays at the centre.
+Zoom runs from 25 % to 1600 % by pinching or from the View panel (Fit page, 100 %, closer and further by √2). The page turns by twisting two fingers, with the hand tool, or from the View panel (quarter turns or a typed angle), and snaps upright within 5°. The engine's `Viewport` holds the turn: `view = R(rotation) · (doc · scale) + offset`, with `rotateAround`, `rotatedTo`, `unrotated`, `turn` and `fit`, which stands the page upright again; quarter turns map exactly. The view chip reads "78 % · 12°"; Reset view fits the page and sets the turn to 0°. The display's preview width is the brush width × zoom (through `PreviewMatch` for constant-width previews), which a turn doesn't change; the calligraphy nib's angle sent to the display follows the turn. When the tablet rotates, a page that was fitted and left alone is fitted again; otherwise the document point at the centre stays at the centre.
 
 ## The interface
 
@@ -115,30 +129,31 @@ The Diagnostics page is for the owner to run on the tablet while away from the d
 |---|---|---|
 | Status | none | The display route, its pressure range, the session state, the tablet and stylus; *Try unverified preview styles*; the extra swap delay; the pen recorder |
 | Match preview | fountain pen 4 px, pencil 4 px, marker 16 px | Does the preview look as wide as the stroke that replaces it? Each style's preview size (×0.3 to ×1.6 in steps of 0.05, on a slider with − and + and a typed value), the typical pressure learnt so far, and *Learn again*; answers *Preview wider*, *Matches*, *Preview thinner* |
-| Styles | the eight firmware styles, 4 px black, sized like the editor's | Does each style preview as named, and swap cleanly? Only 0 to 2 are verified |
+| Styles | the eight firmware styles, 4 px black, sized like the editor's and with each style's parameters | Does each style preview as named, and swap cleanly? Styles seen on this tablet are marked |
 | Widths · fountain, Widths · pencil | 0.5, 0.75, 1, 1.5, 2 and 3 px | Which thin widths does the display draw cleanly? |
 | Colour | red, blue, green, 50 % grey, translucent black on fountain and on pencil | Does the preview show colour on Kaleido, and does translucency break it? |
 | Marker colours | the marker style at 16 px: red at half alpha, opaque, blended with white, and as a grey; blue opaque and as a grey; mid and light grey at half alpha | Which ways of sending a colour does the marker style show? (Answered on the tablet: opaque colours and every grey, not translucent colours) |
 | Swap delay | 0, 16, 50 and 120 ms of extra wait | Does any delay avoid flicker when the preview is replaced? |
+| Lab | eleven pages | One check for each display call not yet verified on the tablet: pushing ink after a pause, pushing a control during a hold, the eraser end's track, the dashed lasso, the fast mode on and off, Palm guard, the style parameters live (with the originals restored on leaving), a limit in screen coordinates, the display's own stroke widths, the display's geometry for the current rotation, and the two ways of cleaning the screen |
 
 In Match preview the bands' previews are sized through `PreviewMatch` exactly as the canvas sizes them; every size change is logged (`match factor`) and resent to the band the pen is in, and every answer is logged (`match answer`, with the preview width sent, the brush width, the factor and the typical pressure). Brush settings links to it. The pen recorder, off by default and in memory only, keeps the raw samples of the last 50 strokes and shares them as a `.penrec`.
 
 ## Logging
 
-Nib logs through `kit:log` in every build. `nib.pen` has one summary per stroke (points, samples, duration, sample rate, pressure range and mean, tool, brush and width, whether it was previewed, held, merged or straightened, the preview style, width and size factor, the typical pressure, the commit time, the zoom and turn, the time since the session opened and the swap delay), never one per sample. `nib.render` has tile batches and commits, including renders done at once; `nib.doc` has opening, replay, snapshots, compaction, exports and paper changes; `nib.ui` has settings, selections, view resets and turns; `nib.probe` the rest. Drawing ids are hashed with `Redact.hash`; drawing names and contents are never logged.
+Nib logs through `kit:log` in every build. `nib.pen` has one summary per stroke (points, samples, duration, sample rate, pressure range and mean, tool, brush and width, whether it was previewed, held or straightened, the hold it belonged to and how its ink was shown, the preview style, width and size factor, the typical pressure, the commit time, the zoom and turn, the time since the session opened), never one per sample, and at Info one line per hold (strokes, time held, why it ended), the preview policy, the pen parts sent, the fast mode and Palm guard. Pushes into the display's layer are logged at Debug (area, time, whether they were accepted). `nib.render` has tile batches and commits, including renders done at once; `nib.doc` has opening, replay, snapshots, compaction, exports and paper changes; `nib.ui` has settings, selections, view resets and turns; `nib.probe` the rest. Drawing ids are hashed with `Redact.hash`; drawing names and contents are never logged.
 
 ## Verified and not
 
 - Verified on the emulator (Android 16, 1860 × 2480 at 300 dpi, no Boox firmware): software-only drawing with live rendering, every brush and eraser, layers, undo and redo, autosave with replay and compaction, the three kinds of export, the turned page (drawing lands where the pen is), Reset view, lasso moves, duplicates and deletes with undo, typed values with clamping, the eyedropper, the held straight line, the pen over a floating card, a 0.1-style drawing opening, both orientations with the canvas kept, palm rejection and pinch zoom (instrumented tests), and the release build under R8.
 - Verified on the tablet (Note Air6 C, FW 4.3, 0.2.0 test builds): the canvas's session previews strokes and the swap replaces them; the preview matches the stroke's width at ×1 in the Match preview bands (in daily drawing it can still look a little wider); the first stroke after opening is whole; the cards stay out of the preview and strokes next to them start whole; the Marker style's colours, above.
-- Not yet seen on the tablet *[verify]*: that the lease and the home screen's check end a session a killed Nib left (unit-tested); how long the swap should wait; the unverified styles 3 to 7; the thinnest width the preview draws cleanly; colour in the other styles beyond Nib's blue pen; the pen's pressure range as Android reports it; commit, tile and at-once render times on the tablet's CPU; how the straight line looks when its drawn preview is replaced; how the cut-card chrome refreshes and ghosts on the panel.
+- Not yet seen on the tablet *[verify]*: everything in the Lab; the whole 0.3 choreography (one hold per session, releases at breaks, Auto); the tilt thresholds; that `InkGuard` and the home screen's check end a session a killed Nib left (unit-tested); styles 3 to 7 with their parameters; the thinnest width the preview draws cleanly; colour in the other styles beyond Nib's blue pen; the pen's pressure range as Android reports it; commit, tile and at-once render times on the tablet's CPU; how the straight line looks when its drawn preview is replaced; how the cut-card chrome refreshes and ghosts on the panel.
 
 ## Known limits
 
 - Committing a stroke, and editing a selection, blocks the main thread while their tiles are drawn. On the emulator's host a fountain-pen line across the page (17 tiles) takes about 8 to 21 ms and a charcoal one about 50 ms; the tablet's CPU is likely several times slower *[verify]*.
-- The display keeps one excluded rectangle, so only the card under the pen is kept clear. A stroke started on the canvas and carried onto another card can leave preview ink on that card until the swap.
 - The preview can look a little wider than the stroke in daily drawing, though it matched in the Match preview bands; Match preview tunes it per style.
-- The straight line snaps under the pen only in software; on the tablet the drawn stroke stays in the preview until the swap.
+- The straight line snaps under the pen only in software; on the tablet the drawn stroke stays in the preview until the ink is shown.
+- During a hold, the canvas shows the display's preview, not Nib's ink. With the native-matched pens they look alike; with other brushes Auto pushes Nib's ink after a pause.
 - Many large layers full of ink can need more tile memory than the budget; the tiles on screen are kept regardless.
 - A duplicated layer's or selection's textured strokes get new ids, and the engine seeds dab scatter by stroke id, so their grain differs slightly from the originals.
 - The shelf's layer count is as of the drawing's last snapshot; edits journaled since show after the next one.
@@ -147,7 +162,7 @@ Nib logs through `kit:log` in every build. `nib.pen` has one summary per stroke 
 
 ## Testing
 
-- JVM unit tests (`.\gradlew.bat :nib:testDebugUnitTest`): width steps, the palette, hex, HSV and recent colours, presets, their tuning and text forms, pressure presets, preview stand-ins and `PreviewMatch`, slider math (the log width track, snapping, stepping, typed values, percentages), panel placement and memory per orientation, lasso math (move, scale from a corner, turn with snapping, handle hits), the held straight line, the library's order, search and page sizes, the tile LRU and reach test, per-tile dab replay, compaction scheduling, multi-finger taps, pressure scaling, the pen controller against a fake display and clock, the probes, the view readouts and routes.
+- JVM unit tests (`.\gradlew.bat :nib:testDebugUnitTest`): the choreography on Nib's side against a fake display and clock (`CanvasChoreographyTest`), the reveal policy, the pen parts, the shields and screen areas, the re-arm wait, the Lab, width steps, the palette, hex, HSV and recent colours, presets, their tuning and text forms, pressure presets, preview stand-ins and `PreviewMatch`, slider math (the log width track, snapping, stepping, typed values, percentages), panel placement and memory per orientation, lasso math (move, scale from a corner, turn with snapping, handle hits), the held straight line, the library's order, search and page sizes, the tile LRU and reach test, per-tile dab replay, compaction scheduling, multi-finger taps, pressure scaling, the probes, the view readouts and routes.
 - Engine tests (`.\gradlew.bat :nib-engine:test`) add the turned `Viewport` (round trips at many angles, quarter turns exact, turning about a focus, zoom and pan on a turned page, fit standing the page upright, the upright frame times the turn, the visible area, snapping) and the manifest-only summary and thumbnail.
-- Instrumented tests on the `NoteAir6C` emulator (`.\gradlew.bat :nib:connectedDebugAndroidTest`): 0.1's twelve (a stroke into the canvas and through the window, undo and redo, layers, erasers, tiles, save and reopen, rotation keeping the canvas, export, pinch and palm rejection, pen hover, the recorder) and `StudioEditorTest`: drawing on a turned page, Reset view, lasso move, duplicate and delete with undo, typed width with a refused entry and clamping, the eyedropper, the held straight line, the pen over a floating card, the three exports, and a 0.1-style drawing opening. Controls are found and pressed through the accessibility tree.
+- Instrumented tests on the `NoteAir6C` emulator (`.\gradlew.bat :nib:connectedDebugAndroidTest`, with only the emulator attached: disconnect the tablet first, see the tablet-testing skill): 0.1's twelve (a stroke into the canvas and through the window, undo and redo, layers, erasers, tiles, save and reopen, rotation keeping the canvas, export, pinch and palm rejection, pen hover, the recorder) and `StudioEditorTest`: drawing on a turned page, Reset view, lasso move, duplicate and delete with undo, typed width with a refused entry and clamping, the eyedropper, the held straight line, the pen over a floating card, every floating control left out of the preview, the three exports, and a 0.1-style drawing opening. Controls are found and pressed through the accessibility tree.
 - On the tablet: the Diagnostics probes (Match preview first), then Share logs from About; test builds go out on the suite's test channel. Leave Nib before installing a new build over adb: `install -r` kills it without a pause, and before 0.2.0 that left the display's session drawing.

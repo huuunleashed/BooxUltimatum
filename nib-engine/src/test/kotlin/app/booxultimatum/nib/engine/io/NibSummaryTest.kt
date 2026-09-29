@@ -46,6 +46,6 @@ class NibSummaryTest {
         for (k in BrushKind.entries) {
             assertEquals(StrokeRenderer.mode(k) == StrokeRenderer.Mode.Dabs, k.rendersAsDabs, k.id)
         }
-        assertEquals(setOf(BrushKind.Calligraphy, BrushKind.SquarePen, BrushKind.Highlighter), BrushKind.entries.filter { it.usesNib }.toSet())
+        assertEquals(setOf(BrushKind.Calligraphy, BrushKind.CalligraphyAsian, BrushKind.SquarePen, BrushKind.Highlighter), BrushKind.entries.filter { it.usesNib }.toSet())
     }
 }

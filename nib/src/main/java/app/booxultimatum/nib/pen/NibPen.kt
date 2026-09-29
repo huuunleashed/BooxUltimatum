@@ -6,35 +6,55 @@ import android.os.Looper
 import android.view.InputDevice
 import android.view.MotionEvent
 import android.view.WindowManager
-import app.booxultimatum.kit.ink.FileLease
-import app.booxultimatum.kit.ink.PenLease
-import app.booxultimatum.kit.ink.PenSession
-import app.booxultimatum.kit.ink.SurfaceInk
+import app.booxultimatum.kit.core.Tablet
+import app.booxultimatum.kit.ink.canvas.InkCanvasController
+import app.booxultimatum.kit.ink.canvas.InkScheduler
+import app.booxultimatum.kit.ink.epd.Epd
+import app.booxultimatum.kit.ink.session.EpdInkDisplay
+import app.booxultimatum.kit.ink.session.InkGuard
+import app.booxultimatum.kit.ink.session.InkSession
+import app.booxultimatum.kit.log.Logbook
+import java.io.File
 
-/** The one display pen session this process has: the firmware keeps a single session, so the canvas and the probes share it. */
+/**
+ * The one display pen session this process has: the firmware keeps a single session, so the canvas and the probes
+ * share it, each through its own [InkCanvasController].
+ */
 object NibPen {
-    @Volatile private var lease: FileLease? = null
+    private val log = Logbook.logger("nib.pen")
 
-    val session: PenSession by lazy { PenSession(lease = lease ?: PenLease.None) }
+    val session: InkSession by lazy { InkSession(EpdInkDisplay(), InkGuard.process) }
 
-    /** At process start: ends a session an earlier Nib process left drawing (see [FileLease]), then keeps the lease. */
+    /**
+     * At process start: [InkGuard] undoes whatever an ended Nib process left on the display (a live session, fast
+     * mode, finger touch switched off, replaced style parameters) and keeps its record from now on. Nib 0.2's lease
+     * file is honoured once, so an update from it mid-session still ends the session it left.
+     */
     fun start(context: Context) {
-        val l = FileLease(java.io.File(context.noBackupFilesDir, "pen-session.lease"))
-        lease = l
-        runCatching { l.recoverStale() }
+        runCatching { InkGuard.process.attach(File(context.noBackupFilesDir, GUARD_FILE)) }
+            .onFailure { log.w("display guard not attached", error = it) }
+        val old = File(context.noBackupFilesDir, OLD_LEASE)
+        if (old.exists()) runCatching {
+            old.delete()
+            val ended = InkGuard.Undo.Display.endLiveSession()
+            log.w("session lease left by Nib 0.2", "ended" to ended)
+        }
     }
 
-    /** Main-thread [PenScheduler]. */
-    val mainScheduler: PenScheduler by lazy {
+    /** Main-thread [InkScheduler]. */
+    val mainScheduler: InkScheduler by lazy {
         val handler = Handler(Looper.getMainLooper())
-        PenScheduler { delayMs, block ->
+        InkScheduler { delayMs, block ->
             val r = Runnable { block() }
             handler.postDelayed(r, delayMs)
             ({ handler.removeCallbacks(r) })
         }
     }
 
-    fun controller(): PenController = PenController(session, mainScheduler)
+    fun controller(): InkCanvasController = InkCanvasController(session, mainScheduler)
+
+    /** How long after a pause the pen may preview again: longer on colour panels, which finish their update later. */
+    fun rearmMs(context: Context): Long = PanelKind.rearmMs(Tablet.current(context))
 
     /** The panel's long side in pixels, which sizes the session's square region. */
     fun panelLongSide(context: Context): Int {
@@ -58,18 +78,28 @@ object NibPen {
         .mapNotNull { InputDevice.getDevice(it) }
         .firstOrNull { it.supportsSource(InputDevice.SOURCE_STYLUS) }
 
-    fun normalizer(event: MotionEvent?): PressureNormalizer = PressureNormalizer(pressureRangeMax(event), SurfaceInk.maxTouchPressure)
+    fun normalizer(event: MotionEvent?): PressureNormalizer = PressureNormalizer(pressureRangeMax(event), Epd.maxTouchPressure)
 
     fun isStylus(toolType: Int): Boolean = toolType == MotionEvent.TOOL_TYPE_STYLUS || toolType == MotionEvent.TOOL_TYPE_ERASER
 
     /** Whether this pointer is erasing: the pen's eraser end, or its side button held. */
-    fun isErasing(event: MotionEvent, index: Int): Boolean =
-        event.getToolType(index) == MotionEvent.TOOL_TYPE_ERASER || (event.buttonState and MotionEvent.BUTTON_STYLUS_PRIMARY) != 0
+    fun isErasing(event: MotionEvent, index: Int): Boolean = isEraserEnd(event, index) || isSideButton(event)
+
+    /** The pen's eraser end (Android reports it as its own tool). */
+    fun isEraserEnd(event: MotionEvent, index: Int): Boolean = event.getToolType(index) == MotionEvent.TOOL_TYPE_ERASER
+
+    /** The pen's side button held. */
+    fun isSideButton(event: MotionEvent): Boolean = (event.buttonState and MotionEvent.BUTTON_STYLUS_PRIMARY) != 0
+
+    private const val GUARD_FILE = "ink-guard"
+    private const val OLD_LEASE = "pen-session.lease"
 }
 
 /**
- * Where window-level pen events go. The activity hands every stylus hover and touch to the surface showing now, so
- * hover over the toolbar and panels (which the surface itself never sees) still pauses the session.
+ * Where window-level touches and pen hovers go. The activity hands every stylus hover and every touch to the surface
+ * showing now, before Compose sees them, so the surface knows when the pen is over a control (which it never sees
+ * itself) and when the pen or a finger presses one: that's a break, and the held frames are let through so the
+ * control can show it responded.
  */
 object PenRouter {
     /** A view that draws with the pen session. */
@@ -77,25 +107,29 @@ object PenRouter {
         /** A stylus hover anywhere in the window, in screen coordinates. */
         fun onWindowHover(event: MotionEvent)
 
-        /** A stylus touch that began outside this surface, at this screen point. */
-        fun onStylusTouchOutside(x: Float, y: Float)
+        /** The pen or a finger touched the app's controls, anywhere off this surface, at this screen point. */
+        fun onControlsTouched(x: Float, y: Float, stylus: Boolean)
 
-        /** That touch ended. */
-        fun onStylusTouchOutsideEnded()
+        /** Every pointer that touched the controls has lifted. */
+        fun onControlsTouchEnded()
 
-        /** Whether the screen point lies on this surface. */
+        /** Whether the screen point lies on this surface (and not on a control over it). */
         fun containsScreenPoint(x: Float, y: Float): Boolean
     }
 
     private var target: Target? = null
-    private var outsideTouch = false
+    private val outside = HashSet<Int>()
 
     fun attach(t: Target) {
+        if (target !== t) outside.clear()
         target = t
     }
 
     fun detach(t: Target) {
-        if (target === t) target = null
+        if (target === t) {
+            target = null
+            outside.clear()
+        }
     }
 
     fun onGenericMotion(event: MotionEvent) {
@@ -108,40 +142,23 @@ object PenRouter {
 
     fun onTouch(event: MotionEvent) {
         val t = target ?: return
-        val action = event.actionMasked
         val i = event.actionIndex
-        if (!NibPen.isStylus(event.getToolType(i))) return
-        when (action) {
+        when (event.actionMasked) {
             MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
+                if (event.actionMasked == MotionEvent.ACTION_DOWN) outside.clear()
                 val x = event.getRawX(i)
                 val y = event.getRawY(i)
-                if (!t.containsScreenPoint(x, y)) { outsideTouch = true; t.onStylusTouchOutside(x, y) }
+                if (t.containsScreenPoint(x, y)) return
+                val first = outside.isEmpty()
+                outside += event.getPointerId(i)
+                if (first) t.onControlsTouched(x, y, NibPen.isStylus(event.getToolType(i)))
             }
-            MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_CANCEL -> if (outsideTouch) {
-                outsideTouch = false
-                t.onStylusTouchOutsideEnded()
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP ->
+                if (outside.remove(event.getPointerId(i)) && outside.isEmpty()) t.onControlsTouchEnded()
+            MotionEvent.ACTION_CANCEL -> if (outside.isNotEmpty()) {
+                outside.clear()
+                t.onControlsTouchEnded()
             }
-        }
-    }
-
-    /**
-     * The strip of the screen beyond [view]'s edge that holds the screen point, as left, top, right, bottom: the one
-     * rectangle the preview can leave alone when the pen is over controls around a surface.
-     */
-    fun stripOutside(view: android.view.View, x: Float, y: Float): IntArray? {
-        val loc = IntArray(2)
-        view.getLocationOnScreen(loc)
-        val root = IntArray(2)
-        view.rootView.getLocationOnScreen(root)
-        val w = root[0] + view.rootView.width
-        val h = root[1] + view.rootView.height
-        val l = loc[0]; val t = loc[1]; val r = loc[0] + view.width; val b = loc[1] + view.height
-        return when {
-            x >= r -> intArrayOf(r, 0, w, h)
-            x < l -> intArrayOf(0, 0, l, h)
-            y < t -> intArrayOf(0, 0, w, t)
-            y >= b -> intArrayOf(0, b, w, h)
-            else -> null
         }
     }
 }

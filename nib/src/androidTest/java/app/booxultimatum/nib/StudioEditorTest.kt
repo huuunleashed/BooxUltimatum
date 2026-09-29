@@ -282,6 +282,29 @@ class StudioEditorTest {
         }
     }
 
+    @Test fun everyFloatingControlIsLeftOutOfThePreview() {
+        val v = launch()
+        val keys = listOf(R.string.action_undo, R.string.action_more, R.string.tool_lasso, R.string.view_reset).map { res ->
+            android.graphics.Rect().also { node(context.getString(res)).getBoundsInScreen(it) }
+        }
+        val loc = IntArray(2)
+        instrumentation.runOnMainSync { v.getLocationOnScreen(loc) }
+        fun exclusions(): List<IntArray> {
+            var out = emptyList<IntArray>()
+            instrumentation.runOnMainSync { out = v.previewExclusions }
+            return out
+        }
+        for (r in keys) {
+            val areas = waitFor("an exclusion around $r") {
+                exclusions().takeIf { list -> list.any { it[0] <= r.left && it[1] <= r.top && it[2] >= r.right && it[3] >= r.bottom } }
+            }
+            assertTrue(areas.size >= keys.size, "the pills, the rail and the view chip, all at once")
+        }
+        if (loc[1] > 0) {
+            assertTrue(exclusions().any { it[1] <= 0 && it[3] >= loc[1] }, "the screen above the canvas too")
+        }
+    }
+
     @Test fun thePenOverAFloatingCardIsNotOverTheCanvas() {
         val v = launch()
         val undo = node(context.getString(R.string.action_library))

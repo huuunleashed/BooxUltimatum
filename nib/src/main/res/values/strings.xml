@@ -22,6 +22,7 @@
     <string name="toggle_on">On</string>
     <string name="toggle_off">Off</string>
     <string name="unit_ms">%1$d ms</string>
+    <string name="unit_ms_short">ms</string>
     <string name="unit_px">px</string>
     <string name="unit_mm">mm</string>
     <string name="untitled">Untitled</string>
@@ -114,6 +115,7 @@
     <string name="menu_export">Export…</string>
     <string name="menu_share">Share as PNG</string>
     <string name="menu_paper">Paper and guides…</string>
+    <string name="menu_clean">Refresh screen</string>
     <string name="menu_recover">Recover screen</string>
     <string name="menu_settings">Settings</string>
     <string name="message_layer_locked">This layer is locked. Unlock it in Layers to change it.</string>
@@ -173,6 +175,21 @@
     <string name="setting_finger_drawing_detail">Off: fingers only move the page, and the pen is the only thing that draws.</string>
     <string name="setting_finger_pan">One finger moves the page</string>
     <string name="setting_finger_pan_detail">When fingers don’t draw. Two fingers always pinch, move and turn it.</string>
+    <string name="setting_fast_gestures">Fast refresh while moving the page</string>
+    <string name="setting_fast_gestures_detail">The display’s quick mode while fingers pan, zoom or turn the page, as in BOOX’s own apps. It cleans up the screen once they stop.</string>
+    <string name="setting_palm_guard">Palm guard</string>
+    <string name="setting_palm_guard_detail">The display ignores fingers on the canvas while the pen is near, so a resting hand can’t move the page. Not yet tested on this tablet: try it in Diagnostics › Lab first.</string>
+    <string name="setting_reveal">Show the finished ink</string>
+    <string name="setting_reveal_detail">While you write, the display draws its own quick preview of each stroke; Nib’s finished ink replaces it.</string>
+    <string name="reveal_auto">Auto</string>
+    <string name="reveal_auto_detail">At breaks for the pens the display previews faithfully, after a pause for textured, blended and see-through ones.</string>
+    <string name="reveal_breaks">At breaks</string>
+    <string name="reveal_breaks_detail">As BOOX Notes does: when you touch a control, open a panel, move the page or undo. Quick writing stays quickest.</string>
+    <string name="reveal_pause">After a pause</string>
+    <string name="reveal_pause_detail">Once the pen rests, Nib puts its exact ink on the display without interrupting you.</string>
+    <string name="reveal_every">After every stroke</string>
+    <string name="reveal_every_detail">As Nib 0.2 did: each stroke is replaced when you lift the pen, which slows quick writing.</string>
+    <string name="setting_reveal_pause">Pause before the finished ink</string>
     <string name="setting_gestures">Tap with two fingers to undo, with three to redo. Fingers are ignored while the pen is near the screen.</string>
 
     <!-- Brushes and brush settings -->
@@ -233,7 +250,8 @@
     <string name="brush_marker">Marker</string>
     <string name="brush_highlighter">Highlighter</string>
     <string name="brush_brush_pen">Brush pen</string>
-    <string name="brush_calligraphy">Calligraphy</string>
+    <string name="brush_calligraphy">Latin calligraphy</string>
+    <string name="brush_calligraphy_asian">Asian calligraphy</string>
     <string name="brush_neo_brush">Neo brush</string>
     <string name="brush_charcoal">Charcoal</string>
     <string name="brush_charcoal_v2">Coarse charcoal</string>
@@ -280,7 +298,7 @@
     <string name="eraser_pixel_detail">Rubs out ink where it passes, on the active layer only.</string>
     <string name="eraser_stroke_detail">Removes every stroke it touches on the active layer.</string>
     <string name="eraser_lasso_detail">Draw round strokes to remove them: those mostly inside the loop go.</string>
-    <string name="eraser_pen_note">The pen’s eraser end and its side button erase too, with this eraser. The display doesn’t preview erasing; the page updates as you go.</string>
+    <string name="eraser_pen_note">The pen’s eraser end and its side button erase too, with this eraser. With the eraser tool and the side button the page updates as you go; the eraser end’s track is drawn by the display, and the page updates when you lift.</string>
 
     <!-- Layers -->
     <string name="layers_title">Layers</string>
@@ -347,7 +365,7 @@
     <string name="diag_route_note">Direct: Nib talks to SurfaceFlinger itself. None: this tablet or firmware offers no pen path, and Nib draws without the display’s preview.</string>
     <string name="diag_max_pressure">Display’s pressure range</string>
     <string name="diag_session">Pen session</string>
-    <string name="diag_session_note">Open while the canvas or a probe is on screen; Paused over controls, Drawing over the canvas.</string>
+    <string name="diag_session_note">Open while the canvas or a probe is on screen: Live while the pen can draw, Paused while a panel, a tool or a gesture stops the preview.</string>
     <string name="diag_tablet">Tablet</string>
     <string name="diag_stylus">Stylus</string>
     <string name="diag_stylus_range">Android reports pressure up to %1$s</string>
@@ -356,6 +374,8 @@
     <string name="diag_preview">Preview</string>
     <string name="diag_try_unverified">Try unverified preview styles</string>
     <string name="diag_try_unverified_detail">Ask the display for each brush’s own style even where it hasn’t been seen working on this tablet. Off: a verified style stands in.</string>
+    <string name="diag_eraser_end_preview">Preview the eraser end on the display</string>
+    <string name="diag_eraser_end_preview_detail">The display draws the eraser end’s track itself while you erase, and Nib erases when you lift. Off: the preview pauses while the eraser end is used, and the page updates as you go.</string>
     <string name="diag_swap_delay">Extra swap delay</string>
     <string name="diag_swap_delay_detail">How long Nib waits after drawing the finished stroke before replacing the display’s preview with it.</string>
     <string name="diag_recorder">Pen recorder</string>
@@ -391,7 +411,7 @@
     <string name="probe_swap_help">The same stroke with longer waits before the swap. Does any band flicker or flash when the preview is replaced?</string>
     <string name="band_match">%1$s, %2$s px</string>
     <string name="band_style">%1$d · %2$s</string>
-    <string name="band_style_unverified">%1$d · %2$s (unverified)</string>
+    <string name="band_style_unseen">%1$d · %2$s (not seen on this tablet yet)</string>
     <string name="band_width">%1$s px</string>
     <string name="band_grey" formatted="false">50 % grey</string>
     <string name="band_translucent_fountain">Translucent black, fountain</string>
@@ -407,6 +427,120 @@
     <string name="answer_looks_right">Looks right</string>
     <string name="answer_broken">Broken</string>
     <string name="answer_nothing">Nothing drawn</string>
+
+    <!-- Diagnostics › Lab -->
+    <string name="diag_lab">Lab</string>
+    <string name="diag_lab_help">The display calls Nib now relies on that haven’t been seen working on this tablet yet. Try each one, then answer; the answers go into Nib’s log.</string>
+    <string name="lab_push_ink">Push ink</string>
+    <string name="lab_push_controls">Push controls</string>
+    <string name="lab_eraser_end">Eraser end</string>
+    <string name="lab_lasso">Lasso</string>
+    <string name="lab_fast_mode">Fast mode</string>
+    <string name="lab_palm_guard">Palm guard</string>
+    <string name="lab_style_params">Style settings</string>
+    <string name="lab_limit">Limit</string>
+    <string name="lab_fed_stroke">Fed stroke</string>
+    <string name="lab_geometry">Geometry</string>
+    <string name="lab_clean_screen">Clean screen</string>
+    <string name="lab_push_ink_help">Draw a stroke in a band, then rest the pen for %1$s. Nib pushes its own finished ink to the display without letting a frame through. Did the preview become Nib’s exact stroke?</string>
+    <string name="lab_push_controls_help">Draw several strokes without touching anything else. The counter is pushed to the display after each one while the display holds Nib’s frames. Did it keep up?</string>
+    <string name="lab_eraser_end_help">Draw a few strokes, then turn the pen round and rub them out with the eraser end. The display is asked to draw the eraser’s track itself; Nib erases when you lift.</string>
+    <string name="lab_lasso_help">Draw a loop in the lasso band. The display is asked to draw the path as a dashed line, which goes when you lift.</string>
+    <string name="lab_fast_mode_help">Draw something, then drag the surface with a finger: once with fast mode on, once with it off. The grid moves with it.</string>
+    <string name="lab_palm_guard_help">Turn Palm guard on, hold the pen just above the surface and rest your hand on it. While the pen is near, finger touch should be off over the surface. If fingers still do nothing a second after you take the pen away, answer Stuck off.</string>
+    <string name="lab_style_params_help">The fountain style’s own settings, sent to the display as you set them. Draw after each change: does the preview’s response to pressure change? The display’s own values are put back when you leave.</string>
+    <string name="lab_limit_help">The preview is limited to the middle band, given in screen coordinates. Draw across all three bands.</string>
+    <string name="lab_fed_stroke_help">Nib pauses the preview and feeds a line of points across the middle of the surface to the display’s own width model. Watch the surface as you press the key.</string>
+    <string name="lab_geometry_help">What the display reports about its own geometry for the way the tablet is turned now. Turn the tablet and read again.</string>
+    <string name="lab_clean_screen_help">The two ways BOOX’s reader cleans a colour screen. Try each one and say how it looked.</string>
+    <plurals name="lab_counter">
+        <item quantity="one">%1$d stroke</item>
+        <item quantity="other">%1$d strokes</item>
+    </plurals>
+    <string name="lab_fast_toggle">Fast mode while a finger moves the surface</string>
+    <string name="lab_palm_toggle">Palm guard</string>
+    <plurals name="lab_palm_near">
+        <item quantity="one">%1$d finger touch reached Nib while the pen was near</item>
+        <item quantity="other">%1$d finger touches reached Nib while the pen was near</item>
+    </plurals>
+    <plurals name="lab_palm_guarded">
+        <item quantity="one">%1$d of them with Palm guard on</item>
+        <item quantity="other">%1$d of them with Palm guard on</item>
+    </plurals>
+    <string name="lab_sensitivity">Pressure sensitivity</string>
+    <string name="lab_smoothing">Smoothing</string>
+    <string name="lab_feed">Feed a test stroke</string>
+    <string name="lab_fed_widths">Widths the display answered: %1$s</string>
+    <string name="lab_fed_none">The display didn’t answer.</string>
+    <string name="lab_rotation">Rotation · screen</string>
+    <string name="lab_panel_size">Panel</string>
+    <string name="lab_digitizer_size">Digitizer</string>
+    <string name="lab_matrix">Panel to screen</string>
+    <string name="lab_corner">Corner %1$d, %2$s on screen</string>
+    <string name="lab_corner_agrees">Agrees with the matrix</string>
+    <string name="lab_corner_differs">The matrix says %1$s</string>
+    <string name="lab_clean_deep">Deep clean</string>
+    <string name="lab_clean_gc">Clean, then repaint</string>
+    <string name="lab_q_push_black">Black fountain band</string>
+    <string name="lab_q_push_red">Red fountain band</string>
+    <string name="lab_q_push_charcoal">Charcoal band</string>
+    <string name="lab_q_pushed_colour">Did the pushed red show in colour?</string>
+    <string name="lab_q_counter">The counter</string>
+    <string name="lab_q_eraser_track">While erasing</string>
+    <string name="lab_q_strokes_erased">After lifting</string>
+    <string name="lab_q_lasso_path">While drawing the loop</string>
+    <string name="lab_q_fast_on">Moving with fast mode on</string>
+    <string name="lab_q_fast_off">Moving with it off</string>
+    <string name="lab_q_resting_hand">With your hand resting</string>
+    <string name="lab_q_preview_follows">The preview after a change</string>
+    <string name="lab_q_limit">Where the preview drew</string>
+    <string name="lab_q_fed_drawn">When you pressed the key</string>
+    <string name="lab_a_exact">Exact</string>
+    <string name="lab_a_nothing_changed">No</string>
+    <string name="lab_a_garbled">Garbled</string>
+    <string name="lab_a_wrong_place">Misplaced</string>
+    <string name="lab_a_in_colour">In colour</string>
+    <string name="lab_a_as_grey">As grey</string>
+    <string name="lab_a_not_shown">Not shown</string>
+    <string name="lab_a_kept_up">Kept up</string>
+    <string name="lab_a_stuck">Stuck</string>
+    <string name="lab_a_track_shown">Track shown</string>
+    <string name="lab_a_no_track">No track</string>
+    <string name="lab_a_drew_ink">Drew ink</string>
+    <string name="lab_a_erased">Erased</string>
+    <string name="lab_a_not_erased">Not erased</string>
+    <string name="lab_a_dashed">Dashed</string>
+    <string name="lab_a_solid">Solid</string>
+    <string name="lab_a_nothing">Nothing</string>
+    <string name="lab_a_smooth">Smooth</string>
+    <string name="lab_a_jumps">In jumps</string>
+    <string name="lab_a_smears">Smears</string>
+    <string name="lab_a_ignored">Ignored</string>
+    <string name="lab_a_touched">Touched</string>
+    <string name="lab_a_stayed_off">Stuck off</string>
+    <string name="lab_a_follows">Follows</string>
+    <string name="lab_a_no_change">No change</string>
+    <string name="lab_a_inside_only">Inside only</string>
+    <string name="lab_a_everywhere">Everywhere</string>
+    <string name="lab_a_nowhere">Nowhere</string>
+    <string name="lab_a_drawn">Drew something</string>
+    <string name="lab_a_clean">Clean</string>
+    <string name="lab_a_ghosting">Ghosting left</string>
+    <string name="lab_a_no_refresh">Didn’t refresh</string>
+    <string name="band_push_black">Black fountain pen</string>
+    <string name="band_push_red">Red fountain pen</string>
+    <string name="band_push_charcoal">Charcoal</string>
+    <string name="band_counter">Draw here, stroke after stroke</string>
+    <string name="band_eraser_end">Draw, then erase with the eraser end</string>
+    <string name="band_lasso_ink">Draw here</string>
+    <string name="band_lasso">Lasso: draw a loop</string>
+    <string name="band_fast">Draw, then drag with a finger</string>
+    <string name="band_palm">Hover here and rest your hand</string>
+    <string name="band_params">Fountain pen, 6 px</string>
+    <string name="band_limit_above">Above the limit</string>
+    <string name="band_limit_inside">Inside the limit</string>
+    <string name="band_limit_below">Below the limit</string>
+    <string name="band_fed">The test stroke runs across the middle</string>
 
     <!-- About -->
     <string name="about_summary">A drawing app for BOOX tablets: many brushes, very thin lines and unlimited layers, with the display’s own fast pen preview where the tablet offers it.</string>

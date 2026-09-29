@@ -6,6 +6,7 @@ import app.booxultimatum.nib.engine.brush.BrushSpec
 import app.booxultimatum.nib.engine.brush.HardwareStyle
 import app.booxultimatum.nib.engine.brush.Preview
 import app.booxultimatum.nib.engine.brush.PreviewColor
+import app.booxultimatum.nib.engine.brush.TiltResponse
 import app.booxultimatum.nib.engine.doc.Document
 import app.booxultimatum.nib.engine.doc.Layer
 import app.booxultimatum.nib.engine.doc.Stroke
@@ -43,6 +44,10 @@ internal object SampleDocs {
             taper = rnd.nextFloat() * 3f,
             dashOn = rnd.nextFloat() * 5f,
             dashOff = rnd.nextFloat() * 5f,
+            tiltScale = if (rnd.nextBoolean()) BrushSpec.NO_TILT else 1f + rnd.nextFloat() * 4f,
+            tiltResponse = TiltResponse.entries[rnd.nextInt(TiltResponse.entries.size)],
+            speedDamping = if (rnd.nextBoolean()) 0f else rnd.nextFloat() * 0.2f,
+            minWidth = if (rnd.nextBoolean()) 0f else rnd.nextFloat() * 4f,
         )
     }
 

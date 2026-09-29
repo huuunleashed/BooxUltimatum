@@ -248,12 +248,8 @@ private fun EditorBody(
             modifier = Modifier.fillMaxSize().clipToBounds(),
         )
         if (!fullscreen) {
-            Pill(Modifier.align(Alignment.TopStart).padding(Studio.Edge).penShield(shields, "left pill")) {
-                StudioKey(StudioGlyphs.Library, stringResource(R.string.action_library), onClick = onBack)
-                PillRule(vertical = true)
-                UndoRedo(ed)
-            }
-            TopRightPill(ed, Modifier.align(Alignment.TopEnd).padding(Studio.Edge).penShield(shields, "right pill"))
+            LeftPill(ed, onBack, Modifier.align(Alignment.TopStart).padding(Studio.Edge))
+            TopRightPill(ed, Modifier.align(Alignment.TopEnd).padding(Studio.Edge))
             Box(Modifier.fillMaxSize().padding(top = CHROME_DP.dp, bottom = CHROME_DP.dp)) {
                 ToolRail(ed, stacked, Modifier.align(if (settings.leftHanded) Alignment.CenterEnd else Alignment.CenterStart).padding(horizontal = Studio.Edge))
             }
@@ -293,13 +289,31 @@ private fun EditorBody(
 private const val CHROME_DP = 84f
 private const val RAIL_STACKED_DP = 1000f
 
-/** Keeps the canvas's preview stroke and blocks in step with the tools; recomposes alone, not the whole editor. */
+/** Keeps the canvas's preview stroke, reveal and blocks in step with the tools; recomposes alone, not the whole editor. */
 @Composable
 private fun CanvasSync(ed: Editor) {
     val t = ed.tools
     val s = ed.settings
-    LaunchedEffect(t.current, t.mode, t.eraser, s.tryUnverifiedStyles, s.markerPreview, s.swapDelayMs, ed.session.activeLayerId, ed.session.revision, ed.view.value) {
+    LaunchedEffect(
+        t.current, t.mode, t.eraser, s.tryUnverifiedStyles, s.markerPreview, s.swapDelayMs, s.reveal, s.revealPauseMs, s.fastGestures,
+        s.palmGuard, s.eraserEndPreview, ed.session.activeLayerId, ed.session.revision, ed.view.value,
+    ) {
         ed.view.value?.onToolsChanged()
+    }
+}
+
+/** Library, Undo and Redo. What undo and redo can do is pushed to the display during a writing session. */
+@Composable
+private fun LeftPill(ed: Editor, onBack: () -> Unit, modifier: Modifier) {
+    val h = ed.session.history
+    ed.session.revision
+    Pill(modifier.penShield(ed.shields, "left pill", shows = h.canUndo to h.canRedo)) {
+        StudioKey(StudioGlyphs.Library, stringResource(R.string.action_library), onClick = {
+            ed.view.value?.release("library")
+            onBack()
+        })
+        PillRule(vertical = true)
+        UndoRedo(ed)
     }
 }
 
@@ -314,7 +328,9 @@ private fun UndoRedo(ed: Editor) {
 @Composable
 private fun TopRightPill(ed: Editor, modifier: Modifier) {
     val p = ed.panels
-    Pill(modifier) {
+    val colour = ed.tools.current.color
+    val open = listOf(PanelId.BRUSHES, PanelId.COLOUR, PanelId.LAYERS, PanelId.MENU).map { p.isOpen(it) }
+    Pill(modifier.penShield(ed.shields, "right pill", shows = colour to open)) {
         StudioKey(StudioGlyphs.Brushes, stringResource(R.string.brushes_title), onClick = { p.toggle(PanelId.BRUSHES) }, selected = p.isOpen(PanelId.BRUSHES), modifier = Modifier.panelAnchor(p, PanelId.BRUSHES))
         ColourWell(ed.tools.current.color, selected = p.isOpen(PanelId.COLOUR), onClick = { p.toggle(PanelId.COLOUR) }, modifier = Modifier.panelAnchor(p, PanelId.COLOUR))
         StudioKey(StudioGlyphs.Layers, stringResource(R.string.layers_title), onClick = { p.toggle(PanelId.LAYERS) }, selected = p.isOpen(PanelId.LAYERS), modifier = Modifier.panelAnchor(p, PanelId.LAYERS))
@@ -361,7 +377,7 @@ private fun ToolRail(ed: Editor, stacked: Boolean, modifier: Modifier) {
 private fun RailTools(ed: Editor) {
     val tools = ed.tools
     val p = ed.panels
-    Pill(Modifier.penShield(ed.shields, "rail"), vertical = true) {
+    Pill(Modifier.penShield(ed.shields, "rail", shows = listOf(tools.slots, tools.selected, tools.mode, tools.eraser)), vertical = true) {
         tools.slots.forEachIndexed { i, preset ->
             val chosen = tools.mode == ToolMode.Pen && tools.selected == i
             PenSlotKey(
@@ -400,7 +416,7 @@ private fun RailSliders(ed: Editor) {
     val opacityScale = remember { ValueScale.percent(0.05f, 1f) }
     val sizeTitle = stringResource(if (erasing) R.string.slider_eraser_size else R.string.slider_size)
     fun setWidth(w: Float) = if (erasing) tools.setEraserWidth(tools.eraser, w) else tools.updateCurrent { it.copy(width = w) }
-    Pill(Modifier.penShield(ed.shields, "sliders"), vertical = true) {
+    Pill(Modifier.penShield(ed.shields, "sliders", shows = listOf(erasing, width, preset.spec().opacity, preset.color)), vertical = true) {
         QuickSlider(
             sizeTitle, width, widthScale, text = { ValueScale.formatNumber(it) },
             onCommit = { setWidth(it) },
@@ -450,7 +466,7 @@ private fun PenSlotKey(preset: BrushPreset, index: Int, selected: Boolean, onCli
 private fun ViewChip(ed: Editor, viewport: Viewport?, onFullscreen: () -> Unit) {
     val p = ed.panels
     val label = viewport?.let { viewLabel(it) } ?: "…"
-    Pill(Modifier.penShield(ed.shields, "view chip")) {
+    Pill(Modifier.penShield(ed.shields, "view chip", shows = label)) {
         Box(
             Modifier
                 .heightIn(min = Studio.Key)
@@ -473,7 +489,7 @@ private fun ViewChip(ed: Editor, viewport: Viewport?, onFullscreen: () -> Unit) 
 private fun SelectionBar(ed: Editor, selection: Selection) {
     val p = ed.panels
     val count = selection.ids.size
-    Pill(Modifier.penShield(ed.shields, "selection bar")) {
+    Pill(Modifier.penShield(ed.shields, "selection bar", shows = count)) {
         Text(pluralStringResource(R.plurals.selection_count, count, count), style = StudioType.Label, modifier = Modifier.padding(horizontal = 12.dp))
         PillRule(vertical = true)
         StudioKey(StudioGlyphs.MoveToLayer, stringResource(R.string.selection_move), onClick = { p.toggle(PanelId.MOVE) }, enabled = ed.session.document.layers.size > 1, modifier = Modifier.panelAnchor(p, PanelId.MOVE))

@@ -76,10 +76,15 @@ internal fun MenuPanel(
             MenuRow(StudioGlyphs.Export, stringResource(R.string.menu_export)) { p.show(PanelId.EXPORT) }
             MenuRow(StudioGlyphs.Share, stringResource(R.string.menu_share)) {
                 p.close(PanelId.MENU)
+                ed.view.value?.release("share")
                 share(ed, ExportKind.WithPaper)
             }
             MenuRow(StudioGlyphs.Paper, stringResource(R.string.menu_paper)) { p.show(PanelId.PAPER) }
             MenuRow(StudioGlyphs.Fullscreen, stringResource(R.string.action_fullscreen)) { onFullscreen() }
+            MenuRow(StudioGlyphs.CleanScreen, stringResource(R.string.menu_clean)) {
+                p.close(PanelId.MENU)
+                if (ed.view.value?.cleanScreen() != true) ed.say(ed.string(R.string.message_no_display_path))
+            }
             MenuRow(StudioGlyphs.Recover, stringResource(R.string.menu_recover)) {
                 p.close(PanelId.MENU)
                 val had = ed.view.value?.recoverScreen() == true
@@ -101,6 +106,7 @@ internal fun MenuPanel(
             Rule()
             MenuRow(StudioGlyphs.Library, stringResource(R.string.action_library)) {
                 p.close(PanelId.MENU)
+                ed.view.value?.release("library")
                 onBack()
             }
         }
@@ -190,6 +196,7 @@ internal fun ExportPanel(ed: Editor, landscape: Boolean) {
                         val name = ed.session.info.name.ifBlank { ed.string(R.string.untitled) }
                         ed.say(ed.string(R.string.message_exporting))
                         ed.panels.close(PanelId.EXPORT)
+                        ed.view.value?.release("export")
                         ed.scope.launch {
                             val uri = withContext(Dispatchers.IO) { Exporter.saveToGallery(ed.context, doc, name, paper, kind, layerFile(ed)) }
                             ed.say(ed.string(if (uri == null) R.string.message_export_failed else if (kind == ExportKind.Layers) R.string.message_exported_zip else R.string.message_exported))
@@ -198,6 +205,7 @@ internal fun ExportPanel(ed: Editor, landscape: Boolean) {
                 )
                 SlabButton(stringResource(R.string.export_share), icon = StudioGlyphs.Share, onClick = {
                     ed.panels.close(PanelId.EXPORT)
+                    ed.view.value?.release("share")
                     share(ed, kind)
                 })
             }

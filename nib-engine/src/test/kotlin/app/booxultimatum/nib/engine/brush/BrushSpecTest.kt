@@ -1,5 +1,6 @@
 package app.booxultimatum.nib.engine.brush
 
+import app.booxultimatum.nib.engine.input.PressureCurve
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
@@ -19,14 +20,16 @@ class BrushSpecTest {
     }
 
     @Test
-    fun thinPencilPreviewsUseFountain() {
+    fun thinPencilPreviewsKeepThePencilStyle() {
         val p = Preview(HardwareStyle.Pencil)
-        assertEquals(HardwareStyle.Fountain, p.styleFor(2f, 1f))
+        assertEquals(HardwareStyle.Pencil, p.styleFor(0.5f, 1f), "clean from 0.5 to 3 px on the tablet (Widths · pencil probe)")
         assertEquals(HardwareStyle.Pencil, p.styleFor(2f, 2f))
         assertEquals(HardwareStyle.Pencil, p.styleFor(3f, 1f))
         assertEquals(HardwareStyle.SquarePen, Preview(HardwareStyle.SquarePen).styleFor(5f, 1f))
-        assertEquals(HardwareStyle.Fountain, Preview(HardwareStyle.SquarePen).styleFor(5f, 1f, verifiedOnly = true))
-        assertEquals(HardwareStyle.Fountain, Preview(HardwareStyle.CharcoalV2).styleFor(1f, 1f, verifiedOnly = true), "charcoal falls back to pencil, which is too thin")
+        assertEquals(HardwareStyle.SquarePen, Preview(HardwareStyle.SquarePen).styleFor(5f, 1f, verifiedOnly = true), "BOOX's calligraphy uses it")
+        assertEquals(HardwareStyle.CharcoalV2, Preview(HardwareStyle.CharcoalV2).styleFor(1f, 1f, verifiedOnly = true), "BOOX's charcoal uses it")
+        assertEquals(HardwareStyle.Dash, Preview(HardwareStyle.Dash).styleFor(5f, 1f))
+        assertEquals(HardwareStyle.Fountain, Preview(HardwareStyle.Dash).styleFor(5f, 1f, verifiedOnly = true), "no BOOX pen uses the dash")
     }
 
     @Test
@@ -43,9 +46,11 @@ class BrushSpecTest {
     @Test
     fun hardwareStyles() {
         assertEquals((0..7).toList(), HardwareStyle.entries.map { it.code })
-        assertEquals(setOf(HardwareStyle.Pencil, HardwareStyle.Fountain, HardwareStyle.Marker), HardwareStyle.entries.filter { it.verified }.toSet())
+        assertEquals(HardwareStyle.entries.toSet() - HardwareStyle.Dash, HardwareStyle.entries.filter { it.verified }.toSet(), "every style BOOX's own pens use")
+        assertEquals(setOf(HardwareStyle.Pencil, HardwareStyle.Fountain, HardwareStyle.Marker), HardwareStyle.entries.filter { it.seenOnTablet }.toSet())
+        assertEquals(listOf(0, 1, 2, 3, 4, 6, 7), HardwareStyle.entries.filter { it.nativePen }.map { it.code })
         for (s in HardwareStyle.entries) {
-            assertTrue(s.fallback.verified)
+            assertTrue(s.fallback.seenOnTablet)
             assertEquals(s, HardwareStyle.fromCode(s.code))
         }
     }
@@ -67,19 +72,29 @@ class BrushSpecTest {
         assertEquals(4f..200f, BrushSpec.widthRange(BrushKind.Marker))
         assertTrue(BrushSpec.defaults(BrushKind.Fineliner).curve.isConstant)
         assertFalse(BrushSpec.defaults(BrushKind.Fountain).curve.isConstant)
-        assertEquals(0.5f, BrushSpec.defaults(BrushKind.Marker).opacity)
+        assertEquals(128f / 255f, BrushSpec.defaults(BrushKind.Marker).opacity)
         assertEquals(Blend.Multiply, BrushSpec.defaults(BrushKind.Highlighter).blend)
         assertEquals(Blend.Erase, BrushSpec.defaults(BrushKind.PixelEraser).blend)
         assertEquals(HardwareStyle.SquarePen, BrushSpec.defaults(BrushKind.Calligraphy).preview.style)
-        assertEquals(HardwareStyle.Fountain, BrushSpec.defaults(BrushKind.Graphite).preview.style)
+        assertEquals(HardwareStyle.Pencil, BrushSpec.defaults(BrushKind.Graphite).preview.style)
         assertEquals(PreviewColor.White, BrushSpec.defaults(BrushKind.PixelEraser).preview.color)
         assertEquals(8f, BrushSpec.defaults(BrushKind.Fountain).copy(width = 16f).maxRadius)
+        assertEquals(1f, BrushSpec.defaults(BrushKind.Fountain).copy(width = 16f, curve = PressureCurve(1f, 0f, 0.1f)).maxRadius, "never below the 2 px floor")
+        assertEquals(4f * (1f + 3f * TiltShading.MAX_BROADENING), BrushSpec.defaults(BrushKind.Charcoal).copy(width = 8f).maxRadius, 1e-5f, "a charcoal laid flat reaches 7.9 times as far")
+        assertEquals(2f, BrushSpec.defaults(BrushKind.Graphite).copy(width = 4f).maxRadius, 1e-5f, "graphite doesn't tilt unless tuned")
+        assertEquals(5f, BrushSpec.defaults(BrushKind.Graphite).copy(width = 4f, tiltScale = 2.5f, tiltResponse = TiltResponse.Eased).maxRadius, 1e-5f, "a 0.3.0-test graphite's eased tilt reaches its tilt scale")
+        assertEquals(2f, BrushSpec.defaults(BrushKind.Fountain).widthFloor)
+        assertEquals(1f, BrushSpec.defaults(BrushKind.Fountain).copy(width = 1f).widthFloor, "no wider than the pen")
+        assertEquals(0f, BrushSpec.defaults(BrushKind.Fineliner).widthFloor)
         val pencil = BrushSpec.defaults(BrushKind.Pencil).copy(width = 2f)
-        assertEquals(HardwarePreview(HardwareStyle.Fountain, 2f, 0xFF123456.toInt()), pencil.hardwarePreview(0x80123456.toInt(), 1f))
+        val thin = pencil.hardwarePreview(0x80123456.toInt(), 1f)
+        assertEquals(HardwarePreview(HardwareStyle.Pencil, 2f, 0xFF123456.toInt(), emptyList()), thin, "a thin pencil keeps its own style, which takes no parameters")
         assertEquals(HardwareStyle.Pencil, pencil.hardwarePreview(0, 2f).style)
         val marker = BrushSpec.defaults(BrushKind.Marker).hardwarePreview(0xFF00FF00.toInt(), 0.5f)
-        assertEquals(HardwarePreview(HardwareStyle.Marker, 8f, 0x8000FF00.toInt()), marker)
-        assertEquals(HardwareStyle.Fountain, BrushSpec.defaults(BrushKind.Calligraphy).hardwarePreview(0, 1f, verifiedOnly = true).style)
+        assertEquals(HardwarePreview(HardwareStyle.Marker, 8f, 0xFF00FF00.toInt()), marker, "solid colour, no parameters")
+        assertEquals(0x8096_9696.toInt(), BrushSpec.defaults(BrushKind.Marker).hardwarePreview(0xFF00FF00.toInt(), 1f, marker = MarkerPreview.SeeThroughGrey).argb)
+        assertEquals(HardwareStyle.SquarePen, BrushSpec.defaults(BrushKind.Calligraphy).hardwarePreview(0, 1f, verifiedOnly = true).style)
+        assertEquals(HardwareStyle.Fountain, BrushSpec.defaults(BrushKind.Dash).hardwarePreview(0, 1f, verifiedOnly = true).style)
     }
 
     @Test

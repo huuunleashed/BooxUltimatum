@@ -52,10 +52,21 @@ data class NibSummary(val width: Int, val height: Int, val layers: Int, val stro
  * layer table), `thumb.png` when there is a thumbnail, and one `layers/<id>.strokes` per layer (a brush table, then
  * stroke records with delta-encoded varint points). Every record is length-prefixed so newer minor versions can add
  * fields that older readers skip; a newer major version is refused with [NibFileException.UnsupportedVersion].
+ *
+ * Versions:
+ * - 1.0 (Nib 0.1, 0.2): points carry pressure, tilt, orientation and timing (tilt and orientation only when a stroke
+ *   has any).
+ * - 1.1 (Nib 0.3.0 test builds): brushes carry their tilt scale (brush field 20), and the `calligraphy_asian` brush
+ *   kind exists. A 1.0 file reads as before: its brushes ignore tilt, so its ink looks as it did. A 1.0 reader skips
+ *   the new field and draws an unknown kind as a fineliner.
+ * - 1.2: brushes carry their tilt response, speed damping and minimum width (brush fields 21, 22 and 23), which the
+ *   brushes calibrated against BOOX's own pens use. A 1.1 file reads as before: its tilting brushes keep the eased
+ *   response they were drawn with, and nothing is damped by speed or held to a minimum width. A 1.1 reader skips the
+ *   new fields.
  */
 object NibFile {
     const val FORMAT_MAJOR = 1
-    const val FORMAT_MINOR = 0
+    const val FORMAT_MINOR = 2
 
     private val MANIFEST_MAGIC = "NIB1".toByteArray(Charsets.US_ASCII)
     private val STROKES_MAGIC = "NIBS".toByteArray(Charsets.US_ASCII)

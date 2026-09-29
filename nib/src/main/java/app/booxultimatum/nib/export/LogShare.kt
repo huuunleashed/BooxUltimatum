@@ -5,7 +5,7 @@ import android.os.Build
 import app.booxultimatum.kit.core.Suite
 import app.booxultimatum.kit.core.SuiteApp
 import app.booxultimatum.kit.core.Tablet
-import app.booxultimatum.kit.ink.SurfaceInk
+import app.booxultimatum.kit.ink.epd.Epd
 import app.booxultimatum.kit.log.Logbook
 import app.booxultimatum.nib.BuildConfig
 import app.booxultimatum.nib.NibSettings
@@ -38,8 +38,9 @@ object LogShare {
             appendLine("Pen: ${t.pen?.name ?: "none listed"}")
             appendLine("Nib: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE}), ${if (Suite.isReleaseBuild(context)) "release" else "development"} build")
             appendLine("BooxUltimatum: ${Suite.installed(context, SuiteApp.Hub)?.let { "${it.versionName} (${it.versionCode})" } ?: "not installed"}")
-            appendLine("Display route: ${SurfaceInk.route ?: "none"}, max pressure ${SurfaceInk.maxTouchPressure ?: "unknown"}")
+            appendLine("Display route: ${Epd.route ?: "none"}, max pressure ${Epd.maxTouchPressure ?: "unknown"}")
             appendLine("Settings: finger drawing ${s.fingerDrawing}, finger pan ${s.fingerPan}, unverified styles ${s.tryUnverifiedStyles}, marker preview ${s.markerPreview.id}, swap delay ${s.swapDelayMs} ms, recorder ${s.penRecorder}")
+            appendLine("Preview: finished ink ${s.reveal.id}, pause ${s.revealPauseMs} ms, fast gestures ${s.fastGestures}, palm guard ${s.palmGuard}, eraser end preview ${s.eraserEndPreview}")
         }
     }
 }

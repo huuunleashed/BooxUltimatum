@@ -19,8 +19,8 @@ import app.booxultimatum.core.sleep.LiveSleepService
 import app.booxultimatum.core.sleep.SleepStore
 import app.booxultimatum.kit.core.Suite
 import app.booxultimatum.kit.core.Tablet
-import app.booxultimatum.kit.ink.PenInput
-import app.booxultimatum.kit.ink.SurfaceInk
+import app.booxultimatum.kit.ink.epd.Epd
+import app.booxultimatum.kit.ink.input.PenInput
 import app.booxultimatum.kit.log.Logbook
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -88,7 +88,7 @@ object FeedbackReports {
                     FeedbackInclude.Features,
                     buildString {
                         appendLine("## Feature status")
-                        appendLine("Instant ink: enabled=${yesNo(inkPrefs.enabled)}, status=${InstantInk.status}, route=${SurfaceInk.route ?: "none"}")
+                        appendLine("Instant ink: enabled=${yesNo(inkPrefs.enabled)}, status=${InstantInk.status}, route=${Epd.route ?: "none"}, pause=${inkPrefs.latencyMs} ms")
                         appendLine("Pen: ${profile.pen?.let { "${it.name}, node ${PenInput.remembered(app) ?: "not seen yet"}" } ?: "no stylus listed by Android"}")
                         appendLine("Readable input nodes: ${PenInput.readableNodes().joinToString { it.removePrefix("/dev/input/") }.ifEmpty { "none" }}")
                         appendLine("Usage access: ${yesNo(InstantInk.usageAccess(app))}")

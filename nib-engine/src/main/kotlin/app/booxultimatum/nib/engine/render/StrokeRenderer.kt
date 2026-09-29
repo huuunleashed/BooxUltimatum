@@ -170,12 +170,12 @@ object StrokeRenderer {
         val seed = stroke.id
         var index = 0
 
-        fun dab(px: Float, py: Float, radius: Float, pressure: Float) {
+        fun dab(px: Float, py: Float, radius: Float, pressure: Float, shade: Float) {
             val jx = (Hash.unit(seed, index, 0) * 2f - 1f) * jitter * radius
             val jy = (Hash.unit(seed, index, 1) * 2f - 1f) * jitter * radius
             val angle = Hash.unit(seed, index, 2) * TWO_PI
             val vary = 1f - grain * 0.6f * Hash.unit(seed, index, 3)
-            val alpha = flow * vary * (1f - pressureFlow + pressureFlow * pressure)
+            val alpha = flow * vary * (1f - pressureFlow + pressureFlow * pressure) * shade
             index++
             if (alpha > 0f) sink.dab(px + jx, py + jy, radius, angle, color, alpha, texture, blend)
         }
@@ -184,7 +184,8 @@ object StrokeRenderer {
         val y = line.y
         val r = line.r
         val p = line.p
-        dab(x[0], y[0], r[0], p[0])
+        val a = line.shade
+        dab(x[0], y[0], r[0], p[0], a[0])
         if (line.n == 1) return
         var next = step(r[0], spacing)
         for (i in 0 until line.n - 1) {
@@ -193,7 +194,7 @@ object StrokeRenderer {
             while (along <= segLen) {
                 val u = if (segLen > 0f) along / segLen else 0f
                 val rr = r[i] + (r[i + 1] - r[i]) * u
-                dab(x[i] + (x[i + 1] - x[i]) * u, y[i] + (y[i + 1] - y[i]) * u, rr, p[i] + (p[i + 1] - p[i]) * u)
+                dab(x[i] + (x[i + 1] - x[i]) * u, y[i] + (y[i + 1] - y[i]) * u, rr, p[i] + (p[i + 1] - p[i]) * u, a[i] + (a[i + 1] - a[i]) * u)
                 along += step(rr, spacing)
             }
             next = along - segLen

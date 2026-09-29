@@ -3,6 +3,7 @@ package app.booxultimatum.nib.pen
 import android.content.SharedPreferences
 import app.booxultimatum.nib.engine.brush.BrushKind
 import app.booxultimatum.nib.engine.brush.BrushSpec
+import app.booxultimatum.nib.engine.input.PressureCurve
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -43,11 +44,25 @@ class PreviewMatchTest {
     private val fountain = BrushSpec.defaults(BrushKind.Fountain)
     private val fineliner = BrushSpec.defaults(BrushKind.Fineliner)
 
-    @Test fun aPressureBrushIsPreviewedAtItsUsualWidthNotItsFullWidth() {
+    @Test fun aConstantWidthPreviewOfAPressureBrushIsSentAtItsUsualWidth() {
         val full = 10f
-        val sent = match.width(fountain, 1, full)
-        assertEquals(full * fountain.curve.factor(PreviewMatch.DEFAULT_PRESSURE), sent, 0.001f)
-        assertTrue(sent < full, "the preview used to be sent at the full width and looked too wide")
+        val tuned = BrushSpec.defaults(BrushKind.Pencil).copy(curve = PressureCurve(1f, 0.35f, 1f))
+        val sent = match.width(tuned, 0, full)
+        assertEquals(full * tuned.curve.factor(PreviewMatch.DEFAULT_PRESSURE), sent, 0.001f)
+        assertTrue(sent < full, "the pencil style can't thin, and at the full width it looked too wide")
+        for (kind in listOf(BrushKind.Pencil, BrushKind.Graphite)) {
+            assertEquals(full, match.width(BrushSpec.defaults(kind), 0, full), 0.001f, "$kind keeps its width whatever the pressure, as BOOX's pencil")
+        }
+    }
+
+    @Test fun stylesThatApplyPressureThemselvesGetTheFullWidth() {
+        assertEquals(10f, match.width(fountain, 1, 10f), 0.001f, "the display thins the fountain by the same law as the engine")
+        for (style in listOf(1, 2, 3)) assertTrue(PreviewMatch.followsPressure(style), "style $style")
+        for (style in listOf(0, 4, 5, 6, 7)) assertFalse(PreviewMatch.followsPressure(style), "style $style")
+        match.setFactor(1, 0.9f)
+        assertEquals(9f, match.width(fountain, 1, 10f), 0.001f, "the owner's factor still applies")
+        val calligraphy = BrushSpec.defaults(app.booxultimatum.nib.engine.brush.BrushKind.Calligraphy)
+        assertEquals(10f * calligraphy.curve.factor(PreviewMatch.DEFAULT_PRESSURE), match.width(calligraphy, 7, 10f), 0.001f, "the square pen's preview doesn't thin, so it gets the usual width")
     }
 
     @Test fun aConstantWidthBrushKeepsItsWidth() {

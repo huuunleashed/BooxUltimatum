@@ -147,7 +147,7 @@ class StrokeRendererTest {
             RecordingSink().also { StrokeRenderer.render(stroke(1, kind, path, color = color), it) }.calls
 
         val marker = calls(BrushKind.Marker)
-        assertEquals(Call.Begin(0.5f, Blend.Normal), marker[0])
+        assertEquals(Call.Begin(128f / 255f, Blend.Normal), marker[0], "drawn opaque, then laid down at alpha 128 as BOOX's marker is")
         assertEquals(Blend.Normal, (marker[1] as Call.Path).blend)
         assertEquals(BLACK, (marker[1] as Call.Path).color)
         assertEquals(Call.End, marker[2])
@@ -219,10 +219,12 @@ class StrokeRendererTest {
         val slow = raster(stroke(1, BrushKind.BrushPen, path, deltaMillis = 20L, brush = brush)).inkedPixels()
         assertTrue(fast < slow * 0.85f, "fast $fast vs slow $slow")
 
-        val neo = StrokeRenderer.centreline(stroke(2, BrushKind.NeoBrush, line(20f, 100f, 180f, 100f, 81), deltaMillis = 20L))
+        val neo = StrokeRenderer.centreline(stroke(2, BrushKind.NeoBrush, line(20f, 100f, 180f, 100f, 81), deltaMillis = 20L, brush = BrushSpec.defaults(BrushKind.NeoBrush).copy(taper = 2.5f)))
         val n = neo.size / 3
         val middle = neo[3 * (n / 2) + 2]
-        assertTrue(neo[2] < 0.3f * middle && neo[3 * (n - 1) + 2] < 0.3f * middle, "neo brush tapers at both ends")
+        assertTrue(neo[2] < 0.3f * middle && neo[3 * (n - 1) + 2] < 0.3f * middle, "a brush with a taper tapers at both ends")
+        val plain = StrokeRenderer.centreline(stroke(2, BrushKind.NeoBrush, line(20f, 100f, 180f, 100f, 81), deltaMillis = 20L))
+        assertEquals(plain[3 * (n / 2) + 2], plain[2], 1e-5f, "BOOX's brush has none")
     }
 
     @Test

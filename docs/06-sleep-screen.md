@@ -43,7 +43,7 @@ On its own, nothing on the picture changes while the tablet sleeps, because Boox
 
 ## While asleep: live updates (verified on NA6C FW 4.3, 2026-09-27, on battery)
 
-Opt-in, off by default, and Sleep image mode only. The face is redrawn every 5, 10, 15, 30 or 60 minutes while the tablet sleeps.
+Opt-in, off by default, and Sleep image mode only. The face is redrawn every 1, 5, 10, 15, 30 or 60 minutes while the tablet sleeps.
 
 **What makes it possible:**
 

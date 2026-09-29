@@ -32,6 +32,19 @@ data class TabletProfile(
     val isReference: Boolean get() = isBoox && model.equals("NoteAir6C", ignoreCase = true)
     val hasPen: Boolean get() = pen != null
     val name: String get() = if (isBoox) "BOOX $model" else "$manufacturer $model"
+
+    /**
+     * Whether the panel is colour (Kaleido), which finishes an update more slowly. No interface says so, so it's read
+     * from BOOX's model names, where colour models carry a C or "Color" (NoteAir6C, Tab Ultra C Pro, Go Color 7).
+     */
+    val hasColourPanel: Boolean get() = isBoox && isColourModel(model)
+
+    companion object {
+        fun isColourModel(model: String): Boolean {
+            val m = model.lowercase().replace(" ", "").replace("_", "").replace("-", "")
+            return m.endsWith("c") || m.endsWith("cpro") || m.endsWith("cplus") || "color" in m || "colour" in m
+        }
+    }
 }
 
 enum class BooxSeries { NoteAir, Note, NoteMax, TabUltra, TabMini, TabX, Tab, Go, Palma, Page, Leaf, Poke, Nova, OtherBoox, NotBoox }

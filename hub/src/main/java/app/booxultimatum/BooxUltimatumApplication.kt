@@ -6,6 +6,7 @@ import app.booxultimatum.core.ink.InstantInk
 import app.booxultimatum.core.sleep.SleepScheduler
 import app.booxultimatum.core.suite.Module
 import app.booxultimatum.core.suite.Modules
+import app.booxultimatum.kit.ink.session.InkGuard
 import app.booxultimatum.kit.log.Housekeeping
 import app.booxultimatum.kit.log.Logbook
 import java.io.File
@@ -24,6 +25,10 @@ class BooxUltimatumApplication : Application() {
             Logbook.logger("app").i("start", "version" to BuildConfig.VERSION_NAME, "code" to BuildConfig.VERSION_CODE)
             BatteryLog.watch(this)
             if (Modules.added(this, Module.Sleep)) SleepScheduler.watch(this)
+            // Before Instant ink starts: undoes what an ended process of the hub left on the display (a session still
+            // drawing, for instance), then keeps this process's record.
+            InkGuard.process.attach(File(noBackupFilesDir, "ink-guard"))
+            Modules.syncTiles(this)
             if (Modules.added(this, Module.Ink)) InstantInk.resume(this)
         }
     }

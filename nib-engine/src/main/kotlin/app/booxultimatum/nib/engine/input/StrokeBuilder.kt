@@ -9,12 +9,20 @@ import kotlin.math.roundToLong
 /**
  * Turns pen samples into a [Stroke].
  *
- * Samples closer than [MIN_DISTANCE] to the previous kept one are dropped, except that the last sample is always kept
- * by [finish]. Positions are smoothed with an exponential moving average whose strength is [BrushSpec.smoothing]; the
- * last few points ease back onto the raw samples, so the stroke ends exactly where the pen lifted, without a kink.
- * Not thread-safe.
+ * Samples closer than [MIN_DISTANCE] to the previous kept one are dropped, and so, with [dropStationary], are the
+ * resting pen's repeats BOOX's own pen reader drops (see [StationaryFilter]; [viewScale] is the view's screen pixels
+ * per document pixel, so its speed is measured on screen as BOOX's is). The first sample is always kept, and so is the
+ * last, by [finish]. Positions are smoothed with an exponential moving average whose strength is
+ * [BrushSpec.smoothing]; the last few points ease back onto the raw samples, so the stroke ends exactly where the pen
+ * lifted, without a kink. Not thread-safe.
  */
-class StrokeBuilder(val brush: BrushSpec, val color: Int, val id: Long) {
+class StrokeBuilder(
+    val brush: BrushSpec,
+    val color: Int,
+    val id: Long,
+    val dropStationary: Boolean = true,
+    val viewScale: Float = 1f,
+) {
     private var n = 0
     private var rawX = FloatArray(64)
     private var rawY = FloatArray(64)
@@ -41,9 +49,11 @@ class StrokeBuilder(val brush: BrushSpec, val color: Int, val id: Long) {
         check(!finished) { "stroke already finished" }
         if (!sample.x.isFinite() || !sample.y.isFinite()) return
         if (n > 0) {
-            val dx = sample.x - rawX[n - 1]
-            val dy = sample.y - rawY[n - 1]
-            if (dx * dx + dy * dy < MIN_DISTANCE * MIN_DISTANCE) {
+            val k = n - 1
+            val dx = sample.x - rawX[k]
+            val dy = sample.y - rawY[k]
+            val near = dx * dx + dy * dy < MIN_DISTANCE * MIN_DISTANCE
+            if (near || (dropStationary && StationaryFilter.isStationary(rawX[k], rawY[k], pressure[k], time[k], sample.x, sample.y, sample.pressure, sample.timeNanos, viewScale))) {
                 pending = sample
                 return
             }

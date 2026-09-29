@@ -57,16 +57,17 @@ class PresetsTest {
         assertTrue(BrushGroup.entries.none { g -> g.kinds.any { it.isEraser } })
     }
 
-    @Test fun unverifiedStylesUseAVerifiedStandIn() {
+    @Test fun untrustedStylesUseAVerifiedStandIn() {
         val charcoal = BrushSpec.defaults(BrushKind.Charcoal)
-        assertEquals(HardwareStyle.Pencil, PreviewPolicy.standIn(charcoal, tryUnverified = false))
-        val p = PreviewPolicy.preview(charcoal, 0xFF000000.toInt(), 1f, tryUnverified = false)
-        assertEquals(HardwareStyle.Pencil.code, p.style)
-        assertEquals(HardwareStyle.Charcoal.code, PreviewPolicy.preview(charcoal, 0xFF000000.toInt(), 1f, tryUnverified = true).style)
-        assertNull(PreviewPolicy.standIn(charcoal, tryUnverified = true))
+        assertNull(PreviewPolicy.standIn(charcoal, tryUnverified = false), "BOOX's own charcoal previews in this style")
+        assertEquals(HardwareStyle.Charcoal.code, PreviewPolicy.preview(charcoal, 0xFF000000.toInt(), 1f, tryUnverified = false).style)
+        assertNull(PreviewPolicy.standIn(BrushSpec.defaults(BrushKind.SquarePen), false))
 
-        val square = BrushSpec.defaults(BrushKind.SquarePen)
-        assertEquals(HardwareStyle.Fountain, PreviewPolicy.standIn(square, false))
+        val dash = BrushSpec.defaults(BrushKind.Dash)
+        assertEquals(HardwareStyle.Fountain, PreviewPolicy.standIn(dash, tryUnverified = false), "no BOOX pen previews in the dash style")
+        assertEquals(HardwareStyle.Fountain.code, PreviewPolicy.preview(dash, 0xFF000000.toInt(), 1f, tryUnverified = false).style)
+        assertEquals(HardwareStyle.Dash.code, PreviewPolicy.preview(dash, 0xFF000000.toInt(), 1f, tryUnverified = true).style)
+        assertNull(PreviewPolicy.standIn(dash, tryUnverified = true))
         assertNull(PreviewPolicy.standIn(BrushSpec.defaults(BrushKind.Fountain), false), "verified styles need no stand-in")
     }
 
@@ -81,6 +82,22 @@ class PresetsTest {
         val red = 0x80D2232A.toInt()
         assertEquals(0xFF, PreviewPolicy.preview(BrushSpec.defaults(BrushKind.Fountain), red, 1f, false).argb ushr 24)
         assertEquals(128, PreviewPolicy.preview(BrushSpec.defaults(BrushKind.Marker), red, 1f, false, marker = MarkerPreview.SeeThroughGrey).argb ushr 24)
+    }
+
+    @Test fun previewsCarryTheBrushsOwnStyleParameters() {
+        val fountain = PreviewPolicy.preview(BrushSpec.defaults(BrushKind.Fountain), -0x1000000, 1f, false)
+        assertEquals(listOf(PressureCurve.NATIVE_FOUNTAIN_SENSITIVITY, BrushSpec.NATIVE_FOUNTAIN_SMOOTHING), fountain.params?.toList())
+        assertNull(PreviewPolicy.preview(BrushSpec.defaults(BrushKind.Marker), -0x1000000, 1f, false).params, "the marker's own are left alone")
+        val thinFineliner = PreviewPolicy.preview(BrushSpec.defaults(BrushKind.Fineliner).withWidth(1f), -0x1000000, 1f, false)
+        assertEquals(0, thinFineliner.style, "a thin fineliner keeps the pencil style, which draws clean thin lines")
+        assertNull(thinFineliner.params, "the pencil style takes no parameters")
+        val charcoalAsPencil = PreviewPolicy.preview(BrushSpec.defaults(BrushKind.Charcoal), -0x1000000, 1f, false)
+        assertEquals(4, charcoalAsPencil.style)
+        val calligraphy = PreviewPolicy.preview(BrushSpec.defaults(BrushKind.Calligraphy), -0x1000000, 1f, false)
+        val turned = PreviewPolicy.preview(BrushSpec.defaults(BrushKind.Calligraphy), -0x1000000, 1f, false, viewRotation = (Math.PI / 4).toFloat())
+        assertEquals(HardwareStyle.SquarePen.code, calligraphy.style)
+        assertEquals(45f, calligraphy.params!![2], 0.01f)
+        assertEquals(0f, turned.params!![2], 0.01f, "the nib keeps its angle to the paper on a turned page")
     }
 
     @Test fun markerPreviewsFollowTheMarkerSetting() {

@@ -6,7 +6,7 @@ import app.booxultimatum.nib.engine.brush.BrushSpec
 import app.booxultimatum.nib.engine.brush.HardwareStyle
 import app.booxultimatum.nib.engine.brush.MarkerPreview
 import app.booxultimatum.nib.engine.input.PressureCurve
-import app.booxultimatum.kit.ink.PreviewStroke
+import app.booxultimatum.kit.ink.session.InkStroke
 
 /** How hard the pen has to press: each preset reshapes the brush's own curve; brushes that ignore pressure keep ignoring it. */
 enum class PressurePreset(val key: String, private val exponentFactor: Float) {
@@ -191,7 +191,7 @@ data class BrushPreset(
 }
 /** The pen panel's groups, in order, and which brushes each holds. Erasers live in the eraser panel. */
 enum class BrushGroup(val key: String, val kinds: List<BrushKind>) {
-    Pens("pens", listOf(BrushKind.Fineliner, BrushKind.Fountain, BrushKind.Ballpoint, BrushKind.Calligraphy, BrushKind.SquarePen, BrushKind.Dash)),
+    Pens("pens", listOf(BrushKind.Fineliner, BrushKind.Fountain, BrushKind.Ballpoint, BrushKind.Calligraphy, BrushKind.CalligraphyAsian, BrushKind.SquarePen, BrushKind.Dash)),
     Pencils("pencils", listOf(BrushKind.Pencil, BrushKind.Graphite)),
     Markers("markers", listOf(BrushKind.Marker, BrushKind.Highlighter)),
     Brushes("brushes", listOf(BrushKind.BrushPen, BrushKind.NeoBrush, BrushKind.Airbrush)),
@@ -204,20 +204,36 @@ enum class BrushGroup(val key: String, val kinds: List<BrushKind>) {
 }
 
 /**
- * What the display is asked to preview for a brush. The engine names each brush's own firmware style; until a style
- * has been seen working on the tablet, a verified stand-in is used instead (the engine's [HardwareStyle.fallback]:
- * Fountain for most, Pencil for the charcoals), unless the owner turns on *Try unverified preview styles*.
+ * What the display is asked to preview for a brush. The engine names each brush's own firmware style; a style that
+ * isn't trusted yet (neither seen on the tablet nor used by BOOX's own note app for a pen, which leaves only the dash)
+ * gives way to a stand-in (the engine's [HardwareStyle.fallback]) unless the owner turns on *Try unverified preview
+ * styles*. The style's parameters come with the engine's [app.booxultimatum.nib.engine.brush.HardwarePreview.params].
  */
 object PreviewPolicy {
-    /** With [match], the width is sized to the stroke Nib will draw at the owner's usual pressure. */
+    /**
+     * With [match], the width is sized to the stroke Nib will draw (see [PreviewMatch]). The style's parameters come
+     * from the brush's own settings, with a flat nib's angle as it shows on a page turned by [viewRotation] radians.
+     */
     fun preview(
         brush: BrushSpec, color: Int, viewScale: Float, tryUnverified: Boolean, match: PreviewMatch? = null,
-        marker: MarkerPreview = MarkerPreview.SolidColour,
-    ): PreviewStroke {
-        val p = brush.hardwarePreview(color, viewScale, verifiedOnly = !tryUnverified)
+        marker: MarkerPreview = MarkerPreview.SolidColour, viewRotation: Float = 0f,
+    ): InkStroke {
+        val p = brush.hardwarePreview(color, viewScale, verifiedOnly = !tryUnverified, marker = marker, viewRotation = viewRotation)
         val width = match?.width(brush, p.style.code, p.widthPx) ?: p.widthPx
-        val argb = if (p.style == HardwareStyle.Marker) marker.adapt(p.argb) else p.argb
-        return PreviewStroke(p.style.code, width, argb)
+        return InkStroke(p.style.code, width, p.argb, params(brush, p))
+    }
+
+    /**
+     * The style's parameters: the brush's own when the style is the brush's own, else the display's defaults. A style
+     * standing in (a thin pencil or fineliner previewed as a fountain pen, for instance) got parameters derived from a
+     * different pen in 0.3.0-test.1, and the fineliner's sensitivity of 0 drew its preview much thicker than its ink.
+     * The Lab showed why: the display's fountain draws thinner as the sensitivity rises and thicker as it falls, and
+     * matches Nib's own fountain at its defaults (owner's test on the Note Air6 C, FW 4.3, 2026-09-28).
+     */
+    fun params(brush: BrushSpec, p: app.booxultimatum.nib.engine.brush.HardwarePreview): FloatArray? {
+        val own = p.style == brush.preview.style
+        val list = if (own) p.params else app.booxultimatum.nib.engine.brush.DisplayParams.displayDefaults(p.style) ?: emptyList()
+        return list.takeIf { it.isNotEmpty() }?.toFloatArray()
     }
 
     /** The style shown instead of the brush's own because that one is unverified, or null when none stands in. */

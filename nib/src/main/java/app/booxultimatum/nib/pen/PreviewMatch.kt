@@ -5,17 +5,19 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.core.content.edit
 import app.booxultimatum.kit.log.Logbook
 import app.booxultimatum.nib.engine.brush.BrushSpec
+import app.booxultimatum.nib.engine.brush.HardwareStyle
 import kotlin.math.max
 
 /**
  * Keeps the display's preview as wide as the stroke Nib draws in its place.
  *
- * The display draws its preview at the width it's sent. Nib's brushes thin with pressure: at an ordinary writing
- * pressure a fountain pen is about two thirds of its full width. So a preview sent at the full width looked wider than
- * the stroke that replaced it (owner's report on the Note Air6 C, FW 4.3). The preview is therefore sent at the brush's
- * width at the owner's [typicalPressure], which Nib learns from their strokes. On top of that sits a factor per preview
- * style, which the owner can tune in Diagnostics, since how the firmware scales each style with pressure is unknown
- * *[verify]*. Both values are logged with every stroke, so better defaults can come from real use.
+ * The display draws its preview at the width it's sent. The styles that apply pressure themselves ([followsPressure]:
+ * fountain, marker, neo brush) are sent the brush's full width, since the engine's pens follow the same laws as BOOX's
+ * (measured with penlab: the fountain's p^(2s), the marker's 0.8 + 0.2p, the brush's √p; `docs/09-ink.md`). The
+ * other styles draw at a constant width, so a brush that thins with pressure is sent its width at the owner's
+ * [typicalPressure], which Nib learns from their strokes (verified in Diagnostics › Match preview on the Note Air6 C).
+ * The native-matched pencil, graphite and charcoals don't thin, so they're sent their width as it is. On top sits a
+ * factor per preview style, which the owner can tune in Diagnostics. Both values are logged with every stroke.
  */
 class PreviewMatch(private val prefs: SharedPreferences) {
     private val log = Logbook.logger("nib.pen")
@@ -58,11 +60,11 @@ class PreviewMatch(private val prefs: SharedPreferences) {
 
     /**
      * The width to send for [brush] previewed in [style], given the width the engine asked for ([enginePx], already
-     * zoomed): scaled to the brush's width at the typical pressure, then by the style's factor, and never below the
-     * brush's thinnest preview.
+     * zoomed): for a style that doesn't apply pressure itself, scaled to the brush's width at the typical pressure; then
+     * by the style's factor, and never below the brush's thinnest preview.
      */
     fun width(brush: BrushSpec, style: Int, enginePx: Float): Float {
-        val pressure = brush.curve.factor(typical.floatValue).coerceIn(0.05f, 1f)
+        val pressure = if (followsPressure(style)) 1f else brush.curve.factor(typical.floatValue).coerceIn(0.05f, 1f)
         return max(brush.preview.minWidthPx, enginePx * pressure * factor(style))
     }
 
@@ -79,5 +81,13 @@ class PreviewMatch(private val prefs: SharedPreferences) {
         /** How far the owner can correct a style's preview size. */
         val FACTOR_RANGE = 0.3f..1.6f
         const val FACTOR_STEP = 0.05f
+
+        /**
+         * The styles whose preview width follows the pen's pressure on the display itself, by the laws the engine's pens
+         * now share (penlab): fountain 1, marker 2, neo brush 3. The charcoals and the square pen don't change width
+         * with pressure natively.
+         */
+        fun followsPressure(style: Int): Boolean =
+            style == HardwareStyle.Fountain.code || style == HardwareStyle.Marker.code || style == HardwareStyle.NeoBrush.code
     }
 }

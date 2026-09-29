@@ -1,5 +1,8 @@
 package app.booxultimatum.nib.diag
 
+import app.booxultimatum.kit.ink.canvas.InkCanvasController
+import app.booxultimatum.kit.ink.session.InkStroke
+import app.booxultimatum.nib.engine.brush.DisplayParams
 import app.booxultimatum.nib.engine.brush.HardwareStyle
 import org.junit.Test
 import kotlin.test.assertEquals
@@ -44,5 +47,31 @@ class ProbesTest {
 
     @Test fun bandKeysAreUniqueWithinAProbe() {
         for (p in Probe.entries) assertEquals(p.bands.size, p.bands.map { it.key }.distinct().size, p.id)
+    }
+
+    @Test fun everyBandSendsItsStylesParametersWhereTheStyleHasThem() {
+        for (b in Probe.Styles.bands) {
+            val style = HardwareStyle.fromCode(b.preview.style)!!
+            val expected = DisplayParams.of(style, b.brush, b.preview.widthPx)
+            assertEquals(expected.ifEmpty { null }, b.preview.params?.toList(), b.key)
+        }
+        assertEquals(listOf(1f, 3f), Probe.Styles.bands.first { it.preview.style == HardwareStyle.Charcoal.code }.preview.params?.toList(), "tilt on, as the native charcoal")
+        assertTrue(Probe.MarkerColours.bands.all { it.preview.params == null }, "the marker's own are left alone")
+    }
+
+    @Test fun theStylesProbeMarksWhatHasBeenSeenOnTheTablet() {
+        val seen = Probe.Styles.bands.map { HardwareStyle.fromCode(it.preview.style)!! }.filter { it.seenOnTablet }.map { it.code }
+        assertEquals(listOf(0, 1, 2), seen)
+    }
+
+    @Test fun thePreviewsOwnProbesSwapEveryStrokeAndTheLabKeepsItsHold() {
+        for (p in Probe.pages) assertEquals(InkCanvasController.Reveal.EveryStroke, p.reveal, p.id)
+        assertEquals(InkCanvasController.Reveal.AfterPause, Probe.LabPushInk.reveal)
+        assertEquals(InkCanvasController.Reveal.AtBreaks, Probe.LabPushControls.reveal)
+        assertEquals(1, Probe.LabLimit.limitBand)
+        assertEquals(-1, Probe.Styles.limitBand)
+        assertEquals(BandKind.Lasso, Probe.LabLasso.bands.last().kind)
+        assertEquals(InkStroke.lasso(), Probe.LabLasso.bands.last().preview)
+        assertTrue(Probe.pages.none { it.lab })
     }
 }

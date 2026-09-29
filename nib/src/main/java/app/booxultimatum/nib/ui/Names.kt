@@ -21,6 +21,7 @@ object Names {
         BrushKind.Highlighter -> R.string.brush_highlighter
         BrushKind.BrushPen -> R.string.brush_brush_pen
         BrushKind.Calligraphy -> R.string.brush_calligraphy
+        BrushKind.CalligraphyAsian -> R.string.brush_calligraphy_asian
         BrushKind.NeoBrush -> R.string.brush_neo_brush
         BrushKind.Charcoal -> R.string.brush_charcoal
         BrushKind.CharcoalV2 -> R.string.brush_charcoal_v2

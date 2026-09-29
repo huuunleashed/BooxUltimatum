@@ -1,5 +1,6 @@
 package app.booxultimatum.nib.engine.index
 
+import app.booxultimatum.nib.engine.brush.TiltShading
 import app.booxultimatum.nib.engine.doc.Stroke
 import app.booxultimatum.nib.engine.geom.Box
 import app.booxultimatum.nib.engine.geom.Geometry
@@ -18,9 +19,17 @@ object HitTest {
         val h = stroke.brush.maxRadius + 1f
         return Box(pb.left - h, pb.top - h, pb.right + h, pb.bottom + h).union(stroke.bounds)
     }
-    /** The radius used for hit tests at point [i]: half the width times the pressure factor (speed, taper and nib ignored). */
-    fun radiusAt(stroke: Stroke, i: Int): Float =
-        stroke.brush.width * 0.5f * stroke.brush.curve.factor(stroke.points.pressure(i))
+    /**
+     * The radius used for hit tests at point [i]: half the width times the pressure and tilt factors, and never below
+     * the brush's floor (speed, taper and nib ignored).
+     */
+    fun radiusAt(stroke: Stroke, i: Int): Float {
+        val brush = stroke.brush
+        val r = brush.width * 0.5f * brush.curve.factor(stroke.points.pressure(i)) *
+            TiltShading.widthFactor(stroke.points.tilt(i), brush.tiltScale, brush.tiltResponse)
+        val floor = brush.widthFloor * 0.5f
+        return if (floor > 0f && !(r >= floor)) floor else r
+    }
 
     /**
      * True when an eraser of [radius] dragged along the first [count] points of [path] touches [stroke]: the distance

@@ -39,7 +39,7 @@
     <string name="module_sleep">Sleep screen</string>
     <string name="module_sleep_summary">Your own sleep and power-off screens. Removing it gives both back to Boox and stops the updates while asleep.</string>
     <string name="module_ink">Instant ink</string>
-    <string name="module_ink_summary">Boox’s instant pen preview in other drawing apps. Removing it turns it off and takes its Quick Settings tile away.</string>
+    <string name="module_ink_summary">Boox’s instant pen preview in other drawing apps. Removing it turns it off and takes its Quick Settings tiles away.</string>
     <string name="module_battery_log">Battery log</string>
     <string name="module_battery_log_summary">Records screen, charge and level changes without waking the tablet. Removing it stops recording; past logs stay.</string>
     <string name="module_journal_added">Added %1$s</string>

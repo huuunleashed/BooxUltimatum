@@ -36,7 +36,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import app.booxultimatum.kit.core.Tablet
-import app.booxultimatum.kit.ink.SurfaceInk
+import app.booxultimatum.kit.ink.epd.Epd
+import app.booxultimatum.kit.ink.session.InkStroke
 import app.booxultimatum.kit.log.Logbook
 import app.booxultimatum.nib.NibSettings
 import app.booxultimatum.nib.R
@@ -69,15 +70,16 @@ import java.io.File
 
 /**
  * Diagnostics: the questions about the display's pen path that only the tablet can answer, set out so the owner can
- * run them alone. A status page, the Match preview page, then one page per probe; every answer is logged under
- * `nib.probe`.
+ * run them alone. A status page, the Match preview page, one page per probe, then the Lab, which tests the display
+ * calls not yet verified; every answer is logged under `nib.probe`.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DiagnosticsScreen(onBack: () -> Unit, startOnMatch: Boolean = false) {
-    var page by rememberSaveable { mutableIntStateOf(if (startOnMatch) 1 + Probe.entries.indexOf(Probe.MatchPreview) else 0) }
+    val probes = Probe.pages
+    var page by rememberSaveable { mutableIntStateOf(if (startOnMatch) 1 + probes.indexOf(Probe.MatchPreview) else 0) }
     var entry by remember { mutableStateOf<EntryRequest?>(null) }
-    val probes = Probe.entries
+    val lab = probes.size + 1
     Box(Modifier.fillMaxSize()) {
         StudioPage(stringResource(R.string.title_diagnostics), stringResource(R.string.action_back), onBack) {
             FlowRow(Modifier.padding(horizontal = Studio.S4), horizontalArrangement = Arrangement.spacedBy(Studio.S2), verticalArrangement = Arrangement.spacedBy(Studio.S2)) {
@@ -85,10 +87,12 @@ fun DiagnosticsScreen(onBack: () -> Unit, startOnMatch: Boolean = false) {
                 probes.forEachIndexed { i, p ->
                     SlabButton(stringResource(probeTitle(p)), onClick = { page = i + 1 }, kind = if (page == i + 1) ButtonKind.Primary else ButtonKind.Plain)
                 }
+                SlabButton(stringResource(R.string.diag_lab), onClick = { page = lab }, kind = if (page == lab) ButtonKind.Primary else ButtonKind.Plain)
             }
             Spacer(Modifier.height(Studio.S3))
             when {
                 page == 0 -> StatusPage()
+                page >= lab -> LabPage(type = { entry = it })
                 probes[page - 1] == Probe.MatchPreview -> MatchPage(type = { entry = it })
                 // Each probe gets its own surface and session: sharing one across tabs kept the first probe's bands
                 // and logged nothing for the others (seen on the tablet, 2026-09-28).
@@ -109,6 +113,7 @@ private fun probeTitle(p: Probe): Int = when (p) {
     Probe.Colours -> R.string.probe_colours
     Probe.MarkerColours -> R.string.probe_marker_colours
     Probe.SwapDelay -> R.string.probe_swap
+    else -> R.string.diag_lab
 }
 
 private fun probeHelp(p: Probe): Int = when (p) {
@@ -118,6 +123,7 @@ private fun probeHelp(p: Probe): Int = when (p) {
     Probe.Colours -> R.string.probe_colours_help
     Probe.MarkerColours -> R.string.probe_marker_colours_help
     Probe.SwapDelay -> R.string.probe_swap_help
+    else -> R.string.diag_lab_help
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -137,16 +143,16 @@ private fun StatusPage() {
         verticalArrangement = Arrangement.spacedBy(Studio.S5),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        val route = remember(probed) { SurfaceInk.route }
-        val pressure = remember(probed) { SurfaceInk.maxTouchPressure }
+        val route = remember(probed) { Epd.route }
+        val pressure = remember(probed) { Epd.maxTouchPressure }
         val sessionState = remember(probed) { NibPen.session.state }
         val range = remember(probed) { NibPen.stylusDevice()?.getMotionRange(android.view.MotionEvent.AXIS_PRESSURE)?.max }
         StudioSection(stringResource(R.string.diag_display), action = {
             SlabButton(stringResource(R.string.diag_probe_display), onClick = {
-                val r = SurfaceInk.connect()
+                val r = Epd.connect()
                 log.i(
                     "display probe",
-                    "route" to r?.name, "max pressure" to SurfaceInk.maxTouchPressure, "pen state" to SurfaceInk.penState(),
+                    "route" to r?.name, "max pressure" to Epd.maxTouchPressure, "pen state" to Epd.penState(),
                     "boox" to tablet.isBoox, "model" to tablet.model, "firmware" to tablet.firmware,
                     "stylus range max" to NibPen.stylusDevice()?.getMotionRange(android.view.MotionEvent.AXIS_PRESSURE)?.max,
                 )
@@ -163,6 +169,10 @@ private fun StatusPage() {
             Toggle(stringResource(R.string.diag_try_unverified), stringResource(R.string.diag_try_unverified_detail), settings.tryUnverifiedStyles, onToggle = {
                 settings.tryUnverifiedStyles = it
                 log.i("setting", "try unverified styles" to it)
+            }, onText = on, offText = off)
+            Toggle(stringResource(R.string.diag_eraser_end_preview), stringResource(R.string.diag_eraser_end_preview_detail), settings.eraserEndPreview, onToggle = {
+                settings.eraserEndPreview = it
+                log.i("setting", "eraser end preview" to it)
             }, onText = on, offText = off)
             Text(stringResource(R.string.diag_swap_delay), style = StudioType.Title, modifier = Modifier.padding(top = Studio.S2))
             Text(stringResource(R.string.diag_swap_delay_detail), style = StudioType.Body, color = Studio.Legend)
@@ -186,7 +196,7 @@ private fun StatusPage() {
                 SlabButton(stringResource(R.string.diag_recorder_share), enabled = recorded > 0, onClick = {
                     scope.launch {
                         val (w, h) = NibPen.panelPortrait(context)
-                        val max = NibPen.pressureRangeMax(null) ?: SurfaceInk.maxTouchPressure ?: 1f
+                        val max = NibPen.pressureRangeMax(null) ?: Epd.maxTouchPressure ?: 1f
                         val rec = PenRecorderStore.recording(w, h, max)
                         val file = withContext(Dispatchers.IO) { PenRecorderStore.export(File(File(context.cacheDir, "recordings"), "nib-pen.penrec"), rec) }
                         runCatching { context.startActivity(Exporter.shareFile(context, file, "application/octet-stream")) }
@@ -208,7 +218,7 @@ private fun StatusPage() {
 
 /** The probe's drawing surface on white paper, in a card. */
 @Composable
-private fun ProbeSurface(probe: Probe, labels: List<String>, previewFor: ((Band) -> app.booxultimatum.kit.ink.PreviewStroke)?, onView: (ProbeView) -> Unit, modifier: Modifier) {
+internal fun ProbeSurface(probe: Probe, labels: List<String>, previewFor: ((Band) -> InkStroke)?, onView: (ProbeView) -> Unit, modifier: Modifier) {
     Box(modifier.padding(end = Studio.ShadowCard, bottom = Studio.ShadowCard).slab(radius = Studio.RadiusS, shadow = Studio.ShadowCard)) {
         AndroidView(
             factory = { c -> ProbeView(c).apply { id = R.id.nib_probe } },
@@ -230,8 +240,8 @@ private fun ProbePage(probe: Probe) {
     val match = remember { NibSettings.get(context).previewMatch }
     // The Styles bands are judged on shape, so their preview is sized like the editor's: to the band brush's width at
     // the owner's usual pressure. The width probes send raw widths on purpose.
-    val previewFor: ((Band) -> app.booxultimatum.kit.ink.PreviewStroke)? = if (probe == Probe.Styles) {
-        { b -> app.booxultimatum.kit.ink.PreviewStroke(b.preview.style, match.width(b.brush, b.preview.style, b.preview.widthPx), b.preview.argb) }
+    val previewFor: ((Band) -> InkStroke)? = if (probe == Probe.Styles) {
+        { b -> InkStroke(b.preview.style, match.width(b.brush, b.preview.style, b.preview.widthPx), b.preview.argb, b.preview.params) }
     } else null
     val answers = remember(probe) { mutableStateMapOf<Int, Answer>() }
     var view by remember { mutableStateOf<ProbeView?>(null) }
@@ -259,7 +269,7 @@ private fun ProbePage(probe: Probe) {
                                     "probe" to probe.id, "band" to band.key, "answer" to a.id,
                                     "style" to band.preview.style, "width" to (previewFor?.invoke(band)?.widthPx ?: band.preview.widthPx),
                                     "argb" to Integer.toHexString(band.preview.argb), "delay ms" to band.swapDelayMs,
-                                    "route" to SurfaceInk.route?.name, "session" to NibPen.session.state.name,
+                                    "route" to Epd.route?.name, "session" to NibPen.session.state.name,
                                     "strokes" to (view?.strokeCount ?: 0),
                                 )
                             },
@@ -296,7 +306,7 @@ private fun MatchPage(type: (EntryRequest) -> Unit) {
     var view by remember { mutableStateOf<ProbeView?>(null) }
     val labels = probe.bands.indices.map { i -> bandLabel(probe, i) }
     val tryUnverified = settings.tryUnverifiedStyles
-    val previewFor: (Band) -> app.booxultimatum.kit.ink.PreviewStroke = { b -> PreviewPolicy.preview(b.brush, b.color, 1f, tryUnverified, match, settings.markerPreview) }
+    val previewFor: (Band) -> InkStroke = { b -> PreviewPolicy.preview(b.brush, b.color, 1f, tryUnverified, match, settings.markerPreview) }
     val scale = remember { ValueScale.factor(PreviewMatch.FACTOR_RANGE.start, PreviewMatch.FACTOR_RANGE.endInclusive, PreviewMatch.FACTOR_STEP) }
     fun setFactor(style: Int, v: Float) {
         match.setFactor(style, v)
@@ -356,7 +366,7 @@ private fun MatchPage(type: (EntryRequest) -> Unit) {
                                     "match answer",
                                     "band" to band.key, "answer" to a.id, "style" to sent.style, "preview width" to sent.widthPx,
                                     "brush width" to band.brush.width, "factor" to match.factor(sent.style), "typical p" to match.typicalPressure,
-                                    "route" to SurfaceInk.route?.name, "session" to NibPen.session.state.name, "strokes" to (view?.strokeCount ?: 0),
+                                    "route" to Epd.route?.name, "session" to NibPen.session.state.name, "strokes" to (view?.strokeCount ?: 0),
                                 )
                             },
                             modifier = Modifier.fillMaxWidth(),
@@ -382,7 +392,7 @@ private fun bandLabel(probe: Probe, i: Int): String {
         Probe.MatchPreview -> stringResource(R.string.band_match, stringResource(Names.brush(b.brush.kind)), WidthSteps.label(b.brush.width))
         Probe.Styles -> {
             val style = HardwareStyle.fromCode(b.preview.style)!!
-            stringResource(if (style.verified) R.string.band_style else R.string.band_style_unverified, style.code, stringResource(Names.style(style)))
+            stringResource(if (style.seenOnTablet) R.string.band_style else R.string.band_style_unseen, style.code, stringResource(Names.style(style)))
         }
         Probe.WidthsFountain, Probe.WidthsPencil -> stringResource(R.string.band_width, WidthSteps.label(b.preview.widthPx))
         Probe.Colours -> stringResource(
@@ -397,6 +407,7 @@ private fun bandLabel(probe: Probe, i: Int): String {
         )
         Probe.MarkerColours -> stringResource(MARKER_BAND_LABELS[i])
         Probe.SwapDelay -> stringResource(R.string.unit_ms, b.swapDelayMs.toInt())
+        else -> labBandLabel(b)
     }
 }
 

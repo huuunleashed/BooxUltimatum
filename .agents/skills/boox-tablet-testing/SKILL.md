@@ -10,6 +10,8 @@ The tablet is someone's real device, shared with the agent. Treat every write as
 ## Before touching it
 
 - `adb devices` must list it. If adb says "cannot connect to daemon", run `adb kill-server` then `adb start-server`.
+- **adb over Wi-Fi** (verified 2026-09-28): firmware 4.3 hides the *Wireless debugging* switch, but the older mode works. With the owner's OK, run `adb -s <usb serial> tcpip 5555` once over USB, then `adb connect <tablet ip>:5555` (the IP is in `ip -4 addr show wlan0`); the cable can then come out. It uses the same key approval as USB, lasts until the next reboot, and `adb usb` ends it sooner. With both connections listed, pass `-s` every time.
+- **`adb pull` fails silently on this PC** (exit 1, a 0-byte file, no message). Stream files instead, `cmd /c "adb -s <serial> exec-out cat /path > <file>"`, and compare `md5sum` on the tablet with `Get-FileHash -Algorithm MD5`.
 - Never assume it's unlocked: `adb shell dumpsys window | grep isKeyguardShowing`. If it shows the lock screen, ask the owner.
 - Note what you'll change and put it back afterwards: rotation (`cmd window user-rotation`), the Boox sleep style, EinkWise configs, accessibility services (`settings get secure enabled_accessibility_services`) and the display state.
 - Read-only commands are always fine: `getprop`, `dumpsys`, `pm list`, `cat` on sysfs, `settings get`, `logcat -d`.
@@ -37,6 +39,7 @@ The tablet is someone's real device, shared with the agent. Treat every write as
 
 The owner may have the tablet with them, away from the computer. Then:
 
+- **Instrumented tests install onto every attached device.** Before `connectedDebugAndroidTest`, make sure `adb devices` lists only the emulator: disconnect a Wi-Fi-connected tablet with `adb disconnect <ip>:5555` (host side only; `adb connect` brings it back without the cable while the tablet stays in TCP mode), and set `$env:ANDROID_SERIAL = 'emulator-5554'` too. Subagents must never run them.
 - **Test here first.** Run the JVM tests (`.\gradlew.bat testDebugUnitTest :nib-engine:test`) and the `NoteAir6C` emulator: an Android 36 AVD at 1860 × 2480, 300 dpi. Start it headless with `emulator -avd NoteAir6C -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot-save` (WHPX works on this PC), then use `adb -e`.
 - **What the emulator can't show.** It isn't Boox firmware, so the Sleep and Ink pages are hidden and Nib draws without the display preview. Anything that touches SurfaceFlinger's pen path, the sleep screen or EinkWise needs the tablet.
 - **Screenshots.** `adb -e exec-out screencap -p > file.png` works in PowerShell 7. Downscale before viewing.
@@ -70,4 +73,4 @@ Send these as the shell: `ENABLE_POST` on (`service call SurfaceFlinger 16711692
 
 ## Shizuku
 
-It stops on every reboot. Restart it with `.\tools\host\start-shizuku.ps1`. Firmware 4.3 hides Wireless debugging, so this needs USB.
+It stops on every reboot. Restart it with `.\tools\host\start-shizuku.ps1`. Firmware 4.3 hides Wireless debugging and the Wi-Fi mode above also ends at a reboot, so this needs USB once after each restart.

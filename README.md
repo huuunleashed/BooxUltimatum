@@ -26,7 +26,7 @@ Nothing is flashed, and the bootloader stays locked. The hub, BooxUltimatum, is 
 
 BooxUltimatum is the hub of a small suite. Its Suite page installs, opens, updates and uninstalls the suite's other apps, and lists the modules built into the hub: the home screen, the sleep screen, Instant ink and the battery log. Removing a module stops it and undoes what it changed, and its pages leave the menu until you add it back. The apps share one kit of libraries: the same design, the same logbook, the same pen code and the same updater. Every suite app keeps a log of what it did and what went wrong, and keeps its own cache, downloads and exports bounded. Device › Logs shares every app's logs as one zip, and Device › Storage shows and clears what each app keeps.
 
-### Nib: drawing with Boox's instant pen (new)
+### Nib: drawing with Boox's instant pen
 
 Nib draws the way Boox Notes writes. The display paints each stroke under the nib at once, and the moment you lift the pen, Nib's own rendering takes its place. It's built for drawing rather than notes:
 
@@ -35,7 +35,7 @@ Nib draws the way Boox Notes writes. The display paints each stroke under the ni
 - **Layers.** As many as you need, with opacity, visibility and locking. Boox Notes stops at five.
 - **The rest.** Undo, zoom that keeps the preview and the result matching, crash-safe autosave, and PNG export.
 
-Its tools float over a full-screen page like cut cards on a desk. The pens are drawn as their own strokes, and every brush property has a slider with − and + keys and a typed value. The Brushes, Colour and Layers cards can be pinned and moved. There's also a lasso that moves, scales and turns strokes, a page you can turn, paper guides, and exports with or without the paper or layer by layer. It works without BooxUltimatum, and without Shizuku or a computer. On the Note Air6 C the preview feels clearly faster than other drawing apps, the first stroke is whole, and the preview stays off the cards while strokes next to them start at once. It's the first release, so see [Known limits](#known-limits) and [`docs/08-nib.md`](docs/08-nib.md).
+Its tools float over a full-screen page like cut cards on a desk. The pens are drawn as their own strokes, and every brush property has a slider with − and + keys and a typed value. The Brushes, Colour and Layers cards can be pinned and moved. There's also a lasso that moves, scales and turns strokes, a page you can turn, paper guides, and exports with or without the paper or layer by layer. It works without BooxUltimatum, and without Shizuku or a computer. From 0.3 it writes the way BOOX's own apps do: the display holds the page for the whole writing session, so quick strokes follow each other without a pause, and Nib's ink replaces the preview when you stop to use a card, a panel or a gesture. Its pens are matched to BOOX's own: the preview gets each brush's pressure sensitivity, tilt and nib angle, and textured brushes show Nib's exact ink after you pause. The eraser end and the lasso are drawn by the display too, the page refreshes fast while fingers move it, and an optional palm guard switches finger touch off while the pen is near. See [Known limits](#known-limits), [`docs/08-nib.md`](docs/08-nib.md) and [`docs/09-ink.md`](docs/09-ink.md).
 
 ### A home screen made for e-ink
 
@@ -64,7 +64,7 @@ A calm, paper-white launcher that uses about a third of the Boox home's memory a
 Boox gives you six preset screensavers. BooxUltimatum gives you twenty-one faces set in *your* tablet font, from a Braun wall clock and a 3D cube to a split-flap board, a dashboard and a newspaper front page. Each has its own portrait and landscape layout.
 
 - **Freshness:** Boox only reads the picture as the tablet goes to sleep, so the studio quietly redraws it while you use the tablet. It updates every 5 minutes by default, and whenever the battery, date or rotation changes. The time it shows is honest: "put down around 4:30 PM".
-- **While asleep (new, off by default):** the face can also update while the tablet sleeps, every 5 to 60 minutes, and it covers Boox's charging bar. It needs an accessibility service (which only holds the picture and reads nothing), background use and exact alarms, all allowed on the tablet. Each update wakes the tablet for about a second and a half, and the battery cost isn't measured yet.
+- **While asleep (new, off by default):** the face can also update while the tablet sleeps, every 1 to 60 minutes, and it covers Boox's charging bar. It needs an accessibility service (which only holds the picture and reads nothing), background use and exact alarms, all allowed on the tablet. Each update wakes the tablet for about a second and a half, and the battery cost isn't measured yet.
 - **Twenty-one faces, twelve of them live.**
     - Dial, Clock, Monitor, Cube, Split-flap, Dashboard, Word clock, Day ring, Timeline, LCD, Sky and Broadsheet keep time while the tablet sleeps.
     - Almanac, Year, Instrument, Poster, Under the clock, Photo, Note, Return card and Minimal are still faces.
@@ -86,7 +86,7 @@ Boox gives you six preset screensavers. BooxUltimatum gives you twenty-one faces
 
 In Boox Notes, ink appears under the nib in about 10 ms. In Sketchbook and most other apps, it trails behind. The reason is that the display system draws the stroke straight from the pen, a firmware feature Onyx offers app developers through its public [pen SDK](https://github.com/onyx-intl/OnyxAndroidDemo/blob/master/doc/Onyx-Pen-SDK.md), for drawing inside their own app. Most apps don't include that SDK. BooxUltimatum switches the same path on from the outside for apps you choose, and hands the stroke back to them after you lift the pen.
 
-A preview stroke lands at once, and half a second after you lift, the app's own brush takes its place. The display holds the app's own drawing back while the pen touches, so its brush and colour always appear after the lift. Instant ink keeps a paused display session ready, so even the first stroke after unlocking or switching apps gets the preview, and it steps aside for Boox's own apps. The app isn't modified in any way, and it needs no root and no Shizuku, only *usage access*, which you allow on the tablet so it knows which app is in front. A Quick Settings switch and the buttons on its notification turn it off or recover the screen without leaving your app. The Ink page shows what it found (pen input, display route) and has a pen test, which is what helps most in a report from another tablet. The brush and width of the preview are adjustable. It's new and has only been tried in Sketchbook so far, next to Boox Notes; see [Known limits](#known-limits).
+A preview stroke lands at once, and once you pause (0.8 s by default, 0.4 to 2 s to choose), the app's own brush takes its place; quick strokes share one preview, as in BOOX's own apps. The display holds the app's own drawing back while the pen touches, so its brush and colour always appear after the lift. Instant ink keeps a paused display session ready, so even the first stroke after unlocking or switching apps gets the preview, and it steps aside for Boox's own apps. The app isn't modified in any way, and it needs no root and no Shizuku, only *usage access*, which you allow on the tablet so it knows which app is in front. A Quick Settings switch and the buttons on its notification turn it off or recover the screen without leaving your app. The Ink page shows what it found (pen input, display route) and has a pen test, which is what helps most in a report from another tablet. The brush and width of the preview are adjustable. It's new and has only been tried in Sketchbook so far, next to Boox Notes; see [Known limits](#known-limits).
 
 ### A battery doctor that doesn't drain the battery
 
@@ -196,8 +196,10 @@ Recents, gestures, NaviBall and EinkWise belong to the system, so they behave th
 ## Known limits
 
 - **Nib is new:**
+  - 0.3's way of writing is built from BOOX's own apps and checked on an emulator, but not yet on the tablet: pushing ink and cards into the display, the eraser end's and lasso's previews, fast refresh and palm guard are all waiting for their check in Diagnostics › Lab.
+  - While you write, the page shows the display's preview. With the native-matched pens it looks like the ink; other brushes show Nib's ink after you pause.
   - Its preview can look a little wider than the stroke that replaces it. Diagnostics › *Match preview* tunes it per preview style.
-  - The display's preview styles 3 to 7 (neo brush, charcoal, dash, charcoal v2, square pen) aren't verified, so brushes that ask for them are previewed in the closest verified style. How thin a preview the panel draws cleanly isn't measured yet.
+  - Styles 3 to 7 (neo brush, charcoal, dash, charcoal v2, square pen) are the ones BOOX Notes uses, but haven't been judged on this tablet with their settings. How thin a preview the panel draws cleanly isn't measured yet.
   - Marker and highlighter previews are in solid colour, covering what's under the stroke until you lift the pen, because the display drops translucent colours. Blue looks grey in the preview. Settings › Display preview offers a see-through grey instead.
   - Its Diagnostics page asks what the panel shows and records your answers, which is the most useful thing to send from another tablet.
 - **One key for the whole suite.** Every suite app declares the same signature permission, so a development build (signed differently) can't be installed next to a release of another suite app. Install both from Releases, or both from the same build.
@@ -256,12 +258,23 @@ No dates promised; this is a spare-time project, and each release ships when it 
   - The first overnight and A/B results shown in the app.
   - Instant ink tried in more drawing and note apps, and on the models testers reported.
   - Round trips recorded for the last three unverified tweaks.
-- **Nib 0.3 and on**
-  - The rest of the display's preview styles, as the tablet confirms them, and the thinnest clean preview.
+- **Nib 0.3, native writing (in progress)**
+  - Built on `kit:ink`, the suite's new ink framework:
+    - one hold per writing session;
+    - every card kept clear of the preview;
+    - exact ink and cards pushed into the display;
+    - the display's eraser-end and lasso previews;
+    - pens matched to BOOX's own, with tilt;
+    - fast refresh while the page moves;
+    - a palm guard;
+    - a Lab for the checks on the tablet.
+  - Instant ink batches strokes the same way, and a Clean screen tile arrives.
+- **Nib 0.4 and on**
+  - The thinnest clean preview, and anything the Lab shows needs changing.
   - Image import, PDF and OpenRaster export, templates, and pages or an endless canvas.
 - **0.8, home polish**
   - Notification dots (opt-in).
-  - Front-light and refresh-mode quick actions, and a full-refresh key.
+  - Front-light and refresh-mode quick actions.
   - Backing up and restoring the layout.
 - **1.0**
   - Confirmed on at least one more Boox model.

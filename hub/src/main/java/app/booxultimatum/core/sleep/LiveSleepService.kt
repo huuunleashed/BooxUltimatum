@@ -18,7 +18,7 @@ import android.view.View
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import androidx.core.content.ContextCompat
-import app.booxultimatum.kit.ink.SurfaceInk
+import app.booxultimatum.kit.ink.epd.Epd
 import app.booxultimatum.kit.log.Logbook
 
 /**
@@ -130,7 +130,8 @@ class LiveSleepService : AccessibilityService() {
         LiveSleep.onUpdated(this)
         log.i("face shown", "update" to shown)
         // Partial e-ink updates leave traces; a full repaint every few updates clears them, as Onyx's dream does.
-        if (shown % FULL_REFRESH_EVERY == 0) main.postDelayed({ runCatching { SurfaceInk.repaintEverything() } }, 300)
+        // Off the main thread: finding the display route is a few binder calls the first time.
+        if (shown % FULL_REFRESH_EVERY == 0) work.postDelayed({ runCatching { if (Epd.connect() != null) Epd.repaintEverything() } }, 300)
     }
 
     private fun addFace(): FaceView? {

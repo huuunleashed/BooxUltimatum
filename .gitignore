@@ -30,3 +30,6 @@ firmware/
 
 # Local design-tool cache
 .impeccable/
+
+# Penlab build output (tools/host/penlab/build.ps1)
+tools/host/penlab/build/

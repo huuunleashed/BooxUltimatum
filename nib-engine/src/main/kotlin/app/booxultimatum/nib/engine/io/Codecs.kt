@@ -6,6 +6,7 @@ import app.booxultimatum.nib.engine.brush.BrushSpec
 import app.booxultimatum.nib.engine.brush.HardwareStyle
 import app.booxultimatum.nib.engine.brush.Preview
 import app.booxultimatum.nib.engine.brush.PreviewColor
+import app.booxultimatum.nib.engine.brush.TiltResponse
 import app.booxultimatum.nib.engine.doc.Layer
 import app.booxultimatum.nib.engine.doc.PackedPoints
 import app.booxultimatum.nib.engine.doc.Stroke
@@ -64,9 +65,21 @@ internal object Codecs {
         w.fieldFloat(17, b.taper)
         w.fieldFloat(18, b.dashOn)
         w.fieldFloat(19, b.dashOff)
+        // Since format 1.1.
+        if (b.tiltScale != BrushSpec.NO_TILT) w.fieldFloat(20, b.tiltScale)
+        // Since format 1.2.
+        if (b.tiltResponse != TiltResponse.Eased) w.fieldVarint(21, b.tiltResponse.code.toLong())
+        if (b.speedDamping != 0f) w.fieldFloat(22, b.speedDamping)
+        if (b.minWidth != 0f) w.fieldFloat(23, b.minWidth)
     }
 
-    /** Reads a brush; a brush kind this version doesn't know becomes a fineliner so its ink still shows. */
+    /**
+     * Reads a brush; a brush kind this version doesn't know becomes a fineliner so its ink still shows. A field left
+     * out takes the kind's default, except the ones added after format 1.0, which take the value that draws as the
+     * brush drew before they existed, so old ink looks as it did: [BrushSpec.tiltScale] (from 1.1) is
+     * [BrushSpec.NO_TILT], and [BrushSpec.tiltResponse], [BrushSpec.speedDamping] and [BrushSpec.minWidth] (from 1.2)
+     * are [TiltResponse.Eased], 0 and 0.
+     */
     fun readBrush(r: ByteReader): BrushSpec {
         var kind: BrushKind? = null
         var width: Float? = null
@@ -87,6 +100,10 @@ internal object Codecs {
         var taper: Float? = null
         var dashOn: Float? = null
         var dashOff: Float? = null
+        var tiltScale = BrushSpec.NO_TILT
+        var tiltResponse = TiltResponse.Eased
+        var speedDamping = 0f
+        var minWidth = 0f
         r.fields { tag, f ->
             when (tag) {
                 1 -> kind = BrushKind.fromId(f.string()) ?: BrushKind.Fineliner
@@ -108,6 +125,10 @@ internal object Codecs {
                 17 -> taper = f.float()
                 18 -> dashOn = f.float()
                 19 -> dashOff = f.float()
+                20 -> tiltScale = f.float().let { if (it.isFinite()) it else BrushSpec.NO_TILT }
+                21 -> tiltResponse = TiltResponse.fromCode(f.count())
+                22 -> speedDamping = f.float().let { if (it.isFinite() && it > 0f) it else 0f }
+                23 -> minWidth = f.float().let { if (it.isFinite() && it > 0f) it else 0f }
             }
         }
         val base = BrushSpec.defaults(kind ?: BrushKind.Fineliner)
@@ -130,6 +151,10 @@ internal object Codecs {
             taper = taper ?: base.taper,
             dashOn = dashOn ?: base.dashOn,
             dashOff = dashOff ?: base.dashOff,
+            tiltScale = tiltScale,
+            tiltResponse = tiltResponse,
+            speedDamping = speedDamping,
+            minWidth = minWidth,
         )
     }
 

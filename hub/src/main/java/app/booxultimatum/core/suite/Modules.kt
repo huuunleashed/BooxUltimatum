@@ -9,6 +9,7 @@ import app.booxultimatum.R
 import app.booxultimatum.core.BatteryLog
 import app.booxultimatum.core.Journal
 import app.booxultimatum.core.Launchers
+import app.booxultimatum.core.ink.CleanTileService
 import app.booxultimatum.core.ink.InkPrefs
 import app.booxultimatum.core.ink.InkTileService
 import app.booxultimatum.core.ink.InstantInk
@@ -61,7 +62,7 @@ object Modules {
     fun add(context: Context, module: Module) {
         prefs(context).edit { putBoolean(module.name, true) }
         when (module) {
-            Module.Ink -> setComponent(context, InkTileService::class.java, true)
+            Module.Ink -> inkTiles.forEach { setComponent(context, it, true) }
             Module.BatteryLog -> BatteryLog.setEnabled(context, true)
             Module.Home, Module.Sleep -> Unit
         }
@@ -91,7 +92,7 @@ object Modules {
                 Module.Ink -> {
                     InstantInk.apply(app, InkPrefs.load(app).copy(enabled = false))
                     InstantInk.recoverScreen(app)
-                    setComponent(app, InkTileService::class.java, false)
+                    inkTiles.forEach { setComponent(app, it, false) }
                 }
                 Module.BatteryLog -> BatteryLog.setEnabled(app, false)
             }
@@ -101,6 +102,20 @@ object Modules {
             .onFailure { log.w("module not removed", "module" to module.name, error = it) }
         Journal.log(app, "suite", app.getString(R.string.module_journal_removed, app.getString(module.title)), r.exceptionOrNull()?.message.orEmpty(), r.isSuccess)
         r
+    }
+
+    /** Instant ink's Quick Settings tiles: its switch and Clean screen. */
+    private val inkTiles = listOf(InkTileService::class.java, CleanTileService::class.java)
+
+    /**
+     * At start: Instant ink's tiles are there only while its module is, so a tablet without Boox's display (where the
+     * module isn't offered) doesn't list them in Quick Settings either. Changes nothing when they already match.
+     */
+    fun syncTiles(context: Context) {
+        val on = added(context, Module.Ink)
+        val want = if (on) PackageManager.COMPONENT_ENABLED_STATE_DEFAULT else PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+        inkTiles.filter { context.packageManager.getComponentEnabledSetting(ComponentName(context, it)) != want }
+            .forEach { setComponent(context, it, on) }
     }
 
     private fun homeAliasEnabled(context: Context) =

@@ -36,10 +36,14 @@ import app.booxultimatum.R
 import app.booxultimatum.kit.core.TabletProfile
 import app.booxultimatum.kit.core.Tablet
 import app.booxultimatum.core.exec.Privileged
+import app.booxultimatum.core.ink.CleanTileService
+import app.booxultimatum.core.ink.HoldPolicy
 import app.booxultimatum.core.ink.InkPrefs
+import app.booxultimatum.core.ink.InkTileService
 import app.booxultimatum.core.ink.InkStyle
 import app.booxultimatum.core.ink.InstantInk
-import app.booxultimatum.kit.ink.PenInput
+import app.booxultimatum.kit.ink.epd.Epd
+import app.booxultimatum.kit.ink.input.PenInput
 import app.booxultimatum.kit.ui.InstrumentPage
 import app.booxultimatum.kit.ui.Key
 import app.booxultimatum.kit.ui.Lamp
@@ -129,13 +133,12 @@ fun InkScreen(readKey: Int, compact: Boolean) {
                     Spacer(Modifier.height(Space.s))
                     Key(stringResource(R.string.ink_usage_grant), primary = true, onClick = { InstantInk.openUsageAccess(context) })
                 }
-                val route = remember(statusKey, prefs) { app.booxultimatum.kit.ink.SurfaceInk.route }
+                val route = remember(statusKey, prefs) { Epd.route }
                 if (prefs.enabled && route != null) {
                     Text(
                         stringResource(when (route) {
-                            app.booxultimatum.kit.ink.SurfaceInk.Route.Firmware -> R.string.ink_route_firmware
-                            app.booxultimatum.kit.ink.SurfaceInk.Route.Direct -> R.string.ink_route_direct
-                            app.booxultimatum.kit.ink.SurfaceInk.Route.Elevated -> R.string.ink_route_shizuku
+                            Epd.Route.Direct -> R.string.ink_route_direct
+                            Epd.Route.Elevated -> R.string.ink_route_shizuku
                         }),
                         style = MaterialTheme.typography.bodySmall, color = Ink.Legend, modifier = Modifier.padding(top = Space.xs),
                     )
@@ -144,9 +147,13 @@ fun InkScreen(readKey: Int, compact: Boolean) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.s), verticalArrangement = Arrangement.spacedBy(Space.s)) {
                     Key(stringResource(R.string.ink_check), onClick = { statusKey++ })
                     Key(stringResource(R.string.ink_recover), onClick = { scope.launch(Dispatchers.IO) { InstantInk.recoverScreen(context) } })
+                    // Only where Boox's display calls exist, like the page itself.
+                    if (device.isBoox) Key(stringResource(R.string.ink_clean), onClick = { scope.launch(Dispatchers.IO) { InstantInk.cleanScreen("page") } })
                     if (device.isBoox && android.os.Build.VERSION.SDK_INT >= 33) {
                         val label = stringResource(R.string.ink_title)
-                        Key(stringResource(R.string.ink_tile_add), onClick = { requestTile(context, label) })
+                        val cleanLabel = stringResource(R.string.ink_clean)
+                        Key(stringResource(R.string.ink_tile_add), onClick = { requestTile(context, InkTileService::class.java, label, R.drawable.ic_tile_ink) })
+                        Key(stringResource(R.string.ink_clean_tile_add), onClick = { requestTile(context, CleanTileService::class.java, cleanLabel, R.drawable.ic_tile_clean) })
                     }
                 }
                 Spacer(Modifier.height(Space.s))
@@ -157,7 +164,7 @@ fun InkScreen(readKey: Int, compact: Boolean) {
             Plate(stringResource(R.string.ink_stroke)) {
                 Choice(stringResource(R.string.ink_style), InkStyle.entries, prefs.style, { stringResource(when (it) { InkStyle.Fountain -> R.string.ink_style_fountain; InkStyle.Pencil -> R.string.ink_style_pencil; InkStyle.Marker -> R.string.ink_style_marker }) }) { commit(prefs.copy(style = it)) }
                 Choice(stringResource(R.string.ink_width), listOf(2, 3, 4, 6, 8), prefs.widthPx, { stringResource(R.string.ink_px, it) }) { commit(prefs.copy(widthPx = it)) }
-                Choice(stringResource(R.string.ink_latency), listOf(250, 400, 500, 800, 1200), prefs.latencyMs, { stringResource(R.string.ink_ms, it) }) { commit(prefs.copy(latencyMs = it)) }
+                Choice(stringResource(R.string.ink_latency), HoldPolicy.LATENCY_CHOICES, prefs.latencyMs, { stringResource(R.string.ink_ms, it) }) { commit(prefs.copy(latencyMs = it)) }
                 Text(stringResource(R.string.ink_latency_hint), style = MaterialTheme.typography.bodySmall, color = Ink.Legend)
             }
             Spacer(Modifier.height(Space.xl))
@@ -202,8 +209,8 @@ fun InkScreen(readKey: Int, compact: Boolean) {
 /** What Instant ink found on this tablet, in the words a report needs, plus a live pen test. */
 @Composable
 private fun TabletPlate(device: TabletProfile, usage: Boolean, statusKey: Int) {
-    val route = remember(statusKey) { app.booxultimatum.kit.ink.SurfaceInk.route }
-    val pressure = remember(statusKey) { app.booxultimatum.kit.ink.SurfaceInk.maxTouchPressure }
+    val route = remember(statusKey) { Epd.route }
+    val pressure = remember(statusKey) { Epd.maxTouchPressure }
     var testing by remember { mutableStateOf(false) }
     var tested by remember { mutableStateOf(false) }
     var seen by remember { mutableStateOf(emptyList<PenInput.Event>()) }
@@ -217,9 +224,8 @@ private fun TabletPlate(device: TabletProfile, usage: Boolean, statusKey: Int) {
         )
         SpecRow(stringResource(R.string.ink_tablet_route), stringResource(when (route) {
             null -> R.string.ink_tablet_route_none
-            app.booxultimatum.kit.ink.SurfaceInk.Route.Firmware -> R.string.ink_tablet_route_firmware
-            app.booxultimatum.kit.ink.SurfaceInk.Route.Direct -> R.string.ink_tablet_route_direct
-            app.booxultimatum.kit.ink.SurfaceInk.Route.Elevated -> R.string.ink_tablet_route_shizuku
+            Epd.Route.Direct -> R.string.ink_tablet_route_direct
+            Epd.Route.Elevated -> R.string.ink_tablet_route_shizuku
         }))
         if (pressure != null) SpecRow(stringResource(R.string.ink_tablet_pressure), "%.0f".format(pressure))
         SpecRow(stringResource(R.string.ink_tablet_usage), stringResource(if (usage) R.string.ink_yes else R.string.ink_no))
@@ -255,14 +261,14 @@ private fun TabletPlate(device: TabletProfile, usage: Boolean, statusKey: Int) {
     }
 }
 
-/** Asks Quick Settings to add the Instant ink switch; the system shows its own confirmation. */
+/** Asks Quick Settings to add one of Instant ink's tiles; the system shows its own confirmation. */
 @androidx.annotation.RequiresApi(33)
-private fun requestTile(context: android.content.Context, label: String) {
+private fun requestTile(context: android.content.Context, tile: Class<*>, label: String, @androidx.annotation.DrawableRes icon: Int) {
     runCatching {
         context.getSystemService(android.app.StatusBarManager::class.java).requestAddTileService(
-            android.content.ComponentName(context, app.booxultimatum.core.ink.InkTileService::class.java),
+            android.content.ComponentName(context, tile),
             label,
-            android.graphics.drawable.Icon.createWithResource(context, R.drawable.ic_tile_ink),
+            android.graphics.drawable.Icon.createWithResource(context, icon),
             context.mainExecutor,
         ) { }
     }

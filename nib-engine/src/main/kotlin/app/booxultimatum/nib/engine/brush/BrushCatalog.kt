@@ -15,6 +15,7 @@ object BrushCatalog {
         BrushKind.Ballpoint,
         BrushKind.BrushPen,
         BrushKind.Calligraphy,
+        BrushKind.CalligraphyAsian,
         BrushKind.SquarePen,
         BrushKind.Dash,
         BrushKind.Pencil,

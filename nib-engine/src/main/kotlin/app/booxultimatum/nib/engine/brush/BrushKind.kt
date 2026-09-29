@@ -4,40 +4,58 @@ package app.booxultimatum.nib.engine.brush
  * Every brush Nib offers. [id] is stable: it is written to files and used by the app to look up labels.
  */
 enum class BrushKind(val id: String) {
-    /** Constant width, no pressure, down to 0.5 px. */
+    /**
+     * Constant width, no pressure, down to 0.5 px: a plain round path, exactly BOOX's own plain pen, and previewed in
+     * the same display style (pencil, 0) at every width.
+     */
     Fineliner("fineliner"),
 
-    /** Width follows pressure. */
+    /**
+     * Width follows pressure and speed as BOOX's fountain pen does, set by its sensitivity and smoothing, and never
+     * thinner than 2 px.
+     */
     Fountain("fountain"),
 
-    /** Slight pressure response, slightly lighter ink. */
+    /** A constant width, as BOOX's ballpoint, in slightly lighter ink. */
     Ballpoint("ballpoint"),
 
-    /** Grainy pencil that matches the firmware's pencil preview. */
+    /**
+     * BOOX's pencil: grainy dabs at a constant width, darker as the pen presses harder, and, as BOOX Notes has it,
+     * no tilt, so the ink matches its preview in the display's pencil style.
+     */
     Pencil("pencil"),
 
-    /** A fine pencil: width and grain density follow pressure. */
+    /**
+     * A finer, harder pencil: a constant width, darker as the pen presses harder; like BOOX's pencil, it ignores tilt
+     * unless given a tilt scale.
+     */
     Graphite("graphite"),
 
-    /** Wide, 50 % group opacity, no pressure. */
+    /**
+     * Wide, slightly narrower at a light touch, drawn opaque and laid down at half alpha as BOOX's marker is, so it
+     * never darkens itself.
+     */
     Marker("marker"),
 
-    /** Multiply blend with a flat chisel tip. */
+    /** Multiply blend with a flat chisel tip, slightly narrower at a light touch as the marker is. */
     Highlighter("highlighter"),
 
-    /** Width from pressure and speed, tapered ends. */
+    /** Width from the square root of pressure, as BOOX's brush, and from speed, with tapered ends. */
     BrushPen("brush_pen"),
 
-    /** A flat nib at a fixed angle or following the pen's orientation. */
+    /** Latin calligraphy: a flat nib at +45 degrees, or following the pen's orientation. */
     Calligraphy("calligraphy"),
 
-    /** The firmware's brush look: strong pressure response and long tapers. */
+    /** Asian calligraphy: a flat nib at -45 degrees, the other diagonal from [Calligraphy]. */
+    CalligraphyAsian("calligraphy_asian"),
+
+    /** BOOX's brush: width grows with the square root of pressure, whatever the speed. */
     NeoBrush("neo_brush"),
 
-    /** Textured charcoal: pressure drives coverage. */
+    /** Textured charcoal as BOOX's: pressure drives coverage, and tilt broadens it without making it lighter. */
     Charcoal("charcoal"),
 
-    /** Coarser, more scattered charcoal. */
+    /** Coarser, more scattered charcoal (the display's charcoal v2); tilt broadens it as BOOX's charcoal does. */
     CharcoalV2("charcoal_v2"),
 
     /** A dashed line. */
@@ -68,7 +86,7 @@ enum class BrushKind(val id: String) {
     val rendersAsDabs: Boolean get() = this == Pencil || this == Graphite || this == Charcoal || this == CharcoalV2 || this == Airbrush
 
     /** True for the flat-nib brushes, whose width depends on the stroke's direction against [BrushSpec.nibAngle]. */
-    val usesNib: Boolean get() = this == Calligraphy || this == SquarePen || this == Highlighter
+    val usesNib: Boolean get() = this == Calligraphy || this == CalligraphyAsian || this == SquarePen || this == Highlighter
 
     companion object {
         fun fromId(id: String): BrushKind? = entries.firstOrNull { it.id == id }

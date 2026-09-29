@@ -28,7 +28,7 @@ data class LivePrefs(
     val quietTo: Int = 7,
 ) {
     companion object {
-        val STEPS = listOf(5, 10, 15, 30, 60)
+        val STEPS = listOf(1, 5, 10, 15, 30, 60)
         private const val FILE = "sleep_live"
 
         fun load(c: Context): LivePrefs {
@@ -159,7 +159,9 @@ object LiveSleep {
     internal fun nextTick(now: Long, stepMin: Int): Long {
         val step = stepMin * 60_000L
         val next = (now / step + 1) * step
-        return if (next - now < 30_000L) next + step else next
+        // Never fire an alarm a few seconds away; the 1-minute step keeps a shorter guard so it still lands every minute.
+        val minGap = minOf(30_000L, step / 4)
+        return if (next - now < minGap) next + step else next
     }
 
     fun schedule(context: Context, prefs: LivePrefs = LivePrefs.load(context)) {
@@ -236,6 +238,9 @@ object LiveSleep {
 /** The alarm lands here and is handed to the running accessibility service; without it there's nothing to draw into. */
 class LiveSleepReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action == LiveSleep.ACTION_TICK) LiveSleepService.tick(context.applicationContext)
+        if (intent.action != LiveSleep.ACTION_TICK) return
+        // Re-arm first: a tick that finds no bound service must not end the chain.
+        runCatching { LiveSleep.schedule(context.applicationContext) }
+        LiveSleepService.tick(context.applicationContext)
     }
 }

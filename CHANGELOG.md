@@ -4,6 +4,67 @@ All notable changes to BooxUltimatum. Newest first. The project follows [Semanti
 
 ## [Unreleased]
 
+Writing and drawing the way BOOX's own apps do it. A study of BOOX Notes and NeoReader on the tablet showed why their strokes follow each other without a pause, and the suite's ink layer is rebuilt around it. Nothing below has been tried on the tablet yet unless it says so.
+
+### Added
+
+- **Nib writes the way BOOX's own apps do.**
+  - Quick strokes follow each other with nothing reaching the panel in between. The display holds Nib's frames for the whole writing session, and Nib's ink replaces the preview only at a break: a touch on a control, a panel, undo, a tool change, a gesture.
+  - Every floating card is kept clear of the preview at once.
+  - While you write, the cards that change (undo, redo, the pen slots, the sizes) are drawn straight into the display's layer, so they stay current.
+- **Nib: Show the finished ink** (Settings › Display preview):
+  - **Auto**, the default: at breaks for the pens the display previews faithfully; for textured, blended and see-through ink, after you pause, by drawing Nib's exact ink into the display's layer without a refresh.
+  - Or at breaks only, after a pause of your choice (0.4 to 2 s), or after every stroke as before.
+- **Nib: the display draws more of what you do.** The pen's eraser end shows its track as you erase, and the lasso its dashed path, instead of pausing the preview.
+- **Nib: pens matched to BOOX's own.**
+  - The fineliner is the native plain pen.
+  - The fountain pen's pressure sensitivity and smoothing are sent to the display, so the preview thins the way the ink does.
+  - The marker is laid down opaque and blended at half strength.
+  - Pencil, graphite and both charcoals shade broader and lighter when you tilt the pen.
+  - A new Asian calligraphy pen joins the Latin one.
+  - Every preview style BOOX Notes uses is offered.
+- **Nib: fast refresh while you move the page** with your fingers, as in BOOX's own apps, cleaned up once you stop. You can turn it off in Settings › Fingers.
+- **Nib: Palm guard** (Settings › Fingers, off until it's confirmed on the tablet): finger touch is switched off over the page while the pen is near, so a resting hand can't move it.
+- **Nib: Refresh screen** in the menu, and one gentle clean after a drawing opens or a panel closes.
+- **Nib: Diagnostics › Lab**, with a check for each new display call, and the answers logged for the next build.
+- **A Clean screen tile and key** (Quick Settings, and the Instant ink page). They clean all ghosting off the panel in one pass, the way NeoReader cleans a colour panel. The tile waits until Quick Settings has closed.
+- **Sleep live updates every minute.** The *While asleep* step now offers 1 minute, for checking that updates arrive without waiting through a 5-minute step. The battery cost of the short step hasn’t been measured.
+- **For developers: `kit:ink` is now the suite's ink SDK.** It has the complete display interface: the pen session, several excluded areas at once, what each part of the pen draws, the style's own parameters, pictures pushed into the display's layer, refreshes in any update mode, the fast mode, the display's geometry and finger touch switched off in areas. On top of that sit a writing choreography every drawing surface shares, a palm guard, and a guard that undoes whatever a crashed process left on the display. `docs/09-ink.md` describes it, with the full call table and a ledger of every finding and where it's used.
+
+### Changed
+
+- **Nib's pens are calibrated to BOOX's own, measured on the tablet.**
+  - The fountain pen thins with pressure as BOOX's does (p to the power of twice its sensitivity), a little more when you write fast, and never below 2 px.
+  - The brush follows the square root of pressure, and the marker thins to 80 % at a light touch.
+  - The pencil keeps its width and lets pressure set how dark it is.
+  - The charcoal broadens with tilt from about 15°, exactly as the display's preview does, so the two now match; before, the preview looked much thicker.
+  - The pencil, graphite and charcoal no longer thin with pressure.
+  - Strokes already drawn keep their look. Drawings are now format 1.2 and open unchanged.
+- **Thin pencils and fineliners are previewed in the plain pencil style at every width** (checked on the tablet from 0.5 to 3 px), so their preview is no longer thicker than their ink.
+- **Nib ignores a resting pen's repeated samples**, as BOOX's pen reader does, which steadies the ends of strokes. A slow, careful line keeps its shape.
+- **Instant ink batches strokes.** Quick strokes now share one hold, and the app's own ink replaces the preview once the pen pauses. You choose the pause (0.4 to 2 s, 0.8 s by default), or it happens when the pen leaves, the eraser end comes near, you switch apps or the screen locks. The default pause was half a second before, and the app's frames went through at each one; the longer default and the longer choices keep more quick strokes in one hold. Each hold is logged with its stroke count and why it ended.
+- **Instant ink's recovery** (the Ink page, the notification, and home's check for a leftover session) also clears the display's fast mode, excluded areas and pen settings, and turns finger touch back on. If the hub dies mid-session, its next start ends the session.
+
+### Fixed
+
+- **Sleep live updates survive one missed tick.** The alarm receiver re-arms the next update before handing the tick to the service, so a tick that finds the service unbound no longer ends the whole sleep’s chain.
+
+### Research
+
+- **BOOX's apps hold the app's frames for a whole writing session** (traced on the tablet). In Notes and NeoReader, three bursts of quick strokes with pauses between them produced about 45 preview updates and a single release, when the page was left. The e-ink controller switches to its handwriting scheme once. Nib 0.2 released after every stroke, and the controller switched schemes twice per stroke, which is the lag felt between quick strokes. The native apps release only at breaks: a menu, undo, a pan or zoom, the eraser, leaving.
+- **BOOX's pen library measured on the tablet** (penlab, `tools/host/penlab`): the width laws of the fountain, brush, marker, ballpoint and calligraphy, the pencil's opacity, and the charcoal's tilt curve. Only the numbers are kept, in `docs/09-ink.md`. Fast mode, the deep clean and finger-touch areas were also checked from the shell.
+- **The display keeps several excluded areas in its multi-region mode** (tested on the tablet with two), so an app can keep all its controls clear of the preview at once.
+- **The display's own geometry and pen settings, read back from the tablet:** the panel-to-screen matrix, the digitizer's range, and each preview style's parameters (the fountain's pressure sensitivity and smoothing, the charcoal's tilt, the calligraphy nib's angle). The pen reports tilt, which Android passes to apps.
+- **From the decompiled apps and framework**, each still to be tried on the tablet:
+  - pictures drawn straight into the display's layer during a hold, which Notes uses to keep its toolbar current;
+  - a pen configuration per part (tip, eraser end, side button);
+  - the fast mode used while the page moves;
+  - update modes by number;
+  - finger touch switched off in areas, which Onyx also documents for apps;
+  - the widths the display computes for each point.
+
+  The final ink of the native pens is computed in libraries an ordinary app can't load, so Nib keeps its own engine, tuned to the same parameters.
+
 ## [0.6.0] (2026-09-28)
 
 BooxUltimatum becomes a suite: the hub you know, a first separate app, Nib 0.2.0 for drawing, and a kit of libraries they share. Tested on a Note Air6 C with firmware 4.3 (Android 16), with a real pen for Nib, and on an emulator shaped like it. Known limits: Nib's preview can still look a little wider than the stroke (Diagnostics › *Match preview* tunes it), the display's preview styles 3 to 7 are still unverified and stand-ins show instead, and neither app has been tried on another Boox model.
