@@ -207,5 +207,5 @@ Every finding from the study, and where it's used. Nothing is kept only in notes
 | Region config wraps one rectangle with its pen configs; eraser raw preview defaults off (painter 5), brush raw on | `Epd.setRegionPenConfig`, `InkSession.setPenButtons` |
 | The SDK opens with style 0 and pen state 1, and closes through pause (3) to stop (0) | `InkSession` already follows this order; no change |
 | NeoReader's wait-for-update is a timed sleep of at least 150 ms, and its pen path re-arms 200 ms after disabling raw drawing | `InkCanvasController.rearmMs`; confirms the 200 ms value |
-| The SDK names pen state 4 erasing but never sends it | Lab › Pen state 4 holds it and reads it back; whether 4 previews is the owner's answer |
-| The eraser's raw painter defaults to 5 with the preview off | Lab › Eraser painters tries painters 0 to 8, one band each |
+| The SDK names pen state 4 erasing but never sends it | Held on the tablet 2026-09-29: sending 4 reads back 2, and the tip’s preview shows. Lab › Pen state 4 keeps the probe. |
+| The eraser's raw painter defaults to 5 with the preview off | Painters 0 to 8 all draw a track (owner’s test 2026-09-29, one band each); Lab › Eraser painters keeps the probe. |
