@@ -32,6 +32,7 @@ private class RecordingDisplay(var routable: Boolean = true) : InkDisplay {
     override fun strokeParameters(style: Int) = params[style]?.copyOf().also { calls += "get params $style" }
     override fun setStrokeParameters(style: Int, params: FloatArray): Boolean { calls += "params $style ${params.joinToString(",")}"; return true }
     override fun setEraserPreview(on: Boolean, style: Int): Boolean { calls += "eraser $on"; return true }
+    override fun setBrushPreview(on: Boolean): Boolean { calls += "brush $on"; return true }
     override fun setPenButtons(rect: IntArray, buttons: List<Epd.ButtonStroke>): Boolean {
         calls += "buttons ${buttons.joinToString(";") { "${it.button}:${it.style}:${it.eraserPreview}:${it.eraserPainter}" }.ifEmpty { "none" }}"; return true
     }
@@ -66,6 +67,7 @@ private class HandClock : InkScheduler {
 class CanvasChoreographyTest {
     private val guard = InkGuard(object : InkGuard.Undo {
         override fun endLiveSession() = false
+        override fun notifyAppDied(pid: Int) = Unit
         override fun clearFastMode() = Unit
         override fun restoreTouch() = Unit
         override fun restoreParams(style: Int, params: FloatArray) = Unit

@@ -46,6 +46,8 @@ enum class Probe(val id: String, val lab: Boolean = false) {
     LabParams("lab_params", lab = true),
     LabLimit("lab_limit", lab = true),
     LabFedStroke("lab_fed_stroke", lab = true),
+    LabPenState4("lab_pen_state_4", lab = true),
+    LabEraserPainters("lab_eraser_painters", lab = true),
     ;
 
     /**
@@ -124,10 +126,15 @@ enum class Probe(val id: String, val lab: Boolean = false) {
                 band("below the limit", HardwareStyle.Fountain, 4f, BLACK, fineliner(4f), BLACK),
             )
             LabFedStroke -> listOf(band("fed stroke", HardwareStyle.Fountain, 4f, BLACK, fineliner(4f), BLACK))
+            LabPenState4 -> listOf(band("state 4", HardwareStyle.Fountain, 4f, BLACK, fineliner(4f), BLACK))
+            LabEraserPainters -> PAINTERS.map { p ->
+                band("painter $p", HardwareStyle.Fountain, 4f, BLACK, fineliner(4f), BLACK)
+            }
         }
     }
 
     companion object {
+        val PAINTERS = (0..8).toList()
         val WIDTHS = listOf(0.5f, 0.75f, 1f, 1.5f, 2f, 3f)
         val SWAP_DELAYS = listOf(0L, 16L, 50L, 120L)
         const val BLACK = -0x1000000

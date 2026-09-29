@@ -13,6 +13,7 @@ class InkSessionTest {
 
     private object NoUndo : InkGuard.Undo {
         override fun endLiveSession() = false
+        override fun notifyAppDied(pid: Int) = Unit
         override fun clearFastMode() = Unit
         override fun restoreTouch() = Unit
         override fun restoreParams(style: Int, params: FloatArray) = Unit
@@ -24,9 +25,16 @@ class InkSessionTest {
         val d = FakeInkDisplay()
         val s = session(d)
         assertTrue(s.open(pen, 2480))
-        assertEquals(listOf("connect", "mode Multi", "limit panel 0,0,2480,2480", "exclude none", "state 1", "stroke 1 4.0 ff000000", "state 2"), d.calls)
+        assertEquals(listOf("connect", "mode Multi", "limit panel 0,0,2480,2480", "exclude none", "brush true", "eraser true 8", "state 1", "stroke 1 4.0 ff000000", "state 2"), d.calls)
         assertEquals(InkSession.State.Live, s.state)
         assertTrue(guard.outstanding, "an open session is on record")
+    }
+
+    @Test fun openingSetsTheRawDrawingDefaults() {
+        val d = FakeInkDisplay()
+        session(d).open(pen, 2480, live = false)
+        assertTrue("brush true" in d.calls, "the brush preview is on, as the SDK leaves it")
+        assertTrue("eraser true 8" in d.calls, "the eraser end previews Nib's eraser track")
     }
 
     @Test fun aScreenLimitIsSentInScreenCoordinates() {
@@ -83,7 +91,7 @@ class InkSessionTest {
         d.state = Epd.PenState.STOP
         d.clear()
         s.resume()
-        assertEquals(listOf("mode Multi", "limit panel 0,0,2480,2480", "exclude 0,0,100,100", "state 1", "stroke 1 4.0 ff000000", "state 2"), d.calls)
+        assertEquals(listOf("mode Multi", "limit panel 0,0,2480,2480", "exclude 0,0,100,100", "brush true", "eraser true 8", "state 1", "stroke 1 4.0 ff000000", "state 2"), d.calls)
     }
 
     @Test fun exclusionsAreSentAllTogetherAndOnlyWhenTheyChange() {

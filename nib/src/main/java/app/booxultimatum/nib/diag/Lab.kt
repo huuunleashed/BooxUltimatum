@@ -17,6 +17,8 @@ enum class LabProbe(val id: String, val surface: Probe?) {
     StyleParams("style_params", Probe.LabParams),
     Limit("limit", Probe.LabLimit),
     FedStroke("fed_stroke", Probe.LabFedStroke),
+    PenState4("pen_state_4", Probe.LabPenState4),
+    EraserPainters("eraser_painters", Probe.LabEraserPainters),
     Geometry("geometry", null),
     CleanScreen("clean_screen", null),
     ;
@@ -42,6 +44,8 @@ enum class LabProbe(val id: String, val surface: Probe?) {
             StyleParams -> listOf(LabQuestion("preview follows", listOf("follows", "no_change", "broken")))
             Limit -> listOf(LabQuestion("limit", listOf("inside_only", "everywhere", "nowhere", "wrong_place")))
             FedStroke -> listOf(LabQuestion("fed stroke drawn", listOf("drawn", "nothing")))
+            PenState4 -> listOf(LabQuestion("state 4 preview", listOf("preview_shown", "no_preview", "drew_ink")))
+            EraserPainters -> Probe.PAINTERS.map { p -> LabQuestion("painter $p", listOf("track_shown", "no_track")) }
             Geometry -> emptyList()
             CleanScreen -> listOf(
                 LabQuestion("deep clean", listOf("clean", "ghosting", "no_refresh")),

@@ -83,12 +83,14 @@ class InkSession(
         return true
     }
 
-    /** Region mode, limit, no exclusions, START, then the stroke: what a (re)started session needs. */
+    /** Region mode, limit, no exclusions, the SDK's raw-drawing defaults, START, then the stroke: what a (re)started session needs. */
     private fun arm() {
         display.setRegionMode(Epd.RegionMode.Multi)
         val l = limit
         if (l != null) display.setLimit(l, screen = true) else display.setLimit(intArrayOf(0, 0, side, side), screen = false)
         display.setExclude(exclusions)
+        display.setBrushPreview(true)
+        display.setEraserPreview(true, InkStroke.STYLE_ERASER)
         display.setPenState(Epd.PenState.START)
         stroke?.let { send(it) }
         buttonsRect?.let { r -> if (buttons.isNotEmpty()) display.setPenButtons(r, buttons) }

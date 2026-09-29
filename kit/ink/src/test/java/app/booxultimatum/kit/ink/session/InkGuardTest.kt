@@ -10,6 +10,7 @@ class InkGuardTest {
         val done = mutableListOf<String>()
         var live = true
         override fun endLiveSession() = live.also { done += "session" }
+        override fun notifyAppDied(pid: Int) { done += "died $pid" }
         override fun clearFastMode() { done += "fast" }
         override fun restoreTouch() { done += "touch" }
         override fun restoreParams(style: Int, params: FloatArray) { done += "params $style ${params.joinToString(",")}" }
@@ -19,8 +20,8 @@ class InkGuardTest {
         val u = Recorder()
         val text = InkGuard.Record(12345, 1L, session = true, fastMode = true, touch = true, params = mapOf(1 to floatArrayOf(0.3f, 0.6f))).format()
         val done = InkGuard(u).undoRecord(text)
-        assertEquals(listOf("session", "fast", "touch", "params 1 0.3,0.6"), u.done)
-        assertEquals(listOf("session", "fast mode", "finger touch", "style 1 parameters"), done)
+        assertEquals(listOf("session", "died 12345", "fast", "touch", "params 1 0.3,0.6"), u.done)
+        assertEquals(listOf("session", "app died notice", "fast mode", "finger touch", "style 1 parameters"), done)
     }
 
     @Test fun aPausedSessionLeftBehindIsLeftAlone() {

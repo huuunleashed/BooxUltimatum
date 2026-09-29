@@ -11,6 +11,7 @@ class PalmGuardTest {
     private val time = FakeTime()
     private val guard = InkGuard(object : InkGuard.Undo {
         override fun endLiveSession() = false
+        override fun notifyAppDied(pid: Int) = Unit
         override fun clearFastMode() = Unit
         override fun restoreTouch() = Unit
         override fun restoreParams(style: Int, params: FloatArray) = Unit

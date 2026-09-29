@@ -53,6 +53,9 @@ interface InkDisplay {
     fun setStrokeParameters(style: Int, params: FloatArray): Boolean
     fun setEraserPreview(on: Boolean, style: Int): Boolean
 
+    /** The display's own brush-stroke preview; the SDK leaves it on. */
+    fun setBrushPreview(on: Boolean): Boolean
+
     /** What each part of the pen draws inside a screen rectangle; an empty list clears every region's configuration. */
     fun setPenButtons(rect: IntArray, buttons: List<Epd.ButtonStroke>): Boolean
     fun enablePost(on: Boolean): Boolean
@@ -73,6 +76,7 @@ class EpdInkDisplay(private val elevated: ElevatedRoute? = null) : InkDisplay {
     override fun strokeParameters(style: Int) = Epd.strokeParameters(style)
     override fun setStrokeParameters(style: Int, params: FloatArray) = Epd.setStrokeParameters(style, params)
     override fun setEraserPreview(on: Boolean, style: Int) = Epd.setEraserRawDrawing(on, style)
+    override fun setBrushPreview(on: Boolean) = Epd.setBrushRawDrawing(on)
     override fun setPenButtons(rect: IntArray, buttons: List<Epd.ButtonStroke>) =
         if (buttons.isEmpty()) Epd.clearRegionPenConfig() else Epd.setRegionPenConfig(rect, buttons)
     override fun enablePost(on: Boolean) = Epd.enablePost(on)

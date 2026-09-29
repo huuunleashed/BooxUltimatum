@@ -53,7 +53,7 @@ Everything here was verified on a Note Air6 C with firmware 4.3 (Android 16) unl
   | 1048722 | Auto-sync |
   | 16711700 | Repaint everything |
 
-- Send the stroke settings after START, in the SDK's order: style, width, colour. Hold frames from hover (`BTN_TOOL_BRUSH` on this pen), not from pen-down.
+- Send the stroke settings after START, in the SDK's order: style, width, colour. Set the raw-drawing defaults too: brush previews on, the eraser end previewing the eraser track (the SDK default is brush on, eraser off with painter 5, restored on release). Hold frames from hover (`BTN_TOOL_BRUSH` on this pen), not from pen-down.
 - **The native apps keep one hold for the whole writing session** (traced 2026-09-28): the frames are held from the first touch, and let through only at a break (a menu, undo, a pan, the eraser, leaving). Every release switches the e-ink controller's update scheme (`onyx_tcon_set_upd_scheme` 3 at the touch, 2 or 4 at the release), which is what delays the next stroke if an app releases after each stroke. Don't release between strokes.
 - **The full call table is in `docs/09-ink.md`**, and `kit:ink`'s `Epd` implements it: region mode (1048620, 0 multi, 1 single; multi keeps every excluded rectangle, verified), region pen config per pen part (1049090), style parameters (1049088/9), handwriting-layer bitmaps (1049092), refresh with an update mode (16711681, width and height, not right and bottom), fast mode (16711782/3), geometry (16711723 to 16711727, 1049344), finger touch off in regions (the input manager, AIDL codes 82 to 85).
 - SurfaceFlinger reads the region in the panel's landscape frame, so use a square with the long side (2480). It then covers both orientations, so rotating needs no new session.
@@ -71,7 +71,19 @@ Everything here was verified on a Note Air6 C with firmware 4.3 (Android 16) unl
   | 16711715 | Repaint everything with a mode | mode |
   | 16711718 | `APPLY_GC_ONCE`, a full refresh | none |
   | 16711690, 16711691, 16711696 | `MOVE_TO`, `LINE_TO`, `QUAD_TO`: strokes fed by the app | hasView, x, y, width or mode, pressure |
-  | 16711697 to 16711699 | Start, add to and finish a fed stroke | baseWidth, x, y, pressure, size, time |
+  | 16711697 to 16711699 | Start, add to and finish a fed stroke | baseWidth, x, y, pressure, size, time; each returns the width the display computes as a float |
+  | 16711784 | `PEN_UP` | none |
+  | 16711717 | `APP_DIE` | pid |
+  | 16711784 | `PEN_UP` | none |
+  | 16711717 | `APP_DIE` | pid; `InkGuard` sends it for the dead pid after ending its live session |
+  | 16711703 | `WAIT_FOR_UPDATE_FINISHED` | none; NeoReader's action of the same name is only a timed sleep of at least 150 ms, and its pen path re-arms 200 ms after disabling raw drawing |
+  | 1048661 | `SET_EPD_TURBO` (with a getter) | int; dither is effectively 255 on or 128 off (refused below) |
+  | 1048621, 1048662, 1048664 | `BYPASS`, until-layer-off/on | initState, layerName, optional post-filter |
+  | 1048663 | `WHITE_CLEAR` | int, boolean |
+  | 1048617, 1048624 | Merge display updates, by timeout or count | timeout or count, mode |
+  | 1048619, 1048645, 1048646 | Trigger or collect by pen rect, moves, ups | count, mode, int[] |
+  | 1049090, 1049091 | Set and clear the region config | 1, 1, then one rectangle with its pen configs |
+  | 1049092 | Handwriting-layer bitmap | x, y, width, height, byte count, ARGB blob (2 MB cap) |
   | 1048833 | Eraser raw drawing | boolean enabled, int painter |
   | 1048834 | Brush raw drawing | boolean |
   | 1049088, 1049089 | Get and set a style's stroke parameters | style (and float[]) |

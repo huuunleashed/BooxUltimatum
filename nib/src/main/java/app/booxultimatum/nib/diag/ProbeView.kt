@@ -247,6 +247,11 @@ class ProbeView(context: Context) : View(context), PenRouter.Target {
                 partsRect = if (width > 0) screenRect() else null
                 controller.session.setPenButtons(partsRect ?: IntArray(4), penParts())
                 val ok = controller.open(strokeFor(first), NibPen.panelLongSide(context), limitRect())
+                if (ok && probe == Probe.LabPenState4) {
+                    // The SDK names state 4 erasing but never sends it: ask the display to hold it and read back what it kept.
+                    Epd.setPenState(4)
+                    log.i("probe pen state", "probe" to probe.id, "sent" to 4, "read back" to Epd.penState(), "route" to Epd.route?.name)
+                }
                 band = -1
                 applyLayout()
                 log.i("probe session", "probe" to probe.id, "opened" to ok, "state" to controller.session.state.name, "reveal" to probe.reveal.name, "limit" to limitRect()?.joinToString(","))
@@ -356,7 +361,7 @@ class ProbeView(context: Context) : View(context), PenRouter.Target {
             getLocationOnScreen(location)
             enterBand(bandAt(event.rawY - location[1]))
         }
-        val pause = NibPen.isSideButton(event) || (NibPen.isEraserEnd(event, 0) && probe != Probe.LabEraserEnd)
+        val pause = NibPen.isSideButton(event) || (NibPen.isEraserEnd(event, 0) && !eraserDraws())
         // A block, not the hover's pause: a pen touch resumes a session that's only paused.
         if (pause) controller.block(ERASER) else controller.unblock(ERASER)
         controller.hover(if (inside) InkCanvasController.Target.Canvas else InkCanvasController.Target.Controls)
@@ -370,6 +375,9 @@ class ProbeView(context: Context) : View(context), PenRouter.Target {
         controller.controlsTouchEnded()
     }
 
+    /** The probes where the owner draws with the eraser end and the display is left to answer. */
+    private fun eraserDraws() = probe == Probe.LabEraserEnd || probe == Probe.LabEraserPainters
+
     private fun bandAt(y: Float): Int {
         val n = probe.bands.size
         if (height <= 0) return 0
@@ -380,6 +388,11 @@ class ProbeView(context: Context) : View(context), PenRouter.Target {
         if (i == band) return
         band = i
         controller.setStroke(strokeFor(probe.bands[i]))
+        if (probe == Probe.LabEraserPainters) {
+            // Bands are painters 0 to 8 top to bottom; the owner rubs with the eraser end in each and answers per band.
+            Epd.setEraserRawDrawing(true, i)
+            log.i("probe eraser painter", "probe" to probe.id, "band" to probe.bands[i].key, "painter" to i, "route" to Epd.route?.name)
+        }
     }
 
     /** A control beside the surface changed (Lab › Push controls); once drawn, it's pushed if frames are held. */
@@ -435,7 +448,7 @@ class ProbeView(context: Context) : View(context), PenRouter.Target {
                 enterBand(bi)
                 val b = probe.bands[bi]
                 erasing = NibPen.isErasing(event, i)
-                if (NibPen.isSideButton(event) || (NibPen.isEraserEnd(event, i) && probe != Probe.LabEraserEnd)) controller.block(ERASER)
+                if (NibPen.isSideButton(event) || (NibPen.isEraserEnd(event, i) && !eraserDraws())) controller.block(ERASER)
                 previewed = controller.down()
                 val brush = if (erasing) BrushSpec.defaults(BrushKind.StrokeEraser).withWidth(ERASER_PX) else b.brush
                 builder = StrokeBuilder(brush, b.color, nextId++)

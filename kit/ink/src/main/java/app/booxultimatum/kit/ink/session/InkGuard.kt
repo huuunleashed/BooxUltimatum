@@ -18,6 +18,7 @@ class InkGuard(private val undo: Undo = Undo.Display) {
     /** How each kind of change is undone; the display's own calls in the apps. */
     interface Undo {
         fun endLiveSession(): Boolean
+        fun notifyAppDied(pid: Int)
         fun clearFastMode()
         fun restoreTouch()
         fun restoreParams(style: Int, params: FloatArray)
@@ -29,6 +30,7 @@ class InkGuard(private val undo: Undo = Undo.Display) {
                 if (live) Epd.release()
                 return live
             }
+            override fun notifyAppDied(pid: Int) { if (Epd.connect() != null) Epd.appDie(pid) }
             override fun clearFastMode() { if (Epd.connect() != null) Epd.clearTransientUpdate(reset = true) }
             override fun restoreTouch() { TouchPanel.reset() }
             override fun restoreParams(style: Int, params: FloatArray) { if (Epd.connect() != null) Epd.setStrokeParameters(style, params) }
@@ -71,7 +73,11 @@ class InkGuard(private val undo: Undo = Undo.Display) {
         val r = Record.parse(text) ?: return emptyList()
         if (r.pid == Process.myPid()) return emptyList()
         val done = ArrayList<String>()
-        if (r.session && undo.endLiveSession()) done += "session"
+        if (r.session && undo.endLiveSession()) {
+            done += "session"
+            undo.notifyAppDied(r.pid)
+            done += "app died notice"
+        }
         if (r.fastMode) { undo.clearFastMode(); done += "fast mode" }
         if (r.touch) { undo.restoreTouch(); done += "finger touch" }
         r.params.forEach { (style, p) -> undo.restoreParams(style, p); done += "style $style parameters" }

@@ -20,6 +20,7 @@ class FakeInkDisplay(var routable: Boolean = true) : InkDisplay {
     override fun strokeParameters(style: Int) = params[style]?.copyOf().also { calls += "get params $style" }
     override fun setStrokeParameters(style: Int, params: FloatArray): Boolean { calls += "params $style ${params.joinToString(",")}"; this.params[style] = params.copyOf(); return true }
     override fun setEraserPreview(on: Boolean, style: Int): Boolean { calls += "eraser $on $style"; return true }
+    override fun setBrushPreview(on: Boolean): Boolean { calls += "brush $on"; return true }
     override fun setPenButtons(rect: IntArray, buttons: List<Epd.ButtonStroke>): Boolean {
         calls += "buttons ${rect.joinToString(",")} ${buttons.joinToString(";") { "${it.button}:${it.style}" }.ifEmpty { "none" }}"; return true
     }

@@ -74,6 +74,12 @@ object Epd {
         const val START_STROKE = 16711697
         const val ADD_STROKE_POINT = 16711698
         const val FINISH_STROKE = 16711699
+
+        /** Tells the display its client died; the firmware sends it with the dead pid when its own client ends. */
+        const val APP_DIE = 16711717
+
+        /** The firmware's own pen-up notice, beside the session's pause; what it changes is *[verify]*. */
+        const val PEN_UP_NOTICE = 16711784
     }
 
     /** The pen's parts a region's pen configuration can address. */
@@ -183,6 +189,12 @@ object Epd {
 
     fun setPenState(state: Int): Boolean = call(Code.SET_PEN_STATE) { writeInt(state); writeInt(ownerPid) }
 
+    /** The firmware's own pen-up notice (no payload): whether the display answers it is a Lab probe. */
+    fun penUpNotice(): Boolean = call(Code.PEN_UP_NOTICE)
+
+    /** The display is told its client [pid] died; for the stray-session cleanup when a dead process left one drawing. */
+    fun appDie(pid: Int): Boolean = call(Code.APP_DIE) { writeInt(pid) }
+
     /**
      * Where the display may draw: left, top, right, bottom quadruples. With [screen] they're screen pixels, which the
      * display maps itself; without, they're in the panel's own landscape frame.
@@ -271,6 +283,9 @@ object Epd {
     fun setEraserRawDrawing(on: Boolean, style: Int): Boolean = call(Code.SET_ERASER_RAW_DRAWING) { writeInt(if (on) 1 else 0); writeInt(style) }
 
     fun setBrushRawDrawing(on: Boolean): Boolean = call(Code.SET_BRUSH_RAW_DRAWING) { writeInt(if (on) 1 else 0) }
+
+    /** The SDK's raw-drawing defaults (`TouchHelper.resetPenDefaultRawDrawing`): brush previews on, eraser previews off. */
+    const val RAW_DEFAULT_ERASER_PAINTER = 5
 
     /**
      * Whether the app's frames reach the panel. The display holds them from the first pen touch of a session (so the
@@ -383,6 +398,8 @@ object Epd {
         clearRegionPenConfig()
         setRegionExclude(IntArray(0))
         setRegionMode(RegionMode.Single)
+        setBrushRawDrawing(true)
+        setEraserRawDrawing(false, RAW_DEFAULT_ERASER_PAINTER)
         enablePost(true)
         setPenState(PenState.STOP)
         setAutoSync(true)

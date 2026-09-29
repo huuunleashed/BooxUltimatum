@@ -189,7 +189,8 @@ Every finding from the study, and where it's used. Nothing is kept only in notes
 | Regal once for page changes; GC repaint for "refresh page" | Nib after a drawing opens and a panel closes; `Eink.cleanScreen` for the Clean screen tile and menus |
 | Finger touch off in regions (documented for apps) | `TouchPanel`, `PalmGuard` (Nib's Palm guard) |
 | Geometry calls and the panel matrix | `Epd` geometry; Nib's Diagnostics shows them and checks rotation mapping |
-| A session outlives its process | `InkGuard` and home's stray-session check |
+| A session outlives its process | `InkGuard` and home's stray-session check, which also notify the display its client died (`APP_DIE` with the dead pid) |
+| Sessions set the SDK's raw-drawing defaults (brush previews on, the eraser end previews Nib's eraser track) and put them back on release | `InkSession.arm`, `Epd.release` |
 | Screen-note choreography (repaint after a latency, no state change) | Instant ink's batched swaps |
 | Fed-stroke widths | Nib's Diagnostics probe; if it returns widths without drawing, it calibrates the fountain |
 | Eraser end reported by the pen (`BTN_TOOL_RUBBER`) and side buttons (`BTN_STYLUS`, `BTN_STYLUS2`) | `PenInput` (Instant ink); Nib's eraser end and side button tool |
@@ -200,4 +201,11 @@ Every finding from the study, and where it's used. Nothing is kept only in notes
 | NeoReader: one central check turns raw drawing off for any popup, dialog, keyboard, toast or focus loss | Nib's blocks (panels, menus, entry bar, focus) |
 | NeoReader: several limit areas on one pen surface, each with its own refresh | Not needed by Nib (one canvas); `InkSession.setLimit` takes several rectangles for a later app |
 | NeoReader: Regal Plus for pages with pictures or grey areas, GC or deep GC every N pages, the first render in GC; fast mode by app-scope updates with a turbo level | For a later reader app and the home screen's page turns; `UpdateMode` has every mode |
-| Turbo level (1048661), dither threshold (a separate system service), `penUp`, `appDie`, bypass counters | Not used: they can't be put back reliably or their meaning isn't known. Listed here in case a later test explains them |
+| Turbo level (1048661, one int, with a getter), dither threshold (effectively 255 on, 128 off, refused below), `penUp` (16711784, no payload), `appDie` (16711717, pid) | Still not used: turbo and dither also reach the hardware through reflection and their visible effects are unmeasured; `penUp`/`appDie` have no established use in our paths. Listed here with payloads in case a later test explains them |
+| Fed strokes take six floats and return the width the display computes; `moveTo` carries width, `lineTo`/`quadTo` an update mode | Nib's Diagnostics probe; if it returns widths without drawing, it calibrates the fountain |
+| Handwriting bitmaps are x, y, width, height, byte count and an ARGB blob, capped at 2 MB | `HandwritingLayer`, `Host.pushControls`, `Host.pushInk` |
+| Region config wraps one rectangle with its pen configs; eraser raw preview defaults off (painter 5), brush raw on | `Epd.setRegionPenConfig`, `InkSession.setPenButtons` |
+| The SDK opens with style 0 and pen state 1, and closes through pause (3) to stop (0) | `InkSession` already follows this order; no change |
+| NeoReader's wait-for-update is a timed sleep of at least 150 ms, and its pen path re-arms 200 ms after disabling raw drawing | `InkCanvasController.rearmMs`; confirms the 200 ms value |
+| The SDK names pen state 4 erasing but never sends it | Lab › Pen state 4 holds it and reads it back; whether 4 previews is the owner's answer |
+| The eraser's raw painter defaults to 5 with the preview off | Lab › Eraser painters tries painters 0 to 8, one band each |

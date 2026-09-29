@@ -440,6 +440,8 @@
     <string name="lab_style_params">Style settings</string>
     <string name="lab_limit">Limit</string>
     <string name="lab_fed_stroke">Fed stroke</string>
+    <string name="lab_pen_state_4">Pen state 4</string>
+    <string name="lab_eraser_painters">Eraser painters</string>
     <string name="lab_geometry">Geometry</string>
     <string name="lab_clean_screen">Clean screen</string>
     <string name="lab_push_ink_help">Draw a stroke in a band, then rest the pen for %1$s. Nib pushes its own finished ink to the display without letting a frame through. Did the preview become Nib’s exact stroke?</string>
@@ -451,6 +453,8 @@
     <string name="lab_style_params_help">The fountain style’s own settings, sent to the display as you set them. Draw after each change: does the preview’s response to pressure change? The display’s own values are put back when you leave.</string>
     <string name="lab_limit_help">The preview is limited to the middle band, given in screen coordinates. Draw across all three bands.</string>
     <string name="lab_fed_stroke_help">Nib pauses the preview and feeds a line of points across the middle of the surface to the display’s own width model. Watch the surface as you press the key.</string>
+    <string name="lab_pen_state_4_help">The surface opens its session, then Nib asks the display to hold pen state 4, which the firmware names erasing but never sends itself. Draw with the tip: does the display preview anything, and what does it read back (in the log)?</string>
+    <string name="lab_eraser_painters_help">Each band sets another eraser painter, 0 at the top to 8 at the bottom. Rub with the eraser end in every band and answer per band whether its track showed.</string>
     <string name="lab_geometry_help">What the display reports about its own geometry for the way the tablet is turned now. Turn the tablet and read again.</string>
     <string name="lab_clean_screen_help">The two ways BOOX’s reader cleans a colour screen. Try each one and say how it looked.</string>
     <plurals name="lab_counter">
@@ -495,6 +499,16 @@
     <string name="lab_q_preview_follows">The preview after a change</string>
     <string name="lab_q_limit">Where the preview drew</string>
     <string name="lab_q_fed_drawn">When you pressed the key</string>
+    <string name="lab_q_state4_preview">Drawing with the tip</string>
+    <string name="lab_q_painter_0">Painter 0</string>
+    <string name="lab_q_painter_1">Painter 1</string>
+    <string name="lab_q_painter_2">Painter 2</string>
+    <string name="lab_q_painter_3">Painter 3</string>
+    <string name="lab_q_painter_4">Painter 4</string>
+    <string name="lab_q_painter_5">Painter 5</string>
+    <string name="lab_q_painter_6">Painter 6</string>
+    <string name="lab_q_painter_7">Painter 7</string>
+    <string name="lab_q_painter_8">Painter 8</string>
     <string name="lab_a_exact">Exact</string>
     <string name="lab_a_nothing_changed">No</string>
     <string name="lab_a_garbled">Garbled</string>
@@ -524,6 +538,8 @@
     <string name="lab_a_everywhere">Everywhere</string>
     <string name="lab_a_nowhere">Nowhere</string>
     <string name="lab_a_drawn">Drew something</string>
+    <string name="lab_a_preview_shown">Preview shown</string>
+    <string name="lab_a_no_preview">No preview</string>
     <string name="lab_a_clean">Clean</string>
     <string name="lab_a_ghosting">Ghosting left</string>
     <string name="lab_a_no_refresh">Didn’t refresh</string>
@@ -541,6 +557,8 @@
     <string name="band_limit_inside">Inside the limit</string>
     <string name="band_limit_below">Below the limit</string>
     <string name="band_fed">The test stroke runs across the middle</string>
+    <string name="band_state4">Draw with the tip</string>
+    <string name="band_painter">Painter %1$d: rub with the eraser end</string>
 
     <!-- About -->
     <string name="about_summary">A drawing app for BOOX tablets: many brushes, very thin lines and unlimited layers, with the display’s own fast pen preview where the tablet offers it.</string>

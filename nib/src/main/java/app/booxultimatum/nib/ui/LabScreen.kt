@@ -335,6 +335,8 @@ private fun labTitle(p: LabProbe): Int = when (p) {
     LabProbe.StyleParams -> R.string.lab_style_params
     LabProbe.Limit -> R.string.lab_limit
     LabProbe.FedStroke -> R.string.lab_fed_stroke
+    LabProbe.PenState4 -> R.string.lab_pen_state_4
+    LabProbe.EraserPainters -> R.string.lab_eraser_painters
     LabProbe.Geometry -> R.string.lab_geometry
     LabProbe.CleanScreen -> R.string.lab_clean_screen
 }
@@ -350,6 +352,8 @@ private fun labHelp(p: LabProbe, pauseMs: Int): String = when (p) {
     LabProbe.StyleParams -> stringResource(R.string.lab_style_params_help)
     LabProbe.Limit -> stringResource(R.string.lab_limit_help)
     LabProbe.FedStroke -> stringResource(R.string.lab_fed_stroke_help)
+    LabProbe.PenState4 -> stringResource(R.string.lab_pen_state_4_help)
+    LabProbe.EraserPainters -> stringResource(R.string.lab_eraser_painters_help)
     LabProbe.Geometry -> stringResource(R.string.lab_geometry_help)
     LabProbe.CleanScreen -> stringResource(R.string.lab_clean_screen_help)
 }
@@ -369,6 +373,16 @@ private fun labQuestion(key: String): Int = when (key) {
     "preview follows" -> R.string.lab_q_preview_follows
     "limit" -> R.string.lab_q_limit
     "fed stroke drawn" -> R.string.lab_q_fed_drawn
+    "state 4 preview" -> R.string.lab_q_state4_preview
+    "painter 0" -> R.string.lab_q_painter_0
+    "painter 1" -> R.string.lab_q_painter_1
+    "painter 2" -> R.string.lab_q_painter_2
+    "painter 3" -> R.string.lab_q_painter_3
+    "painter 4" -> R.string.lab_q_painter_4
+    "painter 5" -> R.string.lab_q_painter_5
+    "painter 6" -> R.string.lab_q_painter_6
+    "painter 7" -> R.string.lab_q_painter_7
+    "painter 8" -> R.string.lab_q_painter_8
     "deep clean" -> R.string.lab_clean_deep
     else -> R.string.lab_clean_gc
 }
@@ -404,6 +418,8 @@ private fun labAnswer(id: String): Int = when (id) {
     "everywhere" -> R.string.lab_a_everywhere
     "nowhere" -> R.string.lab_a_nowhere
     "drawn" -> R.string.lab_a_drawn
+    "preview_shown" -> R.string.lab_a_preview_shown
+    "no_preview" -> R.string.lab_a_no_preview
     "clean" -> R.string.lab_a_clean
     "ghosting" -> R.string.lab_a_ghosting
     else -> R.string.lab_a_no_refresh
@@ -411,9 +427,13 @@ private fun labAnswer(id: String): Int = when (id) {
 
 /** The label drawn in a Lab surface's band. */
 @Composable
-internal fun labBandLabel(b: Band): String = stringResource(
-    when (b.key) {
-        "push black" -> R.string.band_push_black
+internal fun labBandLabel(b: Band): String {
+    if (b.key.startsWith("painter ")) {
+        return stringResource(R.string.band_painter, b.key.removePrefix("painter ").toIntOrNull() ?: -1)
+    }
+    return stringResource(
+        when (b.key) {
+            "push black" -> R.string.band_push_black
         "push red" -> R.string.band_push_red
         "push charcoal" -> R.string.band_push_charcoal
         "counter" -> R.string.band_counter
@@ -426,6 +446,8 @@ internal fun labBandLabel(b: Band): String = stringResource(
         "above the limit" -> R.string.band_limit_above
         "inside the limit" -> R.string.band_limit_inside
         "below the limit" -> R.string.band_limit_below
+        "state 4" -> R.string.band_state4
         else -> R.string.band_fed
     },
-)
+    )
+}
