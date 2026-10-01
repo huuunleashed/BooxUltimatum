@@ -16,7 +16,7 @@
     <string name="ink_status_needs_shizuku">Needs Shizuku: start it from Access, then turn Instant ink on again</string>
     <string name="ink_status_needs_usage">Needs usage access, so it can tell when a chosen app is in front</string>
     <string name="ink_status_not_boox">Instant ink uses the display path of Boox tablets, which this tablet doesn’t have</string>
-    <string name="ink_usage_explain">Android only tells an app which app is open when you allow usage access. Without it Instant ink waits forever and never switches on. Tap the key, find BooxUltimatum in the list and allow it; no computer is needed.</string>
+    <string name="ink_usage_explain">Android only tells an app which app is open when you allow usage access. Without it Instant ink waits forever and never switches on. Tap the key, find BooxUltimatum in the list and allow it; no computer is needed. On firmware where the switch refuses, allow it from a computer instead: adb shell appops set app.booxultimatum GET_USAGE_STATS allow.</string>
     <string name="ink_usage_grant">Allow usage access</string>
     <string name="ink_check">Check again</string>
     <string name="ink_route_direct">Through direct display calls, straight from this app</string>

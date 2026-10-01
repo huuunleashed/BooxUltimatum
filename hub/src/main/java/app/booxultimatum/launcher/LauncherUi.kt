@@ -53,6 +53,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
@@ -428,8 +429,9 @@ private fun AppIcon(model: LauncherModel, t: LaunchTarget, size: Dp) {
     val bmp = remember(t.key, px, prefs.iconStyle, prefs.iconShape, model.apps.value) {
         model.catalog.icon(t.key, px, prefs.iconStyle, prefs.iconShape)?.asImageBitmap()
     }
-    if (bmp != null) Image(bmp, contentDescription = null, modifier = Modifier.size(size))
-    else Box(Modifier.size(size).border(Lines.rim, Ink.Black, RoundedCornerShape(14.dp)))
+    val dim = if (t.frozen) Modifier.alpha(0.45f) else Modifier
+    if (bmp != null) Image(bmp, contentDescription = null, modifier = Modifier.size(size).then(dim))
+    else Box(Modifier.size(size).then(dim).border(Lines.rim, Ink.Black, RoundedCornerShape(14.dp)))
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -446,6 +448,10 @@ private fun AppTile(model: LauncherModel, t: LaunchTarget, icon: Dp, modifier: M
         if (prefs.labels) {
             Spacer(Modifier.height(6.dp))
             TileName(t.label)
+            if (t.frozen) Text(stringResource(R.string.l_frozen), style = MaterialTheme.typography.labelSmall, color = Ink.Legend)
+        } else if (t.frozen) {
+            Spacer(Modifier.height(6.dp))
+            Text(stringResource(R.string.l_frozen), style = MaterialTheme.typography.labelSmall, color = Ink.Legend)
         }
     }
 }
@@ -784,6 +790,7 @@ private fun AppList(model: LauncherModel, items: List<LaunchTarget>, cols: Int, 
                         Column(Modifier.weight(1f)) {
                             Text(t.label, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             val sub = when {
+                                t.frozen -> stringResource(R.string.l_frozen) + " · " + t.component.packageName
                                 usedAt == null -> t.component.packageName
                                 usedAt(t) > 0 -> stringResource(R.string.l_recent_ago, app.booxultimatum.kit.ui.Format.duration(context, System.currentTimeMillis() - usedAt(t)))
                                 else -> stringResource(R.string.l_recent_never)
@@ -817,6 +824,10 @@ private fun AppActions(model: LauncherModel, t: LaunchTarget, modifier: Modifier
                 Text(t.component.packageName + (folder?.let { "  ·  " + it.name } ?: ""), style = CodeStyle, color = Ink.Legend)
             }
             Key(stringResource(R.string.l_close), onClick = { model.selected.value = null })
+        }
+        if (t.frozen) {
+            Spacer(Modifier.height(Space.m))
+            Paragraph(stringResource(R.string.l_frozen_explain), color = Ink.Legend)
         }
         Spacer(Modifier.height(Space.m))
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.s), verticalArrangement = Arrangement.spacedBy(Space.s)) {

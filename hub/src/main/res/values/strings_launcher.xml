@@ -229,6 +229,8 @@
     <string name="l_weather_units">Temperature</string>
     <string name="l_hidden">Hidden apps</string>
     <string name="l_hidden_none">No hidden apps. Long-press any app to hide it from home and All apps.</string>
+    <string name="l_frozen">Frozen by Boox</string>
+    <string name="l_frozen_explain">Boox froze this app, so Android hides it from launchers. It is shown here dimmed instead of missing. Opening it still works; to stop Boox freezing it again, check Boox’s App Freeze page.</string>
     <string name="l_about_home">About this home screen</string>
     <string name="l_about_home_text">Recents, gestures, NaviBall and EInkWise stay with Boox, so they work the same under this home. The Boox home can be restored from BooxUltimatum › Suite › Home screen in one tap.</string>
     <string name="l_open_app">Open BooxUltimatum</string>

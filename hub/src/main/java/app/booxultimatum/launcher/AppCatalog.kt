@@ -48,6 +48,8 @@ data class LaunchTarget(
     val label: String,
     val isBoox: Boolean,
     val intent: android.content.Intent? = null,
+    /** True when Boox froze the package: it has a launch entry but Android hides it from launchers. */
+    val frozen: Boolean = false,
 )
 
 enum class DrawerSort { Name, Colour, Recent }
@@ -181,17 +183,47 @@ class AppCatalog(private val context: Context) {
         virtualIcons.clear()
         icons.evictAll()
         val result = mutableListOf<LaunchTarget>()
+        val seen = HashSet<String>()
         for (user in users.userProfiles) {
             for (info in launcherApps.getActivityList(null, user)) {
                 val key = keyOf(info.componentName, user)
                 infos[key] = info
+                seen += info.componentName.packageName
                 val pkg = info.componentName.packageName
                 val label = RENAMES[info.componentName.flattenToShortString()]?.let { context.getString(it) } ?: info.label.toString()
                 result += LaunchTarget(key, info.componentName, user, label, pkg == "com.onyx" || pkg.startsWith("com.onyx."))
             }
         }
+        result += frozenApps(seen)
         result += booxFunctions()
         return result.sortedWith(compareBy({ it.label.lowercase() }, { it.key }))
+    }
+
+    /**
+     * Packages Boox froze: they keep a launch entry and stock still opens them, but Android hides them from
+     * launchers, so they never appear above. They are listed greyed instead of missing (issue #3).
+     */
+    private fun frozenApps(seen: Set<String>): List<LaunchTarget> {
+        val pm = context.packageManager
+        val user = users.userProfiles.firstOrNull() ?: android.os.Process.myUserHandle()
+        val installed = runCatching {
+            if (android.os.Build.VERSION.SDK_INT >= 33) {
+                pm.getInstalledApplications(android.content.pm.PackageManager.ApplicationInfoFlags.of(android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS.toLong()))
+            } else {
+                @Suppress("DEPRECATION")
+                pm.getInstalledApplications(android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS)
+            }
+        }.getOrDefault(emptyList())
+        return installed.mapNotNull { app ->
+            if (app.packageName in seen || app.enabled) return@mapNotNull null
+            val launch = runCatching { pm.getLaunchIntentForPackage(app.packageName) } .getOrNull() ?: return@mapNotNull null
+            val component = launch.component ?: return@mapNotNull null
+            runCatching { virtualIcons["frozen:${app.packageName}"] = pm.getApplicationIcon(app.packageName) }
+            val label = runCatching { pm.getApplicationLabel(app).toString() }.getOrDefault(app.packageName)
+            val key = keyOf(component, user)
+            virtualIcons[key] = virtualIcons["frozen:${app.packageName}"] ?: return@mapNotNull null
+            LaunchTarget(key, component, user, label, app.packageName == "com.onyx" || app.packageName.startsWith("com.onyx."), frozen = true)
+        }
     }
 
     private val virtualIcons = HashMap<String, Drawable>()
@@ -352,14 +384,24 @@ class AppCatalog(private val context: Context) {
         return out
     }
 
-    fun launch(t: LaunchTarget) = runCatching {
-        if (t.intent != null) context.startActivity(android.content.Intent(t.intent).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
-        else launcherApps.startMainActivity(t.component, t.user, null, null)
-    }.isSuccess
+    fun launch(t: LaunchTarget): Boolean = runCatching {
+        if (t.intent != null) {
+            context.startActivity(android.content.Intent(t.intent).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
+            true
+        } else if (t.frozen) {
+            val launch = context.packageManager.getLaunchIntentForPackage(t.component.packageName)?.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                ?: return@runCatching false
+            context.startActivity(launch)
+            true
+        } else {
+            launcherApps.startMainActivity(t.component, t.user, null, null)
+            true
+        }
+    }.getOrDefault(false)
 
     fun openAppInfo(t: LaunchTarget) {
         runCatching {
-            if (t.intent != null) context.startActivity(
+            if (t.intent != null || t.frozen || infos[t.key] == null) context.startActivity(
                 android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, android.net.Uri.parse("package:${t.component.packageName}"))
                     .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),
             )
@@ -391,8 +433,11 @@ class AppCatalog(private val context: Context) {
     /** Drop rendered icons when Android asks for memory back; they re-render for the visible page only. */
     fun trim() = icons.evictAll()
 
-    fun isSystem(t: LaunchTarget): Boolean =
-        t.intent != null || infos[t.key]?.applicationInfo?.let { it.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM != 0 } ?: true
+    fun isSystem(t: LaunchTarget): Boolean {
+        if (t.intent != null) return true
+        infos[t.key]?.applicationInfo?.let { return it.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM != 0 }
+        return runCatching { context.packageManager.getApplicationInfo(t.component.packageName, 0).flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM != 0 }.getOrDefault(true)
+    }
 
     /**
      * An icon's colour as a sort key: hue for colourful icons, then the near-greys by lightness at the end, so a
