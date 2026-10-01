@@ -4,7 +4,7 @@ All notable changes to BooxUltimatum. Newest first. The project follows [Semanti
 
 ## [Unreleased]
 
-Writing and drawing the way BOOX's own apps do it. A study of BOOX Notes and NeoReader on the tablet showed why their strokes follow each other without a pause, and the suite's ink layer is rebuilt around it. Nothing below has been tried on the tablet yet unless it says so.
+Writing and drawing the way BOOX's own apps do it, continued in Nib. The hub 0.7.0 below keeps what this track already proved on the tablet (the 1-minute live step and batched instant ink). Nothing below has been tried on the tablet yet unless it says so.
 
 ### Added
 
@@ -27,8 +27,6 @@ Writing and drawing the way BOOX's own apps do it. A study of BOOX Notes and Neo
 - **Nib: Palm guard** (Settings › Fingers, off until it's confirmed on the tablet): finger touch is switched off over the page while the pen is near, so a resting hand can't move it.
 - **Nib: Refresh screen** in the menu, and one gentle clean after a drawing opens or a panel closes.
 - **Nib: Diagnostics › Lab**, with a check for each new display call, and the answers logged for the next build.
-- **A Clean screen tile and key** (Quick Settings, and the Instant ink page). They clean all ghosting off the panel in one pass, the way NeoReader cleans a colour panel. The tile waits until Quick Settings has closed.
-- **Sleep live updates every minute.** The *While asleep* step now offers 1 minute, for checking that updates arrive without waiting through a 5-minute step. Checked on the tablet: the 1-minute step arrives, and an hour of sleep used about 1 % of battery, sometimes one hour, sometimes two.
 - **Nib Lab probes pen state 4 and the eraser painters.** One surface holds state 4 (which the firmware names erasing but never sends) and reads it back; another tries eraser painters 0 to 8, one band each. Sessions now set the SDK’s raw-drawing defaults on open (brush previews on, the eraser end previews Nib’s eraser track) and put them back on release, and the stray-session cleanup also tells the display its client died.
 - **For developers: `kit:ink` is now the suite's ink SDK.** It has the complete display interface: the pen session, several excluded areas at once, what each part of the pen draws, the style's own parameters, pictures pushed into the display's layer, refreshes in any update mode, the fast mode, the display's geometry and finger touch switched off in areas. On top of that sit a writing choreography every drawing surface shares, a palm guard, and a guard that undoes whatever a crashed process left on the display. `docs/09-ink.md` describes it, with the full call table and a ledger of every finding and where it's used.
 
@@ -43,14 +41,26 @@ Writing and drawing the way BOOX's own apps do it. A study of BOOX Notes and Neo
   - Strokes already drawn keep their look. Drawings are now format 1.2 and open unchanged.
 - **Thin pencils and fineliners are previewed in the plain pencil style at every width** (checked on the tablet from 0.5 to 3 px), so their preview is no longer thicker than their ink.
 - **Nib ignores a resting pen's repeated samples**, as BOOX's pen reader does, which steadies the ends of strokes. A slow, careful line keeps its shape.
+
+## [0.7.0] (2026-10-01)
+
+Steadier sleep and ink, and a home that keeps frozen apps visible. Tested on a Note Air6 C with firmware 4.3 (Android 16), with the 1-minute live step and instant ink checked on the tablet by the owner.
+
+### Added
+
+- **A Clean screen tile and key** (Quick Settings, and the Instant ink page). They clean all ghosting off the panel in one pass, the way NeoReader cleans a colour panel. The tile waits until Quick Settings has closed.
+- **Sleep live updates every minute.** The *While asleep* step now offers 1 minute, for checking that updates arrive without waiting through a 5-minute step. Checked on the tablet: the 1-minute step arrives, and an hour of sleep used about 1 % of battery, sometimes one hour, sometimes two.
+- **Home shows Boox-frozen apps instead of hiding them.** Packages Boox froze kept a launch entry stock still opens, but Android hides them from launchers, so Word, Firefox and KOReader vanished from home and search on a reporter’s Lumi (issue #3). The drawer now lists them dimmed with a frozen tag (checked on the tablet with a disabled app), opening still works, and the app panel explains where to stop Boox freezing them again.
+
+### Changed
+
 - **Instant ink batches strokes.** Quick strokes now share one hold, and the app’s own ink replaces the preview once the pen pauses. You choose the pause (0.4 to 2 s, 0.8 s by default), or it happens when the pen leaves, the eraser end comes near, you switch apps or the screen locks. The default pause was half a second before, and the app’s frames went through at each one; the longer default and the longer choices keep more quick strokes in one hold. Each hold is logged with its stroke count and why it ended. Checked on the tablet: instant ink works.
 - **Instant ink's recovery** (the Ink page, the notification, and home's check for a leftover session) also clears the display's fast mode, excluded areas and pen settings, and turns finger touch back on. If the hub dies mid-session, its next start ends the session.
+- **The Ink page names the computer command for usage access.** On firmware where the switch refuses, it now shows `adb shell appops set app.booxultimatum GET_USAGE_STATS allow` (checked on the tablet).
 
 ### Fixed
 
 - **Sleep live updates survive one missed tick.** The alarm receiver re-arms the next update before handing the tick to the service, so a tick that finds the service unbound no longer ends the whole sleep’s chain.
-- **Home shows Boox-frozen apps instead of hiding them.** Packages Boox froze kept a launch entry stock still opens, but Android hides them from launchers, so Word, Firefox and KOReader vanished from home and search on a reporter’s Lumi (issue #3). The drawer now lists them dimmed with a frozen tag, opening still works, and the app panel explains where to stop Boox freezing them again.
-- **The Ink page names the computer command for usage access.** On firmware where the switch refuses, it now shows `adb shell appops set app.booxultimatum GET_USAGE_STATS allow`.
 
 ### Research
 

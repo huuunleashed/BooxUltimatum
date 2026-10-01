@@ -166,7 +166,7 @@ Firmware 4.3 hides the Wireless debugging switch from Developer options, so rest
 
 ## Install
 
-**From a release:** download `BooxUltimatum-0.6.0.apk` from this repository's [Releases](https://github.com/huuunleashed/BooxUltimatum/releases) page, allow your browser or file manager to install apps, and open it. The Access page shows what each level unlocks and the exact commands for it. Releases are signed with the project's own key, so later releases update it in place. The hub's Suite page installs Nib for you, or download `Nib-0.2.0.apk` from the same page; Nib's releases are tagged `nib-v…`.
+**From a release:** download `BooxUltimatum-0.7.0.apk` from this repository's [Releases](https://github.com/huuunleashed/BooxUltimatum/releases) page, allow your browser or file manager to install apps, and open it. The Access page shows what each level unlocks and the exact commands for it. Releases are signed with the project's own key, so later releases update it in place. The hub's Suite page installs Nib for you, or download `Nib-0.2.0.apk` from the same page; Nib's releases are tagged `nib-v…`.
 
 **Test builds for the tablet:** unfinished builds of the hub or Nib are sometimes published as `test-…` pre-releases so they can be checked on a real tablet. The hub offers them only when *Offer test builds* is on (Device page), and a release always replaces its own test build.
 
@@ -250,14 +250,18 @@ No dates promised; this is a spare-time project, and each release ships when it 
   - Five-section navigation.
   - Nib 0.2, the first release: instant preview, many brushes, fine widths, unlimited layers, a lasso, a page that turns, paper guides, undo, autosave and exports, with floating cards and a Diagnostics page for the tablet.
   - A font manager, a Storage page, and logs and leftovers kept bounded in every suite app.
-- **0.7, battery, setup and polish**
-  - The battery cost of updates while asleep, measured overnight.
-  - Refinements to the faces from how they look on the panel.
+- **0.7, steadier sleep and ink, home keeps frozen apps (released 2026-10-01)**
+  - Sleep live updates every minute, with the battery cost measured at about 1 % per one to two hours.
+  - Batched instant ink with a stronger recovery, and the computer command for usage access on the Ink page.
+  - Home lists Boox-frozen apps dimmed instead of hiding them.
+  - A Clean screen tile and key.
+- **Still ahead from the 0.7 plan**
   - A one-tap reading mode: Wi-Fi and Bluetooth off, Battery Saver on and sync paused, all undone together.
   - Shizuku that survives a restart without a computer, and an in-app first-run guide for the adb grants.
   - The first overnight and A/B results shown in the app.
   - Instant ink tried in more drawing and note apps, and on the models testers reported.
   - Round trips recorded for the last three unverified tweaks.
+  - Refinements to the faces from how they look on the panel.
 - **Nib 0.3, native writing (in progress)**
   - Built on `kit:ink`, the suite's new ink framework:
     - one hold per writing session;
