@@ -56,7 +56,7 @@
       <dl class="readings" aria-label="Where these facts come from">
         <div><dt>Device</dt><dd>BOOX Note Air6 C<span>One unit, the author's own</span></dd></div>
         <div><dt>Firmware</dt><dd>4.3, Android 16<span><code>2026-08-17_12-29_4.3-rel_0817_fd4f8e9fe</code></span></dd></div>
-        <div><dt>Status</dt><dd>Verified here, untested elsewhere<span>Boox interfaces are unofficial here; an update can change them</span></dd></div>
+        <div><dt>Status</dt><dd>Verified here, partly confirmed elsewhere<span>Instant ink on a Go 10.3 Lumi and a Note Air 2 Plus; home also runs on a Bigme B7. Boox interfaces are unofficial; an update can change them</span></dd></div>
       </dl>
     </div>
   </div>
@@ -72,6 +72,7 @@
         <li><a href="#battery"><span>The battery log</span></a></li>
         <li><a href="#font"><span>The tablet font</span></a></li>
         <li><a href="#tweaks"><span>Reversible tweaks and the journal</span></a></li>
+        <li><a href="#nib"><span>Nib, the drawing app</span></a></li>
         <li><a href="#clean-room"><span>Clean-room interoperability</span></a></li>
       </ol>
     </nav>
@@ -141,7 +142,7 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
           <li>The Shizuku helper released after 45 seconds of idle.</li>
         </ul>
         <h3>Compatible by construction</h3>
-        <p>It uses only public launcher APIs (<code>LauncherApps</code> for apps, shortcuts and badged icons, <code>AppWidgetHost</code> for widgets), with no reflection and no hidden APIs. Recents belong to <code>com.android.onyxquickstep</code>, and gestures, NaviBall and EinkWise to SystemUI, so they behave the same under either home. The launcher ships disabled as a HOME alias, the Boox home is journaled before the first switch, and from a computer this always brings it back:</p>
+        <p>It uses only public launcher APIs (<code>LauncherApps</code> for apps, shortcuts and badged icons, <code>AppWidgetHost</code> for widgets), with no reflection and no hidden APIs. Packages Boox froze are invisible to <code>LauncherApps</code> while stock still opens them, so the drawer resolves their launcher entry directly and lists them dimmed with a frozen tag instead of missing. Recents belong to <code>com.android.onyxquickstep</code>, and gestures, NaviBall and EinkWise to SystemUI, so they behave the same under either home. The launcher ships disabled as a HOME alias, the Boox home is journaled before the first switch, and from a computer this always brings it back:</p>
         <pre><code>adb shell cmd package set-home-activity --user 0 com.onyx/.StartupActivity</code></pre>
         <p>Verified as the default home on the tablet: Home and Back, app shortcuts, the Boox entry points (Library, Notes, Storage), Recents, and recovery after the process is killed.</p>
         <div class="sources">
@@ -149,7 +150,7 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
           <ul class="links">
             <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/docs/05-launcher.md"><strong>docs/05-launcher.md</strong><span>Compatibility rules, what is built, the budget table.</span></a></li>
             <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/hub/src/main/java/app/booxultimatum/launcher/LauncherActivity.kt"><strong>hub/…/launcher/LauncherActivity.kt</strong><span>The home activity and its start/stop lifecycle.</span></a></li>
-            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/hub/src/main/java/app/booxultimatum/launcher/AppCatalog.kt"><strong>hub/…/launcher/AppCatalog.kt</strong><span>The app list through <code>LauncherApps</code>, and the Boox functions.</span></a></li>
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/hub/src/main/java/app/booxultimatum/launcher/AppCatalog.kt"><strong>hub/…/launcher/AppCatalog.kt</strong><span>The app list through <code>LauncherApps</code>, frozen packages listed greyed, and the Boox functions.</span></a></li>
             <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/knowledge/experiments.md#device-findings"><strong>knowledge/experiments.md</strong><span>The 2026-09-26 rows: memory, CPU, the Shizuku helper, default home.</span></a></li>
           </ul>
         </div>
@@ -179,10 +180,10 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
         <p>The sleep screen is Android's doze dream, <code>com.onyx/.common.dream.OnyxDaydreamService</code>, fixed by <code>config_dozeComponent</code>. It never re-reads the picture, but it registers an exported receiver for <code>onyx_dream_refresh</code>: any app can send it, and the dream wakes the display for about 1.2&nbsp;s (<code>onyx.action.DISPLAY_CHANGED_STATE</code>, state 2, then 3). Frames drawn while it dozes are held until then. The lock screen hides every app window except an accessibility overlay, so an accessibility service that reads nothing holds the face.</p>
         <ol class="sequence">
           <li><span class="when">Going to sleep</span><span class="what">4&nbsp;s after Onyx has drawn and dozed, the first live face goes up, over the charging bar too.</span></li>
-          <li><span class="when">Every step</span><span class="what">An exact <code>RTC_WAKEUP</code> alarm on the round minute: render, send the refresh, show the face when Onyx reports the display on. About 1.4&nbsp;s awake. A full repaint every sixth update.</span></li>
+          <li><span class="when">Every step</span><span class="what">An exact <code>RTC_WAKEUP</code> alarm on the round minute, every 1 to 60 minutes to choose: render, send the refresh, show the face when Onyx reports the display on. About 1.4&nbsp;s awake. A full repaint every sixth update.</span></li>
           <li><span class="when">Waking</span><span class="what">The overlay is removed at once, so the lock screen and PIN pad are never covered.</span></li>
         </ol>
-        <p>Boox's power manager (<code>android.onyx.pm.OnyxAlarmHelper</code>) clears wake-up alarms at sleep unless the app is on its full-access list, which it joins when its background use changes to allowed. Verified on battery on firmware 4.3; the battery cost is still to be measured.</p>
+        <p>Boox's power manager (<code>android.onyx.pm.OnyxAlarmHelper</code>) clears wake-up alarms at sleep unless the app is on its full-access list, which it joins when its background use changes to allowed. Verified on battery on firmware 4.3. Measured cost at the 1-minute step: about 1% of battery per one to two hours of sleep.</p>
 
         <h3>Both orientations, prepared</h3>
         <p>Boox centre-crops the picture to the rotation it sleeps in: 1860&nbsp;×&nbsp;2480 in portrait, 2480&nbsp;×&nbsp;1860 at rotation 90 or 270. A face drawn only after a turn left a few seconds in which a sleep showed the old shape cropped. Every refresh therefore also encodes the other orientation into <code>noBackupFilesDir/sleep-cache</code>, and a rotation, seen through a display listener before the configuration reaches the process, swaps that file in at once, with a fresh render 1.5&nbsp;s later. Tested by rotating and sleeping within 0.2&nbsp;s in both directions: the picture was written 100&nbsp;ms after Boox's going-to-sleep broadcast and 260&nbsp;ms before the dream decoded it.</p>
@@ -223,7 +224,7 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
           <li><span class="when">Ready</span><span class="what">As soon as Instant ink is on, a session is opened and paused at once. On firmware 4.3 a session opened as the pen arrives misses the stroke that follows, while a paused one resumes instantly, even at the touch.</span></li>
           <li><span class="when">Hover</span><span class="what">This pen reports hover as <code>BTN_TOOL_BRUSH</code>, only about 45&nbsp;ms before <code>BTN_TOUCH</code> on a quick stroke, and a quick first touch comes in the same batch. The app in front is read then, from usage events. If it's chosen, the session resumes and, as Onyx's SDK does at hover, <code>ENABLE_POST</code> with 0 holds the app's own frames back, so the first point of the stroke lands on a held screen.</span></li>
           <li><span class="when">Touch</span><span class="what">SurfaceFlinger draws the stroke, and holds the app's frames by itself from the touch (its <code>HandlePenTrigger</code>) until they're let through. The app still gets every pen event. Letting its frames through mid-stroke ends the preview for the rest of the stroke, so the app's drawing always waits for the lift.</span></li>
-          <li><span class="when">Lift + 500&nbsp;ms</span><span class="what"><code>ENABLE_POST</code> with 1 lets the frames through, and the app's real stroke replaces the preview. The pen session stays open.</span></li>
+          <li><span class="when">Lift + pause</span><span class="what"><code>ENABLE_POST</code> with 1 lets the frames through once the pen has rested a pause you choose (0.4 to 2&nbsp;s), and the app's real stroke replaces the preview. Quick strokes share one preview, as in Boox Notes. The pen session stays open.</span></li>
           <li><span class="when">Pen away</span><span class="what">Swap at once and pause the session, so nothing of ours draws if the next app isn't a chosen one. The eraser end pauses it too, and so does the screen turning off. Over Boox's own apps, which run sessions of their own, it never ends a session.</span></li>
         </ol>
         <p>A tap with the pen often opens another app while the pen stays in range, so the app in front is read again a few times after a tap. Keeping one session open is the point. Closing it and repainting also removes the preview, but a session reopened at pen-down lost the start of the stroke, and one reopened at hover missed quick strokes. <code>HANDWRITING_REPAINT</code>, <code>REPAINT_EVERY_THING</code>, <code>SAVE_PEN_ATTACHED_FB</code>, the auto-sync switch and the screen-note pipe were all tried one call at a time on a stuck preview, and none of them removed it. <code>ENABLE_POST</code> did, even as a quick hold-and-release when nothing had held the frames.</p>
@@ -245,14 +246,13 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
             </tbody>
           </table>
         </div>
-        <p>The pen's event node (<code>/dev/input/event5</code>, <code>onyx_emp_istaric_pen</code>) is readable by apps on this firmware, but its name isn't: SELinux closes <code>/sys/class/input</code> to apps. So the reader opens every readable node, takes the first that reports a pen tool and remembers it. The reader thread sleeps in <code>poll()</code> until the pen moves, so nothing wakes the tablet, and a 30-second watchdog never leaves app frames held back.</p>
+        <p>The pen's event node (<code>/dev/input/event5</code>, <code>onyx_emp_istaric_pen</code> on the author's tablet) is readable by apps on this firmware, but its name isn't: SELinux closes <code>/sys/class/input</code> to apps. So the reader opens every readable node, takes the first that reports a pen tool and remembers it. The reader thread sleeps in <code>poll()</code> until the pen moves, so nothing wakes the tablet, and a 30-second watchdog never leaves app frames held back. Knowing which app is in front needs usage access, allowed on the tablet; where the firmware's switch refuses, the Ink page names the computer command (<code>appops set app.booxultimatum GET_USAGE_STATS allow</code>).</p>
 
         <div class="note">
           <h4><span class="lamp off" aria-hidden="true"></span>What isn't done yet</h4>
           <ul>
-            <li>The mechanism was found in test sessions from the shell and an in-app prototype, with the owner drawing in Sketchbook. The in-app service is built and starts cleanly, but hasn't yet been checked with a real pen.</li>
+            <li>Checked with a real pen by the author in Sketchbook, and by testers on a Go 10.3 Lumi and a Note Air 2 Plus since 0.5. Instant ink never reached those tablets before because it needed usage access without asking and always listened to the author's own pen device.</li>
             <li>The preview is Boox's black pen, so a coloured brush or the eraser only shows once the app's stroke takes over.</li>
-            <li>A stroke could lose the first few millimetres of its preview, about one in ten. Holding the app's frames from hover instead of pen-down fixed it in the owner's test on 2026-09-27; it's worth watching in other apps.</li>
             <li>Pen strokes can't be simulated: <code>input</code> injects through InputDispatcher, which SurfaceFlinger's pen reader doesn't read. Every test needs someone drawing.</li>
           </ul>
         </div>
@@ -295,7 +295,7 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
             </tbody>
           </table>
         </div>
-        <p>No before-and-after battery runs are recorded yet, and the first overnight unplugged run is still to do. Until they are, the app shows no savings. For comparison only, eWritable measured about 2&nbsp;%/h idle and 10&nbsp;%/h writing on the same 4.3 firmware.</p>
+        <p>No before-and-after battery runs are recorded yet, and the first overnight unplugged run is still to do. Until they are, the app shows no savings. One measured data point exists: sleep live updates at the 1-minute step cost about 1% per one to two hours on the author's tablet. For comparison only, eWritable measured about 2&nbsp;%/h idle and 10&nbsp;%/h writing on the same 4.3 firmware.</p>
         <div class="sources">
           <h3>In the repository</h3>
           <ul class="links">
@@ -316,7 +316,7 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
   --es args_path '/storage/emulated/0/fonts/&lt;family&gt;.ttf'</code></pre>
         <p>SystemUI writes the <code>persist.sys.font.*</code> properties and hot-reloads the font in every app, with no reboot. <code>onyx.action.font.reset.default</code> returns to the Boox default. The interface was learned by decompiling <code>ChangeSystemFontAction</code> and <code>BroadcastHelper</code> in Boox's own settings package, then confirmed from the shell and from the app with <code>getprop</code> before and after.</p>
         <ol class="plain">
-          <li>The font file is copied to <code>/sdcard/fonts</code> through Shizuku, where SystemUI can read it. That's why the tablet-wide font is T2. NeoReader reads the same folder.</li>
+          <li>The font file must sit in shared storage where SystemUI can read it. With Shizuku it is copied to <code>/sdcard/fonts</code> (the folder NeoReader also reads); without it the app writes its own copy to <code>Documents/BooxUltimatum/</code> through MediaStore and sends the broadcast itself, so the tablet-wide font needs no Shizuku since 0.4.</li>
           <li>The path in use before the first change is journaled, once.</li>
           <li>The broadcast is sent, then the property is read back for up to five seconds. Success is only reported once the tablet has actually switched.</li>
           <li><em>Restore previous</em> sends the journaled path again, or the reset broadcast when it was the Boox default.</li>
@@ -383,6 +383,21 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
       </section>
 
 <!-- 8 ============================================================== -->
+      <section class="topic" id="nib" aria-labelledby="nib-h">
+        <div class="engraved"><h2 id="nib-h">Nib, the drawing app</h2></div>
+        <p>Nib is the suite's drawing app: its own install, its own updates through the hub's Suite page, and it works without BooxUltimatum. It draws the way Boox Notes writes. The display paints each stroke under the nib at once through the same pen path as Instant ink, and Nib's own rendering takes its place the moment you lift. Pens, pencils, markers, brushes and textured charcoal, unlimited layers, a lasso, a page that turns, and exports. Tried with a real pen on the Note Air6 C, where the preview feels clearly faster than other drawing apps.</p>
+        <p>The current work rebuilds Nib around how BOOX's own apps write: one display hold per writing session instead of one per stroke, so quick strokes follow each other without a pause, with pens matched to BOOX's own pressure, tilt and nib behaviour. That work is still on test builds; the details live in the design doc.</p>
+        <div class="sources">
+          <h3>In the repository</h3>
+          <ul class="links">
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/docs/08-nib.md"><strong>docs/08-nib.md</strong><span>How Nib is built, brush by brush.</span></a></li>
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/docs/09-ink.md"><strong>docs/09-ink.md</strong><span>The shared ink layer, with the full call table.</span></a></li>
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/knowledge/experiments.md#device-findings"><strong>knowledge/experiments.md</strong><span>The Nib rows: preview width, first strokes, pen library.</span></a></li>
+          </ul>
+        </div>
+      </section>
+
+<!-- 9 ============================================================== -->
       <section class="topic" id="clean-room" aria-labelledby="clean-h">
         <div class="engraved"><h2 id="clean-h">Clean-room interoperability</h2></div>
         <p>BooxUltimatum contains no Onyx or BOOX code, SDKs or assets. The Boox interfaces it uses were learned from Onyx's public SDK documentation, by observing the tablet, and by reading how Boox's own apps call the firmware:</p>
@@ -392,7 +407,7 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
           <li>the EinkWise configuration it reads.</li>
         </ul>
         <p>Only the facts are used. They are called through small clients written from scratch in <code>core/sleep/</code>, <code>core/SystemFont.kt</code> and <code>core/ink/</code>. Onyx's SDK itself, <code>onyxsdk-pen</code> and <code>onyxsdk-device</code>, is published as obfuscated binaries without source, so it isn't bundled. Because these interfaces aren't a stable public API, a firmware update can change them without notice; when something stops working, the app says so rather than guessing.</p>
-        <p>The dependencies are AndroidX and Jetpack Compose and the Shizuku API, all Apache-2.0. The one bundled asset is Archivo, under the SIL Open Font License. The app goes online for two things only: weather from Open-Meteo for the city you type, and Google Fonts when you open the fonts browser. There are no accounts, analytics, ads or trackers.</p>
+        <p>The dependencies are AndroidX and Jetpack Compose and the Shizuku API, all Apache-2.0. The one bundled asset is Archivo, under the SIL Open Font License. The app goes online for three things only: weather from Open-Meteo for the city you type, Google Fonts when you open the fonts browser, and GitHub's release list when it checks for updates. There are no accounts, analytics, ads or trackers.</p>
         <div class="sources">
           <h3>In the repository</h3>
           <ul class="links">
