@@ -14,6 +14,7 @@ import android.provider.Settings
 import androidx.core.content.edit
 import app.booxultimatum.core.Journal
 import app.booxultimatum.core.exec.Privileged
+import app.booxultimatum.kit.log.Logbook
 import org.json.JSONObject
 import java.util.Calendar
 
@@ -178,6 +179,9 @@ object LiveSleep {
         state(context).edit { remove("next") }
     }
 
+    /** The wall time the alarm this tick answers was set for (0 when unknown). Read before re-arming overwrites it. */
+    internal fun nextDue(c: Context): Long = state(c).getLong("next", 0)
+
     /** Whether this moment is one the owner wants updates at: charging only, and outside quiet hours. */
     fun wantedNow(context: Context, prefs: LivePrefs, now: Long = System.currentTimeMillis()): Boolean {
         if (prefs.onlyCharging) {
@@ -237,8 +241,16 @@ object LiveSleep {
 
 /** The alarm lands here and is handed to the running accessibility service; without it there's nothing to draw into. */
 class LiveSleepReceiver : BroadcastReceiver() {
+    private val log = Logbook.logger("sleep.live")
+
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != LiveSleep.ACTION_TICK) return
+        // Skew first, while the state still holds the alarm this tick answers: a late tick is the firmware
+        // holding the alarm, not the app missing it. Logging only; the schedule below is untouched.
+        val due = LiveSleep.nextDue(context.applicationContext)
+        val skewMs = if (due > 0) System.currentTimeMillis() - due else 0
+        if (due > 0 && skewMs > 90_000) log.w("tick late", "skew_s" to skewMs / 1_000)
+        else log.i("tick", "skew_s" to skewMs / 1_000)
         // Re-arm first: a tick that finds no bound service must not end the chain.
         runCatching { LiveSleep.schedule(context.applicationContext) }
         LiveSleepService.tick(context.applicationContext)

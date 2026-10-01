@@ -29,6 +29,7 @@ Writing and drawing the way BOOX's own apps do it, continued in Nib. The hub 0.7
 - **Nib: Diagnostics › Lab**, with a check for each new display call, and the answers logged for the next build.
 - **Nib Lab probes pen state 4 and the eraser painters.** One surface holds state 4 (which the firmware names erasing but never sends) and reads it back; another tries eraser painters 0 to 8, one band each. Sessions now set the SDK’s raw-drawing defaults on open (brush previews on, the eraser end previews Nib’s eraser track) and put them back on release, and the stray-session cleanup also tells the display its client died.
 - **For developers: `kit:ink` is now the suite's ink SDK.** It has the complete display interface: the pen session, several excluded areas at once, what each part of the pen draws, the style's own parameters, pictures pushed into the display's layer, refreshes in any update mode, the fast mode, the display's geometry and finger touch switched off in areas. On top of that sit a writing choreography every drawing surface shares, a palm guard, and a guard that undoes whatever a crashed process left on the display. `docs/09-ink.md` describes it, with the full call table and a ledger of every finding and where it's used.
+- **Sleep live ticks log their skew.** Each tick records how late past its scheduled minute it fired, so a firmware that holds alarms shows up as late ticks instead of looking like the app missed them. Logging only; the schedule is untouched.
 
 ### Changed
 
