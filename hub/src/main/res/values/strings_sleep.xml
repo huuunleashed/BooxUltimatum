@@ -149,6 +149,11 @@
     <string name="sl_live_turn_on">Turn on</string>
     <string name="sl_live_turn_off">Turn off</string>
     <string name="sl_live_step">Update every</string>
+    <string name="sl_live_first">First update after locking</string>
+    <string name="sl_live_first_settled">After Onyx settles</string>
+    <string name="sl_live_first_settled_detail">Waits a few seconds so Boox finishes drawing first</string>
+    <string name="sl_live_first_early">As soon as locked</string>
+    <string name="sl_live_first_early_detail">Shows sooner; the face can flash if Boox is still drawing</string>
     <string name="sl_live_charging">Only while charging</string>
     <string name="sl_live_charging_detail">No wake-ups on battery at all</string>
     <string name="sl_live_quiet">Not at night</string>

@@ -86,7 +86,9 @@ class LiveSleepService : AccessibilityService() {
         LiveSleep.schedule(this)
         // The first live face goes up as soon as Onyx has drawn its own and dozed, not only at the first alarm: the
         // charging bar is covered from the start and the face reads the same from the first minute of sleep.
-        main.postDelayed({ update(first = true) }, FIRST_DELAY_MS)
+        // Opt-in early start skips most of that wait; the update still waits for Onyx's display signal (or 3 s).
+        val delay = if (LivePrefs.load(this).earlyFirst) EARLY_DELAY_MS else FIRST_DELAY_MS
+        main.postDelayed({ update(first = true) }, delay)
     }
 
     private fun onScreenOn() {
@@ -183,6 +185,7 @@ class LiveSleepService : AccessibilityService() {
         private const val DISPLAY_ON = 2
         private const val FULL_REFRESH_EVERY = 6
         private const val FIRST_DELAY_MS = 4_000L
+        private const val EARLY_DELAY_MS = 1_000L
 
         @Volatile private var instance: LiveSleepService? = null
 

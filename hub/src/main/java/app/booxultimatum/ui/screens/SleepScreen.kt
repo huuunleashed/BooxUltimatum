@@ -582,6 +582,14 @@ private fun LivePlate(spec: SleepFaceSpec, shell: Boolean, readKey: Int) {
             app.booxultimatum.core.sleep.LivePrefs.STEPS.map { pluralStringResource(R.plurals.sl_minutes, it, it) to it },
             prefs.stepMin,
         ) { v -> save(prefs.copy(stepMin = v)) }
+        ToggleRow(
+            stringResource(R.string.sl_live_first),
+            stringResource(if (prefs.earlyFirst) R.string.sl_live_first_early_detail else R.string.sl_live_first_settled_detail),
+            prefs.earlyFirst,
+        ) {
+            Key(stringResource(R.string.sl_live_first_settled), primary = !prefs.earlyFirst, onClick = { save(prefs.copy(earlyFirst = false)) })
+            Key(stringResource(R.string.sl_live_first_early), primary = prefs.earlyFirst, onClick = { save(prefs.copy(earlyFirst = true)) })
+        }
         ToggleRow(stringResource(R.string.sl_live_charging), stringResource(R.string.sl_live_charging_detail), prefs.onlyCharging) {
             Key(stringResource(if (prefs.onlyCharging) R.string.sl_live_on else R.string.sl_live_off), onClick = { save(prefs.copy(onlyCharging = !prefs.onlyCharging)) })
         }
