@@ -126,8 +126,8 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
           <table>
             <thead><tr><th scope="col"></th><th scope="col">BooxUltimatum home</th><th scope="col">Boox home (<code>com.onyx</code>)</th></tr></thead>
             <tbody>
-              <tr><th scope="row">Memory (PSS), in front</th><td>64–132&nbsp;MB, about 60&nbsp;MB of it window buffers just after start</td><td>455&nbsp;MB</td></tr>
-              <tr><th scope="row">Memory (PSS), behind</th><td>29–44&nbsp;MB</td><td>n/a</td></tr>
+              <tr><th scope="row">Memory (PSS), in front</th><td>64 to 132&nbsp;MB, about 60&nbsp;MB of it window buffers just after start</td><td>455&nbsp;MB</td></tr>
+              <tr><th scope="row">Memory (PSS), behind</th><td>29 to 44&nbsp;MB</td><td>n/a</td></tr>
               <tr><th scope="row">CPU while idle on home</th><td>0.0&nbsp;%</td><td>0.2&nbsp;%</td></tr>
             </tbody>
           </table>
@@ -287,8 +287,8 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
           <table>
             <thead><tr><th scope="col">Finding</th><th scope="col">How it was read</th></tr></thead>
             <tbody>
-              <tr><td>Standby is already near the floor: 0–12&nbsp;mA. Boox's own sleep turns Wi-Fi off within 0.5&nbsp;s and suspends the processor within 30&nbsp;s.</td><td><code>batterystats</code> history, two unplugged sleeps</td></tr>
-              <tr><td>Screen-on use drew 430–640&nbsp;mA (12–17&nbsp;%/h), with the processor awake 93&nbsp;% of the screen-on time.</td><td><code>dumpsys batterystats</code> since unplug</td></tr>
+              <tr><td>Standby is already near the floor: 0 to 12&nbsp;mA. Boox's own sleep turns Wi-Fi off within 0.5&nbsp;s and suspends the processor within 30&nbsp;s.</td><td><code>batterystats</code> history, two unplugged sleeps</td></tr>
+              <tr><td>Screen-on use drew 430 to 640&nbsp;mA (12 to 17&nbsp;%/h), with the processor awake 93&nbsp;% of the screen-on time.</td><td><code>dumpsys batterystats</code> since unplug</td></tr>
               <tr><td><code>TIME_TICK</code> is a wakeup alarm on this firmware, and <code>sys.onyx.idledelay=2500</code> lets the processor sleep between page turns when nothing else keeps it up.</td><td><code>dumpsys alarm</code>, <code>getprop</code></td></tr>
               <tr><td>Doze starts disabled at every boot (<code>config_enableAutoPowerModes=false</code>). Turning it on changed little: no Doze transition was seen in two unplugged sleeps.</td><td><code>aapt2 dump resources</code>, <code>dumpsys deviceidle</code></td></tr>
               <tr><td>BOOXDrop (<code>com.onyx.easytransfer</code>) had used 8&nbsp;min 27&nbsp;s of CPU in 4.5&nbsp;h of uptime, the most of any Onyx process.</td><td><code>top</code>, TIME+ column</td></tr>
