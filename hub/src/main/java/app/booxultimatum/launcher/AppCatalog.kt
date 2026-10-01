@@ -200,8 +200,10 @@ class AppCatalog(private val context: Context) {
     }
 
     /**
-     * Packages Boox froze: they keep a launch entry and stock still opens them, but Android hides them from
+     * Packages Boox froze: they keep a launch entry stock still opens, but Android hides them from
      * launchers, so they never appear above. They are listed greyed instead of missing (issue #3).
+     * `getLaunchIntentForPackage` filters disabled packages out, so the launcher entry is resolved
+     * directly, including disabled components.
      */
     private fun frozenApps(seen: Set<String>): List<LaunchTarget> {
         val pm = context.packageManager
@@ -216,8 +218,16 @@ class AppCatalog(private val context: Context) {
         }.getOrDefault(emptyList())
         return installed.mapNotNull { app ->
             if (app.packageName in seen || app.enabled) return@mapNotNull null
-            val launch = runCatching { pm.getLaunchIntentForPackage(app.packageName) } .getOrNull() ?: return@mapNotNull null
-            val component = launch.component ?: return@mapNotNull null
+            val probe = android.content.Intent(android.content.Intent.ACTION_MAIN)
+                .addCategory(android.content.Intent.CATEGORY_LAUNCHER)
+                .setPackage(app.packageName)
+            val resolve = if (android.os.Build.VERSION.SDK_INT >= 33) {
+                pm.queryIntentActivities(probe, android.content.pm.PackageManager.ResolveInfoFlags.of(android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS.toLong()))
+            } else {
+                @Suppress("DEPRECATION")
+                pm.queryIntentActivities(probe, android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS)
+            }.firstOrNull { it.activityInfo != null } ?: return@mapNotNull null
+            val component = android.content.ComponentName(resolve.activityInfo.packageName, resolve.activityInfo.name)
             runCatching { virtualIcons["frozen:${app.packageName}"] = pm.getApplicationIcon(app.packageName) }
             val label = runCatching { pm.getApplicationLabel(app).toString() }.getOrDefault(app.packageName)
             val key = keyOf(component, user)
@@ -389,9 +399,13 @@ class AppCatalog(private val context: Context) {
             context.startActivity(android.content.Intent(t.intent).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
             true
         } else if (t.frozen) {
-            val launch = context.packageManager.getLaunchIntentForPackage(t.component.packageName)?.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-                ?: return@runCatching false
-            context.startActivity(launch)
+            // Disabled components don't resolve a launch intent, so go explicit; if the system
+            // refuses a truly disabled package this throws and the UI opens its details instead.
+            val explicit = android.content.Intent(android.content.Intent.ACTION_MAIN)
+                .addCategory(android.content.Intent.CATEGORY_LAUNCHER)
+                .setComponent(t.component)
+                .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(explicit)
             true
         } else {
             launcherApps.startMainActivity(t.component, t.user, null, null)
