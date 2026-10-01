@@ -27,8 +27,6 @@ data class LivePrefs(
     val quiet: Boolean = false,
     val quietFrom: Int = 23,
     val quietTo: Int = 7,
-    /** Show the first live face sooner after locking instead of waiting for Onyx to settle. Off until tried. */
-    val earlyFirst: Boolean = false,
 ) {
     companion object {
         val STEPS = listOf(1, 5, 10, 15, 30, 60)
@@ -43,14 +41,12 @@ data class LivePrefs(
                 quiet = p.getBoolean("quiet", false),
                 quietFrom = p.getInt("quiet_from", 23).coerceIn(0, 23),
                 quietTo = p.getInt("quiet_to", 7).coerceIn(0, 23),
-                earlyFirst = p.getBoolean("early_first", false),
             )
         }
 
         fun save(c: Context, v: LivePrefs) = c.getSharedPreferences(FILE, Context.MODE_PRIVATE).edit {
             putBoolean("enabled", v.enabled).putInt("step", v.stepMin).putBoolean("only_charging", v.onlyCharging)
                 .putBoolean("quiet", v.quiet).putInt("quiet_from", v.quietFrom).putInt("quiet_to", v.quietTo)
-                .putBoolean("early_first", v.earlyFirst)
         }
     }
 }

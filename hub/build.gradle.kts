@@ -14,8 +14,8 @@ android {
         applicationId = "app.booxultimatum"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 19
-        versionName = "0.7.1-test.2"
+        versionCode = 20
+        versionName = "0.7.1-test.3"
     }
 
     @Suppress("UNCHECKED_CAST")
