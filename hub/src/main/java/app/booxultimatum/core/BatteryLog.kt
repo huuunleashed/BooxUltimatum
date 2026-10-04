@@ -367,7 +367,11 @@ object BatteryLog {
         val segs = s.zipWithNext { a, b -> LogSegment(a, b) }.filter { it.valid }
         val asleep = segs.filter { it.screenOff }
         val awake = segs.filter { !it.screenOff }
-        val capacity = s.lastOrNull { it.chargeMah != null && it.level >= 50 }?.let { it.chargeMah!! * 100 / it.level } ?: 3700.0
+        // The charge counter can read 0 (a fresh boot, a counter reset); a zero capacity would make every rate infinite.
+        val capacity = s.lastOrNull { it.chargeMah != null && it.level >= 50 }
+            ?.let { it.chargeMah!! * 100.0 / it.level }
+            ?.takeIf { it > 0.0 }
+            ?: 3700.0
         fun rate(list: List<LogSegment>): Double? {
             val h = list.sumOf { it.hours }
             if (h < 0.5) return null

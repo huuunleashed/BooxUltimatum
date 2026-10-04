@@ -3,8 +3,10 @@ package app.booxultimatum.ui.screens
 import android.Manifest
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.os.Build
 import android.text.format.Formatter
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
@@ -177,6 +179,15 @@ fun SleepScreen(readKey: Int, accessEvents: Int) {
         if (granted) SleepScheduler.watchCalendar(context)
         calendarKey++
     }
+    // Over Transparent without Shizuku: pictures may be read, and Android may be asked to let the app write the sticker.
+    var stickerKey by remember { mutableIntStateOf(0) }
+    val access = rememberReading(Triple(readKey, stickerKey, spec.mode)) { SleepPublisher.access(context) }
+    val picturePermission = if (Build.VERSION.SDK_INT >= 33) Manifest.permission.READ_MEDIA_IMAGES else Manifest.permission.READ_EXTERNAL_STORAGE
+    val askPictures = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { stickerKey++ }
+    val askStickerWrite = rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { stickerKey++ }
+    val stickers = rememberReading(Pair(readKey, stickerKey)) { SleepPublisher.stickerPaths(context) }.orEmpty()
+    // Shizuku first; the app's own granted access to Boox's sticker is the way without it.
+    val canWrite = access?.writable ?: shell
 
     // The sheet is drawn by the same renderer as the published file, at half size: every size is a fraction of the short side.
     var preview by remember { mutableStateOf<ImageBitmap?>(null) }
@@ -251,8 +262,10 @@ fun SleepScreen(readKey: Int, accessEvents: Int) {
                 Key(
                     stringResource(if (spec.active) R.string.sl_apply_again else R.string.sl_apply),
                     primary = true,
-                    enabled = !busy && (spec.mode == SleepMode.Image || shell),
-                    onClick = { act(context.getString(R.string.sl_applied)) { SleepStudio.apply(context) } },
+                    enabled = !busy && (spec.mode == SleepMode.Image || canWrite),
+                    onClick = {
+                        act(context.getString(if (spec.mode == SleepMode.Image) R.string.sl_applied else R.string.sl_applied_overlay)) { SleepStudio.apply(context) }
+                    },
                 )
                 Key(stringResource(R.string.sl_sleep_now), enabled = !busy && shell, onClick = { act(null) { SleepStudio.sleepNow(context) } })
                 ConfirmKey(
@@ -477,6 +490,7 @@ fun SleepScreen(readKey: Int, accessEvents: Int) {
                 SleepPlate(stringResource(R.string.sl_boox)) {
                     if (spec.mode == SleepMode.Image) {
                         Prose(stringResource(R.string.sl_boox_image), modifier = Modifier.padding(vertical = Space.s))
+                        Text(stringResource(R.string.sl_boox_leftover), style = MaterialTheme.typography.bodySmall, color = Ink.Legend)
                     } else {
                         Prose(stringResource(R.string.sl_boox_overlay_intro), modifier = Modifier.padding(vertical = Space.s))
                         listOf(R.string.sl_step_1, R.string.sl_step_2, R.string.sl_step_3, R.string.sl_step_4).forEachIndexed { i, res ->
@@ -486,7 +500,44 @@ fun SleepScreen(readKey: Int, accessEvents: Int) {
                             }
                         }
                         Spacer(Modifier.height(Space.s))
+                        Prose(stringResource(R.string.sl_boox_overlay_style), color = Ink.Legend)
+                        Spacer(Modifier.height(Space.s))
                         Key(stringResource(R.string.sl_prepare), enabled = !busy, onClick = { act(context.getString(R.string.sl_prepared)) { SleepStudio.prepareSticker(context) } })
+                        Spacer(Modifier.height(Space.s))
+                        Text(stringResource(R.string.sl_write_title), style = MaterialTheme.typography.titleSmall)
+                        Spacer(Modifier.height(Space.xs))
+                        val a = access
+                        when {
+                            a == null -> Unit
+                            a.shell -> Prose(stringResource(R.string.sl_write_shell), color = Ink.Legend)
+                            !a.pictures -> {
+                                Prose(stringResource(R.string.sl_write_ask_pictures), color = Ink.Legend)
+                                Spacer(Modifier.height(Space.s))
+                                Key(stringResource(R.string.sl_write_allow_pictures), onClick = { askPictures.launch(picturePermission) })
+                            }
+                            a.row == null -> Prose(stringResource(R.string.sl_write_no_row), color = Ink.Legend)
+                            a.writable -> Prose(stringResource(R.string.sl_write_ready), color = Ink.Legend)
+                            else -> {
+                                Prose(stringResource(R.string.sl_write_ask_consent), color = Ink.Legend)
+                                Spacer(Modifier.height(Space.s))
+                                Key(stringResource(R.string.sl_write_allow_consent), enabled = !busy, onClick = {
+                                    scope.launch {
+                                        val sender = withContext(Dispatchers.IO) { SleepPublisher.writeRequest(context) }
+                                        if (sender == null) error = context.getString(R.string.sl_write_denied)
+                                        else askStickerWrite.launch(IntentSenderRequest.Builder(sender).build())
+                                    }
+                                })
+                            }
+                        }
+                        if (stickers.isNotEmpty()) {
+                            Text(
+                                stringResource(R.string.sl_write_file, stickers.joinToString(", ") { it.substringAfterLast('/') }),
+                                style = MaterialTheme.typography.bodySmall, color = Ink.Legend,
+                                modifier = Modifier.padding(top = Space.xs),
+                            )
+                        }
+                        Spacer(Modifier.height(Space.s))
+                        Prose(stringResource(R.string.sl_write_scale), color = Ink.Legend)
                     }
                     Spacer(Modifier.height(Space.s))
                     Prose(stringResource(R.string.sl_boox_overlay_settings), color = Ink.Legend)

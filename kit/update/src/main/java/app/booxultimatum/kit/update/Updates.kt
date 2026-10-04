@@ -55,7 +55,12 @@ sealed interface UpdatePhase {
 }
 
 data class AppUpdate(val app: SuiteApp, val installed: InstalledApp?, val phase: UpdatePhase = UpdatePhase.Idle, val offered: Release? = null) {
-    val busy: Boolean get() = phase is UpdatePhase.Checking || phase is UpdatePhase.Downloading || phase is UpdatePhase.Verifying || phase is UpdatePhase.Installing
+    /**
+     * [UpdatePhase.Confirming] counts as busy: Android's confirmation screen is up, and offering Install again there
+     * would start a second download and a second installer session for one release.
+     */
+    val busy: Boolean get() = phase is UpdatePhase.Checking || phase is UpdatePhase.Downloading || phase is UpdatePhase.Verifying ||
+        phase is UpdatePhase.Installing || phase is UpdatePhase.Confirming
     val canInstall: Boolean get() = offered != null && offered.let { it.checksum != null || it.checksumUrl != null } && !busy
 }
 
@@ -138,7 +143,9 @@ object Updates {
         AppWork.scope.launch {
             val result = runCatching { withContext(Dispatchers.IO) { ReleaseFeed.parse(httpText(app, ReleaseFeed.API, "application/vnd.github+json")) } }
             val now = System.currentTimeMillis()
-            prefs(app).edit { putLong(KEY_LAST_CHECK, now) }
+            // Only a answered check counts: stamping the time before the result would let one failed check (no
+            // network, GitHub down) keep automatic checks quiet for another day.
+            if (result.isSuccess) prefs(app).edit { putLong(KEY_LAST_CHECK, now) }
             result.onSuccess { releases ->
                 log.i("checked", "releases" to releases.size, "automatic" to automatic)
                 val channel = _state.value.channel

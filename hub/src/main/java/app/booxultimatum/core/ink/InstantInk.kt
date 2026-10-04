@@ -199,6 +199,8 @@ class InkService : Service() {
     private lateinit var holds: HoldPolicy
     private var pen: PenInput? = null
     private var penRestarts = 0
+    /** When the current pen reader started, so a reader that lived a while counts as healthy again. */
+    private var penSince = 0L
     private var prefs = InkPrefs()
     private val keyguard by lazy { getSystemService(KeyguardManager::class.java) }
 
@@ -323,6 +325,7 @@ class InkService : Service() {
         val p = PenInput(this, onLost = { handler.post { penLost() } }) { e -> handler.post { onPen(e) } }
         if (!p.start()) return false
         pen = p
+        penSince = SystemClock.elapsedRealtime()
         return true
     }
 
@@ -331,6 +334,9 @@ class InkService : Service() {
         pen = null
         holds.near = false; holds.touching = false
         if (open) holds.end(HoldPolicy.End.PenLost)
+        // A reader that lived a while was fine, so the count starts again: five losses over a day must not leave
+        // Instant ink dead for the rest of the service's life.
+        if (penSince != 0L && SystemClock.elapsedRealtime() - penSince > HEALTHY_PEN_MS) penRestarts = 0
         if (penRestarts++ >= MAX_PEN_RESTARTS) { InstantInk.setStatus(InstantInk.Status.NoPen); return }
         handler.postDelayed({
             if (pen != null || !prefs.enabled) return@postDelayed
@@ -542,5 +548,7 @@ class InkService : Service() {
         /** Packages that run their own pen sessions: Boox's apps. */
         private const val BOOX_PREFIX = "com.onyx"
         private const val MAX_PEN_RESTARTS = 5
+        /** A reader that lives this long is counted as healthy, and the restart count starts again. */
+        private const val HEALTHY_PEN_MS = 60_000L
     }
 }

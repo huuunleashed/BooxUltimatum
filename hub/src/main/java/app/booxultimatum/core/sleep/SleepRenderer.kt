@@ -57,6 +57,12 @@ internal class SleepPage(
 
     /** No ink comes closer than this to any edge of the panel (177 px on the tablet). */
     val margin = short * 0.095f
+    /**
+     * How far a [plate]'s soft edge reaches past its rectangle: the grown edge (`0.014 s`) plus about three sigma of
+     * its blur ([BlurMaskFilter] turns a radius of `0.022 s` into a Gaussian of `0.0127 s`, and three sigma of that is
+     * where the last pixel fades out). Measured on the panel-size renders in `SleepOverlayTest`.
+     */
+    val plateHalo = s * 0.055f
     /** Boox draws its clock top centre, over roughly the top 22 % of the image, when its Clock style isn't None. */
     val clockZoneBottom = h * 0.22f
 
@@ -73,6 +79,18 @@ internal class SleepPage(
         w - margin,
         h - margin - s * 0.014f,
     )
+
+    /**
+     * The area a sticker plate may fill: the centred square that survives Boox's centre-crop in either rotation
+     * ([SleepCrop]), less the reach of the plate's soft edge. It sits inside [frame], so a plate placed here also
+     * keeps the panel's margins, and its top edge lands just below Boox's clock zone.
+     */
+    fun safe(): RectF {
+        val side = SleepCrop.safeSide(short)
+        val left = (w - side) / 2f
+        val top = (h - side) / 2f
+        return RectF(left, top, left + side, top + side).also { it.inset(plateHalo, plateHalo) }
+    }
 
     // ---------- Paints ----------
 
@@ -271,6 +289,25 @@ internal class SleepPage(
             addRoundRect(r, floatArrayOf(radius, radius, radius, radius, 0f, 0f, 0f, 0f), Path.Direction.CW)
         }
     }
+}
+
+/**
+ * Where a sticker plate may sit, worked out from what Boox does with the file.
+ *
+ * The Transparent style's sticker is decoded at the panel's size in the rotation the tablet sleeps in, with
+ * `ImageView.ScaleType.CENTER_CROP` (`PrepareTransparentDreamAction` and `DreamSettingBean`, read from the decompiled
+ * `com.onyx`): a 1860 × 2480 sheet shown at 2480 × 1860 is scaled to 2480 × 3307 and cut back to the middle 1860
+ * rows, and the other way round. What survives either rotation is therefore the centred square of 0.75 of the short
+ * side — 1395 px of the panel's 1860 — so one sticker file serves both orientations if every plate stays inside it.
+ */
+internal object SleepCrop {
+    /** The share of the short side that survives a centre-crop into the other orientation: 1395 of 1860. */
+    const val SAFE_FRACTION = 0.75f
+
+    fun safeSide(short: Float): Float = short * SAFE_FRACTION
+
+    /** The first pixel of [long] that survives, 542 px of the panel's 2480. Pure arithmetic, so it tests on the JVM. */
+    fun keptStart(long: Float, short: Float): Float = (long - safeSide(short)) / 2f
 }
 
 /** Entry point: pure drawing from a spec and its data into a bitmap of the target size. No I/O, no Context. */

@@ -110,8 +110,8 @@ internal object DayFaces {
             }
             if ("battery" in on) tiles += Tile(1, 1f) { r ->
                 val lb = frameOf(r, data.labels.battery)
-                val base = value(r, lb, fmt("%d %%", data.battery))
-                gauge(r.left + pd, r.right - pd, base + s * 0.028f, s * 0.018f, data.battery / 100f)
+                val base = value(r, lb, if (data.batteryKnown) fmt("%d %%", data.battery) else data.batteryText)
+                if (data.batteryKnown) gauge(r.left + pd, r.right - pd, base + s * 0.028f, s * 0.018f, data.battery / 100f)
                 detail(r, if (data.charging) data.labels.charging else live.used ?: "")
             }
             if ("asleep" in on) tiles += Tile(1, 1f) { r ->

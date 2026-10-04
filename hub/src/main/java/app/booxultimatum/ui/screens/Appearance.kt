@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.booxultimatum.R
@@ -121,7 +122,7 @@ fun AppearanceScreen(readKey: Int, compact: Boolean, onOpenFonts: () -> Unit) {
                     if (slots.size > shown.size || allSlots) {
                         Spacer(Modifier.height(Space.s))
                         Key(
-                            if (allSlots) stringResource(R.string.ap_fewer_icons) else stringResource(R.string.ap_all_icons, slots.size),
+                            if (allSlots) stringResource(R.string.ap_fewer_icons) else pluralStringResource(R.plurals.ap_all_icons, slots.size, slots.size),
                             onClick = { allSlots = !allSlots },
                         )
                     }

@@ -56,6 +56,9 @@ fun TweaksScreen(readKey: Int, accessKey: Int, compact: Boolean, onReadAgain: ()
     val key = Triple(readKey, accessKey, changeKey)
     val access = rememberReading(key) { PrivilegeStatus.check(context) to Privileged.ready() }
     val states = rememberReading(key) { timedRead("tweaks") { Catalog.all.associate { it.id to it.state(context) } } }
+    // Which tweaks the app itself changed, read once: asking per row would read the journal's preferences in
+    // composition, once for every row on the page.
+    val recorded = rememberReading(key) { Catalog.all.filter { it.hasRecord(context) }.map { it.id }.toSet() }.orEmpty()
     // Fresh readings of single tweaks after Apply/Undo, so a row answers at once instead of waiting for a full re-read.
     val fresh = remember(key) { mutableStateMapOf<String, TweakState>() }
     val journal = rememberReading(Pair(key, journalKey)) { Journal.entries(context).take(10) }
@@ -103,6 +106,7 @@ fun TweaksScreen(readKey: Int, accessKey: Int, compact: Boolean, onReadAgain: ()
                             available = t.available(status, ready),
                             busy = busy == t.id,
                             anyBusy = busy != null,
+                            recorded = t.id in recorded,
                             error = errors[t.id],
                             onToggle = { undo -> run(t, undo) },
                             onOpenAccess = onOpenAccess,
@@ -147,14 +151,14 @@ private fun TweakRow(
     available: Boolean,
     busy: Boolean,
     anyBusy: Boolean,
+    recorded: Boolean,
     error: String?,
     onToggle: (undo: Boolean) -> Unit,
     onOpenAccess: () -> Unit,
 ) {
     val on = state == TweakState.On
-    val context = androidx.compose.ui.platform.LocalContext.current
     // Already on without BooxUltimatum having changed it: nothing of ours to undo.
-    val preset = on && tweak.undoNeedsRecord && !tweak.hasRecord(context)
+    val preset = on && tweak.undoNeedsRecord && !recorded
     Column(Modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth().padding(vertical = Space.m), verticalAlignment = Alignment.Top) {
             Lamp(on, Modifier.padding(top = 5.dp))

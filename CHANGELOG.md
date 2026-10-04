@@ -4,9 +4,9 @@ All notable changes to BooxUltimatum. Newest first. The project follows [Semanti
 
 ## [Unreleased]
 
-Writing and drawing the way BOOX's own apps do it, continued in Nib. The hub 0.7.0 below keeps what this track already proved on the tablet (the 1-minute live step and batched instant ink). Nothing below has been tried on the tablet yet unless it says so.
+Writing and drawing the way BOOX's own apps do it, continued in Nib. Nothing below has been tried on the tablet yet unless it says so.
 
-### Added
+### Changed
 
 - **Nib writes the way BOOX's own apps do.**
   - Quick strokes follow each other with nothing reaching the panel in between. The display holds Nib's frames for the whole writing session, and Nib's ink replaces the preview only at a break: a touch on a control, a panel, undo, a tool change, a gesture.
@@ -29,10 +29,6 @@ Writing and drawing the way BOOX's own apps do it, continued in Nib. The hub 0.7
 - **Nib: Diagnostics › Lab**, with a check for each new display call, and the answers logged for the next build.
 - **Nib Lab probes pen state 4 and the eraser painters.** One surface holds state 4 (which the firmware names erasing but never sends) and reads it back; another tries eraser painters 0 to 8, one band each. Sessions now set the SDK’s raw-drawing defaults on open (brush previews on, the eraser end previews Nib’s eraser track) and put them back on release, and the stray-session cleanup also tells the display its client died.
 - **For developers: `kit:ink` is now the suite's ink SDK.** It has the complete display interface: the pen session, several excluded areas at once, what each part of the pen draws, the style's own parameters, pictures pushed into the display's layer, refreshes in any update mode, the fast mode, the display's geometry and finger touch switched off in areas. On top of that sit a writing choreography every drawing surface shares, a palm guard, and a guard that undoes whatever a crashed process left on the display. `docs/09-ink.md` describes it, with the full call table and a ledger of every finding and where it's used.
-- **Sleep live ticks log their skew.** Each tick records how late past its scheduled minute it fired, so a firmware that holds alarms shows up as late ticks instead of looking like the app missed them. Logging only; the schedule is untouched.
-
-### Changed
-
 - **Nib's pens are calibrated to BOOX's own, measured on the tablet.**
   - The fountain pen thins with pressure as BOOX's does (p to the power of twice its sensitivity), a little more when you write fast, and never below 2 px.
   - The brush follows the square root of pressure, and the marker thins to 80 % at a light touch.
@@ -42,6 +38,43 @@ Writing and drawing the way BOOX's own apps do it, continued in Nib. The hub 0.7
   - Strokes already drawn keep their look. Drawings are now format 1.2 and open unchanged.
 - **Thin pencils and fineliners are previewed in the plain pencil style at every width** (checked on the tablet from 0.5 to 3 px), so their preview is no longer thicker than their ink.
 - **Nib ignores a resting pen's repeated samples**, as BOOX's pen reader does, which steadies the ends of strokes. A slow, careful line keeps its shape.
+
+## [0.7.1] (2026-10-04)
+
+The transparent sleep screen, made to fit the panel it lands on, and what a full sweep of the code and the tablet turned up. Tested on a Note Air6 C with firmware 4.3 (Android 16, build `0916`): the plate Over Transparent writes was measured on the tablet and sits entirely inside the band Boox keeps — before this release 76 % of it was cut away when the tablet slept on its side — and both orientations publish the picture in their own shape. The transparent sleep screen itself, and the route that needs no Shizuku, are still to be seen on the tablet: Boox's own screensaver style has to be chosen by hand for the first.
+
+### Added
+
+- **Over Transparent keeps clear of what Boox cuts away.** Boox decodes the sticker at the panel's size in the rotation the tablet sleeps in and keeps only the middle 0.75 of its long side (read from the decompiled `com.onyx`), so a plate near an edge disappeared when the tablet slept on its side. Every plate is now drawn inside the square that survives either rotation, its soft edge included. One sticker file is right in both orientations, and a plate no longer collides with Boox's clock.
+- **Over Transparent without Shizuku.** The plate is written through Shizuku when it runs, and otherwise by the app itself: allowing pictures on the Sleep page lets it find the sticker Boox saved, and one tap asks Android for permission to write that picture (`MediaStore.createWriteRequest`). The page says which route is in use and what it needs. The write is a copy beside the target and a rename, and the size is read back afterwards, so Boox never decodes half a picture.
+- **A re-pick in Boox is noticed.** A newer `sticker_*.png` than the one the app remembers means the owner chose again in Boox: the app follows the new sticker, puts the old file back the way Boox made it, and keeps a list of every sticker it has written, so Restore returns all of them rather than only the newest.
+- **The Sleep page names the sticker file it writes**, and points at Boox's own *fit* scale setting for the style, which shows the whole sheet instead of the middle of it.
+- **A plate render test** (`hub/src/androidTest/.../SleepOverlayTest.kt`) paints every plate at the panel's size, checks that no ink at all lands outside the band Boox keeps, and writes a PNG per plate — the sheet, and the same sheet cropped the way Boox crops it — so the composition can be looked at without a sleep. `.\gradlew.bat :hub:connectedDebugAndroidTest` runs it on a device or emulator.
+- **Tests for the crop arithmetic** (`SleepCropTest`) and for what counts as a busy update (`AppUpdateTest`).
+
+### Changed
+
+- **Sleep live ticks log their skew.** Each tick records how late past its scheduled minute it fired, so a firmware that holds alarms shows up as late ticks instead of looking like the app missed them. Logging only; the schedule is untouched.
+- **Over Transparent does no work it cannot use.** A sticker plate no longer renders and encodes the other orientation, and a rotation no longer writes the sticker through Shizuku: the plate is already right in both rotations.
+- **The README, the landing page, the design doc and the evidence log** now carry the crop rule, the three `onyx.action.SCREENSAVER` types, where the Transparent snapshot is taken and what the dream's refresh does and does not reload, each with how it was read.
+
+### Fixed
+
+- **The Sleep page said a plate was live while nothing of ours was on the screen.** Boox's screensaver style is Boox's own choice and the app can't read it, so applying Over Transparent now says so plainly instead of claiming the face is the sleep screen, and the mode's steps warn that a switch from Sleep image leaves the last picture in place — a portrait picture on a tablet that sleeps on its side is scaled up and cropped, which is what the owner saw on the tablet while this release was tested.
+- **Two BooxUltimatum pictures could pile up in the gallery.** A picture the app still owns is adopted again when its remembered row is lost, rather than a `name (1).png` copy being made beside it; and when the plain name was taken by a picture the app can no longer write (an older copy's row, left by the move to the release-signed build) the reason is logged and the Sleep page says the older file is the owner's to delete in Files.
+- **Instant ink could die for the rest of the session.** The pen reader was restarted at most five times and the count was never reset, so five losses spread over a day left the service reporting *No pen* for good. A reader that lives a minute now counts as healthy and starts the count again.
+- **Instant ink's notification could not be seen.** It carries the only *Turn off* and *Recover screen* keys outside the app, and Android 13+ hides notifications unless the owner allows them — which the hub never asked for. The permission is now declared and asked for when Instant ink is switched on, with a line on the Ink page while it is missing.
+- **Restore put the tablet in a state it did not describe.** In Over Transparent mode, Restore switched Boox off the Transparent style and cleared the journal before the sticker was copied back, so a failure left the plate showing while the app said it was off. Boox's own sticker now goes back first, and the style is only given back in Sleep image mode, where the app set it.
+- **One failed update check silenced updates for a day.** The last-check time was written before the result was known, so an offline check counted as a check. Only an answered one does now.
+- **Battery drain could be divided by zero.** When the charge counter read 0 the derived capacity was 0 too, and every rate became infinite. A zero capacity now falls back to the rated one.
+- **A face could print "0 %" for a battery it could not read.** An unsupported property answers `Integer.MIN_VALUE`, which the reading clamped to 0. It is now treated as unknown: the battery line says so and the gauges and figures are left out.
+- **Updates while asleep left about 18 MB of garbage per refresh.** Each face was drawn into a fresh panel-sized bitmap that was never reused or freed; two buffers now alternate, so a whole night allocates two.
+- **A failed rotation-ahead render was invisible.** The cache write returns silently on a rename failure, so the fault was never seen; it is logged now.
+- **Two taps on Install could start two installer sessions** for one release: Android's confirmation screen did not count as busy.
+- **The home screen's loader thread outlived the home screen.** Its queue holds work that captures the activity, so a finished home screen was kept alive by a parked thread; the model now closes both it and its handler.
+- **The Tweaks page read the journal once per row while drawing**, on the main thread. It is read once for the page now.
+- **The landing page claimed more than the README.** It said instant ink was "confirmed" on a Go 10.3 Lumi and a Note Air 2 Plus, where testers had reported it had no effect; it now says what the README says. Its 0.6 label for Nib, and its "debug-signed for now" note about releases, were stale too.
+- **The README disagreed with itself on the version** (badge 0.6.0, status line 0.5, download 0.7.0) and on signing, and `PRODUCT.md` still said no first-party battery measurements existed. All three now read as the released truth.
 
 ## [0.7.0] (2026-10-01)
 

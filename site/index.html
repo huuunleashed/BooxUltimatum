@@ -55,7 +55,7 @@
         <a class="key solid" href="https://github.com/huuunleashed/BooxUltimatum">Source on GitHub</a>
         <a class="key" href="docs.html">How it works</a>
       </div>
-      <p class="status-line"><span class="lamp" aria-hidden="true"></span><span><strong>0.7 is out.</strong> It runs daily on the author's own tablet (Note Air6 C, firmware 4.3), and instant ink is confirmed on a Go 10.3 Lumi and a Note Air 2 Plus by testers. <a href="https://github.com/huuunleashed/BooxUltimatum/releases">Download the APK</a>, and the app updates itself.</span></p>
+      <p class="status-line"><span class="lamp" aria-hidden="true"></span><span><strong>0.7 is out.</strong> It runs daily on the author's own tablet (Note Air6 C, firmware 4.3), where instant ink works. On a Go 10.3 Lumi and a Note Air 2 Plus, testers reported that it had no effect; those reports are open. <a href="https://github.com/huuunleashed/BooxUltimatum/releases">Download the APK</a>, and the app updates itself.</span></p>
     </div>
     <figure>
       <div class="panel">
@@ -106,7 +106,7 @@
       <dl class="readings" aria-label="What it has been verified on">
         <div><dt>Verified on</dt><dd>BOOX Note Air6 C<span>One tablet, the author's own</span></dd></div>
         <div><dt>Firmware</dt><dd>4.3, Android 16<span><code>4.3-rel_0817</code>, built 2026-08-17</span></dd></div>
-        <div><dt>Other models</dt><dd>Partly confirmed<span>Instant ink on a Go 10.3 Lumi and a Note Air 2 Plus; home also runs on a Bigme B7</span></dd></div>
+        <div><dt>Other models</dt><dd>Partly confirmed<span>Instant ink had no effect on a Go 10.3 Lumi or a Note Air 2 Plus (reports open); home also runs on a Bigme B7</span></dd></div>
         <div><dt>Bootloader</dt><dd>Locked, and it stays locked</dd></div>
         <div><dt>Status</dt><dd>0.7<span>Steadier sleep and ink, frozen apps stay visible</span></dd></div>
         <div><dt>License</dt><dd>GPL-3.0-or-later</dd></div>
@@ -180,7 +180,7 @@
         <ul class="ticks">
           <li>A preview stroke lands at once; after a pause you choose, the app's own brush takes its place. A session kept ready means even the first stroke after unlocking gets it. Quick strokes share one preview, as in Boox Notes.</li>
           <li>The app isn't modified in any way. No root and no Shizuku, only usage access, allowed on the tablet, so it knows which app is in front. Where the switch refuses, the page names the computer command. A Quick Settings switch turns it on and off.</li>
-          <li>Still being tuned: the preview is black only. Tried by the author in Sketchbook; confirmed by testers on a Go 10.3 Lumi and a Note Air 2 Plus. The Ink page shows what it found, with a pen test.</li>
+          <li>Still being tuned: the preview is black only. Checked by the author with a real pen in Sketchbook; on a Go 10.3 Lumi and a Note Air 2 Plus testers found it had no effect, and the Ink page now says why. The Ink page shows what it found, with a pen test.</li>
         </ul>
         <a class="more" href="docs.html#ink">What the display system is asked to do</a>
       </div>
@@ -194,7 +194,7 @@
 
     <article class="feature" aria-labelledby="f-nib">
       <div class="text">
-        <h3 id="f-nib">Nib, for drawing <span class="tag">New in 0.6</span></h3>
+        <h3 id="f-nib">Nib, for drawing <span class="tag">App of its own</span></h3>
         <p>Nib draws the way Boox Notes writes: the display paints each stroke under the nib at once, and Nib's own rendering takes its place the moment you lift. It's an app of its own, which BooxUltimatum's Suite page installs and updates, and it works without it.</p>
         <ul class="ticks">
           <li>Pens, pencils, markers, brushes and textured charcoal, each previewed in the closest of the display's own styles, and widths down to a fraction of a millimetre.</li>
@@ -267,7 +267,7 @@
         <pre><code><span class="c"># JDK 21 and the Android SDK (platform 36)</span>
 .\gradlew.bat assembleRelease
 adb install -r hub\build\outputs\apk\release\hub-release.apk</code></pre>
-        <p>Release builds from source are debug-signed for now, so they update an installed copy in place. The <a href="https://github.com/huuunleashed/BooxUltimatum#install">README</a> has the full steps, and how to go back to the Boox home.</p>
+        <p>Without a signing key the build is debug-signed, which is fine for a tablet that has no BooxUltimatum yet. A tablet already running the published release needs a build signed with the same key, or Android refuses the update: the <a href="https://github.com/huuunleashed/BooxUltimatum#install">README</a> has the steps, and how to go back to the Boox home.</p>
       </div>
     </div>
   </section>

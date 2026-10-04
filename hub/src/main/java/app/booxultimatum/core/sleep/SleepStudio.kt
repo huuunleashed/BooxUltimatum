@@ -14,6 +14,7 @@ import androidx.core.graphics.createBitmap
 import app.booxultimatum.R
 import app.booxultimatum.core.Journal
 import app.booxultimatum.core.exec.Privileged
+import app.booxultimatum.kit.log.Logbook
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -70,6 +71,7 @@ object SleepPhoto {
  * the home screen's process doesn't carry 18 MB between refreshes.
  */
 object SleepStudio {
+    private val log = Logbook.logger("sleep.studio")
     private const val SCREEN_JOURNAL = "sleep.screen"
     private val mutex = Mutex()
     private val main = Handler(Looper.getMainLooper())
@@ -125,7 +127,12 @@ object SleepStudio {
         val f = cacheFile(context, w, h)
         val tmp = File(f.parentFile, f.name + ".tmp")
         tmp.writeBytes(bytes)
-        if (!tmp.renameTo(f)) { tmp.delete(); return }
+        if (!tmp.renameTo(f)) {
+            // Without this the rotation-ahead cache would simply miss and every turn would re-render, unseen.
+            tmp.delete()
+            log.w("cache write failed", "size" to "${w}x$h", "bytes" to bytes.size)
+            return
+        }
         SleepStore.put(context, "cache_${sizeKey(w, h)}", JSONObject().put("key", key).put("spec", specHash(spec)).put("format", format.name).put("install", installStamp(context)).toString())
     }
 
@@ -142,8 +149,10 @@ object SleepStudio {
      * Renders the face for the other orientation and keeps it encoded, unless the one kept is already current. Onyx
      * centre-crops the picture to the rotation the tablet sleeps in, so the second orientation has to be ready before
      * anyone turns the tablet; rendering it only after the turn left seconds in which a sleep showed a cropped face.
+     * A sticker plate needs none of this: it is drawn inside the band Onyx keeps in both rotations.
      */
     private fun prepareOther(context: Context, spec: SleepFaceSpec, exact: Boolean, w: Int, h: Int) {
+        if (spec.mode == SleepMode.Overlay) return
         runCatching {
             val alt = job(context, spec, exact, 1f, size = h to w)
             if (cached(context, alt.w, alt.h, spec)?.key == alt.key) return
@@ -173,8 +182,12 @@ object SleepStudio {
         SleepMode.Overlay -> SleepPublisher.writeSticker(context, bytes, redetect = announce).getOrThrow()
     }
 
-    /** Whether the picture Onyx will show was made for the panel's rotation right now. */
+    /**
+     * Whether the picture Onyx will show was made for the panel's rotation right now. A sticker plate is drawn inside
+     * the band Onyx keeps in either rotation, so for it the answer is always yes: nothing has to be swapped.
+     */
     fun matchesRotation(context: Context): Boolean {
+        if (SleepStore.load(context).mode == SleepMode.Overlay) return true
         val (w, h) = panelSize(context)
         return SleepStore.get(context, "published_size") == sizeKey(w, h)
     }
@@ -358,7 +371,9 @@ object SleepStudio {
     suspend fun apply(context: Context, exact: Boolean = false): Result<SleepStatus> {
         val app = context.applicationContext
         val spec = SleepStore.load(app)
-        if (spec.mode == SleepMode.Overlay && !Privileged.ready()) return Result.failure(IllegalStateException(app.getString(R.string.sl_err_needs_shizuku)))
+        if (spec.mode == SleepMode.Overlay && !SleepPublisher.canWriteSticker(app)) {
+            return Result.failure(IllegalStateException(app.getString(R.string.sl_err_no_write)))
+        }
         SleepStore.save(app, spec.copy(active = true))
         // Onyx keeps its style in private storage we can't read, so there is no prior value to record, only the fact.
         Journal.rememberOriginal(app, SCREEN_JOURNAL, JSONObject().put("boox", "unreadable"))
@@ -398,22 +413,26 @@ object SleepStudio {
     }
 
     /**
-     * Hands the sleep screen back to Boox: the Boox default picture through the same broadcast, Boox's own sticker
-     * copied back, our pictures removed and refreshes stopped. The style the user had before can't be read, so the
-     * screen offers Boox's screensaver settings next to this.
+     * Hands the sleep screen back to Boox: Boox's own sticker copied back first, then the Boox default picture, our
+     * pictures removed and refreshes stopped. The sticker goes first on purpose: if it can't be written (no Shizuku,
+     * no granted access) the studio stays on, so the app never says it is off while the plate is still showing. The
+     * style the user had before can't be read, so the screen offers Boox's screensaver settings next to this.
      */
     suspend fun restore(context: Context): Result<Unit> = withContext(Dispatchers.Default) {
         val app = context.applicationContext
         val r = runCatching {
+            val mode = SleepStore.load(app).mode
+            // The plate goes back first: if the sticker can't be written (no Shizuku, no granted access) the studio
+            // stays on, so the app never says it is off while the plate is still showing.
+            if (SleepPublisher.stickerChanged(app)) SleepPublisher.restoreSticker(app).getOrThrow()
             SleepStore.save(app, SleepStore.load(app).copy(active = false))
             SleepScheduler.cancel(app)
-            SleepPublisher.broadcastImage(app, SleepPublisher.BOOX_DEFAULT)
-            val sticker = SleepPublisher.restoreSticker(app)
+            // The image style is ours to give back; the Transparent style was the owner's own choice in Boox.
+            if (mode == SleepMode.Image) SleepPublisher.broadcastImage(app, SleepPublisher.BOOX_DEFAULT)
             SleepPublisher.deleteOurPictures(app)
             listOf("hash", "broadcast_path", "published_size", "reannounce").forEach { SleepStore.put(app, it, null) }
             File(app.noBackupFilesDir, "sleep-cache").deleteRecursively()
             Journal.forget(app, SCREEN_JOURNAL)
-            sticker.getOrThrow()
         }
         Journal.log(app, "sleep-screen", app.getString(R.string.sl_journal_restore), r.exceptionOrNull()?.message.orEmpty(), r.isSuccess)
         r

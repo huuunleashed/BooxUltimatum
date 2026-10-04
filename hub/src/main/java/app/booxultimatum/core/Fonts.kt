@@ -52,6 +52,8 @@ data class FontStyleFile(val weight: Int, val italic: Boolean, val file: File)
  * and turned off, on or deleted with every use handed back first.
  */
 object Fonts {
+    /** What the firmware's own font broadcast reads (verified on the tablet): the spelling Boox uses, not a resolved path. */
+    @Suppress("SdCardPath")
     const val TARGET_DIR = "/sdcard/fonts"
     private const val METADATA = "https://fonts.google.com/metadata/fonts"
     private const val CATALOG_TTL = 7L * 24 * 3600 * 1000

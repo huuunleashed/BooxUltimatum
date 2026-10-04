@@ -123,12 +123,12 @@ internal object SleepFaces {
         rule(l, r, base, s * 0.005f)
         val level = data.battery.coerceIn(0, 100)
         val nx = l + sp * level / 100f
-        val figText = level.toString()
+        val figText = data.batteryText
         val gap = s * 0.01f
         val fw = width(fig, figText) + gap + width(pct, "%")
         val fx = (nx - fw / 2f).coerceIn(left, right - fw)
         val figBase = text(figText, fx, top, fig)
-        text("%", fx + width(fig, figText) + gap, figBase - cap(pct), pct)
+        if (data.batteryKnown) text("%", fx + width(fig, figText) + gap, figBase - cap(pct), pct)
         if (!dry) {
             val nt = s * 0.01f
             val needle = RectF(nx - nt / 2f, figBase + s * 0.022f, nx + nt / 2f, base + s * 0.02f)
@@ -151,12 +151,12 @@ internal object SleepFaces {
         }
         val fig = paint(display, radius * 0.52f, figures = true, tracking = -0.02f)
         val pct = paint(display, radius * 0.22f)
-        val t = data.battery.toString()
+        val t = data.batteryText
         val gap = radius * 0.03f
         val gw = width(fig, t) + gap + width(pct, "%")
         val x0 = cx - gw / 2f
         val base = text(t, x0, cy - cap(fig) / 2f, fig)
-        text("%", x0 + width(fig, t) + gap, base - cap(pct), pct)
+        if (data.batteryKnown) text("%", x0 + width(fig, t) + gap, base - cap(pct), pct)
         if (data.charging) legend(data.labels.charging, cx, cy + radius + s * 0.035f, align = Paint.Align.CENTER)
     }
 
@@ -612,20 +612,19 @@ internal object SleepOverlays {
 
     fun draw(p: SleepPage) {
         with(p) {
-            // The plate's rim sits on the margin line, so no ink comes closer to an edge than on a full-screen face.
-            val f = frame()
+            // Plates sit on the safe square, not on the panel's margins: Boox centre-crops the sticker into the
+            // rotation the tablet sleeps in, so anything nearer an edge is lost when it sleeps on its side.
+            val f = safe()
             when (spec.overlay) {
                 SleepOverlay.BottomBand, SleepOverlay.TopBand -> {
                     val x1 = f.left
                     val x2 = f.right
                     val pad = s * 0.06f
-                    dry = true
-                    val ch = band(x1 + pad, 0f, x2 - x1 - 2 * pad)
-                    dry = false
+                    val (skip, ch) = fitting(f.height() - 2 * pad) { band(x1 + pad, 0f, x2 - x1 - 2 * pad, it) }
                     val plateH = ch + 2 * pad
                     val top = if (spec.overlay == SleepOverlay.BottomBand) f.bottom - plateH else f.top
                     plate(RectF(x1, top, x2, top + plateH), s * 0.045f)
-                    band(x1 + pad, top + pad, x2 - x1 - 2 * pad)
+                    band(x1 + pad, top + pad, x2 - x1 - 2 * pad, skip)
                 }
                 SleepOverlay.Corner -> {
                     val cw = min(short * 0.5f, f.width())
@@ -664,26 +663,27 @@ internal object SleepOverlays {
     }
 
     /** Date left, put-down time and battery right, then the next event and the owner on ruled lines. Returns height. */
-    private fun SleepPage.band(x: Float, top: Float, width: Float): Float {
+    private fun SleepPage.band(x: Float, top: Float, width: Float, skip: Set<SleepElement> = emptySet()): Float {
+        fun on(e: SleepElement) = spec.shows(e) && e !in skip
         val right = x + width
         var leftBottom = top
-        if (spec.shows(SleepElement.Date)) {
+        if (on(SleepElement.Date)) {
             val wk = paint(display, fit(data.weekday, display, width * 0.55f, s * 0.065f))
             val b = text(data.weekday, x, top, wk)
             leftBottom = text(data.dateYear, x, b + s * 0.03f, paint(strong, s * 0.032f))
         }
         var rightBottom = top
-        if (spec.shows(SleepElement.PutDown)) {
+        if (on(SleepElement.PutDown)) {
             val lp = paint(body, s * 0.024f)
             val lb = text(data.putDownLead, right, top, lp, Paint.Align.RIGHT)
             rightBottom = text(data.putDownTime, right, lb + s * 0.02f, paint(display, s * 0.05f, figures = true), Paint.Align.RIGHT)
         }
-        if (spec.shows(SleepElement.Battery)) {
+        if (on(SleepElement.Battery)) {
             val y = if (rightBottom > top) rightBottom + s * 0.03f else top
             rightBottom = batteryLineRight(right, y, s * 0.028f)
         }
         var y = max(leftBottom, rightBottom)
-        if (spec.shows(SleepElement.Agenda) && data.calendarAllowed) {
+        if (on(SleepElement.Agenda) && data.calendarAllowed) {
             y = ruled(x, right, y)
             val e = data.events.firstOrNull()
             val lp = paint(strong, s * 0.022f, tracking = 0.14f)
@@ -692,7 +692,7 @@ internal object SleepOverlays {
             text(upper(data.labels.next), x, y + (cap(tp) - cap(lp)) / 2f, lp)
             y = text(clip(e?.let { "${it.whenLabel}   ${it.title}" } ?: data.labels.nothingPlanned, tp, width - lw), x + lw, y, tp)
         }
-        if (spec.shows(SleepElement.Owner) && (spec.ownerName.isNotBlank() || spec.ownerContact.isNotBlank())) {
+        if (on(SleepElement.Owner) && (spec.ownerName.isNotBlank() || spec.ownerContact.isNotBlank())) {
             y = ruled(x, right, y)
             val tp = paint(body, s * 0.028f)
             y = text(clip(listOf(spec.ownerName.trim(), spec.ownerContact.trim()).filter { it.isNotEmpty() }.joinToString("   ·   "), tp, width), x, y, tp)

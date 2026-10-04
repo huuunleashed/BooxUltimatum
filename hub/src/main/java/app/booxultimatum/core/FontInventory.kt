@@ -222,7 +222,11 @@ object FontNames {
 
     private const val SHARED = "/storage/emulated/0/"
 
-    /** One spelling for shared-storage paths, so a font path from any source compares equal to the scan's. */
+    /**
+     * One spelling for shared-storage paths, so a font path from any source compares equal to the scan's. The
+     * aliases are the point here: Boox's own apps, adb and the firmware all hand out /sdcard or /mnt/sdcard.
+     */
+    @Suppress("SdCardPath")
     fun normalise(path: String): String = when {
         path.startsWith("/sdcard/") -> SHARED + path.removePrefix("/sdcard/")
         path.startsWith("/storage/self/primary/") -> SHARED + path.removePrefix("/storage/self/primary/")

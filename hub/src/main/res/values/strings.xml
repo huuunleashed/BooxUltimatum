@@ -105,7 +105,10 @@
     <string name="spec_window">Window</string>
     <string name="spec_font_scale">Font scale</string>
     <string name="value_android">%1$s · API %2$d</string>
-    <string name="value_cores">%1$d cores</string>
+    <plurals name="value_cores">
+        <item quantity="one">%1$d core</item>
+        <item quantity="other">%1$d cores</item>
+    </plurals>
     <string name="value_locked">Locked</string>
     <string name="value_unlocked">Unlocked</string>
     <string name="value_resolution">%1$d × %2$d px at %3$d dpi</string>

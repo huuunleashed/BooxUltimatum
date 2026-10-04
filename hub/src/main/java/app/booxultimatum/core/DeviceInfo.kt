@@ -45,7 +45,8 @@ object DeviceReader {
         val silicon = mutableListOf<SpecLine>().apply {
             if (Build.VERSION.SDK_INT >= 31) put(R.string.spec_soc, "${Build.SOC_MODEL} · ${Build.SOC_MANUFACTURER}")
             put(R.string.spec_platform, p("ro.board.platform"))
-            put(R.string.spec_cpu, cpuClusters() ?: context.getString(R.string.value_cores, Runtime.getRuntime().availableProcessors()))
+            val cores = Runtime.getRuntime().availableProcessors()
+            put(R.string.spec_cpu, cpuClusters() ?: context.resources.getQuantityString(R.plurals.value_cores, cores, cores))
             put(R.string.spec_governor, readFile("/sys/devices/system/cpu/cpufreq/policy0/scaling_governor"))
             put(R.string.spec_kernel, System.getProperty("os.version"))
         }

@@ -51,7 +51,7 @@ internal fun FontsHeader(tab: FontsTab, library: FontLibrary?, catalogSize: Int?
             if (lib.fonts.isEmpty()) stringResource(R.string.fonts_installed_subtitle_none)
             else pluralStringResource(R.plurals.fonts_installed_subtitle, lib.fonts.size, lib.fonts.size, sizeText(context, lib.size))
         }
-        FontsTab.Browse -> catalogSize?.let { stringResource(R.string.fonts_subtitle, it) }
+        FontsTab.Browse -> catalogSize?.let { pluralStringResource(R.plurals.fonts_subtitle, it, it) }
     }
     ScreenHeader(stringResource(R.string.dest_fonts), subtitle) {
         Key(stringResource(if (tab == FontsTab.Browse) R.string.fonts_refresh else R.string.fonts_check_again), onClick = onRefresh)

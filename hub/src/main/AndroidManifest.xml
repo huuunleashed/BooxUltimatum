@@ -19,6 +19,12 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- Launcher: agenda and month widgets (asked at runtime), and the uninstall action. -->
     <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <!--
+      Over Transparent: to find the sticker Boox made (Pictures/Sticker/sticker_*.png) and ask to write it, so the
+      plate can be kept current without Shizuku. Pictures are only read for that; nothing else is looked at.
+    -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
     <!-- In-app updates: Android still asks the owner unless this app is allowed to install packages. -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
@@ -30,6 +36,11 @@
     <!-- Instant ink: a small foreground service, so Android doesn't freeze it behind the drawing app. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <!--
+      Instant ink's notification carries its only Turn off and Recover keys outside the app; Android 13+ hides it
+      without this permission, which is asked for on the Ink page when the module is switched on.
+    -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!--
       Live sleep screen: an exact wake-up alarm every few minutes while asleep, and a short wake lock while the face
       renders. USE_EXACT_ALARM is granted with the app (Android 13+); older versions grant SCHEDULE_EXACT_ALARM.

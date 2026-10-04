@@ -2,7 +2,10 @@
 <!-- Fonts: manage what BooxUltimatum installed, and browse, preview and use Google Fonts. -->
 <resources>
     <string name="dest_fonts">Fonts</string>
-    <string name="fonts_subtitle">%1$d families from Google Fonts, free and open</string>
+    <plurals name="fonts_subtitle">
+        <item quantity="one">%1$d family from Google Fonts, free and open</item>
+        <item quantity="other">%1$d families from Google Fonts, free and open</item>
+    </plurals>
     <string name="fonts_refresh">Refresh list</string>
     <string name="fonts_search">Search families</string>
     <string name="fonts_sample_hint">Type your own preview text</string>

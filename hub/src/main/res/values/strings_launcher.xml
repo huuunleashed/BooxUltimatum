@@ -12,7 +12,6 @@
     <string name="home_preview">Preview</string>
 
     <!-- Launcher home -->
-    <string name="l_edit">Edit</string>
     <string name="l_all_apps">All apps</string>
     <string name="l_page_of">Page %1$d of %2$d</string>
 
@@ -61,7 +60,6 @@
     <string name="l_ind_glyphs">Symbols</string>
     <string name="l_ind_both">Symbols and words</string>
     <string name="l_ind_text">Words</string>
-    <string name="l_settings">Settings</string>
     <string name="l_settings_boox">Boox settings</string>
     <string name="l_open_hub">BooxUltimatum settings</string>
     <string name="l_edit_home">Arrange home</string>
@@ -94,7 +92,10 @@
     <string name="ap_hide">Hide</string>
     <string name="ap_battery_pct">Battery percentage</string>
     <string name="ap_battery_pct_with_icon">Hidden with the battery icon: Android draws the figure inside it, so the figure can’t show on its own.</string>
-    <string name="ap_all_icons">Show all %d icons</string>
+    <plurals name="ap_all_icons">
+        <item quantity="one">Show the one icon</item>
+        <item quantity="other">Show all %d icons</item>
+    </plurals>
     <string name="ap_text">Text</string>
     <string name="ap_text_explain">E-ink thins every stroke, so BooxUltimatum and its home set text one weight heavier than designed. Choose how heavy.</string>
     <string name="ap_text_weight">Weight</string>

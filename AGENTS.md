@@ -42,12 +42,13 @@ This file holds the rules; the skills hold the how-to. When they disagree, this 
 
 - The suite is one Gradle build (Kotlin and Jetpack Compose, minSdk 30, target 36). `docs/07-suite.md` explains how the parts fit.
   - `hub/`: the hub app, package `app.booxultimatum`.
-    - `core/`: platform readers, the journal, the battery log (`BatteryLog.kt`), the tablet font (`SystemFont.kt`, `UiFonts.kt`), `exec/` (the Shizuku executor), `tweaks/` (the framework and catalogue), `sleep/` (the sleep screen studio: spec, renderer, faces, publisher, scheduler), `ink/` (Instant ink's service) and `suite/` (the modules and the log export).
+    - `core/`: platform readers, the journal, the battery log (`BatteryLog.kt`), the tablet font (`SystemFont.kt`, `UiFonts.kt`), `exec/` (the Shizuku executor), `tweaks/` (the framework and catalogue), `sleep/` (the sleep screen studio: spec, renderer, faces, publisher, scheduler), `ink/` (Instant ink's service), `suite/` (the modules and the log export) and `feedback/` (the problem report's snapshot and redaction).
     - `launcher/`: the home screen.
     - `ui/`: the navigation and the hub's screens.
+    - `src/test/` and `src/androidTest/`: JVM tests, and the instrumented ones (the plate renders in `SleepOverlayTest`, which need a device or emulator: `.\gradlew.bat :hub:connectedDebugAndroidTest`).
   - `nib/`: Nib, the drawing app, package `app.booxultimatum.nib`. `nib-engine/`: its drawing model in pure Kotlin (strokes, brushes, layers, undo, files), tested on the JVM.
   - `kit/`: the libraries every suite app builds on. `core` (the tablet profile and the suite registry), `log` (the logbook), `ui` (the e-ink design system), `ink` (the SurfaceFlinger pen path and pen input) and `update` (releases and installs). The kit never depends on an app.
-- `docs/`: numbered design docs (`00` device research to `08` Nib) and `screenshots/` for the README.
+- `docs/`: numbered design docs (`00` device research to `09` Instant ink) and `screenshots/` for the README.
 - `knowledge/`: `experiments.md` (the evidence log) and `onyx-packages.json` (bundled into app assets via `sourceSets`).
 - `tools/host/`: PowerShell scripts over adb (`common.ps1` holds shared helpers, `ui.ps1` drives the app's UI for tests and screenshots). `tools/dev/`: repository hygiene and `publish.ps1`, which publishes a suite app's release or test build.
 - `.agents/skills/`: the Agent Skills described above.
@@ -56,7 +57,7 @@ This file holds the rules; the skills hold the how-to. When they disagree, this 
   - CI (`.github/workflows/build.yml`) runs the unit tests, builds and lints every app and checks prose on every push and pull request.
   - The landing page in `site/` deploys to GitHub Pages through `.github/workflows/pages.yml`, together with `docs/screenshots/` and `docs/brand/`.
   - Keep the landing page's claims in step with the README.
-- `README.md` (the front page), `CHANGELOG.md` (the history), `CONTRIBUTING.md`, `SECURITY.md`, `THIRD_PARTY.md` and `PRODUCT.md` (design context).
+- `README.md` (the front page), `CHANGELOG.md` (the history), `CONTRIBUTING.md`, `SECURITY.md`, `THIRD_PARTY.md`, `PRODUCT.md` and `DESIGN.md` (design context and the design system).
 
 ## Commands
 

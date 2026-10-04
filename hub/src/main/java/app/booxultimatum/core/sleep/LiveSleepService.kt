@@ -32,7 +32,10 @@ class LiveSleepService : AccessibilityService() {
     private lateinit var worker: HandlerThread
     private lateinit var work: Handler
     private var view: FaceView? = null
+    /** The bitmap the view is drawing. */
     private var face: Bitmap? = null
+    /** The other buffer of the same size, free for the worker to draw into. */
+    private var spare: Bitmap? = null
     private var pending: Bitmap? = null
     private var waitingForDisplay = false
     private var shown = 0
@@ -104,10 +107,13 @@ class LiveSleepService : AccessibilityService() {
         hold(8_000)
         work.post {
             val slept = LiveSleep.record(this)?.sleptAt ?: System.currentTimeMillis()
-            val r = runCatching { SleepStudio.renderLive(this, slept, LiveSleep.levelAtSleep(this), null) }
+            // The face is drawn into the spare buffer, never the one the view is showing: allocating a fresh 18 MB
+            // bitmap every few minutes left the whole night's worth of garbage on the process Android reclaims first.
+            val r = runCatching { SleepStudio.renderLive(this, slept, LiveSleep.levelAtSleep(this), spare) }
                 .onFailure { log.w("render failed", error = it) }.getOrNull() ?: return@post
             main.post {
-                if (LiveSleep.interactive(this)) return@post
+                if (LiveSleep.interactive(this)) { r.bitmap.takeIf { it !== face && it !== spare }?.recycle(); return@post }
+                pending?.takeIf { it !== r.bitmap }?.recycle()
                 pending = r.bitmap
                 waitingForDisplay = true
                 sendBroadcast(Intent(ONYX_REFRESH))
@@ -121,11 +127,17 @@ class LiveSleepService : AccessibilityService() {
         val next = pending ?: return
         waitingForDisplay = false
         pending = null
-        if (LiveSleep.interactive(this)) return
+        if (LiveSleep.interactive(this)) { next.recycle(); return }
         val v = view ?: addFace() ?: return
+        // The bitmap the view was drawing becomes the buffer the next render draws into, so two are enough for a
+        // whole sleep. A render that came back at another size (the tablet turned) leaves nothing worth keeping.
+        val previous = face
         face = next
         v.bitmap = next
         v.invalidate()
+        if (previous != null && previous !== next) {
+            if (previous.width == next.width && previous.height == next.height) spare = previous else previous.recycle()
+        }
         shown++
         LiveSleep.onUpdated(this)
         log.i("face shown", "update" to shown)
@@ -154,10 +166,14 @@ class LiveSleepService : AccessibilityService() {
     private fun removeFace() {
         main.removeCallbacksAndMessages(null)
         waitingForDisplay = false
+        pending?.recycle()
         pending = null
         view?.let { v -> runCatching { getSystemService(WindowManager::class.java).removeView(v) } }
         view = null
+        face?.recycle()
         face = null
+        spare?.recycle()
+        spare = null
         wake?.takeIf { it.isHeld }?.release()
     }
 

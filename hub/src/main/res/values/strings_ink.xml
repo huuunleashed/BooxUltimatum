@@ -70,6 +70,9 @@
     <string name="ink_pen_test_none">Nothing arrived from the pen. Instant ink can’t follow this pen yet; a report with these lines would help.</string>
     <string name="ink_channel">Instant ink</string>
     <string name="ink_notification">Pen preview is on for your drawing apps</string>
+    <string name="ink_notify_title">Turning Instant ink off from your drawing app</string>
+    <string name="ink_notify_body">Instant ink’s notification holds its only *Turn off* and *Recover screen* keys outside this app, and Android is hiding it: notifications are not allowed for BooxUltimatum. Allowing them shows the keys again; nothing else is ever notified.</string>
+    <string name="ink_notify_allow">Allow notifications</string>
     <string name="ink_tile_on">On</string>
     <string name="ink_tile_off">Off</string>
     <string name="ink_tile_pick">Pick apps first</string>

@@ -39,6 +39,7 @@ The design doc is [`docs/06-sleep-screen.md`](../../../docs/06-sleep-screen.md);
 - Without live updates, a clock face shows the put-down moment, rounded like the put-down line, and says so rather than pretending to keep time. Live updates land on round multiples of the step, so the word clock's minute dots stay dark while asleep.
 - A live face on the power-off screen would freeze a clock, so power-off falls back to the Almanac.
 - `String.replace` in PowerShell replaces every match: removing `val time: String,` from one data class removed it from `SleepLive` too. Edit with the editing tool, one unique match at a time.
+- **A sticker plate must stay inside `SleepPage.safe()`.** Boox centre-crops the sticker into the rotation the tablet sleeps in, keeping only the centred square of 0.75 of the short side (1395 px of 1860), so a plate measured on `frame()` loses its edges when the tablet sleeps on its side. `safe()` is that square inset by `plateHalo`, the reach of the plate's own soft edge (grown edge plus three sigma of its blur, about 0.055 s) — the ink, halo included, has to fit inside it, which is what `hub/src/androidTest/.../SleepOverlayTest.kt` asserts. Placing the plate is arithmetic only: `SleepCropTest` covers it without a device.
 
 ## Seeing a face at full size
 

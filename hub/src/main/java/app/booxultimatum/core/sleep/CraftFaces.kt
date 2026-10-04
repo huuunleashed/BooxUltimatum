@@ -259,7 +259,10 @@ internal object CraftFaces {
             val fields = buildList {
                 if (spec.shows(SleepElement.Date)) add(upperL(data.weekdayShort) to dayMonth)
                 if (spec.shows(SleepElement.Asleep) && live.live) add(data.labels.asleep to "%d:%02d".format(live.asleepMin / 60, live.asleepMin % 60))
-                if (spec.shows(SleepElement.Battery)) add((if (data.charging) data.labels.charging else data.labels.battery) + " %" to data.battery.toString())
+                if (spec.shows(SleepElement.Battery)) {
+                    val label = (if (data.charging) data.labels.charging else data.labels.battery) + if (data.batteryKnown) " %" else ""
+                    add(label to data.batteryText)
+                }
                 live.alarmAt?.let { add(data.labels.alarm to hmOf(it, t.h24)) }
             }
             val rows = buildList {

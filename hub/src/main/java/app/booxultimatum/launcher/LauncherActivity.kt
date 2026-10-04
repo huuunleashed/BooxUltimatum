@@ -259,6 +259,17 @@ class LauncherModel(private val context: Context) {
     private val io = Executors.newSingleThreadExecutor()
     private val main = Handler(Looper.getMainLooper())
 
+    /**
+     * Ends the loader thread with the screen that owns it. Its queue holds work that captures the activity, so a
+     * thread parked between launches would keep a finished home screen alive for the life of the process.
+     * `shutdown()`, not `shutdownNow()`: a wallpaper or font write already under way should finish rather than be
+     * cut in half, and nothing is submitted afterwards.
+     */
+    fun close() {
+        main.removeCallbacksAndMessages(null)
+        io.shutdown()
+    }
+
     fun reloadApps() {
         io.execute {
             val list = catalog.load()
@@ -565,6 +576,7 @@ class LauncherActivity : ComponentActivity() {
 
     override fun onDestroy() {
         model.catalog.unregister(model.launcherCallback)
+        model.close()
         super.onDestroy()
     }
 

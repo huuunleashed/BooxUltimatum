@@ -225,7 +225,6 @@
     <string name="app_doze">Doze</string>
     <string name="app_background">Background activity</string>
     <string name="app_bucket">Standby group</string>
-    <string name="app_needs_shizuku">Changing how this app sleeps needs Shizuku.</string>
     <string name="app_needs_shizuku_bg">Shizuku isn’t running, so BooxUltimatum can’t read or change this directly. You can still fix it yourself: Android’s battery page for this app has an “Allow background usage” switch, the same one Boox turns off, and Boox’s hidden App Freeze page lets you unfreeze the app and stop Boox from freezing new apps. In the Boox home you can also long-press the app’s icon and choose Optimize › Others.</string>
     <string name="action_battery_page">Open its battery page</string>
     <string name="action_boox_freeze">Boox App Freeze</string>
@@ -263,7 +262,10 @@
     <string name="done_enable">Enabled.</string>
 
     <!-- Settings Hub -->
-    <string name="hub_subtitle">%1$d system pages that open on this tablet</string>
+    <plurals name="hub_subtitle">
+        <item quantity="one">%1$d system page that opens on this tablet</item>
+        <item quantity="other">%1$d system pages that open on this tablet</item>
+    </plurals>
     <string name="hub_search">Search settings</string>
     <string name="hub_open_android">Android Settings</string>
     <string name="hub_empty">No settings page matches “%1$s”.</string>

@@ -153,6 +153,10 @@ data class SleepData(
     val putDownLead: String,
     val putDownLine: String,
     val battery: Int,
+    /** False when the firmware doesn't report the charge level, so faces show no figure rather than a wrong one. */
+    val batteryKnown: Boolean = true,
+    /** The level on its own, or a dash when it isn't reported. */
+    val batteryText: String = battery.toString(),
     val charging: Boolean,
     val batteryLine: String,
     val events: List<SleepEvent>,
@@ -202,7 +206,12 @@ data class SleepData(
             val putDown = if (exact) moment - moment % 60_000L else moment - moment % step
             val today = Instant.ofEpochMilli(now).atZone(zone).toLocalDate()
             val bm = context.getSystemService(BatteryManager::class.java)
-            val level = runCatching { bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY) }.getOrDefault(-1).coerceIn(0, 100)
+            // An unsupported property answers Integer.MIN_VALUE, which must not become "0 %" on a face: the battery
+            // parts are left out instead (the same as no reading).
+            val level = runCatching { bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY) }
+                .getOrDefault(-1)
+                .takeIf { it in 0..100 }
+                ?: -1
             val charging = runCatching { bm.isCharging }.getOrDefault(false)
             val time = DateFormat.getTimeFormat(context).format(Date(putDown))
             // "At" only when the time is exact to the minute; a time rounded down to the refresh step says "around".
@@ -255,9 +264,15 @@ data class SleepData(
                 putDownTime = time,
                 putDownLead = context.getString(if (exactWording) R.string.sl_put_down_lead_at else R.string.sl_put_down_lead_around),
                 putDownLine = context.getString(if (exactWording) R.string.sl_put_down_at else R.string.sl_put_down_around, time),
-                battery = level,
+                battery = level.coerceIn(0, 100),
+                batteryKnown = level in 0..100,
+                batteryText = if (level in 0..100) level.toString() else "—",
                 charging = charging,
-                batteryLine = context.getString(if (charging) R.string.sl_battery_charging else R.string.sl_battery_on, level),
+                batteryLine = if (level in 0..100) {
+                    context.getString(if (charging) R.string.sl_battery_charging else R.string.sl_battery_on, level)
+                } else {
+                    context.getString(R.string.sl_battery_unknown)
+                },
                 events = events,
                 calendarAllowed = calendarAllowed,
                 eventDays = days,

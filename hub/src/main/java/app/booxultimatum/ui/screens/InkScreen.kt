@@ -1,6 +1,11 @@
 package app.booxultimatum.ui.screens
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -66,6 +71,9 @@ import kotlinx.coroutines.withContext
 private data class InkApp(val pkg: String, val label: String)
 
 /** Instant ink: Boox's direct-to-panel pen preview, lent to the drawing and note apps the owner picks. */
+/** Android 13's notification permission, by name: `Manifest.permission` would inline an API 33 constant into minSdk 30. */
+private const val POST_NOTIFICATIONS = "android.permission.POST_NOTIFICATIONS"
+
 @Composable
 fun InkScreen(readKey: Int, compact: Boolean) {
     val context = LocalContext.current
@@ -106,12 +114,34 @@ fun InkScreen(readKey: Int, compact: Boolean) {
         scope.launch { delay(900); statusKey++ }
     }
 
+    // The notification carries the only Turn off and Recover keys outside the app; Android 13+ hides it unless the
+    // owner allows notifications, so it is asked for when Instant ink is switched on.
+    var notifyKey by remember { mutableIntStateOf(0) }
+    val notifications = if (Build.VERSION.SDK_INT >= 33) {
+        // The literal, not Manifest.permission: the constant is API 33 and inlines into a call the older levels run.
+        remember(notifyKey) { context.checkSelfPermission(POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED }
+    } else {
+        true
+    }
+    val askNotifications = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { notifyKey++ }
+
     InstrumentPage(compact) {
         item {
             ScreenHeader(stringResource(R.string.ink_title), stringResource(R.string.ink_subtitle)) {
-                Key(stringResource(if (prefs.enabled) R.string.ink_turn_off else R.string.ink_turn_on), primary = !prefs.enabled, enabled = prefs.enabled || prefs.apps.isNotEmpty(), onClick = { commit(prefs.copy(enabled = !prefs.enabled)) })
+                Key(stringResource(if (prefs.enabled) R.string.ink_turn_off else R.string.ink_turn_on), primary = !prefs.enabled, enabled = prefs.enabled || prefs.apps.isNotEmpty(), onClick = {
+                    if (!prefs.enabled && !notifications) askNotifications.launch(POST_NOTIFICATIONS)
+                    commit(prefs.copy(enabled = !prefs.enabled))
+                })
             }
             Paragraph(stringResource(R.string.ink_explain))
+            if (prefs.enabled && !notifications) {
+                Spacer(Modifier.height(Space.s))
+                Plate(stringResource(R.string.ink_notify_title)) {
+                    Paragraph(stringResource(R.string.ink_notify_body), color = Ink.Legend)
+                    Spacer(Modifier.height(Space.s))
+                    Key(stringResource(R.string.ink_notify_allow), onClick = { askNotifications.launch(POST_NOTIFICATIONS) })
+                }
+            }
             Spacer(Modifier.height(Space.xl))
             val status = remember(statusKey, prefs) { InstantInk.status }
             Plate(stringResource(R.string.ink_status)) {

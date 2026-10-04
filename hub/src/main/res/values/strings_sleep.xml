@@ -10,7 +10,7 @@
     <string name="sl_mode_image">Sleep image</string>
     <string name="sl_mode_image_detail">A full-screen face. Boox shows it as its screensaver picture and reads it fresh at every sleep.</string>
     <string name="sl_mode_overlay">Over Transparent</string>
-    <string name="sl_mode_overlay_detail">A paper plate laid over what was on screen, through the Boox Transparent style and its sticker. Needs Shizuku.</string>
+    <string name="sl_mode_overlay_detail">A paper plate laid over what was on screen, through the Boox Transparent style and its sticker. Kept current through Shizuku, or with your permission to write the sticker.</string>
 
     <!-- Faces -->
     <string name="sl_face">Face</string>
@@ -123,9 +123,7 @@
     <string name="sl_lab_asleep">Asleep</string>
     <string name="sl_lab_asleep_since">Asleep since %1$s</string>
     <string name="sl_lab_just_now">Just put down</string>
-    <string name="sl_lab_battery_now">Battery now</string>
     <string name="sl_lab_used">Used asleep</string>
-    <string name="sl_lab_next">Next</string>
     <string name="sl_lab_alarm">Alarm</string>
     <string name="sl_lab_nothing_used">Nothing yet</string>
     <string name="sl_lab_now">Now</string>
@@ -144,7 +142,6 @@
         <item quantity="other">Updates while asleep every %d minutes</item>
     </plurals>
     <string name="sl_live_suggest">This face is made for updates while asleep. Turn them on below to keep it moving.</string>
-    <string name="sl_live_suggest_key">Set up updates while asleep</string>
     <string name="sl_live_explain">Live updates redraw the face while the tablet sleeps, so the date, battery and agenda stay true, and Boox’s charging bar is covered (so is Boox’s own clock, if you show one). The time you put the tablet down stays as it was. Each update wakes the tablet for about a second and a half; the battery cost hasn’t been measured yet.</string>
     <string name="sl_live_turn_on">Turn on</string>
     <string name="sl_live_turn_off">Turn off</string>
@@ -188,12 +185,13 @@
     <string name="sl_apply">Apply</string>
     <string name="sl_apply_again">Apply again</string>
     <string name="sl_applied">This face is now the sleep screen.</string>
+    <string name="sl_applied_overlay">The plate is written to Boox\'s own sticker. BooxUltimatum can\'t read which screensaver style Boox is set to, so if Transparent isn\'t chosen there (with the sticker on), you\'ll still see whatever picture Boox was showing before.</string>
     <string name="sl_sleep_now">Sleep now</string>
     <string name="sl_restore">Restore Boox default</string>
     <string name="sl_restore_confirm">Tap again to restore</string>
     <string name="sl_restored">Back to the Boox default picture. Choose your former style in Boox\'s screensaver settings.</string>
     <string name="sl_open_boox">Boox screensaver settings</string>
-    <string name="sl_shell_note">Sleep now and Over Transparent need Shizuku.</string>
+    <string name="sl_shell_note">Sleep now needs Shizuku. Over Transparent can also work through the sticker permission below.</string>
     <string name="sl_mode_changed">Mode changed. Tap Apply to hand the new mode to Boox; until then the last picture stays and is no longer redrawn.</string>
     <string name="sl_state_on">%1$s, redrawn every %2$s while awake</string>
     <string name="sl_state_off">Not applied</string>
@@ -211,6 +209,8 @@
     <string name="sl_boox">Boox settings</string>
     <string name="sl_boox_image">For a clean face, open Boox screensaver settings, set Clock style and Text display to None, and turn Bottom status bar off (it adds the battery and “Press power button to wake up”; Boox still shows it while the tablet is charging, whatever the setting). To keep a live time instead, leave Clock style on Digital and turn on Leave room for the Boox clock, or use Under the clock.</string>
     <string name="sl_boox_overlay_intro">Boox needs you to choose the sticker once. After that BooxUltimatum keeps it up to date.</string>
+    <string name="sl_boox_overlay_style">BooxUltimatum can\'t see which style Boox is on. Until Boox itself is set to Transparent with the sticker on, Boox keeps showing the last sleep picture it was given — so after a switch from Sleep image, that older picture is what a sleep will show.</string>
+    <string name="sl_boox_leftover">If an older BooxUltimatum picture is still in Pictures, the app can\'t remove it: Android won\'t let an app change a picture it no longer owns, so the newest copy is written beside it and the old one is yours to delete in Files.</string>
     <string name="sl_step_1">Tap Put in Sticker album below. The current plate appears in the gallery\'s Sticker album.</string>
     <string name="sl_step_2">Open Boox screensaver settings, choose Transparent, turn on Show lockscreen sticker, then Select sticker, the + tile, the Sticker album and the BooxUltimatum picture, and confirm the crop with OK.</string>
     <string name="sl_step_3">Apply Transparent in Boox.</string>
@@ -219,6 +219,19 @@
     <string name="sl_prepared">The plate is in the Sticker album.</string>
     <string name="sl_boox_overlay_settings">The Boox clock, the motto and the bottom status bar are drawn by Boox over any style; each can be turned off in Boox screensaver settings. Restore can\'t read back the style you had before, so it sets the Boox default picture; pick your former style in Boox afterwards.</string>
     <string name="sl_limits">With a PIN, a tablet put to sleep from the lock screen shows a black privacy screen instead. That is Boox\'s choice and outside this app.</string>
+
+    <!-- Writing Boox's sticker without Shizuku -->
+    <string name="sl_write_title">Writing Boox\'s sticker</string>
+    <string name="sl_write_shell">Shizuku is running, so the plate is written through it. Nothing else is needed.</string>
+    <string name="sl_write_ask_pictures">BooxUltimatum finds the sticker Boox saved by looking in the Sticker album. Allow it to read pictures for that: nothing else is looked at.</string>
+    <string name="sl_write_allow_pictures">Allow reading pictures</string>
+    <string name="sl_write_ask_consent">Android will ask once whether BooxUltimatum may change Boox\'s sticker picture. Saying yes keeps the plate current without Shizuku.</string>
+    <string name="sl_write_allow_consent">Ask Android to allow it</string>
+    <string name="sl_write_ready">BooxUltimatum may write the sticker itself, so no Shizuku is needed for the plate.</string>
+    <string name="sl_write_no_row">No sticker is visible in Boox\'s album. If Android was told to share only some pictures, allow all of them; otherwise do the four steps above first.</string>
+    <string name="sl_write_denied">Android did not allow changing the sticker picture, so the plate can\'t be kept current on its own. Start Shizuku from Access instead.</string>
+    <string name="sl_write_file">Sticker: %1$s</string>
+    <string name="sl_write_scale">Boox draws the sticker over the whole panel, keeping the middle. Plates stay inside that band, so one file is right in both orientations. In Boox\'s screensaver settings the scale choice can also be set to fit, which shows the whole sheet.</string>
 
     <!-- Editing -->
     <string name="sl_edit_note">Note</string>
@@ -246,6 +259,7 @@
     <string name="sl_on_battery">On battery</string>
     <string name="sl_battery_charging">%1$d %% · charging</string>
     <string name="sl_battery_on">%1$d %%</string>
+    <string name="sl_battery_unknown">Battery not reported</string>
     <string name="sl_return_heading">If found, please return to</string>
     <string name="sl_reward">Reward</string>
     <string name="sl_contact">Contact</string>
@@ -253,12 +267,16 @@
     <string name="sl_note_empty">Write a note in BooxUltimatum › Sleep to show it here.</string>
     <string name="sl_photo_empty">Choose a picture in BooxUltimatum › Sleep.</string>
     <string name="sl_owner_empty">Your name</string>
-    <string name="sl_today">Today</string>
-    <string name="sl_tomorrow">Tomorrow</string>
+    <string name="sl_today">Today</string>    <string name="sl_tomorrow">Tomorrow</string>
 
     <!-- Errors and journal -->
     <string name="sl_err_needs_shizuku">This needs Shizuku. Start it from Access, then try again.</string>
     <string name="sl_err_no_sticker">No Boox sticker yet. Follow the steps under Boox settings to choose the BooxUltimatum sticker once.</string>
+    <string name="sl_err_stage">Could not stage the plate in the app\'s own files.</string>
+    <string name="sl_err_no_write">BooxUltimatum may not write Boox\'s sticker yet. Let it write the sticker under Boox settings, or start Shizuku from Access, then apply again.</string>
+    <string name="sl_err_backup">Could not read the sticker Boox made, so it was left untouched.</string>
+    <string name="sl_err_write">The sticker was not written. Check that Boox\'s sticker is still where it was, then apply again.</string>
+    <string name="sl_err_restore">Could not put Boox\'s own sticker back: %1$s. Boox\'s screensaver settings can choose another picture.</string>
     <string name="sl_journal_image">Sleep screen set to the %1$s face, as the Boox sleep picture</string>
     <string name="sl_journal_overlay">Sleep screen set to the %1$s plate, over the Boox Transparent style</string>
     <string name="sl_journal_restore">Sleep screen handed back to the Boox default picture</string>

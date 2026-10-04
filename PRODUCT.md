@@ -44,8 +44,8 @@ It's the only tool built around evidence on this specific hardware. Every tweak 
 
 - A real device capture: `captures/20260925-2118-<serial>-factory-fw43` (git-ignored, personal data).
 - Verified device facts in `docs/00-device-research.md` §0.
-- Third-party reference measurements (eWritable, FW 4.3-rel): idle 2 %/h, reading 4 %/h, notes 10 %/h, max front light +14 %/h.
-- No first-party battery measurements exist yet. The UI must not show invented drain numbers, savings, or user counts.
+- First-party measurements now exist and are on the Battery page: standby 0–12 mA, screen-on 430–640 mA in the cases measured, and the 1-minute live sleep step at about 1 % of battery per one to two hours. Third-party reference measurements (eWritable, FW 4.3-rel): idle 2 %/h, reading 4 %/h, notes 10 %/h, max front light +14 %/h.
+- The oversize overnight A/B runs in the protocol below are still to do; until then the UI shows measured samples with their source and age, never invented drain, savings or user counts.
 
 ## Product Principles
 

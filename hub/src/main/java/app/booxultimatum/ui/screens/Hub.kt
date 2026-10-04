@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import app.booxultimatum.R
@@ -49,7 +50,7 @@ fun HubScreen(readKey: Int, compact: Boolean) {
 
     InstrumentPage(compact) {
         item {
-            ScreenHeader(stringResource(R.string.dest_hub), entries?.let { stringResource(R.string.hub_subtitle, it.size) }) {
+            ScreenHeader(stringResource(R.string.dest_hub), entries?.let { pluralStringResource(R.plurals.hub_subtitle, it.size, it.size) }) {
                 app.booxultimatum.kit.ui.Key(stringResource(R.string.hub_open_android), onClick = {
                     runCatching {
                         context.startActivity(android.content.Intent().setComponent(android.content.ComponentName("com.android.settings", "com.android.settings.Settings")).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))

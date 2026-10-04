@@ -4,7 +4,7 @@
 
 **A suite of apps for the BOOX Note Air6 C, without root: a hub with a home screen, sleep-screen designer, battery doctor and reversible tweaks, and Nib, a drawing app with Boox's instant pen.**
 
-![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue) ![Status: public preview](https://img.shields.io/badge/status-public%20preview%200.6.0-orange) ![Android 11+](https://img.shields.io/badge/Android-11%2B-3ddc84) ![Tested on Note Air6 C, FW 4.3](https://img.shields.io/badge/tested%20on-Note%20Air6%20C%20%C2%B7%20FW%204.3-black)
+![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue) ![Status: public preview](https://img.shields.io/badge/status-public%20preview%200.7.1-orange) ![Android 11+](https://img.shields.io/badge/Android-11%2B-3ddc84) ![Tested on Note Air6 C, FW 4.3](https://img.shields.io/badge/tested%20on-Note%20Air6%20C%20%C2%B7%20FW%204.3-black)
 
 [**Website and technical guide**](https://huuunleashed.github.io/BooxUltimatum/) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md) · [Report a bug or a finding](https://github.com/huuunleashed/BooxUltimatum/issues/new/choose)
 
@@ -18,7 +18,7 @@ The Note Air6 C is a lovely tablet with a frustrating side. Independent reviews 
 
 Nothing is flashed, and the bootloader stays locked. The hub, BooxUltimatum, is one APK; the apps that build on it, starting with Nib, install and uninstall on their own.
 
-> **Status: public preview (0.5).** It runs daily on the author's own tablet (Note Air6 C, firmware 4.3, Android 16), and hasn't been tested elsewhere yet. Download it from [Releases](https://github.com/huuunleashed/BooxUltimatum/releases), and please report how it behaves on your tablet. From 0.5 on, the app can update itself and file a report for you from its Device page.
+> **Status: public preview (0.7.1).** It runs daily on the author's own tablet (Note Air6 C, firmware 4.3, Android 16), and hasn't been tested elsewhere yet. Download it from [Releases](https://github.com/huuunleashed/BooxUltimatum/releases), and please report how it behaves on your tablet. From 0.5 on, the app can update itself and file a report for you from its Device page.
 
 ## What it does
 
@@ -77,7 +77,7 @@ Boox gives you six preset screensavers. BooxUltimatum gives you twenty-one faces
 
   Without updates while asleep, a clock face shows when the tablet was put down and says so.
 - **Rotation:** both orientations are kept ready, so turning the tablet never leaves you with a cropped face.
-- **Keeping the Transparent style:** an *Over Transparent* mode lays a small paper plate over it instead.
+- **Keeping the Transparent style:** an *Over Transparent* mode lays a small paper plate over it instead. Boox keeps only the middle of a sticker when the tablet sleeps on its side (measured from Boox's own code), so plates are drawn inside the band that survives either orientation — one file, right both ways — and kept current through Shizuku or, without it, through a one-time "let BooxUltimatum write this picture" permission from the Sleep page.
 - **Power-off screen:** the same face can also be what the tablet shows when it's switched off, set with one tap through the same Boox interface.
 
 ### Instant ink for other apps (experimental)
@@ -166,7 +166,7 @@ Firmware 4.3 hides the Wireless debugging switch from Developer options, so rest
 
 ## Install
 
-**From a release:** download `BooxUltimatum-0.7.0.apk` from this repository's [Releases](https://github.com/huuunleashed/BooxUltimatum/releases) page, allow your browser or file manager to install apps, and open it. The Access page shows what each level unlocks and the exact commands for it. Releases are signed with the project's own key, so later releases update it in place. The hub's Suite page installs Nib for you, or download `Nib-0.2.0.apk` from the same page; Nib's releases are tagged `nib-v…`.
+**From a release:** download `BooxUltimatum-0.7.1.apk` from this repository's [Releases](https://github.com/huuunleashed/BooxUltimatum/releases) page, allow your browser or file manager to install apps, and open it. The Access page shows what each level unlocks and the exact commands for it. Releases are signed with the project's own key, so later releases update it in place. The hub's Suite page installs Nib for you, or download `Nib-0.2.0.apk` from the same page; Nib's releases are tagged `nib-v…`.
 
 **Test builds for the tablet:** unfinished builds of the hub or Nib are sometimes published as `test-…` pre-releases so they can be checked on a real tablet. The hub offers them only when *Offer test builds* is on (Device page), and a release always replaces its own test build.
 
@@ -181,7 +181,7 @@ $env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.8.9-hotspot'
 adb install -r hub\build\outputs\apk\release\hub-release.apk
 ```
 
-Release builds from source are debug-signed for now, so they update an installed copy in place. Public releases will use a proper signing key.
+Without a signing key that build is debug-signed, which is fine for a tablet that has no BooxUltimatum yet. A tablet already running the published release needs a build signed with the same key, or Android refuses the update; the maintainer's key lives outside the repository (see [`AGENTS.md`](AGENTS.md) › Releases).
 
 ### Using it as your home screen, and going back
 
@@ -209,7 +209,8 @@ Recents, gestures, NaviBall and EinkWise belong to the system, so they behave th
   - The preview is Boox's own black pen, so a coloured brush or the eraser only shows once the app's stroke takes over. The firmware holds the app's own drawing while the pen touches, so the two can't be shown together.
   - After Boox Notes has been used, the first stroke in a chosen app can miss the preview once, because Boox's apps sometimes end the waiting session.
   - It's been tested with a real pen in Sketchbook only. Other drawing and note apps are the next thing to try.
-- **Updates while asleep are new.** They're verified on battery on the Note Air6 C, but their battery cost isn't measured yet, and the faces don't yet have much that changes while the tablet sleeps. Without them, Boox doesn't read the picture again until the tablet wakes. The power-off screen is a copy Boox keeps, so it changes only when you set it again.
+- **Updates while asleep are new.** They're verified on battery on the Note Air6 C, but their battery cost isn't measured yet, and the faces don't yet have much that changes while the tablet sleeps. Without them, Boox doesn't read the picture again until the tablet wakes. The power-off screen is a copy Boox keeps, so it changes only when you set it again. Live updates are Sleep image mode only: Boox doesn't reload a sticker during a sleep, so an Over Transparent plate is redrawn while the tablet is awake.
+- **Over Transparent is waiting for its tablet check.** The band Boox keeps, the write permission and following a re-picked sticker are all read from Boox's own code and checked against emulator renders, not against a sleeping tablet; the Sleep page says which file and which route it is using.
 - **Charging:** without updates while asleep, Boox always draws its battery bar over the sleep screen while the tablet charges.
 - **Charge limit:** Boox's *Charging protection* stops at 80 %. Other levels would need root, because the threshold files are closed even to Shizuku.
 - **Other Boox models and other tablets:** the app recognises Boox tablets and, elsewhere, hides what needs Boox firmware (the sleep screen and Instant ink). Instant ink had no effect on a Note Air 2 Plus and a Go 10.3 Gen II Lumi; the Ink page now shows why, and those reports are open.
@@ -255,6 +256,11 @@ No dates promised; this is a spare-time project, and each release ships when it 
   - Batched instant ink with a stronger recovery, and the computer command for usage access on the Ink page.
   - Home lists Boox-frozen apps dimmed instead of hiding them.
   - A Clean screen tile and key.
+- **0.7.1, the transparent sleep screen made to fit (released 2026-10-04)**
+  - Over Transparent plates now sit inside the band Boox keeps in either rotation, measured on the tablet: one sticker file is right both ways up.
+  - The plate can be kept current without Shizuku, through one Android consent to write Boox's sticker, with Shizuku still used when it runs.
+  - A re-pick in Boox is followed, and Boox's own sticker comes back on Restore.
+  - The fixes a full sweep turned up: Instant ink dying for good and its hidden notification, a failed update check silencing checks for a day, a battery rate that could divide by zero, and the honest wording on the Sleep page.
 - **Still ahead from the 0.7 plan**
   - A one-tap reading mode: Wi-Fi and Bluetooth off, Battery Saver on and sync paused, all undone together.
   - Shizuku that survives a restart without a computer, and an in-app first-run guide for the adb grants.
@@ -262,6 +268,7 @@ No dates promised; this is a spare-time project, and each release ships when it 
   - Instant ink tried in more drawing and note apps, and on the models testers reported.
   - Round trips recorded for the last three unverified tweaks.
   - Refinements to the faces from how they look on the panel.
+  - Over Transparent seen through a real sleep in both orientations, and on the route that needs no Shizuku.
 - **Nib 0.3, native writing (in progress)**
   - Built on `kit:ink`, the suite's new ink framework:
     - one hold per writing session;
@@ -295,11 +302,12 @@ It is written by an owner of the tablet working with an AI pair programmer (GitH
 
 | Path | What's there |
 | --- | --- |
-| `hub/` | The hub app. `core/` holds system readers, tweaks, the battery log, `sleep/`, `ink/` and `suite/`. `launcher/` is the home screen and `ui/` the screens |
+| `hub/` | The hub app. `core/` holds system readers, tweaks, the battery log, `sleep/`, `ink/`, `suite/` and `feedback/`. `launcher/` is the home screen and `ui/` the screens |
 | `nib/`, `nib-engine/` | Nib, the drawing app, and its drawing model in pure Kotlin |
 | `kit/` | The libraries every suite app builds on: `core`, `log`, `ui`, `ink` and `update` ([`docs/07-suite.md`](docs/07-suite.md)) |
-| `docs/` | Numbered design docs (`00` device research to `08` Nib), plus the screenshots |
+| `docs/` | Numbered design docs (`00` device research to `09` Instant ink), plus the screenshots |
 | `knowledge/` | The evidence log (`experiments.md`) and the Onyx package knowledge base bundled with the app |
+| `site/` | The landing page and the technical guide, published to GitHub Pages by `.github/workflows/pages.yml` |
 | `tools/host/` | PowerShell scripts run from a computer over adb (recon, battery logger, Shizuku start) |
 | `tools/dev/` | Repository hygiene (`prose_wrap.py`) and publishing (`publish.ps1`) |
 | `AGENTS.md` | The rules for anyone, human or AI, working in this repo |
