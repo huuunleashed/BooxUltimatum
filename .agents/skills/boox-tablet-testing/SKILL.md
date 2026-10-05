@@ -78,4 +78,10 @@ Send these as the shell: `ENABLE_POST` on (`service call SurfaceFlinger 16711692
 
 ## Shizuku
 
-It stops on every reboot. Restart it with `.\tools\host\start-shizuku.ps1`. Firmware 4.3 hides Wireless debugging and the Wi-Fi mode above also ends at a reboot, so this needs USB once after each restart.
+It stops on every reboot, and (as far as anything measured here shows) nothing else stops it. Start or restart it with `.\tools\host\start-shizuku.ps1`, which runs the `libshizuku.so` starter inside the installed Shizuku APK — so it always matches the version actually installed — and then checks that `shizuku_server` came up. Its output looks like `info: shizuku_server pid is 32537`.
+
+- The server runs as the shell uid and is parented to init (`PID 32537 PPID 1`), so it is **not** tied to the adb session: measured on 2026-10-05 at 7 h 17 m of uptime across a sleep cycle and an adb link loss. Unplugging the cable does not stop it.
+- The host can be anywhere the tablet is reachable. TCP adb works, including over Tailscale; USB is needed only once after a reboot, to put adbd back into TCP mode (`adb tcpip 5555`), because adbd starts in USB mode otherwise. That is the only reason the old note here said "needs USB".
+- Firmware 4.3 has **no Wireless debugging screen at all** — `pm query-activities --brief -a android.settings.WIRELESS_DEBUGGING_SETTINGS` answers "No activities found" — so Shizuku can never be started from the tablet itself on this device.
+- Whether it has been available is recorded by the hub itself: the `shizuku` field of `Android/data/app.booxultimatum/files/logs/deep-*.jsonl`, written every three hours. That is how the 2026-10-04 21:48 death was dated, and why the cause of that one is still open.
+- The tablet cannot be reached at all while it sleeps: firmware 4.3 turns Wi-Fi off, so neither the LAN nor Tailscale answers until it is awake again.

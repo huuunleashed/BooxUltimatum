@@ -162,7 +162,7 @@ adb shell pm grant app.booxultimatum android.permission.READ_LOGS
 adb shell appops set app.booxultimatum GET_USAGE_STATS allow
 ```
 
-Firmware 4.3 hides the Wireless debugging switch from Developer options, so restarting Shizuku without a computer isn't possible yet. Making it survive reboots is on the roadmap.
+Firmware 4.3 hides the Wireless debugging switch from Developer options — the platform has no `android.settings.WIRELESS_DEBUGGING_SETTINGS` screen at all — so Shizuku cannot be started from the tablet itself. It can be started from any computer over adb, including over Tailscale, and once started it keeps running on its own: verified on 2026-10-05 at 7 h 17 m of uptime across a sleep cycle and an adb link loss. It does not survive a reboot. Making it survive reboots is on the roadmap.
 
 ## Install
 
