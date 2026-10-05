@@ -39,6 +39,26 @@ Writing and drawing the way BOOX's own apps do it, continued in Nib. Nothing bel
 - **Thin pencils and fineliners are previewed in the plain pencil style at every width** (checked on the tablet from 0.5 to 3 px), so their preview is no longer thicker than their ink.
 - **Nib ignores a resting pen's repeated samples**, as BOOX's pen reader does, which steadies the ends of strokes. A slow, careful line keeps its shape.
 
+## [0.7.2] (2026-10-05)
+
+A battery pass over the app's own background work, measured on the Note Air6 C from three and a half days of the tablet's own battery history.
+
+### Changed
+
+- **Live updates stop being a one-minute habit on battery.** At the one-minute step the live screen woke the panel 1 384 times in 32 hours — 98.7 % of every panel wake on the tablet in that charge cycle — and the framework billed the app 50.8 mAh of panel power for it, 38 mAh a day. One minute is still offered, and still means one minute while charging; on battery the shortest step is 5 minutes, which gives back about 30 mAh a day. The Sleep page says so under the choice.
+- **The live screen's wake lock is held for 4 seconds instead of 8.** Measured: the display is back in doze 1.2–1.6 s after each tick, while the lock stayed held for a mean of 6.68 s — 1 392 holds totalling 2 h 35 m in 32 h, 98.6 % of all partial wake lock time on the tablet. Five of those seconds bought nothing.
+- **Every live update logs how long its render took**, so that 4-second budget can be checked against real numbers instead of assumed. A render that ever comes near the limit is logged as a warning rather than failing quietly.
+
+### Fixed
+
+- **The battery log's two frontlight columns are filled at last.** Both sysfs nodes are root-only, so the per-row plain read always failed and the columns were empty in all 957 rows of September and October 2026. The row now reads them through Shizuku, exactly as the three-hourly snapshot always has, and caches the answer for five minutes so the shell service is not bound for every row.
+- **A night with no live updates is no longer reported as a fault when the step in force was longer than the one chosen.** On battery a one-minute choice runs at five minutes, and the check for a missed update was still measuring against one minute.
+
+### Research
+
+- **What the tablet's battery actually does.** From its own records over 3.4 days: reading manga draws 229–551 mA depending on the session, with a five-session average of 291 mA; the whole-device idle floor is 10.2 mA and the worst measured idle window 63.2 mA, tracking the Wi-Fi radio; AOSP's own model can name only 507 of the 1 442 mAh a charge cycle drains, so most of the energy goes somewhere unmeasured. Before this release the suite's live sleep screen accounted for 98.7 % of every time the tablet lit its panel.
+- **Two notes earlier in this file are corrected by that measurement.** The 0.7.0 note that "an hour of sleep used about 1 % of battery" describes the whole tablet asleep, not this feature: the one-minute step itself measured about 1.6 mAh an hour, 0.04 % of the battery. And the 0.5.0 note that the battery cost "isn't measured yet" now has a number.
+
 ## [0.7.1] (2026-10-04)
 
 The transparent sleep screen, made to fit the panel it lands on, and what a full sweep of the code and the tablet turned up. Tested on a Note Air6 C with firmware 4.3 (Android 16, build `0916`): the plate Over Transparent writes was measured on the tablet and sits entirely inside the band Boox keeps — before this release 76 % of it was cut away when the tablet slept on its side — and both orientations publish the picture in their own shape. The transparent sleep screen itself, and the route that needs no Shizuku, are still to be seen on the tablet: Boox's own screensaver style has to be chosen by hand for the first.
@@ -83,7 +103,7 @@ Steadier sleep and ink, and a home that keeps frozen apps visible. Tested on a N
 ### Added
 
 - **A Clean screen tile and key** (Quick Settings, and the Instant ink page). They clean all ghosting off the panel in one pass, the way NeoReader cleans a colour panel. The tile waits until Quick Settings has closed.
-- **Sleep live updates every minute.** The *While asleep* step now offers 1 minute, for checking that updates arrive without waiting through a 5-minute step. Checked on the tablet: the 1-minute step arrives, and an hour of sleep used about 1 % of battery, sometimes one hour, sometimes two.
+- **Sleep live updates every minute.** The *While asleep* step now offers 1 minute, for checking that updates arrive without waiting through a 5-minute step. Checked on the tablet: the 1-minute step arrives, and an hour of sleep used about 1 % of battery, sometimes one hour, sometimes two. (Corrected in 0.7.2: that ~1 % an hour is the whole tablet asleep. The one-minute step itself measured about 1.6 mAh an hour, and it now runs only while charging.)
 - **Home shows Boox-frozen apps instead of hiding them.** Packages Boox froze kept a launch entry stock still opens, but Android hides them from launchers, so Word, Firefox and KOReader vanished from home and search on a reporter’s Lumi (issue #3). The drawer now lists them dimmed with a frozen tag (checked on the tablet with a disabled app), opening still works, and the app panel explains where to stop Boox freezing them again.
 
 ### Changed
@@ -255,7 +275,7 @@ The sleep screen now updates while the tablet sleeps, with twenty-one faces to u
   - Sunrise and sunset for the home screen's weather city (never GPS).
   - The week number and day of the year.
   - The home screen's cached weather, with the time it was read. Nothing is fetched while the tablet sleeps.
-- **Live sleep screen (While asleep).** The face can now update while the tablet sleeps, every 5 to 60 minutes, so the date, battery and agenda stay true, and Boox's charging bar is covered. It's off by default. There are options for charging only and for no updates at night. It's been verified on battery on the Note Air6 C: the face goes up a few seconds after sleep and redraws at each step. It needs three things, all allowed on the tablet: an accessibility service (it only holds the picture and can't read the screen), background use, and exact alarms. The Sleep page lists each with a status lamp and a key. The battery cost isn't measured yet.
+- **Live sleep screen (While asleep).** The face can now update while the tablet sleeps, every 5 to 60 minutes, so the date, battery and agenda stay true, and Boox's charging bar is covered. It's off by default. There are options for charging only and for no updates at night. It's been verified on battery on the Note Air6 C: the face goes up a few seconds after sleep and redraws at each step. It needs three things, all allowed on the tablet: an accessibility service (it only holds the picture and can't read the screen), background use, and exact alarms. The Sleep page lists each with a status lamp and a key. (Measured in 0.7.2: about 1.6 mAh an hour at the one-minute step, and a fifth of that at five minutes.) The battery cost isn't measured yet.
 - **In-app updates.** The Device page's *This app* plate checks GitHub Releases, at most once a day when the app opens or when you ask. It downloads the APK, checks its SHA-256 and signing key, and installs it through Android's installer. Development builds explain that they update from the computer instead.
 - **Report a problem or idea.** A form on the Device page fills in the GitHub issue form, or copies or shares the report. You pick what to include and can preview each part: device, app and access, feature status, input devices, battery, and this app's recent log. Nothing personal is included, and nothing is sent until you press a key.
 - **One answer to "which tablet is this".** A single device profile recognises Boox from the build and from Boox's system app, and takes the pen from Android's own list of input devices. The launcher, the Apps page, Instant ink and reports all use it.

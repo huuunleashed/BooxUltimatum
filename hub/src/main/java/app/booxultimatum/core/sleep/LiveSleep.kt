@@ -73,6 +73,15 @@ data class LiveRecord(val sleptAt: Long, val wokeAt: Long, val updates: Int, val
  */
 object LiveSleep {
     const val ACTION_TICK = "app.booxultimatum.action.LIVE_SLEEP_TICK"
+
+    /**
+     * The shortest step used on battery. Measured on the owner's Note Air6 C on 2026-10-04: at the one-minute step the
+     * live screen woke the panel 1 384 times in 32 h — 98.7 % of every panel wake on the tablet — and the framework
+     * billed the app 50.8 mAh of panel power for it, about 30 mAh a day, 0.8 % of the battery. One minute stays
+     * offered because it is how the owner checks that updates arrive; it applies while charging, where it costs
+     * nothing that matters.
+     */
+    const val MIN_STEP_ON_BATTERY = 5
     private const val STATE = "sleep_live_state"
     private const val A11Y_JOURNAL = "sleep.live.a11y"
 
@@ -165,10 +174,24 @@ object LiveSleep {
         return if (next - now < minGap) next + step else next
     }
 
+    /**
+     * The step actually used, which is the owner's choice except that nothing shorter than [MIN_STEP_ON_BATTERY] runs
+     * on battery. Pure so the rule can be tested without a device.
+     */
+    internal fun effectiveStep(prefs: LivePrefs, charging: Boolean): Int =
+        if (!charging && prefs.stepMin < MIN_STEP_ON_BATTERY) MIN_STEP_ON_BATTERY else prefs.stepMin
+
+    /** The step in force right now, for the alarm and for the Sleep page to show. */
+    fun effectiveStep(context: Context, prefs: LivePrefs = LivePrefs.load(context)): Int =
+        effectiveStep(prefs, charging(context))
+
+    private fun charging(context: Context) =
+        context.getSystemService(BatteryManager::class.java)?.isCharging == true
+
     fun schedule(context: Context, prefs: LivePrefs = LivePrefs.load(context)) {
         val am = context.getSystemService(AlarmManager::class.java) ?: return
         val pi = tickIntent(context, PendingIntent.FLAG_UPDATE_CURRENT) ?: return
-        val at = nextTick(System.currentTimeMillis(), prefs.stepMin)
+        val at = nextTick(System.currentTimeMillis(), effectiveStep(prefs, charging(context)))
         if (exactAlarms(context)) am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
         else am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
         state(context).edit { putLong("next", at) }
@@ -184,10 +207,7 @@ object LiveSleep {
 
     /** Whether this moment is one the owner wants updates at: charging only, and outside quiet hours. */
     fun wantedNow(context: Context, prefs: LivePrefs, now: Long = System.currentTimeMillis()): Boolean {
-        if (prefs.onlyCharging) {
-            val charging = context.getSystemService(BatteryManager::class.java)?.isCharging == true
-            if (!charging) return false
-        }
+        if (prefs.onlyCharging && !charging(context)) return false
         if (prefs.quiet && prefs.quietFrom != prefs.quietTo) {
             val h = Calendar.getInstance().apply { timeInMillis = now }.get(Calendar.HOUR_OF_DAY)
             val inQuiet = if (prefs.quietFrom < prefs.quietTo) h in prefs.quietFrom until prefs.quietTo else h >= prefs.quietFrom || h < prefs.quietTo
@@ -228,7 +248,10 @@ object LiveSleep {
         val slept = s.getLong("slept", 0)
         if (slept == 0L) return
         val now = System.currentTimeMillis()
-        val missed = s.getInt("updates", 0) == 0 && now - slept > 2 * prefs.stepMin * 60_000L + 60_000L && wantedNow(c, prefs, slept + prefs.stepMin * 60_000L)
+        // Judge a missing update by the step that was in force while asleep, not the chosen one: on battery a
+        // one-minute choice runs at five, and measuring it against one minute would report a miss that never happened.
+        val step = effectiveStep(prefs, charging(c))
+        val missed = s.getInt("updates", 0) == 0 && now - slept > 2 * step * 60_000L + 60_000L && wantedNow(c, prefs, slept + step * 60_000L)
         s.edit { putLong("woke", now).putBoolean("missed", missed) }
     }
 

@@ -142,10 +142,11 @@
         <item quantity="other">Updates while asleep every %d minutes</item>
     </plurals>
     <string name="sl_live_suggest">This face is made for updates while asleep. Turn them on below to keep it moving.</string>
-    <string name="sl_live_explain">Live updates redraw the face while the tablet sleeps, so the date, battery and agenda stay true, and Boox’s charging bar is covered (so is Boox’s own clock, if you show one). The time you put the tablet down stays as it was. Each update wakes the tablet for about a second and a half; the battery cost hasn’t been measured yet.</string>
+    <string name="sl_live_explain">Live updates redraw the face while the tablet sleeps, so the date, battery and agenda stay true, and Boox’s charging bar is covered (so is Boox’s own clock, if you show one). The time you put the tablet down stays as it was. Each update wakes the panel for about a second and a half — measured on this tablet at about 1.6 mAh an hour at the one-minute step, a fifth of that at five — which is why one minute is kept for charging.</string>
     <string name="sl_live_turn_on">Turn on</string>
     <string name="sl_live_turn_off">Turn off</string>
     <string name="sl_live_step">Update every</string>
+    <string name="sl_live_step_battery">One minute is used while charging. On battery the shortest step is %1$d minutes, which is what keeps the panel from waking sixty times an hour.</string>
     <string name="sl_live_charging">Only while charging</string>
     <string name="sl_live_charging_detail">No wake-ups on battery at all</string>
     <string name="sl_live_quiet">Not at night</string>

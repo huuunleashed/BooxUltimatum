@@ -4,7 +4,7 @@
 
 **A suite of apps for the BOOX Note Air6 C, without root: a hub with a home screen, sleep-screen designer, battery doctor and reversible tweaks, and Nib, a drawing app with Boox's instant pen.**
 
-![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue) ![Status: public preview](https://img.shields.io/badge/status-public%20preview%200.7.1-orange) ![Android 11+](https://img.shields.io/badge/Android-11%2B-3ddc84) ![Tested on Note Air6 C, FW 4.3](https://img.shields.io/badge/tested%20on-Note%20Air6%20C%20%C2%B7%20FW%204.3-black)
+![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue) ![Status: public preview](https://img.shields.io/badge/status-public%20preview%200.7.2-orange) ![Android 11+](https://img.shields.io/badge/Android-11%2B-3ddc84) ![Tested on Note Air6 C, FW 4.3](https://img.shields.io/badge/tested%20on-Note%20Air6%20C%20%C2%B7%20FW%204.3-black)
 
 [**Website and technical guide**](https://huuunleashed.github.io/BooxUltimatum/) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md) · [Report a bug or a finding](https://github.com/huuunleashed/BooxUltimatum/issues/new/choose)
 
@@ -18,7 +18,7 @@ The Note Air6 C is a lovely tablet with a frustrating side. Independent reviews 
 
 Nothing is flashed, and the bootloader stays locked. The hub, BooxUltimatum, is one APK; the apps that build on it, starting with Nib, install and uninstall on their own.
 
-> **Status: public preview (0.7.1).** It runs daily on the author's own tablet (Note Air6 C, firmware 4.3, Android 16), and hasn't been tested elsewhere yet. Download it from [Releases](https://github.com/huuunleashed/BooxUltimatum/releases), and please report how it behaves on your tablet. From 0.5 on, the app can update itself and file a report for you from its Device page.
+> **Status: public preview (0.7.2).** It runs daily on the author's own tablet (Note Air6 C, firmware 4.3, Android 16), and hasn't been tested elsewhere yet. Download it from [Releases](https://github.com/huuunleashed/BooxUltimatum/releases), and please report how it behaves on your tablet. From 0.5 on, the app can update itself and file a report for you from its Device page.
 
 ## What it does
 
@@ -166,7 +166,7 @@ Firmware 4.3 hides the Wireless debugging switch from Developer options, so rest
 
 ## Install
 
-**From a release:** download `BooxUltimatum-0.7.1.apk` from this repository's [Releases](https://github.com/huuunleashed/BooxUltimatum/releases) page, allow your browser or file manager to install apps, and open it. The Access page shows what each level unlocks and the exact commands for it. Releases are signed with the project's own key, so later releases update it in place. The hub's Suite page installs Nib for you, or download `Nib-0.2.0.apk` from the same page; Nib's releases are tagged `nib-v…`.
+**From a release:** download `BooxUltimatum-0.7.2.apk` from this repository's [Releases](https://github.com/huuunleashed/BooxUltimatum/releases) page, allow your browser or file manager to install apps, and open it. The Access page shows what each level unlocks and the exact commands for it. Releases are signed with the project's own key, so later releases update it in place. The hub's Suite page installs Nib for you, or download `Nib-0.2.0.apk` from the same page; Nib's releases are tagged `nib-v…`.
 
 **Test builds for the tablet:** unfinished builds of the hub or Nib are sometimes published as `test-…` pre-releases so they can be checked on a real tablet. The hub offers them only when *Offer test builds* is on (Device page), and a release always replaces its own test build.
 
@@ -252,10 +252,15 @@ No dates promised; this is a spare-time project, and each release ships when it 
   - Nib 0.2, the first release: instant preview, many brushes, fine widths, unlimited layers, a lasso, a page that turns, paper guides, undo, autosave and exports, with floating cards and a Diagnostics page for the tablet.
   - A font manager, a Storage page, and logs and leftovers kept bounded in every suite app.
 - **0.7, steadier sleep and ink, home keeps frozen apps (released 2026-10-01)**
-  - Sleep live updates every minute, with the battery cost measured at about 1 % per one to two hours.
+  - Sleep live updates every minute, with the battery cost measured at about 1 % per one to two hours. (Corrected in 0.7.2: that is the whole tablet asleep. The one-minute step itself measured about 1.6 mAh an hour, and it now runs only while charging.)
   - Batched instant ink with a stronger recovery, and the computer command for usage access on the Ink page.
   - Home lists Boox-frozen apps dimmed instead of hiding them.
   - A Clean screen tile and key.
+- **0.7.2, the app's own battery habits (released 2026-10-05)**
+  - The live sleep screen woke the panel 1 384 times in 32 hours — 98.7 % of every panel wake on the tablet — so a one-minute step now applies only while charging and 5 minutes on battery, giving back about 30 mAh a day.
+  - The live wake lock is held for 4 seconds instead of 8, and every update now logs how long its render took.
+  - The battery log's frontlight columns, empty in all 957 rows ever written, are filled through Shizuku and cached for five minutes.
+  - What the tablet's battery really does, measured from its own records: 229–551 mA while reading manga with a 291 mA average, a 10.2 mA idle floor, and 63.2 mA when the Wi-Fi radio stays busy.
 - **0.7.1, the transparent sleep screen made to fit (released 2026-10-04)**
   - Over Transparent plates now sit inside the band Boox keeps in either rotation, measured on the tablet: one sticker file is right both ways up.
   - The plate can be kept current without Shizuku, through one Android consent to write Boox's sticker, with Shizuku still used when it runs.

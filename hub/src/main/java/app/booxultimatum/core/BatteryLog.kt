@@ -76,6 +76,13 @@ object BatteryLog {
         "boot_count,current_mA,frontlight,frontlight_ct,wifi,idle,saver"
     private const val FRONTLIGHT = "/sys/class/backlight/onyx_bl_br/brightness"
     private const val FRONTLIGHT_CT = "/sys/class/backlight/onyx_bl_ct/brightness"
+
+    /**
+     * How long one frontlight reading is reused. Both nodes are root-only, so the value has to come through Shizuku, and
+     * binding the shell service for every row to read a number the owner changes by hand would cost more than it is
+     * worth. Nobody moves a frontlight twice in five minutes.
+     */
+    private const val FRONTLIGHT_CACHE_MS = 5 * 60_000L
     const val ACTION_SAMPLE = "app.booxultimatum.action.LOG_SAMPLE"
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val watching = java.util.concurrent.atomic.AtomicBoolean(false)
@@ -223,7 +230,34 @@ object BatteryLog {
 
     private fun day(t: Long) = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date(t))
 
-    private fun writeSample(c: Context, reason: String) {
+    /** Shizuku calls are expensive, so the last frontlight reading is reused for [FRONTLIGHT_CACHE_MS]. */
+    @Volatile private var frontlightCache: Triple<Long, String, String>? = null
+
+    /**
+     * The frontlight as `brightness to colour`, or two empty strings when it cannot be read. Both nodes are root-only, so
+     * the plain read is tried first — it costs nothing and it works where a firmware allows it — and Shizuku is asked
+     * only when that fails. Until 0.7.2 the row path never asked, which is why those two columns were empty in all
+     * 957 rows of September and October 2026 while the deep snapshot, which does ask, held real values.
+     */
+    private suspend fun frontlight(): Pair<String, String> {
+        val now = System.currentTimeMillis()
+        frontlightCache?.let { if (now - it.first < FRONTLIGHT_CACHE_MS) return it.second to it.third }
+        val plain = Shell.readFile(FRONTLIGHT)?.takeIf { it.isNotEmpty() }
+        if (plain != null) {
+            val ct = Shell.readFile(FRONTLIGHT_CT).orEmpty()
+            frontlightCache = Triple(now, plain, ct)
+            return plain to ct
+        }
+        if (!Privileged.ready()) return "" to ""
+        val out = Privileged.sh("cat $FRONTLIGHT $FRONTLIGHT_CT").out.trim().lines().map { it.trim() }.filter { it.isNotEmpty() }
+        if (out.isEmpty()) return "" to ""
+        val br = out[0]
+        val ct = out.getOrNull(1).orEmpty()
+        frontlightCache = Triple(now, br, ct)
+        return br to ct
+    }
+
+    private suspend fun writeSample(c: Context, reason: String) {
         val b = BatterySnapshot.read(c)
         val f = File(dir(c), "battery-${day(b.readAtMillis).substring(0, 7)}.csv")
         // Rows written before the extra columns existed keep their own file, so each file has a single layout.
@@ -235,14 +269,14 @@ object BatteryLog {
             Build.VERSION.SDK_INT >= 33 && pm.isDeviceLightIdleMode -> "light"
             else -> "none"
         }
+        val fl = frontlight()
         f.appendText(
             listOf(
                 b.readAtMillis, reason, b.levelPct, b.chargeCounterMah?.let { "%.0f".format(Locale.US, it) } ?: "",
                 b.voltageMv ?: "", b.tempC ?: "", if (b.source != PowerSource.None) 1 else 0, if (b.interactive) 1 else 0,
                 SystemClock.elapsedRealtime(), SystemClock.uptimeMillis(),
                 bootCount(c) ?: "", b.currentNowMa?.let { "%.0f".format(Locale.US, it) } ?: "",
-                // Plain app reads of these sysfs nodes may be refused by SELinux; the deep snapshot retries through Shizuku.
-                Shell.readFile(FRONTLIGHT) ?: "", Shell.readFile(FRONTLIGHT_CT) ?: "",
+                fl.first, fl.second,
                 wifiState(c), idle, if (pm.isPowerSaveMode) 1 else 0,
             ).joinToString(",") + "\n",
         )

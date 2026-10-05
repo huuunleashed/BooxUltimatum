@@ -37,6 +37,8 @@ class LiveSleepService : AccessibilityService() {
     /** The other buffer of the same size, free for the worker to draw into. */
     private var spare: Bitmap? = null
     private var pending: Bitmap? = null
+    /** The render time of the frame in [pending], logged with it so the wake-lock budget stays honest. */
+    private var pendingRenderMs = 0L
     private var waitingForDisplay = false
     private var shown = 0
     private var wake: PowerManager.WakeLock? = null
@@ -104,7 +106,7 @@ class LiveSleepService : AccessibilityService() {
         if (!LiveSleep.active(this) || LiveSleep.interactive(this)) return
         if (!first) LiveSleep.schedule(this, prefs)
         if (!LiveSleep.wantedNow(this, prefs)) return
-        hold(8_000)
+        hold(HOLD_MS)
         work.post {
             val slept = LiveSleep.record(this)?.sleptAt ?: System.currentTimeMillis()
             // The face is drawn into the spare buffer, never the one the view is showing: allocating a fresh 18 MB
@@ -115,6 +117,9 @@ class LiveSleepService : AccessibilityService() {
                 if (LiveSleep.interactive(this)) { r.bitmap.takeIf { it !== face && it !== spare }?.recycle(); return@post }
                 pending?.takeIf { it !== r.bitmap }?.recycle()
                 pending = r.bitmap
+                pendingRenderMs = r.renderMs
+                // The lock must outlast the render. Say so now, rather than losing a frame silently if it ever does not.
+                if (r.renderMs > HOLD_MS - 1_000) log.w("live render slow", "ms" to r.renderMs)
                 waitingForDisplay = true
                 sendBroadcast(Intent(ONYX_REFRESH))
                 // If Onyx never answers (another firmware), don't hold the frame forever: show it and let the next wake push it.
@@ -140,7 +145,7 @@ class LiveSleepService : AccessibilityService() {
         }
         shown++
         LiveSleep.onUpdated(this)
-        log.i("face shown", "update" to shown)
+        log.i("face shown", "update" to shown, "renderMs" to pendingRenderMs)
         // Partial e-ink updates leave traces; a full repaint every few updates clears them, as Onyx's dream does.
         // Off the main thread: finding the display route is a few binder calls the first time.
         if (shown % FULL_REFRESH_EVERY == 0) work.postDelayed({ runCatching { if (Epd.connect() != null) Epd.repaintEverything() } }, 300)
@@ -198,6 +203,15 @@ class LiveSleepService : AccessibilityService() {
         private const val ONYX_DISPLAY_STATE = "onyx.action.DISPLAY_CHANGED_STATE"
         private const val DISPLAY_ON = 2
         private const val FULL_REFRESH_EVERY = 6
+
+        /**
+         * How long the wake lock is held for one update. It used to be 8 000 ms. Measured on the owner's Note Air6 C on
+         * 2026-10-04: the display is back in doze 1.2-1.6 s after the tick, while the lock stayed held 6.62 s later on
+         * average — 1 392 holds, 2 h 35 m in 32 h, 98.6 % of every partial wake lock on the tablet. Five of those
+         * seconds bought nothing. 4 000 ms still leaves more than twice what a render and the refresh broadcast use,
+         * and a render that ever comes near the limit is logged rather than lost.
+         */
+        private const val HOLD_MS = 4_000L
         private const val FIRST_DELAY_MS = 4_000L
 
         @Volatile private var instance: LiveSleepService? = null

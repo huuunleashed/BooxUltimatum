@@ -62,8 +62,8 @@ Opt-in, off by default, and Sleep image mode only. The face is redrawn every 1, 
 **How it runs:**
 
 - `core/sleep/LiveSleepService.kt` is the accessibility service. It subscribes to one rare event type it ignores, can't read window content, and adds its overlay only while the screen is off.
-- On `SCREEN_OFF`, the first update runs 4 s after Onyx has drawn and dozed. After that, an exact `RTC_WAKEUP` alarm fires on each round multiple of the step (`LiveSleep.schedule`). Each update:
-  1. takes a partial wake lock for up to 8 s;
+- On `SCREEN_OFF`, the first update runs 4 s after Onyx has drawn and dozed. After that, an exact `RTC_WAKEUP` alarm fires on each round multiple of the step (`LiveSleep.schedule`). The step in force is the owner's choice except on battery, where nothing shorter than 5 minutes runs (`LiveSleep.effectiveStep`): the one-minute step is kept for charging, where its measured 1.6 mAh an hour costs nothing that matters. Each update:
+  1. takes a partial wake lock for up to 4 s, measured against a display that dozes again 1.2–1.6 s after the refresh;
   2. renders the face at panel size with the put-down moment pinned (`SleepStudio.renderLive`);
   3. sends `onyx_dream_refresh`;
   4. shows the face when Onyx reports state 2, or after 3 s if it never does;
@@ -85,7 +85,7 @@ Opt-in, off by default, and Sleep image mode only. The face is redrawn every 1, 
 
 **Options:** only while charging, which means no wake-ups on battery at all, and not at night, which skips updates from 23:00 to 07:00.
 
-**Still to measure:** the battery cost on battery, for each step *[verify]*, and whether Boox's full-access list survives a reboot *[verify]*.
+**Measured (2026-10-04, a 32 h charge cycle on battery):** the one-minute step woke the panel 1 384 times — 98.7 % of every panel wake on the tablet — and cost about 1.6 mAh an hour, 50.8 mAh of panel power billed to the app, 38 mAh a day; a five-minute step is a fifth of that. The wake lock was held for a mean of 6.68 s per tick against a display that dozes 1.2–1.6 s after it: 1 392 holds, 2 h 35 m, 98.6 % of all partial wake-lock time on the tablet. Since 0.7.2 the one-minute step therefore runs only while charging, and the hold is 4 s. **Still to measure:** the same cost for the 10, 15, 30 and 60-minute steps, and whether Boox's full-access list survives a reboot *[verify]*.
 
 **Faces:** twelve faces are made for live updates (see *Faces* below). They read the time now, the time asleep, the battery used and its rate, the next event counted down, the next alarm, and say when they were last drawn. Without live updates they show the moment the tablet was put down and say so.
 
