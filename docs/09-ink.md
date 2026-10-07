@@ -30,7 +30,7 @@ The display's firmware (SurfaceFlinger and the e-ink controller driver) reads th
 | Native pen | Display style | Style parameters (as the native app sets them) | Final ink |
 |---|---|---|---|
 | Plain pen, pencil | 0 pencil | none | A plain round path at the width |
-| Fountain | 1 fountain | `[pressureSensitivity, smoothLevel]`, 0 to 1, defaults 0.3 and 0.6 | Width from pressure and smoothing, computed in native code |
+| Fountain | 1 fountain | `[pressureSensitivity, smoothLevel]`, 0 to 1, defaults 0.3 and 0.6 | Width from pressure and smoothing, computed in native code, 3 screen px wider than the width sent to the display (see *Measured pens*) |
 | Marker | 2 marker | left at the display's `[1, 16]` | Round-capped segments at each point's width, drawn opaque, then composited at alpha 128 |
 | Brush | 3 neo brush | none | Native |
 | Charcoal | 4 charcoal, or 6 charcoal v2 | `[tiltEnabled, tiltScale]`, `[1, 3]` | Native texture, broadened by tilt |
@@ -48,12 +48,13 @@ BOOX's own pen library was measured on the tablet with penlab (`tools/host/penla
 
 | Pen | Width | Notes |
 |---|---|---|
-| Fountain | max(2, W · v · p^(2s)) | s is the `pressureSensitivity` (0.3 by default), exact for s from 0.15 to 1; s = 0 gives a constant width. v = 1 / (1 + 0.077 · speed in px/ms): 0.99 when slow, 0.76 at 4 px/ms. BOOX Notes configures W as the pen's width + 3. The display's fountain preview takes the same s and responds the same way (thinner as s rises). |
+| Fountain | max(2, W · v · p^(2s)) | s is the `pressureSensitivity` (0.3 by default), exact for s from 0.15 to 1; s = 0 gives a constant width. v = 1 / (1 + 0.077 · speed in px/ms): 0.99 when slow, 0.76 at 4 px/ms. BOOX Notes configures W as the pen's width + 3, while it sends the display the pen's width: the display's fountain preview of a pen sent w px wide is this law at w + 3, and its thinning follows s the same way. |
+| Fountain, the older algorithm | 2 + (W + 1) · p² | BOOX's library still has it (its type 2). Its width ignores sensitivity, speed and the minimum width, so the display, whose preview thins with sensitivity, isn't drawing it. The constant in Notes that adds the 3 px is named after it (`FOUNTAIN_PEN_V1_COMPENSATION`): at full pressure the newer law at W + 3 equals this one at W. |
 | Brush | 2W · √p | Pressure sensitivity is ignored. |
 | Marker | about W · (0.8 + 0.2p) | 0.8W up to p 0.2, 0.9W at 0.5, W from 0.8. Speed is ignored. |
 | Ballpoint | W | Constant. |
 | Calligraphy (square) | about W | BOOX Notes configures 2W with the nib ratio min(W, 10). Pressure is ignored. |
-| Pencil | stamps of exactly W, every 0.27W | With the settings BOOX Notes uses, pressure sets each stamp's opacity (0.6p), not its size. Each stamp is turned to a random angle, and tilt and speed are ignored. The display previews it as a constant-width line. |
+| Pencil | stamps of exactly W, every 0.27W | BOOX's library pencil (its type 7), with the settings of its `NeoPencilPen` defaults: pressure sets each stamp's opacity (0.6p), not its size. Each stamp is turned to a random angle, and tilt and speed are ignored. No pen of BOOX Notes 46037 draws with it: Notes' pencil is a plain round path (`NormalPencilShape`), previewed in the pencil style, which draws a constant-width plain line. |
 | Charcoal | stamps of 1.2W + 5.2, every 9 px | Size doesn't follow pressure; coverage does: a mean stamp alpha of 16 at p 0.1, 28 at 0.3, 44 at 0.7 and 55 at 1. |
 
 **Charcoal and tilt.** With tilt on and a tilt scale of s (3 by default), the width grows by 1 + s · g(θ), where θ is the pen's angle from upright. The angle combines both tilt axes: tilts of 45° and 45° give 60°. g is 0 up to 10°, then 0.07 at 20°, 0.2 at 30°, 0.51 at 45°, 1.04 at 60°, 1.49 at 70° and 2.02 at 80°. That's close to 1/cos θ − 1 up to 60°. A broader stroke isn't lighter. At a usual writing tilt of 40° to 50°, a charcoal lays down two to three times its width, which is why Nib's charcoal preview looked much thicker than its ink when Nib ignored tilt below 30°.
@@ -119,7 +120,7 @@ kit/ink/src/main/java/app/booxultimatum/kit/ink/
 - **`InkGuard`** records every display-wide change this process makes: an open session, fast mode, finger touch switched off, and replaced parameters with their originals. It keeps the record in a small file (`noBackupFilesDir`). At the next start, `attach()` undoes whatever an ended process of the app left: it ends a live session left drawing (a paused one is left alone, since it draws nothing and may belong to another app by then), clears fast mode, resets finger touch and restores parameters.
 - **`InkCanvasController`** is the writing choreography every drawing surface shares, and it's what the native apps do:
   - The hold lasts the whole writing session.
-  - Releases happen at breaks only: `controlsTouched`, `block` for panels and menus, `gestureStarted`, the eraser end, and `releaseNow` for app decisions such as undo, a tool change or a selection. A release waits for the app's frame with every stroke (`frameShown`, or 250 ms at most).
+  - Releases happen at breaks only: `controlsTouched`, `block` for panels and menus, `gestureStarted`, the eraser end, and `releaseNow` for app decisions such as undo, a tool change or a selection. A release waits for the app's frame with every stroke (`frameShown`, or 250 ms at most). Nib reports that frame when SurfaceFlinger has taken it: a transaction with a committed listener rides on the frame that draws the stroke (`FrameLatch`, Android 13 and later), so a release never lets an older frame through.
   - It has three reveal policies: `AtBreaks` (native), `AfterPause` (after a pause it first pushes the exact ink into the display's layer through `Host.pushInk`, keeping the hold, and releases only if that fails) and `EveryStroke` (the old behaviour).
   - `controlsChanged` pushes the app's controls during a hold (`Host.pushControls`).
   - Gestures turn on fast mode (`Host.fastMode`) until 600 ms after the last one.
@@ -151,7 +152,7 @@ Instant ink runs in the hub for other apps, which render their own strokes, so i
 
 ## Verified and not
 
-- Verified on the tablet (NA6C FW 4.3): the native apps' single hold per session and the controller's scheme switches; multi-region mode with two exclusions; the geometry calls and the matrix; the style parameters read back; the fast mode index; every call Nib 0.2 already made.
+- Verified on the tablet (NA6C FW 4.3): the native apps' single hold per session and the controller's scheme switches; multi-region mode with two exclusions; the geometry calls and the matrix; the style parameters read back; the fast mode index; every call Nib 0.2 already made. On 2026-10-06, from the shell and with Android's stylus input command (no preview, since the display reads only the real pen): SurfaceFlinger's committed listener reports each held stroke's frame in Nib, Nib's padded fountain ink measures as computed.
 - Not yet *[verify]*:
   - bitmaps pushed from a non-system app, and how the layer shows colour;
   - finger touch control from an ordinary app;
@@ -159,7 +160,8 @@ Instant ink runs in the hub for other apps, which render their own strokes, so i
   - the eraser and lasso previews;
   - writing style parameters (the originals are always restored);
   - a limit given in screen coordinates;
-  - `startStroke`/`addStrokePoint` (16711697 to 16711699), which return the width the display computes.
+  - `startStroke`/`addStrokePoint` (16711697 to 16711699), which return the width the display computes. The other app-fed calls, `moveTo`, `quadTo` and `penUp`, are accepted but draw nothing (from the shell, 2026-10-06);
+  - whether the fountain preview and its padded ink now look the same to the eye (the owner's check).
 
   Nib's Diagnostics probes each one.
 
@@ -209,3 +211,10 @@ Every finding from the study, and where it's used. Nothing is kept only in notes
 | NeoReader's wait-for-update is a timed sleep of at least 150 ms, and its pen path re-arms 200 ms after disabling raw drawing | `InkCanvasController.rearmMs`; confirms the 200 ms value |
 | The SDK names pen state 4 erasing but never sends it | Held on the tablet 2026-09-29: sending 4 reads back 2, and the tip’s preview shows. Lab › Pen state 4 keeps the probe. |
 | The eraser's raw painter defaults to 5 with the preview off | Painters 0 to 8 all draw a track (owner’s test 2026-09-29, one band each); Lab › Eraser painters keeps the probe. |
+| BOOX Notes sends the display a fountain pen's width and draws its ink 3 screen px wider, with a 1 px minimum at the zoom it was drawn at (`FOUNTAIN_PEN_V1_COMPENSATION`) | `BrushSpec.inkAt`: Nib's fountain ink gets the same 3 screen px, its 2 px floor and its speed thinning on screen; the display is still sent the pen's width |
+| The older fountain algorithm is 2 + (w + 1) · p² and ignores sensitivity | Rules it out as the display's preview; nothing else uses it |
+| BOOX Notes previews its ballpoint (a constant width) in the pencil style | Nib's ballpoint previews in the pencil style; so does the dash's stand-in |
+| BOOX Notes' pencil is a plain round line previewed in the pencil style; its only textured pen, the charcoal, is previewed in the charcoal styles with tilt (decompiled Notes 46037, 2026-10-07) | Nib's grainy, tilted pencil can't match the plain pencil style; a textured, tilted preview needs a charcoal style *[verify]* |
+| An app's frame is in SurfaceFlinger once a transaction riding on it is committed (`applyTransactionOnDraw`, `addTransactionCommittedListener`) | Nib's `FrameLatch` reports the frame with the last stroke before a release; verified on the tablet (every held stroke's frame reported) |
+| The app-fed preview calls (`moveTo`, `quadTo`, `penUp`) are accepted on FW 4.3 but draw nothing, and the display's pen reader opens only the pen's own node (it picks devices named `onyx_emp`, `Wacom` or `hanvon`) | No use: the display's preview can only be seen with the real pen |
+| The kernel logs every 20th preview update (`HANDWRITE update_marker`, with its rectangle) | Counting updates and placing strokes from a log; not a measure of width |

@@ -14,15 +14,32 @@ import kotlin.math.max
  * The display draws its preview at the width it's sent. The styles that apply pressure themselves ([followsPressure]:
  * fountain, marker, neo brush) are sent the brush's full width, since the engine's pens follow the same laws as BOOX's
  * (measured with penlab: the fountain's p^(2s), the marker's 0.8 + 0.2p, the brush's √p; `docs/09-ink.md`). The
- * other styles draw at a constant width, so a brush that thins with pressure is sent its width at the owner's
- * [typicalPressure], which Nib learns from their strokes (verified in Diagnostics › Match preview on the Note Air6 C).
- * The native-matched pencil, graphite and charcoals don't thin, so they're sent their width as it is. On top sits a
- * factor per preview style, which the owner can tune in Diagnostics. Both values are logged with every stroke.
+ * fountain style draws 3 px wider than it's sent, as BOOX's own ink allows for, so the fountain pen's ink is drawn that
+ * much wider instead (the engine's `BrushSpec.inkAt`). The other styles draw at a constant width, so a brush that thins
+ * with pressure is sent its width at the owner's [typicalPressure], which Nib learns from their strokes (verified in
+ * Diagnostics › Match preview on the Note Air6 C). The native-matched pencil, graphite and charcoals don't thin, so
+ * they're sent their width as it is. On top sits a factor per preview style, which the owner can tune in Diagnostics.
+ * Both values are logged with every stroke.
  */
 class PreviewMatch(private val prefs: SharedPreferences) {
     private val log = Logbook.logger("nib.pen")
     private val typical = mutableFloatStateOf(prefs.getFloat(KEY_TYPICAL, DEFAULT_PRESSURE))
     private val factors = HashMap<Int, androidx.compose.runtime.MutableFloatState>()
+
+    init {
+        // Until 0.3.0-test.6 the fountain pen's ink was about 3 px thinner than the display's preview of it, which a
+        // size set for the fountain style in Diagnostics may have made up for. The ink now matches the preview (the
+        // engine's BrushSpec.inkAt), so that size starts again from 1, once.
+        if (prefs.getInt(KEY_VERSION, 1) < VERSION) {
+            val key = KEY_FACTOR + HardwareStyle.Fountain.code
+            val had = prefs.contains(key)
+            prefs.edit {
+                remove(key)
+                putInt(KEY_VERSION, VERSION)
+            }
+            if (had) log.i("preview size reset", "style" to HardwareStyle.Fountain.code, "why" to "fountain ink now drawn as the display previews it")
+        }
+    }
 
     /** The owner's usual pressure, 0 to 1: a slow average of each stroke's mean pressure. */
     val typicalPressure: Float get() = typical.floatValue
@@ -73,6 +90,10 @@ class PreviewMatch(private val prefs: SharedPreferences) {
     companion object {
         private const val KEY_TYPICAL = "preview_typical_pressure"
         private const val KEY_FACTOR = "preview_factor_"
+        private const val KEY_VERSION = "preview_match_version"
+
+        /** 2: the fountain pen's ink carries the display's pad, so the fountain style's size starts again from 1. */
+        private const val VERSION = 2
         const val DEFAULT_PRESSURE = 0.5f
         private const val MIN_PRESSURE = 0.1f
         private const val LEARN_RATE = 0.12f

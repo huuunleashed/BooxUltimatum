@@ -58,12 +58,13 @@ object Samples {
 
     /**
      * The sample stroke: an S across a [w] by [h] pixel box with the pressure rising and falling, drawn with [brush]
-     * at its own width (one document pixel to one screen pixel), capped at [maxWidth] so broad brushes still fit.
+     * at its own width (one document pixel to one screen pixel), capped at [maxWidth] so broad brushes still fit, and
+     * laid down as the canvas lays it down at 100 % (see [BrushSpec.inkAt]).
      */
     fun sCurve(brush: BrushSpec, color: Int, w: Float, h: Float, maxWidth: Float = h * 0.42f): Stroke {
-        val width = min(brush.width, maxWidth)
-        val b = StrokeBuilder(brush.copy(width = width), color, SAMPLE_ID)
-        val margin = max(width * 0.7f + 4f, w * 0.07f)
+        val ink = brush.copy(width = min(brush.width, maxWidth)).inkAt(1f)
+        val b = StrokeBuilder(ink, color, SAMPLE_ID)
+        val margin = max(ink.width * 0.7f + 4f, w * 0.07f)
         val amp = max(2f, h / 2f - margin * 0.9f) * 0.8f
         val n = 72
         for (i in 0..n) {
@@ -86,9 +87,9 @@ object Samples {
         }
     }
 
-    /** [samples] drawn through a stroke of [brush], smoothed as it smooths. */
+    /** [samples] drawn through a stroke of [brush], smoothed as it smooths and laid down as at 100 %. */
     fun through(brush: BrushSpec, color: Int, samples: List<InputSample>): Stroke {
-        val b = StrokeBuilder(brush, color, SAMPLE_ID)
+        val b = StrokeBuilder(brush.inkAt(1f), color, SAMPLE_ID)
         b.addAll(samples)
         return b.finish()
     }

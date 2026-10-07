@@ -29,7 +29,7 @@ class BrushSpecTest {
         assertEquals(HardwareStyle.SquarePen, Preview(HardwareStyle.SquarePen).styleFor(5f, 1f, verifiedOnly = true), "BOOX's calligraphy uses it")
         assertEquals(HardwareStyle.CharcoalV2, Preview(HardwareStyle.CharcoalV2).styleFor(1f, 1f, verifiedOnly = true), "BOOX's charcoal uses it")
         assertEquals(HardwareStyle.Dash, Preview(HardwareStyle.Dash).styleFor(5f, 1f))
-        assertEquals(HardwareStyle.Fountain, Preview(HardwareStyle.Dash).styleFor(5f, 1f, verifiedOnly = true), "no BOOX pen uses the dash")
+        assertEquals(HardwareStyle.Pencil, Preview(HardwareStyle.Dash).styleFor(5f, 1f, verifiedOnly = true), "no BOOX pen uses the dash; its constant width stands in the pencil style")
     }
 
     @Test
@@ -94,7 +94,30 @@ class BrushSpecTest {
         assertEquals(HardwarePreview(HardwareStyle.Marker, 8f, 0xFF00FF00.toInt()), marker, "solid colour, no parameters")
         assertEquals(0x8096_9696.toInt(), BrushSpec.defaults(BrushKind.Marker).hardwarePreview(0xFF00FF00.toInt(), 1f, marker = MarkerPreview.SeeThroughGrey).argb)
         assertEquals(HardwareStyle.SquarePen, BrushSpec.defaults(BrushKind.Calligraphy).hardwarePreview(0, 1f, verifiedOnly = true).style)
-        assertEquals(HardwareStyle.Fountain, BrushSpec.defaults(BrushKind.Dash).hardwarePreview(0, 1f, verifiedOnly = true).style)
+        assertEquals(HardwareStyle.Pencil, BrushSpec.defaults(BrushKind.Dash).hardwarePreview(0, 1f, verifiedOnly = true).style)
+    }
+
+    @Test
+    fun theFountainsInkCarriesTheDisplaysPad() {
+        val fountain = BrushSpec.defaults(BrushKind.Fountain).withWidth(4f)
+        val one = fountain.inkAt(1f)
+        assertEquals(7f, one.width, "4 px sent, drawn as BOOX Notes draws it: 3 screen px wider")
+        assertEquals(BrushSpec.NATIVE_FOUNTAIN_MIN_WIDTH, one.minWidth)
+        assertEquals(BrushSpec.NATIVE_FOUNTAIN_SPEED_DAMPING, one.speedDamping)
+        assertEquals(4f, fountain.hardwarePreview(0, 1f).widthPx, "the display is still sent the pen's own width")
+        val two = fountain.inkAt(2f)
+        assertEquals(5.5f, two.width, 1e-6f, "the pad is 3 screen px at the zoom it's drawn at")
+        assertEquals(1f, two.minWidth, 1e-6f, "the 2 px floor in screen px")
+        assertEquals(2f * BrushSpec.NATIVE_FOUNTAIN_SPEED_DAMPING, two.speedDamping, 1e-6f, "speed measured on screen")
+        assertEquals(4f + 12f, fountain.inkAt(0.25f).width, 1e-5f)
+        assertEquals(one, fountain.inkAt(Float.NaN), "an unknown zoom is 100 %")
+        assertEquals(one, fountain.inkAt(0f))
+        for (kind in BrushKind.entries.filter { it != BrushKind.Fountain }) {
+            val b = BrushSpec.defaults(kind)
+            assertEquals(b, b.inkAt(2f), "$kind draws what it's sent")
+        }
+        val standIn = fountain.copy(preview = Preview(HardwareStyle.Pencil))
+        assertEquals(standIn, standIn.inkAt(1f), "only the fountain style draws wider than it's sent")
     }
 
     @Test

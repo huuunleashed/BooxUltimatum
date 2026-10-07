@@ -39,7 +39,11 @@ import kotlinx.coroutines.runBlocking
 import rikka.shizuku.ShizukuBinderWrapper
 import rikka.shizuku.SystemServiceHelper
 
-/** The preview brushes SurfaceFlinger offers. Pencil is textured and reads as broken at small widths. */
+/**
+ * The preview brushes SurfaceFlinger offers. The pencil style draws a steady line exactly as wide as it's sent (clean
+ * from 0.5 px, Nib's Widths probe); the fountain style follows pressure as BOOX's fountain pen does and draws up to
+ * 3 px wider than it's sent, the margin BOOX Notes adds to its own fountain ink (`docs/09-ink.md` › *Measured pens*).
+ */
 enum class InkStyle(val code: Int) { Fountain(1), Pencil(0), Marker(2) }
 
 /**

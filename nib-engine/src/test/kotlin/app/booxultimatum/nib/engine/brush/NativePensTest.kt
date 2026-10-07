@@ -25,7 +25,7 @@ class NativePensTest {
             BrushKind.Pencil to HardwareStyle.Pencil,
             BrushKind.Graphite to HardwareStyle.Pencil,
             BrushKind.Fountain to HardwareStyle.Fountain,
-            BrushKind.Ballpoint to HardwareStyle.Fountain,
+            BrushKind.Ballpoint to HardwareStyle.Pencil,
             BrushKind.Marker to HardwareStyle.Marker,
             BrushKind.Highlighter to HardwareStyle.Marker,
             BrushKind.BrushPen to HardwareStyle.NeoBrush,
@@ -42,7 +42,7 @@ class NativePensTest {
             assertEquals(style, b.preview.style, kind.id)
             assertEquals(style, b.hardwarePreview(BLACK, 1f).style, kind.id)
             val trusted = b.hardwarePreview(BLACK, 1f, verifiedOnly = true).style
-            assertEquals(if (style == HardwareStyle.Dash) HardwareStyle.Fountain else style, trusted, "$kind needs a stand-in only for the dash")
+            assertEquals(if (style == HardwareStyle.Dash) HardwareStyle.Pencil else style, trusted, "$kind needs a stand-in only for the dash")
         }
     }
 
@@ -76,7 +76,7 @@ class NativePensTest {
         assertFloats(listOf(0.5f, 0.2f), params(BrushKind.Fountain) { it.copy(curve = PressureCurve.ofSensitivity(0.5f), smoothing = 0.2f) })
         assertFloats(listOf(0.5f, 0.6f), params(BrushKind.Fountain) { it.copy(curve = PressureCurve.LINEAR) }, "width = pressure is BOOX's sensitivity 0.5")
         assertFloats(listOf(0f, 1f), params(BrushKind.Fountain) { it.copy(curve = PressureCurve.CONSTANT, smoothing = 3f) }, "clamped to 0..1")
-        assertEquals(0f, params(BrushKind.Ballpoint)[0], "the ballpoint's preview keeps its width, as its ink does")
+        assertEquals(emptyList(), params(BrushKind.Ballpoint), "the ballpoint previews in the pencil style at its own constant width, as its ink is")
         assertTrue(p.paramsArray().contentEquals(p.params.toFloatArray()))
     }
 

@@ -64,8 +64,8 @@ class PresetsTest {
         assertNull(PreviewPolicy.standIn(BrushSpec.defaults(BrushKind.SquarePen), false))
 
         val dash = BrushSpec.defaults(BrushKind.Dash)
-        assertEquals(HardwareStyle.Fountain, PreviewPolicy.standIn(dash, tryUnverified = false), "no BOOX pen previews in the dash style")
-        assertEquals(HardwareStyle.Fountain.code, PreviewPolicy.preview(dash, 0xFF000000.toInt(), 1f, tryUnverified = false).style)
+        assertEquals(HardwareStyle.Pencil, PreviewPolicy.standIn(dash, tryUnverified = false), "no BOOX pen previews in the dash style; its constant width stands in the pencil style")
+        assertEquals(HardwareStyle.Pencil.code, PreviewPolicy.preview(dash, 0xFF000000.toInt(), 1f, tryUnverified = false).style)
         assertEquals(HardwareStyle.Dash.code, PreviewPolicy.preview(dash, 0xFF000000.toInt(), 1f, tryUnverified = true).style)
         assertNull(PreviewPolicy.standIn(dash, tryUnverified = true))
         assertNull(PreviewPolicy.standIn(BrushSpec.defaults(BrushKind.Fountain), false), "verified styles need no stand-in")

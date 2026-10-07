@@ -59,6 +59,7 @@ import app.booxultimatum.nib.engine.record.PenAction
 import app.booxultimatum.nib.engine.render.DocumentRenderer
 import app.booxultimatum.nib.engine.render.StrokeRenderer
 import app.booxultimatum.nib.engine.render.TileGrid
+import app.booxultimatum.nib.pen.FrameLatch
 import app.booxultimatum.nib.pen.NibPen
 import app.booxultimatum.nib.pen.PenPart
 import app.booxultimatum.nib.pen.PenParts
@@ -350,6 +351,12 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
     // Lifts whose frame the controller waits for, and the last one reported (see onDraw).
     private var upSeq = 0
     private var reportedSeq = 0
+
+    /** The [upSeq] whose frame SurfaceFlinger will report taking ([FrameLatch]); [NO_SEQ] when it can't. */
+    private var latchSeq = NO_SEQ
+
+    /** Frames SurfaceFlinger reported taking, for the hold's log line. */
+    private var latchedFrames = 0
 
     // Drawing this view into a bitmap for the display's layer, not onto the screen.
     private var capturing = false
@@ -875,7 +882,7 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
 
     /** A hold ended: [strokes] of the owner's were shown by Nib's own frames. */
     private fun holdEnded(reason: String, strokes: Int) {
-        log.i("hold", "index" to holdIndex, "strokes" to strokes, "ms" to SystemClock.uptimeMillis() - holdStartMs, "reason" to reason, "pushes" to holdPushes, "reveal" to controller.reveal.name)
+        log.i("hold", "index" to holdIndex, "strokes" to strokes, "ms" to SystemClock.uptimeMillis() - holdStartMs, "reason" to reason, "pushes" to holdPushes, "reveal" to controller.reveal.name, "latched" to latchedFrames)
         flushStrokeLogs(reason)
         if (shields?.hasChanged == true) shields?.takeChanged()
     }
@@ -1119,6 +1126,7 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
             holdIndex++
             holdStartMs = SystemClock.uptimeMillis()
             holdPushes = 0
+            latchedFrames = 0
         }
         // A finger's stroke isn't previewed by the display, so held frames would hide it.
         if (!stylus) controller.releaseNow("finger")
@@ -1129,7 +1137,8 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
         var brush = when (purpose) {
             Purpose.Erase -> tools.eraserSpec()
             Purpose.Select -> BrushSpec.defaults(BrushKind.LassoEraser)
-            Purpose.Ink -> preset.spec()
+            // The ink the display previews at this zoom: the fountain pen's is 3 screen px wider than it's sent.
+            Purpose.Ink -> preset.spec().inkAt(viewport.scale)
         }
         if (purpose == Purpose.Ink && layer.alphaLock && brush.blend == Blend.Normal) brush = brush.copy(blend = Blend.Atop)
         val tool = when {
@@ -1281,11 +1290,30 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
     private fun penLifted(bounds: IntArray?) {
         val held = controller.holding
         controller.up(bounds)
-        // The controller now waits for the frame with this stroke (see onDraw).
-        if (held) upSeq++
+        // The controller now waits for the frame with this stroke: SurfaceFlinger says when it has it, or onDraw times it.
+        if (held) {
+            upSeq++
+            watchLatch(upSeq)
+        }
         if (controlsPending) applyControls()
         if (partsPending) sendPenParts(currentStroke())
         if (shields?.hasChanged == true) scheduleControlsPush()
+    }
+
+    /**
+     * Asks SurfaceFlinger to say when it has the frame drawn next, which is the one with every stroke lifted so far
+     * (the commit that follows invalidates the canvas). Where Android can't tell, onDraw reports a vsync later instead.
+     */
+    private fun watchLatch(seq: Int) {
+        latchSeq = if (FrameLatch.watchNextFrame(this) { frameLatched(seq) }) seq else NO_SEQ
+    }
+
+    private fun frameLatched(seq: Int) {
+        // A stroke lifted since has its own frame watched.
+        if (seq != upSeq) return
+        latchedFrames++
+        val delay = settings.swapDelayMs.toLong()
+        if (delay > 0) postDelayed({ reportFrame(seq) }, delay) else reportFrame(seq)
     }
 
     /** Where a stroke's preview (the path as drawn, at the preview's width) and its final ink lie, on screen. */
@@ -1332,7 +1360,8 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
             "brush" to l.kind.id, "width" to l.builder.brush.width, "committed" to committed, "removed" to removed,
             "previewed" to l.previewed, "hold" to l.hold, "in hold" to if (l.hold > 0) controller.session.strokesInHold else 0,
             "reveal" to controller.reveal.name, "straight" to l.straight,
-            "style" to preview?.style, "preview width" to preview?.widthPx?.let { round2(it) }, "params" to preview?.params?.joinToString(","),
+            "style" to preview?.style, "preview width" to preview?.widthPx?.let { round2(it) }, "preview argb" to preview?.argb?.let { Integer.toHexString(it) },
+            "params" to preview?.params?.joinToString(","),
             "commit ms" to round2(lastCommitMs), "zoom" to round2(viewport.scale), "turn" to viewport.rotationDegrees,
             "p mean" to round2(meanP), "typical p" to round2(match.typicalPressure), "size factor" to preview?.style?.let { round2(match.factor(it)) },
             "since open ms" to controller.msSinceOpen, "swap delay ms" to settings.swapDelayMs,
@@ -1759,9 +1788,9 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
         if (g is Grab.Pick) drawLoupe(canvas, g)
         if (capturing) return
         tiles.endFrame()
-        // The frame drawn now, with every stroke lifted so far, reaches the panel by the next vsync: report it then,
-        // unless another stroke ended in between, whose own frame is still to come.
-        if (upSeq != reportedSeq && !frameCallbackPosted) {
+        // Where SurfaceFlinger can't say when it has the frame with every stroke lifted so far (see watchLatch), it's
+        // reported by the next vsync instead, unless another stroke ended in between, whose own frame is still to come.
+        if (upSeq != reportedSeq && latchSeq != upSeq && !frameCallbackPosted) {
             frameCallbackPosted = true
             val seq = upSeq
             Choreographer.getInstance().postFrameCallback {
@@ -1956,6 +1985,7 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
         /** Stroke summaries kept for a long hold before they're logged anyway. */
         private const val MAX_PENDING_LOGS = 200
         private const val NO_LAYER = Long.MIN_VALUE
+        private const val NO_SEQ = -1
 
         /** The desk: a flat grey from the panel's own sixteen, so it dithers to nothing. */
         const val DESK = 0xFFDDDDDD.toInt()

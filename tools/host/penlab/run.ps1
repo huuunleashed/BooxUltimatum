@@ -12,7 +12,7 @@ $ErrorActionPreference = 'Stop'
 $s = if ($Serial) { "-s $Serial" } else { '' }
 New-Item -ItemType Directory -Force $Out | Out-Null
 $remote = '/data/local/tmp/penlab'
-cmd /c "adb $s shell rm -rf $remote/out; adb $s shell mkdir -p $remote/out" | Out-Null
+cmd /c "adb $s shell `"rm -rf $remote/out; mkdir -p $remote/out`"" | Out-Null
 cmd /c "adb $s push `"$Script`" $remote/script.txt" | Out-Null
 $cmd = "CLASSPATH=$remote/penlab.dex app_process /system/bin app.booxultimatum.penlab.Main $remote/script.txt $remote/out"
 cmd /c "adb $s shell `"$cmd`" > `"$Out\result.txt`" 2>&1"

@@ -115,6 +115,29 @@ data class BrushSpec(
     /** The width no point of a stroke is drawn thinner than (see [minWidth]): 0 when there is none. */
     val widthFloor: Float get() = if (minWidth > 0f && width > 0f) min(minWidth, width) else 0f
 
+    /**
+     * The brush a stroke drawn at [viewScale] (screen pixels per document pixel) is committed with, so that its ink is
+     * what the display previewed: this brush, except for the fountain pen.
+     *
+     * The display's fountain style draws a stroke it's sent `w` screen pixels wide the way BOOX's fountain pen draws one
+     * `w + 3` wide. BOOX Notes therefore sends the display the pen's width but draws its own fountain ink 3 screen pixels
+     * wider (`FountainShapes.createNeoPenV2`, whose constant is named `FOUNTAIN_PEN_V1_COMPENSATION`), with its 2 px
+     * floor and speed measured on screen at the zoom the stroke is drawn at. The fountain pen here does the same: its
+     * ink gets [FOUNTAIN_DISPLAY_PAD_PX] screen pixels more, and its floor and speed thinning are taken on screen, while
+     * the display is still sent the pen's own width ([hardwarePreview]). Without it the preview stood about
+     * `3 · pressure^(2s)` pixels wider than the ink that replaced it, and swelled with pressure while the ink, held at its
+     * floor, hardly did (owner's report, Note Air6 C, FW 4.3, 2026-10-06; `docs/09-ink.md` › *Measured pens*).
+     */
+    fun inkAt(viewScale: Float): BrushSpec {
+        if (kind != BrushKind.Fountain || preview.style != HardwareStyle.Fountain) return this
+        val z = if (viewScale.isFinite() && viewScale > 0f) viewScale else 1f
+        return copy(
+            width = width + FOUNTAIN_DISPLAY_PAD_PX / z,
+            minWidth = if (minWidth > 0f) minWidth / z else 0f,
+            speedDamping = speedDamping * z,
+        )
+    }
+
     companion object {
         private const val OPAQUE_BLACK = -0x1000000
 
@@ -138,6 +161,12 @@ data class BrushSpec(
 
         /** BOOX's fountain pen never draws thinner than 2 px (see [minWidth] for the units). */
         const val NATIVE_FOUNTAIN_MIN_WIDTH = 2f
+
+        /**
+         * How much wider, in screen pixels, the display's fountain style draws a stroke than the width it's sent, and so
+         * how much wider BOOX Notes draws its fountain ink than the width it sends (see [inkAt]).
+         */
+        const val FOUNTAIN_DISPLAY_PAD_PX = 3f
 
         /** BOOX's pencil lays each dab at `0.6 * pressure` alpha, at a constant width. */
         const val NATIVE_PENCIL_FLOW = 0.6f
@@ -210,10 +239,11 @@ data class BrushSpec(
                 speedDamping = NATIVE_FOUNTAIN_SPEED_DAMPING, minWidth = NATIVE_FOUNTAIN_MIN_WIDTH,
                 preview = Preview(HardwareStyle.Fountain),
             )
-            // BOOX's ballpoint keeps its width whatever the pressure (measured).
+            // BOOX's ballpoint keeps its width whatever the pressure (measured), and BOOX Notes previews it in the pencil
+            // style, which draws the width it's sent. The fountain style, which previewed it until 0.3, draws 3 px wider.
             BrushKind.Ballpoint -> BrushSpec(
                 kind, width = 1.5f, smoothing = 0.3f, opacity = 0.88f,
-                preview = Preview(HardwareStyle.Fountain),
+                preview = Preview(HardwareStyle.Pencil),
             )
             // BOOX's pencil as BOOX Notes draws it (pressure and speed sensitivity 0), measured: every dab the full
             // width whatever the pressure, speed or tilt (Notes turns its tilt off), at 0.6 * pressure alpha, on the

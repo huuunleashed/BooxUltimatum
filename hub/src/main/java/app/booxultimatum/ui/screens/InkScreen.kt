@@ -194,6 +194,7 @@ fun InkScreen(readKey: Int, compact: Boolean) {
             Plate(stringResource(R.string.ink_stroke)) {
                 Choice(stringResource(R.string.ink_style), InkStyle.entries, prefs.style, { stringResource(when (it) { InkStyle.Fountain -> R.string.ink_style_fountain; InkStyle.Pencil -> R.string.ink_style_pencil; InkStyle.Marker -> R.string.ink_style_marker }) }) { commit(prefs.copy(style = it)) }
                 Choice(stringResource(R.string.ink_width), listOf(2, 3, 4, 6, 8), prefs.widthPx, { stringResource(R.string.ink_px, it) }) { commit(prefs.copy(widthPx = it)) }
+                Text(stringResource(R.string.ink_style_hint), style = MaterialTheme.typography.bodySmall, color = Ink.Legend)
                 Choice(stringResource(R.string.ink_latency), HoldPolicy.LATENCY_CHOICES, prefs.latencyMs, { stringResource(R.string.ink_ms, it) }) { commit(prefs.copy(latencyMs = it)) }
                 Text(stringResource(R.string.ink_latency_hint), style = MaterialTheme.typography.bodySmall, color = Ink.Legend)
             }

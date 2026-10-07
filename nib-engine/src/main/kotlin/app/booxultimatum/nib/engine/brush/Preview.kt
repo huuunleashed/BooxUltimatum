@@ -30,12 +30,15 @@ enum class HardwareStyle(val code: Int, val seenOnTablet: Boolean, val nativePen
      */
     val verified: Boolean get() = seenOnTablet || nativePen
 
-    /** The closest style seen on the tablet, for use while this one isn't [verified]. */
+    /**
+     * The closest style seen on the tablet, for use while this one isn't [verified]: the pencil style for the constant
+     * widths (the dash's ink is one), since the fountain style draws 3 px wider than it's sent.
+     */
     val fallback: HardwareStyle
         get() = when (this) {
             Pencil, Fountain, Marker -> this
-            Charcoal, CharcoalV2 -> Pencil
-            NeoBrush, Dash, SquarePen -> Fountain
+            Charcoal, CharcoalV2, Dash -> Pencil
+            NeoBrush, SquarePen -> Fountain
         }
 
     companion object {

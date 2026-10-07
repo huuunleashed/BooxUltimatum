@@ -103,32 +103,34 @@ enum class Probe(val id: String, val lab: Boolean = false) {
                 marker("mid grey, half alpha", 0x80808080.toInt(), GREY),
                 marker("light grey, half alpha", 0x80BBBBBB.toInt(), 0xFFBBBBBB.toInt()),
             )
+            // The ink is a fineliner, so each band's preview is the pencil style at the same width, which matches it (the
+            // fountain style would draw 3 px wider); the question is the flicker, not the size.
             SwapDelay -> SWAP_DELAYS.map { d ->
-                band("swap $d ms", HardwareStyle.Fountain, 3f, BLACK, fineliner(3f), BLACK, d)
+                band("swap $d ms", HardwareStyle.Pencil, 3f, BLACK, fineliner(3f), BLACK, d)
             }
             LabPushInk -> listOf(
                 band("push black", HardwareStyle.Fountain, 4f, BLACK, BrushSpec.defaults(BrushKind.Fountain).withWidth(4f), BLACK),
                 band("push red", HardwareStyle.Fountain, 4f, RED, BrushSpec.defaults(BrushKind.Fountain).withWidth(4f), RED),
                 band("push charcoal", HardwareStyle.Charcoal, 12f, BLACK, BrushSpec.defaults(BrushKind.Charcoal).withWidth(12f), BLACK),
             )
-            LabPushControls -> listOf(band("counter", HardwareStyle.Fountain, 3f, BLACK, fineliner(3f), BLACK))
-            LabEraserEnd -> listOf(band("eraser end", HardwareStyle.Fountain, 3f, BLACK, fineliner(3f), BLACK))
+            LabPushControls -> listOf(band("counter", HardwareStyle.Pencil, 3f, BLACK, fineliner(3f), BLACK))
+            LabEraserEnd -> listOf(band("eraser end", HardwareStyle.Pencil, 3f, BLACK, fineliner(3f), BLACK))
             LabLasso -> listOf(
-                band("ink", HardwareStyle.Fountain, 3f, BLACK, fineliner(3f), BLACK),
+                band("ink", HardwareStyle.Pencil, 3f, BLACK, fineliner(3f), BLACK),
                 Band("lasso", InkStroke.lasso(), fineliner(1f), BLACK, kind = BandKind.Lasso),
             )
-            LabFastMode -> listOf(band("fast mode", HardwareStyle.Fountain, 3f, BLACK, fineliner(3f), BLACK))
-            LabPalmGuard -> listOf(band("palm guard", HardwareStyle.Fountain, 3f, BLACK, fineliner(3f), BLACK))
+            LabFastMode -> listOf(band("fast mode", HardwareStyle.Pencil, 3f, BLACK, fineliner(3f), BLACK))
+            LabPalmGuard -> listOf(band("palm guard", HardwareStyle.Pencil, 3f, BLACK, fineliner(3f), BLACK))
             LabParams -> listOf(band("parameters", HardwareStyle.Fountain, 6f, BLACK, BrushSpec.defaults(BrushKind.Fountain).withWidth(6f), BLACK))
             LabLimit -> listOf(
-                band("above the limit", HardwareStyle.Fountain, 4f, BLACK, fineliner(4f), BLACK),
-                band("inside the limit", HardwareStyle.Fountain, 4f, BLACK, fineliner(4f), BLACK),
-                band("below the limit", HardwareStyle.Fountain, 4f, BLACK, fineliner(4f), BLACK),
+                band("above the limit", HardwareStyle.Pencil, 4f, BLACK, fineliner(4f), BLACK),
+                band("inside the limit", HardwareStyle.Pencil, 4f, BLACK, fineliner(4f), BLACK),
+                band("below the limit", HardwareStyle.Pencil, 4f, BLACK, fineliner(4f), BLACK),
             )
-            LabFedStroke -> listOf(band("fed stroke", HardwareStyle.Fountain, 4f, BLACK, fineliner(4f), BLACK))
-            LabPenState4 -> listOf(band("state 4", HardwareStyle.Fountain, 4f, BLACK, fineliner(4f), BLACK))
+            LabFedStroke -> listOf(band("fed stroke", HardwareStyle.Fountain, 4f, BLACK, BrushSpec.defaults(BrushKind.Fountain).withWidth(4f), BLACK))
+            LabPenState4 -> listOf(band("state 4", HardwareStyle.Pencil, 4f, BLACK, fineliner(4f), BLACK))
             LabEraserPainters -> PAINTERS.map { p ->
-                band("painter $p", HardwareStyle.Fountain, 4f, BLACK, fineliner(4f), BLACK)
+                band("painter $p", HardwareStyle.Pencil, 4f, BLACK, fineliner(4f), BLACK)
             }
         }
     }

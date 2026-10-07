@@ -89,6 +89,32 @@ class NativePenRenderTest {
     }
 
     @Test
+    fun aFountainPenDrawsTheInkTheDisplayPreviews() {
+        // BOOX Notes sends the display a fountain pen w wide and draws its ink at w + 3 (penlab, 0.5 px/ms): the widths
+        // its pens of 2, 4 and 8 px lay down at pressures 0.05, 0.2, 0.5, 0.8 and 1. A Nib fountain pen as wide, drawn
+        // at 100 %, lays down the same.
+        val measured = mapOf(
+            2f to listOf(2.00f, 2.00f, 3.18f, 4.22f, 4.82f),
+            4f to listOf(2.00f, 2.57f, 4.45f, 5.90f, 6.75f),
+            8f to listOf(2.00f, 4.04f, 7.00f, 9.28f, 10.61f),
+        )
+        val pressures = listOf(0.05f, 0.2f, 0.5f, 0.8f, 1f)
+        for ((w, widths) in measured) {
+            val pen = BrushSpec.defaults(BrushKind.Fountain).withWidth(w)
+            for ((p, expected) in pressures.zip(widths)) {
+                assertEquals(expected, width(straight(pen.inkAt(1f), pressure = p, step = 4f, dt = 8L)), 0.04f, "$w px at pressure $p")
+            }
+        }
+        // At 200 % the same pen covers twice the screen, so it's drawn as a 4 px pen would be at 100 %, on screen: its
+        // pad, floor and speed are screen pixels, and the stroke's document pixels are half as many.
+        val pen = BrushSpec.defaults(BrushKind.Fountain).withWidth(2f)
+        for ((p, expected) in pressures.zip(measured.getValue(4f))) {
+            val doc = width(straight(pen.inkAt(2f), pressure = p, step = 2f, dt = 8L))
+            assertEquals(expected, doc * 2f, 0.04f, "2 px at 200 %, pressure $p")
+        }
+    }
+
+    @Test
     fun theFountainNeverDrawsThinnerThanTwoPixels() {
         val brush = BrushSpec.defaults(BrushKind.Fountain).copy(width = 11f)
         val light = straight(brush, pressure = 0.01f)

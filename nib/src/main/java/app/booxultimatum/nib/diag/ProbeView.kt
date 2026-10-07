@@ -33,6 +33,7 @@ import app.booxultimatum.nib.engine.input.StrokeBuilder
 import app.booxultimatum.nib.engine.input.Tool
 import app.booxultimatum.nib.engine.record.PenAction
 import app.booxultimatum.nib.engine.render.StrokeRenderer
+import app.booxultimatum.nib.pen.FrameLatch
 import app.booxultimatum.nib.pen.NibPen
 import app.booxultimatum.nib.pen.PenParts
 import app.booxultimatum.nib.pen.PenRecorderStore
@@ -155,6 +156,7 @@ class ProbeView(context: Context) : View(context), PenRouter.Target {
     private var frameCallbackPosted = false
     private var upSeq = 0
     private var reportedSeq = 0
+    private var latchSeq = -1
     private var frameDelayMs = 0L
     private var capturing = false
     private var hovering = false
@@ -450,7 +452,7 @@ class ProbeView(context: Context) : View(context), PenRouter.Target {
                 erasing = NibPen.isErasing(event, i)
                 if (NibPen.isSideButton(event) || (NibPen.isEraserEnd(event, i) && !eraserDraws())) controller.block(ERASER)
                 previewed = controller.down()
-                val brush = if (erasing) BrushSpec.defaults(BrushKind.StrokeEraser).withWidth(ERASER_PX) else b.brush
+                val brush = if (erasing) BrushSpec.defaults(BrushKind.StrokeEraser).withWidth(ERASER_PX) else b.brush.inkAt(1f)
                 builder = StrokeBuilder(brush, b.color, nextId++)
                 builderBand = bi
                 pointerId = event.getPointerId(i)
@@ -527,7 +529,18 @@ class ProbeView(context: Context) : View(context), PenRouter.Target {
     private fun lifted(bounds: IntArray?) {
         val held = controller.holding
         controller.up(bounds)
-        if (held) upSeq++
+        if (held) {
+            upSeq++
+            val seq = upSeq
+            // SurfaceFlinger says when it has the frame with this stroke (the stroke is added and drawn next); where it
+            // can't, onDraw reports a vsync later.
+            latchSeq = if (FrameLatch.watchNextFrame(this) { frameLatched(seq) }) seq else -1
+        }
+    }
+
+    private fun frameLatched(seq: Int) {
+        if (seq != upSeq) return
+        if (frameDelayMs > 0) postDelayed({ reportFrame(seq) }, frameDelayMs) else reportFrame(seq)
     }
 
     /** Whether the eraser's path, [r] wide, passes over any point of [st]. */
@@ -656,7 +669,7 @@ class ProbeView(context: Context) : View(context), PenRouter.Target {
             if (live != null && !previewed && !erasing && probe.bands.getOrNull(builderBand)?.kind == BandKind.Ink && !live.isEmpty) StrokeRenderer.render(live.current(), s)
         }
         if (capturing) return
-        if (upSeq != reportedSeq && !frameCallbackPosted) {
+        if (upSeq != reportedSeq && latchSeq != upSeq && !frameCallbackPosted) {
             frameCallbackPosted = true
             val seq = upSeq
             Choreographer.getInstance().postFrameCallback {

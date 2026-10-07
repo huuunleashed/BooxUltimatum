@@ -277,7 +277,7 @@ private fun SizePage(ed: Editor, shown: BrushPreset, spec: BrushSpec, live: (Bru
     PropertySlider(
         ed, stringResource(R.string.prop_width), shown.width, widthScale, px, set = { shown.copy(width = it) }, live = live, commit = commit,
         ticks = WIDTH_TICKS.filter { it in range },
-        trailing = { NibDot(shown.width * zoom) },
+        trailing = { NibDot(spec.inkAt(zoom).width * zoom) },
     )
     Text(stringResource(R.string.prop_width_dot, zoomLabel(zoom)), style = StudioType.Small, color = Studio.Legend)
     PropertySlider(

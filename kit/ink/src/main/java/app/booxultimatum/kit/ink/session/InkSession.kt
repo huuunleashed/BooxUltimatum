@@ -79,7 +79,7 @@ class InkSession(
         strokesInSession = 0
         holds = 0
         guard.sessionOpened()
-        log.i("opened", "side" to side, "limit" to limit?.joinToString(), "style" to stroke.style, "width" to stroke.widthPx, "live" to live)
+        log.i("opened", "side" to side, "limit" to limit?.joinToString(), "style" to stroke.style, "width" to stroke.widthPx, "argb" to Integer.toHexString(stroke.argb), "live" to live)
         return true
     }
 

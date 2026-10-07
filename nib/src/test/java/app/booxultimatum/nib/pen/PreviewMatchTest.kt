@@ -92,4 +92,17 @@ class PreviewMatchTest {
         match.setFactor(1, 0.3f)
         assertEquals(fineliner.preview.minWidthPx, match.width(fineliner, 1, 0.5f))
     }
+
+    @Test fun theFountainSizeSetBeforeItsInkMatchedStartsAgainOnce() {
+        val old = MemoryPrefs()
+        old.map["preview_factor_1"] = 0.6f
+        old.map["preview_factor_0"] = 0.9f
+        old.map["preview_typical_pressure"] = 0.44f
+        val upgraded = PreviewMatch(old)
+        assertEquals(1f, upgraded.factor(1), "the fountain style's size made up for ink 3 px thinner than its preview")
+        assertEquals(0.9f, upgraded.factor(0), "other styles keep the owner's size")
+        assertEquals(0.44f, upgraded.typicalPressure, "and the learnt pressure stays")
+        upgraded.setFactor(1, 0.8f)
+        assertEquals(0.8f, PreviewMatch(old).factor(1), "only once: a size set afterwards stays")
+    }
 }
