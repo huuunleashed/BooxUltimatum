@@ -7,8 +7,10 @@ import app.booxultimatum.nib.engine.render.RenderSink
 import app.booxultimatum.nib.engine.render.Texture
 
 /**
- * Records one dab stroke's calls so each tile can replay only the dabs that land on it. A textured stroke is a
- * thousand dabs or more; played whole into each of the tiles it crosses, it cost tens of milliseconds per commit.
+ * Records one dab or stipple stroke's calls so each tile can replay only the stamps that land on it. A textured stroke is a
+ * thousand dabs or more, and a stipple stroke as many stamps; played whole into each of the tiles it crosses, it cost
+ * tens of milliseconds per commit (a long pencil stroke, 150 ms on the Note Air6 C). Stipple is replayed as stamps, so
+ * each tile still works its dots out on its own pixels.
  * Anything but dabs inside at most one group marks the recording [general], and the caller falls back to replaying
  * the whole stroke. Single use, one thread.
  */
@@ -29,6 +31,7 @@ class DabRecording : RenderSink {
     private var angles = FloatArray(256)
     private var alphas = FloatArray(256)
     private var colors = IntArray(256)
+    private var stippled = BooleanArray(256)
     private val textures = ArrayList<Texture>(256)
     private val blends = ArrayList<Blend>(256)
 
@@ -59,10 +62,14 @@ class DabRecording : RenderSink {
     }
 
     override fun stipple(x: Float, y: Float, radius: Float, density: Float, color: Int, blend: Blend) {
-        general = true
+        record(x, y, radius, 0f, color, density, Texture.Solid, blend, stipple = true)
     }
 
     override fun dab(x: Float, y: Float, radius: Float, angle: Float, color: Int, alpha: Float, texture: Texture, blend: Blend) {
+        record(x, y, radius, angle, color, alpha, texture, blend, stipple = false)
+    }
+
+    private fun record(x: Float, y: Float, radius: Float, angle: Float, color: Int, alpha: Float, texture: Texture, blend: Blend, stipple: Boolean) {
         if (depth == 0 && grouped) general = true
         if (n == xs.size) grow()
         xs[n] = x
@@ -71,6 +78,7 @@ class DabRecording : RenderSink {
         angles[n] = angle
         alphas[n] = alpha
         colors[n] = color
+        stippled[n] = stipple
         textures.add(texture)
         blends.add(blend)
         n++
@@ -87,7 +95,7 @@ class DabRecording : RenderSink {
                 sink.beginGroup(groupAlpha, groupBlend)
                 open = true
             }
-            sink.dab(xs[i], ys[i], rs[i], angles[i], colors[i], alphas[i], textures[i], blends[i])
+            if (stippled[i]) sink.stipple(xs[i], ys[i], rs[i], alphas[i], colors[i], blends[i]) else sink.dab(xs[i], ys[i], rs[i], angles[i], colors[i], alphas[i], textures[i], blends[i])
             played++
         }
         if (open) sink.endGroup()
@@ -102,5 +110,6 @@ class DabRecording : RenderSink {
         angles = angles.copyOf(s)
         alphas = alphas.copyOf(s)
         colors = colors.copyOf(s)
+        stippled = stippled.copyOf(s)
     }
 }

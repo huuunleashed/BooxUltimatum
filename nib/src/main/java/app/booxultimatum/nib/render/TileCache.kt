@@ -401,7 +401,7 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
         private const val WARM_AFTER_MS = 400L
 
         /** The brushes the engine draws as dabs (its StrokeRenderer's Dabs mode). */
-        val DAB_KINDS = BrushKind.entries.filter { it.rendersAsDabs }.toSet()
+        val DAB_KINDS = BrushKind.entries.filter { it.rendersAsDabs || it.rendersAsStipple }.toSet()
 
         /** The most tiles [renderNow] draws on the main thread. */
         const val RENDER_NOW_MAX = 24

@@ -84,6 +84,18 @@ class DabRecordingTest {
         assertTrue(rec.general)
     }
 
+    @Test fun eachTileReplaysOnlyItsOwnStippleStamps() {
+        val s = stroke(BrushSpec.defaults(BrushKind.Pencil).withWidth(4f).inkAt(1f))
+        val rec = DabRecording()
+        StrokeRenderer.render(s, rec)
+        assertFalse(rec.general, "stipple stamps replay per tile, each tile working its dots out on its own pixels")
+        val whole = CountingSink().also { StrokeRenderer.render(s, it) }.calls.count { it == "stipple" }
+        assertEquals(whole, rec.size)
+        val left = CountingSink().also { rec.replay(it, Box(0f, 0f, 256f, 256f)) }.calls.count { it == "stipple" }
+        assertTrue(left in 1 until whole / 2, "$left of $whole")
+        assertEquals(0, CountingSink().also { rec.replay(it, Box(0f, 400f, 256f, 656f)) }.calls.size)
+    }
+
     @Test fun theDabKindsMatchTheEngine() {
         for (kind in BrushKind.entries.filter { it.isRendered }) {
             val rec = DabRecording()

@@ -2,11 +2,11 @@ package app.booxultimatum.nib.diag
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.DashPathEffect
 import android.graphics.Paint
 import android.graphics.Rect
+import android.graphics.RenderNode
 import android.os.SystemClock
 import android.util.TypedValue
 import android.view.Choreographer
@@ -44,6 +44,7 @@ import app.booxultimatum.nib.pen.ScreenAreas
 import app.booxultimatum.nib.render.CanvasSink
 import kotlin.math.PI
 import kotlin.math.hypot
+import kotlin.math.max
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
@@ -139,11 +140,10 @@ class ProbeView(context: Context) : View(context), PenRouter.Target {
         }
 
     private val strokes = ArrayList<Pair<Int, Stroke>>()
-    private var finishedInk: Bitmap? = null
-    private val finishedCanvas = Canvas()
+    private val finishedNodes = ArrayList<RenderNode>()
     private val finishedSink = CanvasSink()
 
-    /** How many of [strokes] [finishedInk] holds; -1 when it must start again (a stroke was taken away). */
+    /** How many of [strokes] [finishedNodes] holds; -1 when it must start again (a stroke was taken away). */
     private var finishedCount = -1
     private var band = -1
     private var builder: StrokeBuilder? = null
@@ -339,8 +339,8 @@ class ProbeView(context: Context) : View(context), PenRouter.Target {
         viewTreeObserver.removeOnGlobalLayoutListener(layoutListener)
         close()
         PenRouter.detach(this)
-        finishedInk?.recycle()
-        finishedInk = null
+        for (node in finishedNodes) node.discardDisplayList()
+        finishedNodes.clear()
         finishedCount = -1
         super.onDetachedFromWindow()
     }
@@ -675,10 +675,9 @@ class ProbeView(context: Context) : View(context), PenRouter.Target {
             val inset = limitPaint.strokeWidth
             canvas.drawRect(inset, bandTop(i) + inset, width - inset, bandTop(i + 1) - inset, limitPaint)
         }
-        val cached = offsetX == 0f && offsetY == 0f && drawFinishedStrokes(canvas)
         val s = sink.on(canvas)
         canvas.withTranslation(offsetX, offsetY) {
-            if (!cached) for ((_, st) in strokes) StrokeRenderer.render(st, s)
+            drawFinishedStrokes(this)
             val live = builder
             if (live != null && !previewed && !erasing && probe.bands.getOrNull(builderBand)?.kind == BandKind.Ink && !live.isEmpty) StrokeRenderer.render(live.current(), s)
         }
@@ -707,35 +706,35 @@ class ProbeView(context: Context) : View(context), PenRouter.Target {
     }
 
     /**
-     * Draws the bands' finished strokes from [finishedInk], a picture of them at the view's own pixels, each stroke
-     * drawn into it once. Redrawing every stroke in every frame made each frame slower than the last: a band of
+     * Draws the bands' finished strokes, each recorded once into its own display list ([finishedNodes]) that every
+     * frame replays. Working every stroke out again in every frame made each frame slower than the last: a band of
      * stipple pencil strokes is tens of thousands of dots, and by the sixth stroke the frame came after the release's
-     * wait had run out, so the display was given the frame without the stroke (Match preview, 2026-10-07).
+     * wait had run out, so the display was given the frame without the stroke. A kept bitmap of the whole page fared
+     * no better: every stroke made the GPU take all of it again (Match preview, owner's reports, 2026-10-07).
      */
-    private fun drawFinishedStrokes(canvas: Canvas): Boolean {
-        if (width <= 0 || height <= 0) return false
-        var bmp = finishedInk
-        if (bmp == null || bmp.width != width || bmp.height != height) {
-            bmp?.recycle()
-            bmp = runCatching { Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888) }.getOrNull() ?: return false
-            finishedInk = bmp
-            finishedCount = -1
+    private fun drawFinishedStrokes(canvas: Canvas) {
+        if (!canvas.isHardwareAccelerated) {
+            val s = finishedSink.on(canvas)
+            for ((_, st) in strokes) StrokeRenderer.render(st, s)
+            return
         }
         if (finishedCount < 0 || finishedCount > strokes.size) {
-            bmp.eraseColor(0)
+            for (node in finishedNodes) node.discardDisplayList()
+            finishedNodes.clear()
             finishedCount = 0
         }
-        if (finishedCount < strokes.size) {
-            finishedCanvas.setBitmap(bmp)
-            val s = finishedSink.on(finishedCanvas)
-            for (i in finishedCount until strokes.size) StrokeRenderer.render(strokes[i].second, s)
-            finishedCanvas.setBitmap(null)
-            finishedCount = strokes.size
+        while (finishedCount < strokes.size) {
+            val node = RenderNode("probe stroke")
+            node.setPosition(0, 0, max(1, width), max(1, height))
+            node.clipToBounds = false
+            val recording = node.beginRecording()
+            StrokeRenderer.render(strokes[finishedCount].second, finishedSink.on(recording))
+            node.endRecording()
+            finishedNodes.add(node)
+            finishedCount++
         }
-        canvas.drawBitmap(bmp, 0f, 0f, null)
-        return true
+        for (node in finishedNodes) canvas.drawRenderNode(node)
     }
-
     /** A grid that moves with what's drawn, so a moving surface shows even before anything is drawn on it. */
     private fun drawGrid(canvas: Canvas) {
         val cell = GRID_DP * density
