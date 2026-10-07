@@ -1,6 +1,7 @@
 package app.booxultimatum.nib.engine.brush
 
 import app.booxultimatum.nib.engine.input.PressureCurve
+import app.booxultimatum.nib.engine.render.Stipple
 import kotlin.math.PI
 import kotlin.math.max
 import kotlin.math.min
@@ -117,7 +118,7 @@ data class BrushSpec(
 
     /**
      * The brush a stroke drawn at [viewScale] (screen pixels per document pixel) is committed with, so that its ink is
-     * what the display previewed: this brush, except for the fountain pen.
+     * what the display previewed: this brush, except for the fountain pen and the pencil.
      *
      * The display's fountain style draws a stroke it's sent `w` screen pixels wide the way BOOX's fountain pen draws one
      * `w + 3` wide. BOOX Notes therefore sends the display the pen's width but draws its own fountain ink 3 screen pixels
@@ -127,10 +128,15 @@ data class BrushSpec(
      * the display is still sent the pen's own width ([hardwarePreview]). Without it the preview stood about
      * `3 · pressure^(2s)` pixels wider than the ink that replaced it, and swelled with pressure while the ink, held at its
      * floor, hardly did (owner's report, Note Air6 C, FW 4.3, 2026-10-06; `docs/09-ink.md` › *Measured pens*).
+     *
+     * The pencil's ink is the stipple the display's charcoal v2 style draws: a stamp of `1.16 w + 5` screen pixels for
+     * the `w` it's sent ([app.booxultimatum.nib.engine.render.Stipple.diameter]), `w` being exactly what [hardwarePreview]
+     * sends. Its stroke is committed with that diameter, in document pixels at the zoom it's drawn at, as its width.
      */
     fun inkAt(viewScale: Float): BrushSpec {
-        if (kind != BrushKind.Fountain || preview.style != HardwareStyle.Fountain) return this
         val z = if (viewScale.isFinite() && viewScale > 0f) viewScale else 1f
+        if (kind.rendersAsStipple) return copy(width = Stipple.diameter(preview.widthPx(width, z), z))
+        if (kind != BrushKind.Fountain || preview.style != HardwareStyle.Fountain) return this
         return copy(
             width = width + FOUNTAIN_DISPLAY_PAD_PX / z,
             minWidth = if (minWidth > 0f) minWidth / z else 0f,
@@ -206,7 +212,8 @@ data class BrushSpec(
             BrushKind.Fineliner -> 0.5f..40f
             BrushKind.Fountain -> 0.5f..60f
             BrushKind.Ballpoint -> 0.5f..24f
-            BrushKind.Pencil -> 0.5f..60f
+            BrushKind.Pencil -> 0.5f..40f
+            BrushKind.GrainPencil -> 0.5f..60f
             BrushKind.Graphite -> 0.5f..24f
             BrushKind.Marker -> 4f..200f
             BrushKind.Highlighter -> 4f..200f
@@ -245,10 +252,19 @@ data class BrushSpec(
                 kind, width = 1.5f, smoothing = 0.3f, opacity = 0.88f,
                 preview = Preview(HardwareStyle.Pencil),
             )
-            // BOOX's pencil as BOOX Notes draws it (pressure and speed sensitivity 0), measured: every dab the full
-            // width whatever the pressure, speed or tilt (Notes turns its tilt off), at 0.6 * pressure alpha, on the
-            // line without scatter and each turned to a random angle, as every dab is.
+            // Nib's pencil: BOOX's 1-bit stipple, as the display's charcoal v2 style previews it, measured (Stipple). The
+            // width is the one the display is sent, as BOOX Notes' own pen widths are; the ink is a stamp of 1.16 times
+            // it plus 5 screen pixels ([inkAt]). Pressure sets how much of the line is covered, never its width, and tilt
+            // broadens it by the display's own law without making it lighter.
             BrushKind.Pencil -> BrushSpec(
+                kind, width = 2.5f, smoothing = 0.3f,
+                tiltScale = NATIVE_TILT_SCALE,
+                preview = Preview(HardwareStyle.CharcoalV2),
+            )
+            // The pencil before 0.3: BOOX's library pencil (pressure and speed sensitivity 0), measured: every dab the
+            // full width whatever the pressure, speed or tilt, at 0.6 * pressure alpha, on the line without scatter and
+            // each turned to a random angle. Kept only so strokes drawn with it look as they did.
+            BrushKind.GrainPencil -> BrushSpec(
                 kind, width = 2.5f, smoothing = 0.3f,
                 spacing = NATIVE_PENCIL_SPACING, flow = NATIVE_PENCIL_FLOW, pressureFlow = 1f,
                 preview = Preview(HardwareStyle.Pencil),

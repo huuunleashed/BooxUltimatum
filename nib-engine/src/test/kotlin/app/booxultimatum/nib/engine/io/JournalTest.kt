@@ -58,7 +58,7 @@ class JournalTest {
         fun stroke(kind: BrushKind = BrushKind.Fountain) = scribble(rnd, h.allocateId(), kind, 40, 0f, 0f, 1800f, 2400f)
         val l = base.layers.map { it.id }
         h.execute(AddStroke(l[0], stroke()))
-        h.execute(AddStroke(l[1], stroke(BrushKind.Pencil)))
+        h.execute(AddStroke(l[1], stroke(BrushKind.GrainPencil)))
         h.execute(RemoveStrokes(l[2], listOf(h.document.layers[2].strokes[1].id)))
         h.execute(TransformStrokes(l[0], h.document.layers[0].strokes.take(3).map { it.id }, Affine.rotate(0.2f, 100f, 100f)))
         h.undo()

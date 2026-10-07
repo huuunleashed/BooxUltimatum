@@ -46,11 +46,11 @@ class PreviewMatchTest {
 
     @Test fun aConstantWidthPreviewOfAPressureBrushIsSentAtItsUsualWidth() {
         val full = 10f
-        val tuned = BrushSpec.defaults(BrushKind.Pencil).copy(curve = PressureCurve(1f, 0.35f, 1f))
+        val tuned = BrushSpec.defaults(BrushKind.GrainPencil).copy(curve = PressureCurve(1f, 0.35f, 1f))
         val sent = match.width(tuned, 0, full)
         assertEquals(full * tuned.curve.factor(PreviewMatch.DEFAULT_PRESSURE), sent, 0.001f)
         assertTrue(sent < full, "the pencil style can't thin, and at the full width it looked too wide")
-        for (kind in listOf(BrushKind.Pencil, BrushKind.Graphite)) {
+        for (kind in listOf(BrushKind.GrainPencil, BrushKind.Graphite)) {
             assertEquals(full, match.width(BrushSpec.defaults(kind), 0, full), 0.001f, "$kind keeps its width whatever the pressure, as BOOX's pencil")
         }
     }

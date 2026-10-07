@@ -58,7 +58,7 @@ class FormatCompatTest {
         val doc = contents.document
         assertEquals("golden-1.0", doc.id)
         val strokes = doc.layers.single().strokes
-        val kinds = listOf(BrushKind.Fineliner, BrushKind.Fountain, BrushKind.Pencil, BrushKind.Charcoal, BrushKind.CharcoalV2, BrushKind.Marker, BrushKind.Calligraphy)
+        val kinds = listOf(BrushKind.Fineliner, BrushKind.Fountain, BrushKind.GrainPencil, BrushKind.Charcoal, BrushKind.CharcoalV2, BrushKind.Marker, BrushKind.Calligraphy)
         assertEquals(kinds, strokes.map { it.brush.kind })
         for ((k, s) in strokes.withIndex()) {
             assertTrue(!s.brush.usesTilt, "${s.brush.kind}: brushes from before 1.1 ignore tilt")
@@ -130,7 +130,7 @@ class FormatCompatTest {
         // The brushes keep the settings they were drawn with, not today's defaults.
         val byKind = strokes.associateBy { it.brush.kind }
         assertEquals(PressureCurve(1f, 0.7f, 1f), byKind.getValue(BrushKind.Fountain).brush.curve, "the fountain pen as 0.3.0-test drew it")
-        assertEquals(BrushSpec.NATIVE_TILT_SCALE, byKind.getValue(BrushKind.Pencil).brush.tiltScale, "the pencil with its tilt")
+        assertEquals(BrushSpec.NATIVE_TILT_SCALE, byKind.getValue(BrushKind.GrainPencil).brush.tiltScale, "the pencil with its tilt")
         assertEquals(BrushSpec.NATIVE_TILT_SCALE, byKind.getValue(BrushKind.Charcoal).brush.tiltScale)
         assertEquals(0.9f, byKind.getValue(BrushKind.Charcoal).brush.pressureFlow)
         val again = write(doc)

@@ -25,7 +25,7 @@ class RenderBenchmarkTest {
         val sink = NullSink()
         val outline = time("Fountain 2000 pts -> outline (NullSink)", 400) { StrokeRenderer.render(stroke, sink) }
         time("Fountain 2000 pts -> bounds", 400) { StrokeRenderer.bounds(stroke) }
-        val pencil = Stroke(2, stroke.brush.copy(kind = BrushKind.Pencil), stroke.color, stroke.points)
+        val pencil = Stroke(2, stroke.brush.copy(kind = BrushKind.GrainPencil), stroke.color, stroke.points)
         time("Pencil 2000 pts -> dabs (NullSink)", 200) { StrokeRenderer.render(pencil, sink) }
         val poly = StrokeRenderer.outline(stroke)
         println("BENCH outline vertices: ${poly.size / 2}")

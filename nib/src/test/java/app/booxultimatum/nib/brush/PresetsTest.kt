@@ -14,6 +14,18 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class PresetsTest {
+    @Test fun theOldPencilsSlotsBecomeTheStipplePencilAtTheSameWidthAndColour() {
+        val six = BrushPreset.decode("pencil:6.0:medium:ff000000")
+        assertEquals(BrushPreset(BrushKind.Pencil, 6f, PressurePreset.Medium, 0xFF000000.toInt()), six)
+        val tuned = BrushPreset.decode("pencil:2.5:medium:ff404040:fl=0.4;g=0.2")
+        assertEquals(BrushKind.Pencil, tuned?.kind)
+        assertEquals(2.5f, tuned?.width)
+        assertEquals(0xFF404040.toInt(), tuned?.color)
+        assertEquals(BrushKind.Pencil, BrushPreset.decode(six!!.encode())?.kind, "and stay so once saved")
+        assertEquals("stipple_pencil", six.encode().substringBefore(':'))
+        assertTrue(BrushPreset.DEFAULTS.any { it.kind == BrushKind.Pencil && it.color == 0xFF000000.toInt() }, "black, as the display previews it")
+        assertTrue(BrushGroup.entries.none { BrushKind.GrainPencil in it.kinds }, "the old pencil isn't offered")
+    }
     @Test fun presetsSurviveTheirTextForm() {
         for (p in BrushPreset.DEFAULTS + BrushPreset(BrushKind.CharcoalV2, 12f, PressurePreset.Firm, 0xFF6D2A9E.toInt())) {
             assertEquals(p, BrushPreset.decode(p.encode()))

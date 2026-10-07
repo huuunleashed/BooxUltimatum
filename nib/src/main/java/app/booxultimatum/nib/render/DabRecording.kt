@@ -58,6 +58,10 @@ class DabRecording : RenderSink {
         general = true
     }
 
+    override fun stipple(x: Float, y: Float, radius: Float, density: Float, color: Int, blend: Blend) {
+        general = true
+    }
+
     override fun dab(x: Float, y: Float, radius: Float, angle: Float, color: Int, alpha: Float, texture: Texture, blend: Blend) {
         if (depth == 0 && grouped) general = true
         if (n == xs.size) grow()

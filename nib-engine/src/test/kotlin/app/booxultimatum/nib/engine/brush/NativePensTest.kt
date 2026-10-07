@@ -22,7 +22,8 @@ class NativePensTest {
     fun eachPenPreviewsInTheStyleBooxUsesForIt() {
         val expected = mapOf(
             BrushKind.Fineliner to HardwareStyle.Pencil,
-            BrushKind.Pencil to HardwareStyle.Pencil,
+            BrushKind.Pencil to HardwareStyle.CharcoalV2,
+            BrushKind.GrainPencil to HardwareStyle.Pencil,
             BrushKind.Graphite to HardwareStyle.Pencil,
             BrushKind.Fountain to HardwareStyle.Fountain,
             BrushKind.Ballpoint to HardwareStyle.Pencil,
@@ -109,7 +110,7 @@ class NativePensTest {
         assertEquals(BrushSpec.NATIVE_FOUNTAIN_MIN_WIDTH, fountain.minWidth)
         assertEquals(0f, fountain.speedInfluence)
         assertTrue(BrushSpec.defaults(BrushKind.Ballpoint).curve.isConstant)
-        val pencil = BrushSpec.defaults(BrushKind.Pencil)
+        val pencil = BrushSpec.defaults(BrushKind.GrainPencil)
         assertTrue(pencil.curve.isConstant && !pencil.usesTilt, "BOOX's pencil: constant width, tilt off")
         assertEquals(1f, pencil.pressureFlow)
         assertEquals(BrushSpec.NATIVE_PENCIL_FLOW, pencil.flow)
@@ -145,7 +146,7 @@ class NativePensTest {
                 assertEquals(0f, b.speedDamping, kind.id)
                 assertEquals(0f, b.minWidth, kind.id)
             }
-            if (kind != BrushKind.Charcoal && kind != BrushKind.CharcoalV2) assertTrue(!b.usesTilt, "$kind ignores tilt")
+            if (kind != BrushKind.Charcoal && kind != BrushKind.CharcoalV2 && kind != BrushKind.Pencil) assertTrue(!b.usesTilt, "$kind ignores tilt")
         }
     }
 
@@ -180,7 +181,7 @@ class NativePensTest {
 
     @Test
     fun stylesWithoutParametersSendNone() {
-        for (kind in listOf(BrushKind.Pencil, BrushKind.BrushPen, BrushKind.NeoBrush, BrushKind.Marker, BrushKind.Highlighter, BrushKind.Airbrush)) {
+        for (kind in listOf(BrushKind.GrainPencil, BrushKind.BrushPen, BrushKind.NeoBrush, BrushKind.Marker, BrushKind.Highlighter, BrushKind.Airbrush)) {
             assertEquals(emptyList(), params(kind, viewScale = 4f), kind.id)
         }
         assertEquals(listOf(5f), BrushSpec.defaults(BrushKind.Dash).hardwarePreview(BLACK, 1f).params)
@@ -225,7 +226,7 @@ class NativePensTest {
     fun eachBrushGivesItsParametersAsAPlainArray() {
         assertTrue(floatArrayOf(1f, 3f).contentEquals(BrushSpec.defaults(BrushKind.Charcoal).displayParams()))
         assertTrue(floatArrayOf(2f, 8f, -45f, 0.4f).contentEquals(BrushSpec.defaults(BrushKind.CalligraphyAsian).displayParams()))
-        assertEquals(0, BrushSpec.defaults(BrushKind.Pencil).displayParams(viewScale = 4f).size, "the pencil style takes none")
+        assertEquals(0, BrushSpec.defaults(BrushKind.GrainPencil).displayParams(viewScale = 4f).size, "the pencil style takes none")
         for (kind in BrushKind.entries) for (scale in listOf(0.5f, 1f, 3f)) {
             val b = BrushSpec.defaults(kind)
             assertTrue(b.hardwarePreview(BLACK, scale).paramsArray().contentEquals(b.displayParams(scale)), "$kind at $scale")

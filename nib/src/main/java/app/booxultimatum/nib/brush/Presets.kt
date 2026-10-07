@@ -48,6 +48,7 @@ data class BrushTune(
     val nibFromOrientation: Boolean? = null,
     val speedInfluence: Float? = null,
     val taper: Float? = null,
+    val tiltScale: Float? = null,
 ) {
     val isEmpty: Boolean get() = this == EMPTY
 
@@ -65,6 +66,7 @@ data class BrushTune(
         nibFromOrientation?.let { add("ao=$it") }
         speedInfluence?.let { add("v=$it") }
         taper?.let { add("t=$it") }
+        tiltScale?.let { add("ts=$it") }
     }.joinToString(";")
 
     companion object {
@@ -96,6 +98,7 @@ data class BrushTune(
                     "a" -> t.copy(nibAngle = TuneRange.NIB_ANGLE.clamp(v))
                     "v" -> t.copy(speedInfluence = TuneRange.SPEED.clamp(v))
                     "t" -> t.copy(taper = TuneRange.TAPER.clamp(v))
+                    "ts" -> t.copy(tiltScale = TuneRange.TILT.clamp(v))
                     else -> t
                 }
             }
@@ -118,6 +121,9 @@ enum class TuneRange(val min: Float, val max: Float) {
     NIB_ANGLE(0f, Math.PI.toFloat()),
     SPEED(0f, 1f),
     TAPER(0f, 6f),
+
+    /** A tilting brush's tilt scale: 1 ignores tilt, 3 is the display's own, 6 the broadest it honours. */
+    TILT(BrushSpec.NO_TILT, BrushSpec.MAX_TILT_SCALE),
     ;
 
     fun clamp(v: Float): Float = if (v.isNaN()) min else v.coerceIn(min, max)
@@ -150,6 +156,8 @@ data class BrushPreset(
             nibFromOrientation = tune.nibFromOrientation ?: base.nibFromOrientation,
             speedInfluence = tune.speedInfluence ?: base.speedInfluence,
             taper = tune.taper ?: base.taper,
+            // Only for the brushes that tilt: the display's charcoal styles broaden their preview by the same scale.
+            tiltScale = if (base.usesTilt) tune.tiltScale ?: base.tiltScale else base.tiltScale,
         )
     }
 
@@ -171,7 +179,10 @@ data class BrushPreset(
         fun decode(text: String?): BrushPreset? {
             val parts = text?.split(SEP) ?: return null
             if (parts.size != 4 && parts.size != 5) return null
-            val kind = BrushKind.fromId(parts[0])?.takeIf { !it.isEraser } ?: return null
+            val stored = BrushKind.fromId(parts[0])?.takeIf { !it.isEraser } ?: return null
+            // The pencil before 0.3, whose plain-line preview never looked like its grey dabs, became the stipple
+            // pencil the display's charcoal v2 style previews: the same width (as the display is sent it) and colour.
+            val kind = if (stored.retired) BrushKind.Pencil else stored
             val width = parts[1].toFloatOrNull()?.takeIf { it.isFinite() } ?: return null
             val color = parts[3].toLongOrNull(16)?.toInt() ?: return null
             val tune = if (parts.size == 5) BrushTune.decode(parts[4]) else BrushTune.EMPTY
@@ -182,7 +193,7 @@ data class BrushPreset(
         val DEFAULTS: List<BrushPreset> = listOf(
             BrushPreset(BrushKind.Fountain, 3f, PressurePreset.Medium, 0xFF000000.toInt()),
             BrushPreset(BrushKind.Fineliner, 0.75f, PressurePreset.Medium, 0xFF000000.toInt()),
-            BrushPreset(BrushKind.Pencil, 2.5f, PressurePreset.Medium, 0xFF404040.toInt()),
+            BrushPreset(BrushKind.Pencil, 2.5f, PressurePreset.Medium, 0xFF000000.toInt()),
             BrushPreset(BrushKind.Highlighter, 20f, PressurePreset.Medium, 0xFFF2C300.toInt()),
             BrushPreset(BrushKind.BrushPen, 6f, PressurePreset.Medium, 0xFF1F4FB8.toInt()),
             BrushPreset(BrushKind.Marker, 16f, PressurePreset.Medium, 0xFFD2232A.toInt()),

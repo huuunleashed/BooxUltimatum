@@ -23,14 +23,14 @@ class RevealPolicyTest {
     @Test fun theNativeMatchedPensWaitForBreaks() {
         val native = listOf(
             BrushKind.Fineliner, BrushKind.Fountain, BrushKind.Ballpoint, BrushKind.Marker, BrushKind.BrushPen, BrushKind.NeoBrush,
-            BrushKind.Calligraphy, BrushKind.CalligraphyAsian, BrushKind.SquarePen,
+            BrushKind.Calligraphy, BrushKind.CalligraphyAsian, BrushKind.SquarePen, BrushKind.Pencil,
         )
         for (k in native) assertTrue(faithful(k), k.id)
         for (k in native) assertEquals(Reveal.AtBreaks, RevealPolicy.effective(RevealChoice.Auto, BrushSpec.defaults(k), black), k.id)
     }
 
     @Test fun texturedBlendedAndStandInPensWaitForAPause() {
-        val pushed = listOf(BrushKind.Pencil, BrushKind.Graphite, BrushKind.Charcoal, BrushKind.CharcoalV2, BrushKind.Airbrush, BrushKind.Highlighter, BrushKind.Dash)
+        val pushed = listOf(BrushKind.GrainPencil, BrushKind.Graphite, BrushKind.Charcoal, BrushKind.CharcoalV2, BrushKind.Airbrush, BrushKind.Highlighter, BrushKind.Dash)
         for (k in pushed) {
             assertFalse(faithful(k), k.id)
             assertEquals(Reveal.AfterPause, RevealPolicy.effective(RevealChoice.Auto, BrushSpec.defaults(k), black), k.id)
@@ -39,7 +39,7 @@ class RevealPolicyTest {
 
     @Test fun everyBrushInTheCatalogueIsDecided() {
         val decided = BrushCatalog.kinds.filter { !it.isEraser }.associateWith { faithful(it) }
-        assertEquals(9, decided.count { it.value }, "the nine native-matched pens")
+        assertEquals(10, decided.count { it.value }, "the nine native-matched pens and the stipple pencil")
     }
 
     @Test fun seeThroughInkIsPushed() {

@@ -71,7 +71,7 @@ enum class Probe(val id: String, val lab: Boolean = false) {
             // sized as the canvas sizes it, through PreviewMatch, so the owner can match it to the stroke that replaces it.
             MatchPreview -> listOf(
                 band("match fountain", HardwareStyle.Fountain, 4f, BLACK, BrushSpec.defaults(BrushKind.Fountain).withWidth(4f), BLACK),
-                band("match pencil", HardwareStyle.Pencil, 4f, BLACK, BrushSpec.defaults(BrushKind.Pencil).withWidth(4f), BLACK),
+                band("match pencil", HardwareStyle.CharcoalV2, 4f, BLACK, BrushSpec.defaults(BrushKind.Pencil).withWidth(4f), BLACK),
                 band("match marker", HardwareStyle.Marker, 16f, 0x80000000.toInt(), BrushSpec.defaults(BrushKind.Marker).withWidth(16f), BLACK),
             )
             Styles -> HardwareStyle.entries.map { s ->
@@ -81,7 +81,7 @@ enum class Probe(val id: String, val lab: Boolean = false) {
                 band("fountain $w px", HardwareStyle.Fountain, w, BLACK, BrushSpec.defaults(BrushKind.Fineliner).withWidth(w), BLACK)
             }
             WidthsPencil -> WIDTHS.map { w ->
-                band("pencil $w px", HardwareStyle.Pencil, w, BLACK, BrushSpec.defaults(BrushKind.Pencil).withWidth(w), BLACK)
+                band("pencil $w px", HardwareStyle.Pencil, w, BLACK, fineliner(w), BLACK)
             }
             Colours -> listOf(
                 band("red", HardwareStyle.Fountain, 4f, RED, fineliner(4f), RED),
@@ -89,7 +89,7 @@ enum class Probe(val id: String, val lab: Boolean = false) {
                 band("green", HardwareStyle.Fountain, 4f, GREEN, fineliner(4f), GREEN),
                 band("grey 50", HardwareStyle.Fountain, 4f, GREY, fineliner(4f), GREY),
                 band("translucent black fountain", HardwareStyle.Fountain, 4f, HALF_BLACK, fineliner(4f), HALF_BLACK),
-                band("translucent black pencil", HardwareStyle.Pencil, 4f, HALF_BLACK, BrushSpec.defaults(BrushKind.Pencil).withWidth(4f), HALF_BLACK),
+                band("translucent black pencil", HardwareStyle.Pencil, 4f, HALF_BLACK, fineliner(4f), HALF_BLACK),
             )
             // The marker style at half alpha showed black, grey and yellow but no red, blue, green or teal (owner's
             // test on the Note Air6 C, FW 4.3). Each band is one way round that, sent as is.
@@ -165,13 +165,13 @@ enum class Probe(val id: String, val lab: Boolean = false) {
 
         /** The engine brush that asks for [style], for drawing each Styles band's stroke in the app. */
         fun brushFor(style: HardwareStyle): BrushKind = when (style) {
-            HardwareStyle.Pencil -> BrushKind.Pencil
+            HardwareStyle.Pencil -> BrushKind.Fineliner
             HardwareStyle.Fountain -> BrushKind.Fountain
             HardwareStyle.Marker -> BrushKind.Marker
             HardwareStyle.NeoBrush -> BrushKind.NeoBrush
             HardwareStyle.Charcoal -> BrushKind.Charcoal
             HardwareStyle.Dash -> BrushKind.Dash
-            HardwareStyle.CharcoalV2 -> BrushKind.CharcoalV2
+            HardwareStyle.CharcoalV2 -> BrushKind.Pencil
             HardwareStyle.SquarePen -> BrushKind.SquarePen
         }
     }

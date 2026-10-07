@@ -14,8 +14,10 @@ import android.graphics.PorterDuffColorFilter
 import android.graphics.RectF
 import android.graphics.Shader
 import app.booxultimatum.nib.engine.brush.Blend
+import app.booxultimatum.nib.engine.geom.Affine
 import app.booxultimatum.nib.engine.render.Cap
 import app.booxultimatum.nib.engine.render.RenderSink
+import app.booxultimatum.nib.engine.render.Stipple
 import app.booxultimatum.nib.engine.render.Texture
 import kotlin.math.roundToInt
 
@@ -97,6 +99,17 @@ class CanvasSink : RenderSink {
     private val filters = object : LinkedHashMap<Int, ColorFilter>(8, 0.75f, true) {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Int, ColorFilter>?): Boolean = size > 16
     }
+    private val deviceMatrix = Matrix()
+    private val deviceValues = FloatArray(9)
+    private var toDevice = Affine.IDENTITY
+    private var toDocument = Affine.IDENTITY
+    private var stipplePoints = FloatArray(2048)
+    private var stippleCount = 0
+    private val stipplePaint = Paint().apply {
+        isAntiAlias = false
+        style = Paint.Style.STROKE
+        strokeCap = Paint.Cap.SQUARE
+    }
 
     fun on(canvas: Canvas): CanvasSink {
         this.canvas = canvas
@@ -166,6 +179,45 @@ class CanvasSink : RenderSink {
         dabPaint.blendMode = blend.toBlendMode()
         canvas.drawCircle(x, y, radius, dabPaint)
         dabPaint.shader = null
+    }
+
+    /**
+     * The stipple is worked out on the canvas's own pixels (its matrix maps document to them: a tile's, a picture's,
+     * an export's), then each pixel that turns on is drawn back through the matrix as a square exactly one of them
+     * wide, without antialiasing, so the dots are the screen's whatever the zoom, and never grey.
+     */
+    override fun stipple(x: Float, y: Float, radius: Float, density: Float, color: Int, blend: Blend) {
+        if ((color ushr 24) == 0) return
+        @Suppress("DEPRECATION")
+        canvas.getMatrix(deviceMatrix)
+        deviceMatrix.getValues(deviceValues)
+        val v = deviceValues
+        val d = toDevice
+        if (d.scaleX != v[0] || d.skewX != v[1] || d.transX != v[2] || d.skewY != v[3] || d.scaleY != v[4] || d.transY != v[5]) {
+            val next = Affine(v[0], v[1], v[2], v[3], v[4], v[5])
+            toDocument = next.invert() ?: return
+            toDevice = next
+        }
+        stippleCount = 0
+        val hardware = canvas.isHardwareAccelerated
+        Stipple.stamp(
+            x, y, radius, density, toDevice,
+            if (hardware) Int.MAX_VALUE else canvas.width, if (hardware) Int.MAX_VALUE else canvas.height, collectStipple,
+        )
+        if (stippleCount == 0) return
+        stipplePaint.color = color
+        stipplePaint.blendMode = blend.toBlendMode()
+        stipplePaint.strokeWidth = 1f / toDevice.meanScale
+        canvas.drawPoints(stipplePoints, 0, stippleCount * 2, stipplePaint)
+    }
+
+    private val collectStipple = Stipple.Pixels { px, py ->
+        if (2 * stippleCount + 2 > stipplePoints.size) stipplePoints = stipplePoints.copyOf(stipplePoints.size * 2)
+        val cx = px + 0.5f
+        val cy = py + 0.5f
+        stipplePoints[2 * stippleCount] = toDocument.mapX(cx, cy)
+        stipplePoints[2 * stippleCount + 1] = toDocument.mapY(cx, cy)
+        stippleCount++
     }
 
     override fun strokePolyline(xy: FloatArray, count: Int, width: Float, color: Int, cap: Cap, dash: FloatArray?, blend: Blend) {

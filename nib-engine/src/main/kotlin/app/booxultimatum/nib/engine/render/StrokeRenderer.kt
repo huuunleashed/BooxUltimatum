@@ -26,7 +26,7 @@ object StrokeRenderer {
     private const val TWO_PI = (2 * PI).toFloat()
 
     /** How a brush puts ink down. */
-    internal enum class Mode { Outline, Dabs, Dashed, None }
+    internal enum class Mode { Outline, Dabs, Stipple, Dashed, None }
 
     private class Scratch {
         val line = Centreline()
@@ -40,13 +40,14 @@ object StrokeRenderer {
 
     internal fun mode(kind: BrushKind): Mode = when {
         kind.rendersAsDabs -> Mode.Dabs
+        kind.rendersAsStipple -> Mode.Stipple
         kind == BrushKind.Dash -> Mode.Dashed
         !kind.isRendered -> Mode.None
         else -> Mode.Outline
     }
 
     internal fun texture(kind: BrushKind): Texture = when (kind) {
-        BrushKind.Pencil, BrushKind.Graphite -> Texture.Grain
+        BrushKind.GrainPencil, BrushKind.Graphite -> Texture.Grain
         BrushKind.Charcoal, BrushKind.CharcoalV2 -> Texture.Charcoal
         BrushKind.Airbrush -> Texture.Soft
         else -> Texture.Solid
@@ -75,6 +76,7 @@ object StrokeRenderer {
         when (mode) {
             Mode.Outline -> drawOutline(stroke, s, drawColor, drawBlend, tolerance, sink)
             Mode.Dabs -> drawDabs(stroke, line, drawColor, drawBlend, sink)
+            Mode.Stipple -> drawStipple(line, drawColor, drawBlend, sink)
             Mode.Dashed -> drawDashed(stroke, s, drawColor, drawBlend, sink)
             Mode.None -> Unit
         }
@@ -204,6 +206,44 @@ object StrokeRenderer {
     private fun step(radius: Float, spacing: Float): Float = max(MIN_DAB_STEP, spacing * 2f * radius)
 
     private const val MIN_DAB_STEP = 0.25f
+
+    /**
+     * Stipple stamps along the line, close enough that their edges merge: overlapping stamps never build up (a pixel
+     * is on where the page's threshold is below the strongest stamp over it), so the spacing only smooths the edge.
+     */
+    private fun drawStipple(line: Centreline, color: Int, blend: Blend, sink: RenderSink) {
+        val x = line.x
+        val y = line.y
+        val r = line.r
+        val p = line.p
+        val a = line.shade
+        fun stamp(px: Float, py: Float, radius: Float, pressure: Float, shade: Float) {
+            val density = (pressure * shade).coerceIn(0f, 1f)
+            if (density > 0f) sink.stipple(px, py, radius, density, color, blend)
+        }
+        stamp(x[0], y[0], r[0], p[0], a[0])
+        if (line.n == 1) return
+        var next = stippleStep(r[0])
+        for (i in 0 until line.n - 1) {
+            val segLen = Centreline.dist(x[i], y[i], x[i + 1], y[i + 1])
+            var along = next
+            while (along <= segLen) {
+                val u = if (segLen > 0f) along / segLen else 0f
+                val rr = r[i] + (r[i + 1] - r[i]) * u
+                stamp(x[i] + (x[i + 1] - x[i]) * u, y[i] + (y[i + 1] - y[i]) * u, rr, p[i] + (p[i + 1] - p[i]) * u, a[i] + (a[i + 1] - a[i]) * u)
+                along += stippleStep(rr)
+            }
+            next = along - segLen
+        }
+        val last = line.n - 1
+        stamp(x[last], y[last], r[last], p[last], a[last])
+    }
+
+    private fun stippleStep(radius: Float): Float = (STIPPLE_STEP * 2f * radius).coerceIn(MIN_STIPPLE_STEP, MAX_STIPPLE_STEP)
+
+    private const val STIPPLE_STEP = 0.15f
+    private const val MIN_STIPPLE_STEP = 0.4f
+    private const val MAX_STIPPLE_STEP = 2f
 
     private fun drawDashed(stroke: Stroke, s: Scratch, color: Int, blend: Blend, sink: RenderSink) {
         val line = s.line

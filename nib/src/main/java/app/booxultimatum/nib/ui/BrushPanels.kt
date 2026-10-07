@@ -280,10 +280,14 @@ private fun SizePage(ed: Editor, shown: BrushPreset, spec: BrushSpec, live: (Bru
         trailing = { NibDot(spec.inkAt(zoom).width * zoom) },
     )
     Text(stringResource(R.string.prop_width_dot, zoomLabel(zoom)), style = StudioType.Small, color = Studio.Legend)
-    PropertySlider(
-        ed, stringResource(R.string.prop_opacity), spec.opacity, remember { ValueScale.percent(TuneRange.OPACITY.min, 1f) }, "%",
-        set = { shown.copy(tune = shown.tune.copy(opacity = it)) }, live = live, commit = commit, track = Track.Checker(shown.color),
-    )
+    // The stipple is every pixel on or off, as its preview is: made see-through it would turn grey, which the
+    // preview can't show.
+    if (!shown.kind.rendersAsStipple) {
+        PropertySlider(
+            ed, stringResource(R.string.prop_opacity), spec.opacity, remember { ValueScale.percent(TuneRange.OPACITY.min, 1f) }, "%",
+            set = { shown.copy(tune = shown.tune.copy(opacity = it)) }, live = live, commit = commit, track = Track.Checker(shown.color),
+        )
+    }
     Box(Modifier.fillMaxWidth().height(Studio.Hairline).background(Studio.Faint))
     val settings = ed.settings
     val style = PreviewPolicy.standIn(spec, settings.tryUnverifiedStyles) ?: spec.preview.style
@@ -317,6 +321,11 @@ private fun NibDot(screenPx: Float) {
 @Composable
 private fun PressurePage(ed: Editor, shown: BrushPreset, spec: BrushSpec, live: (BrushPreset?) -> Unit, commit: (BrushPreset) -> Unit) {
     val curve = spec.curve
+    if (shown.kind.rendersAsStipple) {
+        // Its preview's width never follows pressure, so neither may the ink's: pressure darkens it instead.
+        Text(stringResource(R.string.pen_pressure_stipple), style = StudioType.Body, color = Studio.Legend)
+        return
+    }
     if (curve.isConstant) {
         Text(stringResource(R.string.pen_pressure_none), style = StudioType.Body, color = Studio.Legend)
         SlabButton(stringResource(R.string.pressure_enable), onClick = { commit(shown.copy(tune = shown.tune.copy(floor = 0.3f, ceiling = curve.ceiling.coerceAtLeast(0.31f)))) })
@@ -455,6 +464,15 @@ private fun FeelPage(ed: Editor, shown: BrushPreset, spec: BrushSpec, live: (Bru
             ed, stringResource(R.string.prop_taper), spec.taper, remember { ValueScale.linear(TuneRange.TAPER.min, TuneRange.TAPER.max, 0.1f, decimals = 1) }, "×",
             set = { shown.copy(tune = shown.tune.copy(taper = it)) }, live = live, commit = commit,
         )
+    }
+    if (BrushSpec.defaults(shown.kind).usesTilt) {
+        SectionLabel(stringResource(R.string.prop_tilt_section))
+        PropertySlider(
+            ed, stringResource(R.string.prop_tilt), spec.tiltScale, remember { ValueScale.linear(TuneRange.TILT.min, TuneRange.TILT.max, 0.5f, decimals = 1) }, "×",
+            set = { shown.copy(tune = shown.tune.copy(tiltScale = it)) }, live = live, commit = commit,
+            ticks = listOf(BrushSpec.NATIVE_TILT_SCALE),
+        )
+        Text(stringResource(R.string.prop_tilt_detail), style = StudioType.Small, color = Studio.Legend)
     }
 }
 

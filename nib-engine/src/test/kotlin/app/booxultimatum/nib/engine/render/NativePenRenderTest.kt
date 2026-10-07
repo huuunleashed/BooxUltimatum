@@ -181,7 +181,7 @@ class NativePenRenderTest {
         // 0.58, 1.13 and 2.13 px apart on the path, each turned to a random angle; tilt and speed ignored.
         val opacity = listOf(0.05f to 0.03f, 0.2f to 0.12f, 0.5f to 0.3f, 0.8f to 0.48f, 1f to 0.6f)
         for ((w, gap) in listOf(2f to 0.58f, 4f to 1.13f, 8f to 2.13f)) {
-            val brush = BrushSpec.defaults(BrushKind.Pencil).copy(width = w)
+            val brush = BrushSpec.defaults(BrushKind.GrainPencil).copy(width = w)
             for ((p, a) in opacity) {
                 val d = dabs(straight(brush, pressure = p))
                 assertTrue(d.all { it.radius * 2f == w }, "$w px: every stamp the full width at pressure $p")
@@ -197,7 +197,7 @@ class NativePenRenderTest {
             assertEquals(d, dabs(straight(brush, pressure = 0.5f, tilt = 70f * deg)), "$w px: BOOX Notes turns the pencil's tilt off")
             assertEquals(listOf(w / 2f), dabs(straight(brush, pressure = 0.5f, step = 32f, dt = 8L)).map { it.radius }.distinct(), "$w px: speed changes nothing")
         }
-        assertTrue(!BrushSpec.defaults(BrushKind.Pencil).usesTilt)
+        assertTrue(!BrushSpec.defaults(BrushKind.GrainPencil).usesTilt)
     }
 
     @Test
@@ -211,9 +211,9 @@ class NativePenRenderTest {
         val full = dabs(straight(graphite, pressure = 1f))
         val half = dabs(straight(graphite, pressure = 0.5f))
         assertEquals(0.5, half.sumOf { it.alpha.toDouble() } / full.sumOf { it.alpha.toDouble() }, 1e-4, "opacity in proportion to pressure")
-        val pencil = dabs(straight(BrushSpec.defaults(BrushKind.Pencil).copy(width = 4f), pressure = 1f))
+        val pencil = dabs(straight(BrushSpec.defaults(BrushKind.GrainPencil).copy(width = 4f), pressure = 1f))
         assertTrue(full.map { it.alpha }.average() < pencil.map { it.alpha }.average(), "lighter than the pencil")
-        assertTrue(BrushSpec.defaults(BrushKind.Graphite).width < BrushSpec.defaults(BrushKind.Pencil).width, "and finer")
+        assertTrue(BrushSpec.defaults(BrushKind.Graphite).width < BrushSpec.defaults(BrushKind.GrainPencil).width, "and finer")
     }
 
     @Test
@@ -256,7 +256,7 @@ class NativePenRenderTest {
 
     @Test
     fun pencilsIgnoreTiltUnlessTheOwnerGivesThemATiltScale() {
-        for (kind in listOf(BrushKind.Pencil, BrushKind.Graphite)) {
+        for (kind in listOf(BrushKind.GrainPencil, BrushKind.Graphite)) {
             val brush = BrushSpec.defaults(kind).copy(width = 8f, jitter = 0f)
             assertEquals(dabs(straight(brush)), dabs(straight(brush, tilt = 70f * deg)), "$kind previews in the pencil style, which doesn't broaden")
             val tuned = brush.copy(tiltScale = 3f)
@@ -281,7 +281,7 @@ class NativePenRenderTest {
     @Test
     fun brushesWithoutTiltIgnoreIt() {
         val kinds = listOf(
-            BrushKind.Fineliner, BrushKind.Fountain, BrushKind.Ballpoint, BrushKind.Pencil, BrushKind.Graphite, BrushKind.Marker,
+            BrushKind.Fineliner, BrushKind.Fountain, BrushKind.Ballpoint, BrushKind.GrainPencil, BrushKind.Graphite, BrushKind.Marker,
             BrushKind.Highlighter, BrushKind.NeoBrush, BrushKind.BrushPen, BrushKind.Calligraphy,
         )
         for (kind in kinds) {

@@ -20,10 +20,17 @@ enum class BrushKind(val id: String) {
     Ballpoint("ballpoint"),
 
     /**
-     * BOOX's pencil: grainy dabs at a constant width, darker as the pen presses harder, and, as BOOX Notes has it,
-     * no tilt, so the ink matches its preview in the display's pencil style.
+     * Nib's pencil: BOOX's 1-bit stipple ([app.booxultimatum.nib.engine.render.Stipple]), the ink the display's
+     * charcoal v2 style previews, so the preview and the ink look alike. Pressure sets how much of the line the
+     * stipple covers (all of it at full pressure), and tilt broadens it without making it lighter, as the preview does.
      */
-    Pencil("pencil"),
+    Pencil("stipple_pencil"),
+
+    /**
+     * The pencil before 0.3: grainy grey dabs at a constant width, darker as the pen presses harder. Its preview, a
+     * plain line, never looked like it, so it's no longer offered; strokes drawn with it keep their look.
+     */
+    GrainPencil("pencil"),
 
     /**
      * A finer, harder pencil: a constant width, darker as the pen presses harder; like BOOX's pencil, it ignores tilt
@@ -83,7 +90,13 @@ enum class BrushKind(val id: String) {
     val isRendered: Boolean get() = this != StrokeEraser && this != LassoEraser
 
     /** True for the brushes drawn as stamped dabs, whose spacing, flow, grain and scatter shape the ink. */
-    val rendersAsDabs: Boolean get() = this == Pencil || this == Graphite || this == Charcoal || this == CharcoalV2 || this == Airbrush
+    val rendersAsDabs: Boolean get() = this == GrainPencil || this == Graphite || this == Charcoal || this == CharcoalV2 || this == Airbrush
+
+    /** True for the brushes drawn as BOOX's 1-bit stipple, which only pressure, width and tilt shape. */
+    val rendersAsStipple: Boolean get() = this == Pencil
+
+    /** True for the brushes kept only so strokes drawn with them look as they did; they aren't offered any more. */
+    val retired: Boolean get() = this == GrainPencil
 
     /** True for the flat-nib brushes, whose width depends on the stroke's direction against [BrushSpec.nibAngle]. */
     val usesNib: Boolean get() = this == Calligraphy || this == CalligraphyAsian || this == SquarePen || this == Highlighter

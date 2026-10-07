@@ -5,6 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.Test
 
@@ -86,7 +87,7 @@ class BrushSpecTest {
         assertEquals(2f, BrushSpec.defaults(BrushKind.Fountain).widthFloor)
         assertEquals(1f, BrushSpec.defaults(BrushKind.Fountain).copy(width = 1f).widthFloor, "no wider than the pen")
         assertEquals(0f, BrushSpec.defaults(BrushKind.Fineliner).widthFloor)
-        val pencil = BrushSpec.defaults(BrushKind.Pencil).copy(width = 2f)
+        val pencil = BrushSpec.defaults(BrushKind.GrainPencil).copy(width = 2f)
         val thin = pencil.hardwarePreview(0x80123456.toInt(), 1f)
         assertEquals(HardwarePreview(HardwareStyle.Pencil, 2f, 0xFF123456.toInt(), emptyList()), thin, "a thin pencil keeps its own style, which takes no parameters")
         assertEquals(HardwareStyle.Pencil, pencil.hardwarePreview(0, 2f).style)
@@ -112,7 +113,7 @@ class BrushSpecTest {
         assertEquals(4f + 12f, fountain.inkAt(0.25f).width, 1e-5f)
         assertEquals(one, fountain.inkAt(Float.NaN), "an unknown zoom is 100 %")
         assertEquals(one, fountain.inkAt(0f))
-        for (kind in BrushKind.entries.filter { it != BrushKind.Fountain }) {
+        for (kind in BrushKind.entries.filter { it != BrushKind.Fountain && !it.rendersAsStipple }) {
             val b = BrushSpec.defaults(kind)
             assertEquals(b, b.inkAt(2f), "$kind draws what it's sent")
         }
@@ -122,8 +123,10 @@ class BrushSpecTest {
 
     @Test
     fun catalogListsEveryKindOnceWithStableIds() {
-        assertEquals(BrushKind.entries.toSet(), BrushCatalog.kinds.toSet())
-        assertEquals(BrushKind.entries.size, BrushCatalog.kinds.size)
+        assertEquals(BrushKind.entries.filterNot { it.retired }.toSet(), BrushCatalog.kinds.toSet())
+        assertEquals(BrushKind.entries.count { !it.retired }, BrushCatalog.kinds.size)
+        assertEquals(BrushKind.GrainPencil, BrushKind.fromId("pencil"), "strokes drawn with the old pencil still read as it")
+        assertNull(BrushCatalog.byId("pencil"), "but it isn't offered")
         assertEquals(BrushCatalog.entries.size, BrushCatalog.entries.map { it.id }.toSet().size)
         assertEquals("fineliner", BrushCatalog.entries.first().id)
         assertEquals(BrushKind.LassoEraser, BrushCatalog.kinds.last())

@@ -206,6 +206,7 @@
     <string name="pen_title">Pen %1$d · %2$s</string>
     <string name="pen_pressure">Pressure</string>
     <string name="pen_pressure_none">This brush draws the same width however hard you press.</string>
+    <string name="pen_pressure_stipple">Pressure sets how dark the pencil lays down, from a few specks at a light touch to solid black at full pressure, exactly as its preview does. Its width stays the same.</string>
     <string name="pressure_enable">Make it follow pressure</string>
     <string name="pressure_tile">%1$s pressure</string>
     <string name="pressure_soft">Soft</string>
@@ -232,6 +233,9 @@
     <string name="prop_speed_section">Speed</string>
     <string name="prop_speed">Speed thins the line</string>
     <string name="prop_taper">Tapered ends</string>
+    <string name="prop_tilt_section">Tilt</string>
+    <string name="prop_tilt">Tilt broadens the line</string>
+    <string name="prop_tilt_detail">Leaning the pen widens the line as the display’s preview does, without making it lighter. 1× ignores tilt; 3× is BOOX’s own.</string>
     <string name="preview_while_drawing">While you draw, the display previews it in its %1$s style.</string>
     <string name="preview_size_readout">Sent %1$s px wide: size ×%2$s at a typical pressure of %3$s.</string>
     <string name="preview_match_link">Match the preview</string>
@@ -246,6 +250,7 @@
     <string name="brush_fountain">Fountain pen</string>
     <string name="brush_ballpoint">Ballpoint</string>
     <string name="brush_pencil">Pencil</string>
+    <string name="brush_grain_pencil">Pencil (before 0.3)</string>
     <string name="brush_graphite">Graphite</string>
     <string name="brush_marker">Marker</string>
     <string name="brush_highlighter">Highlighter</string>

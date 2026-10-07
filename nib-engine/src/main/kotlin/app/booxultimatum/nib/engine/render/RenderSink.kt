@@ -48,6 +48,13 @@ interface RenderSink {
     fun dab(x: Float, y: Float, radius: Float, angle: Float, color: Int, alpha: Float, texture: Texture, blend: Blend)
 
     /**
+     * Lays one stamp of BOOX's 1-bit stipple ([Stipple]) of [radius] at ([x], [y]), with [density] 0..1 (the pen's
+     * pressure): pixels of the sink's own grid within the radius turn fully to [color] where the page's fixed threshold
+     * is below the density at that distance from the centre. Never grey, never antialiased.
+     */
+    fun stipple(x: Float, y: Float, radius: Float, density: Float, color: Int, blend: Blend)
+
+    /**
      * Strokes an open polyline [width] wide with round joins. [dash], when given, alternates on and off lengths in
      * document pixels, starting with on.
      */

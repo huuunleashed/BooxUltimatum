@@ -33,7 +33,7 @@ The display's firmware (SurfaceFlinger and the e-ink controller driver) reads th
 | Fountain | 1 fountain | `[pressureSensitivity, smoothLevel]`, 0 to 1, defaults 0.3 and 0.6 | Width from pressure and smoothing, computed in native code, 3 screen px wider than the width sent to the display (see *Measured pens*) |
 | Marker | 2 marker | left at the display's `[1, 16]` | Round-capped segments at each point's width, drawn opaque, then composited at alpha 128 |
 | Brush | 3 neo brush | none | Native |
-| Charcoal | 4 charcoal, or 6 charcoal v2 | `[tiltEnabled, tiltScale]`, `[1, 3]` | Native texture, broadened by tilt |
+| Charcoal | 4 charcoal, or 6 charcoal v2 | `[tiltEnabled, tiltScale]`, `[1, 3]` | A 1-bit stipple broadened by tilt (see *Measured pens*); Nib's pencil draws the v2 one |
 | Latin or Asian calligraphy | 7 square pen | `[2, min(width, 10), ±45°, smoothLevel]` | Flat nib at the angle |
 | Lasso | 5 dash | `[5]` | — |
 | Eraser end | 8 eraser track | `[width, 0.5, 0.1]` | — |
@@ -216,7 +216,8 @@ Every finding from the study, and where it's used. Nothing is kept only in notes
 | BOOX Notes sends the display a fountain pen's width and draws its ink 3 screen px wider, with a 1 px minimum at the zoom it was drawn at (`FOUNTAIN_PEN_V1_COMPENSATION`) | `BrushSpec.inkAt`: Nib's fountain ink gets the same 3 screen px, its 2 px floor and its speed thinning on screen; the display is still sent the pen's width |
 | The older fountain algorithm is 2 + (w + 1) · p² and ignores sensitivity | Rules it out as the display's preview; nothing else uses it |
 | BOOX Notes previews its ballpoint (a constant width) in the pencil style | Nib's ballpoint previews in the pencil style; so does the dash's stand-in |
-| BOOX Notes' pencil is a plain round line previewed in the pencil style; its only textured pen, the charcoal, is previewed in the charcoal styles with tilt (decompiled Notes 46037, 2026-10-07) | Nib's grainy, tilted pencil can't match the plain pencil style; a textured, tilted preview needs a charcoal style *[verify]* |
+| BOOX Notes' pencil is a plain round line previewed in the pencil style; its only textured pen, the charcoal, is previewed in the charcoal styles with tilt (decompiled Notes 46037, 2026-10-07) | Nib's grainy, tilted pencil can't match the plain pencil style; a textured, tilted preview needs a charcoal style |
+| The charcoal v2 style's ink is a 1-bit stipple: on where a fixed page threshold is below the pressure, stamps of 1.16w + 5 px solid to 0.6 of the radius, tilt broadening without lightening (penlab, 2026-10-07) | Nib's pencil is that stipple (`Stipple`), previewed in charcoal v2 with tilt on and the brush's tilt scale; checked against penlab's numbers and side by side with its strokes (`StippleTest`). The look on the panel is the owner's check *[verify]* |
 | An app's frame is in SurfaceFlinger once a transaction riding on it is committed (`applyTransactionOnDraw`, `addTransactionCommittedListener`) | Nib's `FrameLatch` reports the frame with the last stroke before a release; verified on the tablet (every held stroke's frame reported) |
 | The app-fed preview calls (`moveTo`, `quadTo`, `penUp`) are accepted on FW 4.3 but draw nothing, and the display's pen reader opens only the pen's own node (it picks devices named `onyx_emp`, `Wacom` or `hanvon`) | No use: the display's preview can only be seen with the real pen |
 | The kernel logs every 20th preview update (`HANDWRITE update_marker`, with its rectangle) | Counting updates and placing strokes from a log; not a measure of width |

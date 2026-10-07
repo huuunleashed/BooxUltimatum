@@ -160,7 +160,7 @@ class StrokeRendererTest {
         assertEquals(128 / 255f, (translucent[0] as Call.Begin).alpha, 1e-6f)
         assertEquals(BLACK, (translucent[1] as Call.Path).color, "colour alpha moves to the group")
         for ((kind, texture) in listOf(
-            BrushKind.Pencil to Texture.Grain, BrushKind.Graphite to Texture.Grain, BrushKind.Charcoal to Texture.Charcoal,
+            BrushKind.GrainPencil to Texture.Grain, BrushKind.Graphite to Texture.Grain, BrushKind.Charcoal to Texture.Charcoal,
             BrushKind.CharcoalV2 to Texture.Charcoal, BrushKind.Airbrush to Texture.Soft,
         )) {
             val dabs = calls(kind).filterIsInstance<Call.Dab>()

@@ -112,6 +112,28 @@ class SoftwareRaster(val width: Int, val height: Int, var transform: Affine = Af
         disc(transform.mapX(x, y), transform.mapY(x, y), radius * scale(), color, alpha, texture, blend)
     }
 
+    override fun stipple(x: Float, y: Float, radius: Float, density: Float, color: Int, blend: Blend) {
+        val ca = (color ushr 24) / 255f
+        if (!(ca > 0f)) return
+        val frame = frames[frames.size - 1]
+        val buf = frame.buffer
+        val cr = ((color shr 16) and 0xFF) / 255f * ca
+        val cg = ((color shr 8) and 0xFF) / 255f * ca
+        val cb = (color and 0xFF) / 255f * ca
+        var x0 = width
+        var y0 = height
+        var x1 = 0
+        var y1 = 0
+        Stipple.stamp(x, y, radius, density, transform, width, height) { px, py ->
+            put(buf, (py * width + px) * 4, cr, cg, cb, ca, blend)
+            if (px < x0) x0 = px
+            if (py < y0) y0 = py
+            if (px >= x1) x1 = px + 1
+            if (py >= y1) y1 = py + 1
+        }
+        if (x1 > x0 && y1 > y0) frame.mark(x0, y0, x1, y1)
+    }
+
     override fun strokePolyline(xy: FloatArray, count: Int, width: Float, color: Int, cap: Cap, dash: FloatArray?, blend: Blend) {
         if (count <= 0) return
         val s = scale()

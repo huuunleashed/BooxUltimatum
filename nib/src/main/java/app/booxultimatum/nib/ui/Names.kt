@@ -16,6 +16,7 @@ object Names {
         BrushKind.Fountain -> R.string.brush_fountain
         BrushKind.Ballpoint -> R.string.brush_ballpoint
         BrushKind.Pencil -> R.string.brush_pencil
+        BrushKind.GrainPencil -> R.string.brush_grain_pencil
         BrushKind.Graphite -> R.string.brush_graphite
         BrushKind.Marker -> R.string.brush_marker
         BrushKind.Highlighter -> R.string.brush_highlighter

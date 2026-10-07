@@ -189,6 +189,7 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
             }
             if (!prepared) {
                 // Recorded once: dab strokes as their dabs, so each tile replays only its own; the rest as a Picture.
+                // Stipple is worked out on each tile's own pixels, so it's drawn into each tile directly.
                 prepared = true
                 val r0 = SystemClock.elapsedRealtimeNanos()
                 val tolerance = 0.25f / TileGrid.bucketScale(level)
@@ -197,13 +198,18 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
                     StrokeRenderer.render(stroke, rec, tolerance)
                     if (!rec.general) dabs = rec
                 }
-                if (dabs == null) picture = record(stroke)
+                if (dabs == null && !stroke.brush.kind.rendersAsStipple) picture = record(stroke)
                 recordMs = (SystemClock.elapsedRealtimeNanos() - r0) / 1e6
             }
             tileCanvas.setBitmap(bmp)
             tileCanvas.setMatrix(tileMatrix(key))
             val d = dabs
-            if (d != null) d.replay(sink.on(tileCanvas), grid.docBox(key)) else tileCanvas.drawPicture(picture!!)
+            val p = picture
+            when {
+                d != null -> d.replay(sink.on(tileCanvas), grid.docBox(key))
+                p != null -> tileCanvas.drawPicture(p)
+                else -> StrokeRenderer.render(stroke, sink.on(tileCanvas), 0.25f / TileGrid.bucketScale(level))
+            }
             tileCanvas.setBitmap(null)
             drawn++
         }

@@ -35,6 +35,9 @@ private class CountingSink : RenderSink {
     override fun dab(x: Float, y: Float, radius: Float, angle: Float, color: Int, alpha: Float, texture: Texture, blend: Blend) {
         dabs++
     }
+    override fun stipple(x: Float, y: Float, radius: Float, density: Float, color: Int, blend: Blend) {
+        calls += "stipple"
+    }
     override fun strokePolyline(xy: FloatArray, count: Int, width: Float, color: Int, cap: Cap, dash: FloatArray?, blend: Blend) {
         calls += "polyline"
     }
@@ -63,7 +66,7 @@ class DabRecordingTest {
     }
 
     @Test fun aGroupedStrokeKeepsItsGroupInEachTile() {
-        val s = stroke(BrushSpec.defaults(BrushKind.Pencil).copy(opacity = 0.5f))
+        val s = stroke(BrushSpec.defaults(BrushKind.GrainPencil).copy(opacity = 0.5f))
         val rec = DabRecording()
         StrokeRenderer.render(s, rec)
         assertFalse(rec.general)
