@@ -201,7 +201,7 @@ class CanvasSink : RenderSink {
         stippleCount = 0
         val hardware = canvas.isHardwareAccelerated
         Stipple.stamp(
-            x, y, radius, density, toDevice,
+            x, y, radius, density, toDevice, toDocument,
             if (hardware) Int.MAX_VALUE else canvas.width, if (hardware) Int.MAX_VALUE else canvas.height, collectStipple,
         )
         if (stippleCount == 0) return

@@ -14,6 +14,12 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class PresetsTest {
+    @Test fun aBrushPenSlotTunedForSpeedAndTaperDrawsAsItsPreviewNow() {
+        val tuned = BrushPreset(BrushKind.BrushPen, 6f, PressurePreset.Medium, 0xFF1F4FB8.toInt(), BrushTune(speedInfluence = 0.8f, taper = 3f)).spec()
+        assertEquals(0f, tuned.speedInfluence, "the display's brush style doesn't thin with speed")
+        assertEquals(0f, tuned.taper, "nor taper")
+        assertEquals(1f, BrushPreset(BrushKind.Highlighter, 20f, PressurePreset.Medium, 0xFFF2C300.toInt()).spec().minRatio, "a round highlighter")
+    }
     @Test fun theOldPencilsSlotsBecomeTheStipplePencilAtTheSameWidthAndColour() {
         val six = BrushPreset.decode("pencil:6.0:medium:ff000000")
         assertEquals(BrushPreset(BrushKind.Pencil, 6f, PressurePreset.Medium, 0xFF000000.toInt()), six)

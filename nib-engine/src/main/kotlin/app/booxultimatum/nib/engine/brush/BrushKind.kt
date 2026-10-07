@@ -44,10 +44,10 @@ enum class BrushKind(val id: String) {
      */
     Marker("marker"),
 
-    /** Multiply blend with a flat chisel tip, slightly narrower at a light touch as the marker is. */
+    /** Multiply blend with a round nib, slightly narrower at a light touch as the marker is (a flat chisel before 0.3). */
     Highlighter("highlighter"),
 
-    /** Width from the square root of pressure, as BOOX's brush, and from speed, with tapered ends. */
+    /** Width from the square root of pressure, as BOOX's brush and the display's brush style (taper and speed before 0.3). */
     BrushPen("brush_pen"),
 
     /** Latin calligraphy: a flat nib at +45 degrees, or following the pen's orientation. */

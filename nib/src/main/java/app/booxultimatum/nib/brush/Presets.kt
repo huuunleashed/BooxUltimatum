@@ -154,8 +154,10 @@ data class BrushPreset(
             jitter = tune.jitter ?: base.jitter,
             nibAngle = tune.nibAngle ?: base.nibAngle,
             nibFromOrientation = tune.nibFromOrientation ?: base.nibFromOrientation,
-            speedInfluence = tune.speedInfluence ?: base.speedInfluence,
-            taper = tune.taper ?: base.taper,
+            // Speed and taper only where the brush offers them (Brush settings hides them otherwise): the brush pen gave
+            // them up to match its preview, and a slot tuned before mustn't bring them back unseen.
+            speedInfluence = if (base.speedInfluence > 0f) tune.speedInfluence ?: base.speedInfluence else base.speedInfluence,
+            taper = if (base.speedInfluence > 0f) tune.taper ?: base.taper else base.taper,
             // Only for the brushes that tilt: the display's charcoal styles broaden their preview by the same scale.
             tiltScale = if (base.usesTilt) tune.tiltScale ?: base.tiltScale else base.tiltScale,
         )

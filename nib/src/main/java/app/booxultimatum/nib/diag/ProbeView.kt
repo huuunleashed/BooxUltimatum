@@ -2,6 +2,7 @@ package app.booxultimatum.nib.diag
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.DashPathEffect
 import android.graphics.Paint
@@ -84,6 +85,7 @@ class ProbeView(context: Context) : View(context), PenRouter.Target {
             if (field == value) return
             field = value
             strokes.clear()
+            finishedCount = -1
             band = -1
             controller.reveal = value.reveal
             applyLayout()
@@ -137,6 +139,12 @@ class ProbeView(context: Context) : View(context), PenRouter.Target {
         }
 
     private val strokes = ArrayList<Pair<Int, Stroke>>()
+    private var finishedInk: Bitmap? = null
+    private val finishedCanvas = Canvas()
+    private val finishedSink = CanvasSink()
+
+    /** How many of [strokes] [finishedInk] holds; -1 when it must start again (a stroke was taken away). */
+    private var finishedCount = -1
     private var band = -1
     private var builder: StrokeBuilder? = null
     private var builderBand = -1
@@ -183,6 +191,7 @@ class ProbeView(context: Context) : View(context), PenRouter.Target {
 
     fun clear() {
         strokes.clear()
+        finishedCount = -1
         offsetX = 0f
         offsetY = 0f
         controller.releaseNow("clear")
@@ -330,6 +339,9 @@ class ProbeView(context: Context) : View(context), PenRouter.Target {
         viewTreeObserver.removeOnGlobalLayoutListener(layoutListener)
         close()
         PenRouter.detach(this)
+        finishedInk?.recycle()
+        finishedInk = null
+        finishedCount = -1
         super.onDetachedFromWindow()
     }
 
@@ -504,6 +516,7 @@ class ProbeView(context: Context) : View(context), PenRouter.Target {
                 val before = strokes.size
                 strokes.removeAll { (_, st) -> hitsPath(st, r) }
                 removed = before - strokes.size
+                if (removed > 0) finishedCount = -1
             }
             b.kind == BandKind.Lasso -> Unit
             else -> strokes.add(builderBand to stroke)
@@ -662,9 +675,10 @@ class ProbeView(context: Context) : View(context), PenRouter.Target {
             val inset = limitPaint.strokeWidth
             canvas.drawRect(inset, bandTop(i) + inset, width - inset, bandTop(i + 1) - inset, limitPaint)
         }
+        val cached = offsetX == 0f && offsetY == 0f && drawFinishedStrokes(canvas)
         val s = sink.on(canvas)
         canvas.withTranslation(offsetX, offsetY) {
-            for ((_, st) in strokes) StrokeRenderer.render(st, s)
+            if (!cached) for ((_, st) in strokes) StrokeRenderer.render(st, s)
             val live = builder
             if (live != null && !previewed && !erasing && probe.bands.getOrNull(builderBand)?.kind == BandKind.Ink && !live.isEmpty) StrokeRenderer.render(live.current(), s)
         }
@@ -690,6 +704,36 @@ class ProbeView(context: Context) : View(context), PenRouter.Target {
         }
         reportedSeq = seq
         controller.frameShown()
+    }
+
+    /**
+     * Draws the bands' finished strokes from [finishedInk], a picture of them at the view's own pixels, each stroke
+     * drawn into it once. Redrawing every stroke in every frame made each frame slower than the last: a band of
+     * stipple pencil strokes is tens of thousands of dots, and by the sixth stroke the frame came after the release's
+     * wait had run out, so the display was given the frame without the stroke (Match preview, 2026-10-07).
+     */
+    private fun drawFinishedStrokes(canvas: Canvas): Boolean {
+        if (width <= 0 || height <= 0) return false
+        var bmp = finishedInk
+        if (bmp == null || bmp.width != width || bmp.height != height) {
+            bmp?.recycle()
+            bmp = runCatching { Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888) }.getOrNull() ?: return false
+            finishedInk = bmp
+            finishedCount = -1
+        }
+        if (finishedCount < 0 || finishedCount > strokes.size) {
+            bmp.eraseColor(0)
+            finishedCount = 0
+        }
+        if (finishedCount < strokes.size) {
+            finishedCanvas.setBitmap(bmp)
+            val s = finishedSink.on(finishedCanvas)
+            for (i in finishedCount until strokes.size) StrokeRenderer.render(strokes[i].second, s)
+            finishedCanvas.setBitmap(null)
+            finishedCount = strokes.size
+        }
+        canvas.drawBitmap(bmp, 0f, 0f, null)
+        return true
     }
 
     /** A grid that moves with what's drawn, so a moving surface shows even before anything is drawn on it. */

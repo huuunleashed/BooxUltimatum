@@ -436,7 +436,7 @@ private fun FeelPage(ed: Editor, shown: BrushPreset, spec: BrushSpec, live: (Bru
         )
         PropertySlider(ed, stringResource(R.string.prop_scatter), spec.jitter, percent, "%", set = { shown.copy(tune = shown.tune.copy(jitter = it)) }, live = live, commit = commit)
     }
-    if (shown.kind.usesNib) {
+    if (shown.kind.usesNib && BrushSpec.defaults(shown.kind).minRatio < 1f) {
         SectionLabel(stringResource(R.string.prop_nib))
         val degrees = Math.toDegrees(spec.nibAngle.toDouble()).toFloat().let { ((it % 180f) + 180f) % 180f }
         val angleScale = remember { ValueScale.linear(0f, 180f, 1f, decimals = 0) }

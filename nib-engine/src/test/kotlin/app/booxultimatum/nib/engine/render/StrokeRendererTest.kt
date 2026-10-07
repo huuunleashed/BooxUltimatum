@@ -212,12 +212,34 @@ class StrokeRendererTest {
     }
 
     @Test
+    fun theHighlighterIsAsRoundAsTheMarkerStylePreviewsIt() {
+        val h = BrushSpec.defaults(BrushKind.Highlighter)
+        fun mid(path: FloatArray): Float {
+            val c = StrokeRenderer.centreline(stroke(3, BrushKind.Highlighter, path, deltaMillis = 8L, brush = h))
+            return c[3 * (c.size / 6) + 2]
+        }
+        val across = mid(line(20f, 100f, 180f, 100f, 41))
+        val down = mid(line(100f, 20f, 100f, 180f, 41))
+        val diagonal = mid(line(20f, 20f, 160f, 160f, 41))
+        assertEquals(across, down, 1e-4f, "the same width whichever way it goes")
+        assertEquals(across, diagonal, 1e-4f)
+        val chisel = h.copy(minRatio = 0.3f)
+        val old = StrokeRenderer.centreline(stroke(4, BrushKind.Highlighter, line(100f, 20f, 100f, 180f, 41), deltaMillis = 8L, brush = chisel))
+        assertTrue(old[3 * (old.size / 6) + 2] < 0.5f * down, "strokes drawn with the chisel before keep it")
+    }
+
+    @Test
     fun brushPenThinsWithSpeedAndTapers() {
         val path = line(40f, 100f, 160f, 100f, 61)
-        val brush = BrushSpec.defaults(BrushKind.BrushPen).copy(width = 12f, taper = 0f)
+        // Brush pen strokes drawn before 0.3.0-test.8 carry their speed thinning, and still draw with it.
+        val brush = BrushSpec.defaults(BrushKind.BrushPen).copy(width = 12f, taper = 0f, speedInfluence = 0.45f)
         val fast = raster(stroke(1, BrushKind.BrushPen, path, deltaMillis = 1L, brush = brush)).inkedPixels()
         val slow = raster(stroke(1, BrushKind.BrushPen, path, deltaMillis = 20L, brush = brush)).inkedPixels()
         assertTrue(fast < slow * 0.85f, "fast $fast vs slow $slow")
+        val today = BrushSpec.defaults(BrushKind.BrushPen).copy(width = 12f)
+        val fastToday = raster(stroke(1, BrushKind.BrushPen, path, deltaMillis = 1L, brush = today)).inkedPixels()
+        val slowToday = raster(stroke(1, BrushKind.BrushPen, path, deltaMillis = 20L, brush = today)).inkedPixels()
+        assertEquals(slowToday, fastToday, "today's brush pen draws as the display's brush style does, whatever the speed")
 
         val neo = StrokeRenderer.centreline(stroke(2, BrushKind.NeoBrush, line(20f, 100f, 180f, 100f, 81), deltaMillis = 20L, brush = BrushSpec.defaults(BrushKind.NeoBrush).copy(taper = 2.5f)))
         val n = neo.size / 3

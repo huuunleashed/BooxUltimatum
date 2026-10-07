@@ -62,10 +62,16 @@ object Stipple {
      * which for a tile (a scale and a whole-pixel offset) is the tile's pixel less its offset.
      */
     fun stamp(x: Float, y: Float, radius: Float, density: Float, toDevice: Affine, clipWidth: Int, clipHeight: Int, out: Pixels) {
+        val inverse = toDevice.invert() ?: return
+        stamp(x, y, radius, density, toDevice, inverse, clipWidth, clipHeight, out)
+    }
+
+    /** [stamp] with [toDocument], the inverse of [toDevice], worked out once by the caller for many stamps. */
+    fun stamp(x: Float, y: Float, radius: Float, density: Float, toDevice: Affine, toDocument: Affine, clipWidth: Int, clipHeight: Int, out: Pixels) {
         if (!(radius > 0f) || !(density > 0f) || !x.isFinite() || !y.isFinite()) return
         val scale = toDevice.meanScale
         if (!(scale > 0f)) return
-        val inverse = toDevice.invert() ?: return
+        val inverse = toDocument
         val cx = toDevice.mapX(x, y)
         val cy = toDevice.mapY(x, y)
         val r = radius * scale

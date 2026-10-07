@@ -58,6 +58,8 @@ class SoftwareRaster(val width: Int, val height: Int, var transform: Affine = Af
     private var crossD = IntArray(64)
 
     private val outline = OutlineBuilder()
+    private var stippleFrom: Affine? = null
+    private var stippleInverse: Affine? = null
     private val piece = FloatBuf(64)
     private val poly = FloatBuf(256)
     private var px = FloatArray(64)
@@ -115,6 +117,12 @@ class SoftwareRaster(val width: Int, val height: Int, var transform: Affine = Af
     override fun stipple(x: Float, y: Float, radius: Float, density: Float, color: Int, blend: Blend) {
         val ca = (color ushr 24) / 255f
         if (!(ca > 0f)) return
+        val t = transform
+        if (t != stippleFrom) {
+            stippleInverse = t.invert()
+            stippleFrom = t
+        }
+        val inverse = stippleInverse ?: return
         val frame = frames[frames.size - 1]
         val buf = frame.buffer
         val cr = ((color shr 16) and 0xFF) / 255f * ca
@@ -124,7 +132,7 @@ class SoftwareRaster(val width: Int, val height: Int, var transform: Affine = Af
         var y0 = height
         var x1 = 0
         var y1 = 0
-        Stipple.stamp(x, y, radius, density, transform, width, height) { px, py ->
+        Stipple.stamp(x, y, radius, density, transform, inverse, width, height) { px, py ->
             put(buf, (py * width + px) * 4, cr, cg, cb, ca, blend)
             if (px < x0) x0 = px
             if (py < y0) y0 = py

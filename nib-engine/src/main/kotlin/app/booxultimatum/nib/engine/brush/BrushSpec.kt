@@ -283,18 +283,20 @@ data class BrushSpec(
                 kind, width = 16f, curve = MARKER_CURVE, smoothing = 0.4f, opacity = MARKER_OPACITY,
                 preview = Preview(HardwareStyle.Marker),
             )
-            // Previewed in the display's marker style too, so it narrows at a light touch as the marker does.
+            // Previewed in the display's marker style too, so it narrows at a light touch as the marker does, with a round
+            // nib as that style draws: the flat chisel it had until 0.3.0-test.8 made its ink as little as a third of the
+            // preview's width across some directions (the owner's report, 2026-10-07). Strokes drawn before keep theirs.
             BrushKind.Highlighter -> BrushSpec(
                 kind, width = 20f, curve = MARKER_CURVE, smoothing = 0.5f, blend = Blend.Multiply,
-                nibAngle = (PI / 2 - 0.35).toFloat(), minRatio = 0.3f,
+                nibAngle = (PI / 2 - 0.35).toFloat(), minRatio = 1f,
                 preview = Preview(HardwareStyle.Marker),
             )
-            // Nib's own brush pen, with its taper and speed, previewed in the display's brush style: its width follows
-            // the square root of pressure as that style's does, and the display, which draws up to twice the width it's
-            // sent, gets half.
+            // BOOX's brush, as the display's brush style previews it: its width follows the square root of pressure, and
+            // the display, which draws up to twice the width it's sent, gets half. No taper and no thinning with speed,
+            // which the preview can't draw (they made its ink thinner than the preview until 0.3.0-test.8); strokes drawn
+            // before keep theirs.
             BrushKind.BrushPen -> BrushSpec(
                 kind, width = 6f, curve = NEO_BRUSH_CURVE, smoothing = 0.45f,
-                speedInfluence = 0.45f, taper = 1.5f,
                 preview = Preview(HardwareStyle.NeoBrush, widthFactor = NEO_BRUSH_PREVIEW_FACTOR),
             )
             // BOOX's Latin calligraphy: a flat nib at +45 degrees.

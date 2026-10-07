@@ -126,7 +126,8 @@ class NativePensTest {
         assertEquals(0f, neo.speedInfluence)
         val brushPen = BrushSpec.defaults(BrushKind.BrushPen)
         assertEquals(PressureCurve(0.5f, 0f, 1f), brushPen.curve, "the brush style's sqrt(pressure), so preview and ink agree")
-        assertTrue(brushPen.taper > 0f && brushPen.speedInfluence > 0f, "with its own taper and speed")
+        assertEquals(0f, brushPen.taper, "no taper, which the display's brush style doesn't draw")
+        assertEquals(0f, brushPen.speedInfluence, "nor thinning with speed")
         for (kind in listOf(BrushKind.NeoBrush, BrushKind.BrushPen)) assertEquals(BrushSpec.NEO_BRUSH_PREVIEW_FACTOR, BrushSpec.defaults(kind).preview.widthFactor)
         for (kind in listOf(BrushKind.Charcoal, BrushKind.CharcoalV2)) {
             val b = BrushSpec.defaults(kind)
