@@ -40,11 +40,14 @@ import rikka.shizuku.ShizukuBinderWrapper
 import rikka.shizuku.SystemServiceHelper
 
 /**
- * The preview brushes SurfaceFlinger offers. The pencil style draws a steady line exactly as wide as it's sent (clean
- * from 0.5 px, Nib's Widths probe); the fountain style follows pressure as BOOX's fountain pen does and draws up to
- * 3 px wider than it's sent, the margin BOOX Notes adds to its own fountain ink (`docs/09-ink.md` › *Measured pens*).
+ * The preview brushes SurfaceFlinger offers, as measured for Nib (`docs/09-ink.md` › *Measured pens*). The pencil style
+ * draws a steady line exactly as wide as it's sent (clean from 0.5 px, Nib's Widths probe); the fountain style follows
+ * pressure as BOOX's fountain pen does and draws up to 3 px wider than it's sent, the margin BOOX Notes adds to its own
+ * fountain ink; the brush style swells as `2w·√p` (measured while the owner drew, 2026-10-07); the charcoal v2 style is
+ * BOOX's 1-bit stipple, about `1.16w + 5` px across, darker with pressure and broader with tilt (its own defaults, tilt
+ * on). Each is drawn with the display's own parameters, which Instant ink never changes.
  */
-enum class InkStyle(val code: Int) { Fountain(1), Pencil(0), Marker(2) }
+enum class InkStyle(val code: Int) { Fountain(1), Pencil(0), Marker(2), Brush(3), Grain(6) }
 
 /**
  * What the owner chose on the Instant ink page. Stored in the "ink" preferences. A "hold" key from 0.5.0's

@@ -88,6 +88,14 @@ class DabRecording : RenderSink {
     fun replay(sink: RenderSink, box: Box): Int {
         var played = 0
         var open = false
+        // Consecutive stipple stamps of one colour and blend go to the sink as one run, as the stroke itself sends them.
+        var run = 0
+        var runColor = 0
+        var runBlend = Blend.Normal
+        fun flush() {
+            if (run > 0) sink.stippleRun(runXs, runYs, runRs, runDs, run, runColor, runBlend)
+            run = 0
+        }
         for (i in 0 until n) {
             val r = rs[i] + 1f
             if (xs[i] + r < box.left || xs[i] - r > box.right || ys[i] + r < box.top || ys[i] - r > box.bottom) continue
@@ -95,11 +103,38 @@ class DabRecording : RenderSink {
                 sink.beginGroup(groupAlpha, groupBlend)
                 open = true
             }
-            if (stippled[i]) sink.stipple(xs[i], ys[i], rs[i], alphas[i], colors[i], blends[i]) else sink.dab(xs[i], ys[i], rs[i], angles[i], colors[i], alphas[i], textures[i], blends[i])
+            if (stippled[i]) {
+                if (run > 0 && (colors[i] != runColor || blends[i] != runBlend)) flush()
+                if (run == runXs.size) growRun()
+                runXs[run] = xs[i]
+                runYs[run] = ys[i]
+                runRs[run] = rs[i]
+                runDs[run] = alphas[i]
+                runColor = colors[i]
+                runBlend = blends[i]
+                run++
+            } else {
+                flush()
+                sink.dab(xs[i], ys[i], rs[i], angles[i], colors[i], alphas[i], textures[i], blends[i])
+            }
             played++
         }
+        flush()
         if (open) sink.endGroup()
         return played
+    }
+
+    private var runXs = FloatArray(0)
+    private var runYs = FloatArray(0)
+    private var runRs = FloatArray(0)
+    private var runDs = FloatArray(0)
+
+    private fun growRun() {
+        val s = maxOf(64, runXs.size * 2)
+        runXs = runXs.copyOf(s)
+        runYs = runYs.copyOf(s)
+        runRs = runRs.copyOf(s)
+        runDs = runDs.copyOf(s)
     }
 
     private fun grow() {

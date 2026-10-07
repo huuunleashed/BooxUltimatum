@@ -34,6 +34,31 @@ object StrokeRenderer {
         val poly = FloatBuf(2048)
         val xy = FloatBuf(1024)
         val dash = FloatArray(2)
+        val stamps = Stamps()
+    }
+
+    /** A stroke's stipple stamps, gathered so the sink gets them in one run. */
+    private class Stamps {
+        var n = 0
+        var xs = FloatArray(512)
+        var ys = FloatArray(512)
+        var rs = FloatArray(512)
+        var ds = FloatArray(512)
+
+        fun add(x: Float, y: Float, r: Float, d: Float) {
+            if (n == xs.size) {
+                val size = n * 2
+                xs = xs.copyOf(size)
+                ys = ys.copyOf(size)
+                rs = rs.copyOf(size)
+                ds = ds.copyOf(size)
+            }
+            xs[n] = x
+            ys[n] = y
+            rs[n] = r
+            ds[n] = d
+            n++
+        }
     }
 
     private val scratch = ThreadLocal.withInitial { Scratch() }
@@ -76,7 +101,7 @@ object StrokeRenderer {
         when (mode) {
             Mode.Outline -> drawOutline(stroke, s, drawColor, drawBlend, tolerance, sink)
             Mode.Dabs -> drawDabs(stroke, line, drawColor, drawBlend, sink)
-            Mode.Stipple -> drawStipple(line, drawColor, drawBlend, sink)
+            Mode.Stipple -> drawStipple(line, s.stamps, drawColor, drawBlend, sink)
             Mode.Dashed -> drawDashed(stroke, s, drawColor, drawBlend, sink)
             Mode.None -> Unit
         }
@@ -211,32 +236,35 @@ object StrokeRenderer {
      * Stipple stamps along the line, close enough that their edges merge: overlapping stamps never build up (a pixel
      * is on where the page's threshold is below the strongest stamp over it), so the spacing only smooths the edge.
      */
-    private fun drawStipple(line: Centreline, color: Int, blend: Blend, sink: RenderSink) {
+    private fun drawStipple(line: Centreline, stamps: Stamps, color: Int, blend: Blend, sink: RenderSink) {
         val x = line.x
         val y = line.y
         val r = line.r
         val p = line.p
         val a = line.shade
+        stamps.n = 0
         fun stamp(px: Float, py: Float, radius: Float, pressure: Float, shade: Float) {
             val density = (pressure * shade).coerceIn(0f, 1f)
-            if (density > 0f) sink.stipple(px, py, radius, density, color, blend)
+            if (density > 0f) stamps.add(px, py, radius, density)
         }
         stamp(x[0], y[0], r[0], p[0], a[0])
-        if (line.n == 1) return
-        var next = stippleStep(r[0])
-        for (i in 0 until line.n - 1) {
-            val segLen = Centreline.dist(x[i], y[i], x[i + 1], y[i + 1])
-            var along = next
-            while (along <= segLen) {
-                val u = if (segLen > 0f) along / segLen else 0f
-                val rr = r[i] + (r[i + 1] - r[i]) * u
-                stamp(x[i] + (x[i + 1] - x[i]) * u, y[i] + (y[i + 1] - y[i]) * u, rr, p[i] + (p[i + 1] - p[i]) * u, a[i] + (a[i + 1] - a[i]) * u)
-                along += stippleStep(rr)
+        if (line.n > 1) {
+            var next = stippleStep(r[0])
+            for (i in 0 until line.n - 1) {
+                val segLen = Centreline.dist(x[i], y[i], x[i + 1], y[i + 1])
+                var along = next
+                while (along <= segLen) {
+                    val u = if (segLen > 0f) along / segLen else 0f
+                    val rr = r[i] + (r[i + 1] - r[i]) * u
+                    stamp(x[i] + (x[i + 1] - x[i]) * u, y[i] + (y[i + 1] - y[i]) * u, rr, p[i] + (p[i + 1] - p[i]) * u, a[i] + (a[i + 1] - a[i]) * u)
+                    along += stippleStep(rr)
+                }
+                next = along - segLen
             }
-            next = along - segLen
+            val last = line.n - 1
+            stamp(x[last], y[last], r[last], p[last], a[last])
         }
-        val last = line.n - 1
-        stamp(x[last], y[last], r[last], p[last], a[last])
+        if (stamps.n > 0) sink.stippleRun(stamps.xs, stamps.ys, stamps.rs, stamps.ds, stamps.n, color, blend)
     }
 
     private fun stippleStep(radius: Float): Float = (STIPPLE_STEP * 2f * radius).coerceIn(MIN_STIPPLE_STEP, MAX_STIPPLE_STEP)

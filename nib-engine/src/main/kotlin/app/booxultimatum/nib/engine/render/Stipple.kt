@@ -98,4 +98,83 @@ object Stipple {
             }
         }
     }
+
+    /**
+     * Lays [n] stamps of one stroke (centres [xs], [ys], radii [rs], densities [ds], in document pixels) as [stamp]
+     * would one by one, but reports each pixel that turns on once, and doesn't work out again a pixel an earlier stamp
+     * already turned on. A stroke's stamps overlap about seven deep, so that's most of the work and of the dots a
+     * sink would otherwise draw several times over.
+     */
+    fun stamps(
+        xs: FloatArray, ys: FloatArray, rs: FloatArray, ds: FloatArray, n: Int,
+        toDevice: Affine, toDocument: Affine, clipWidth: Int, clipHeight: Int, out: Pixels,
+    ) {
+        val scale = toDevice.meanScale
+        if (n <= 0 || !(scale > 0f)) return
+        var bx0 = Int.MAX_VALUE
+        var by0 = Int.MAX_VALUE
+        var bx1 = Int.MIN_VALUE
+        var by1 = Int.MIN_VALUE
+        for (i in 0 until n) {
+            if (!(rs[i] > 0f) || !(ds[i] > 0f) || !xs[i].isFinite() || !ys[i].isFinite()) continue
+            val cx = toDevice.mapX(xs[i], ys[i])
+            val cy = toDevice.mapY(xs[i], ys[i])
+            val r = rs[i] * scale
+            bx0 = min(bx0, floor(cx - r).toInt())
+            by0 = min(by0, floor(cy - r).toInt())
+            bx1 = max(bx1, ceil(cx + r).toInt() + 1)
+            by1 = max(by1, ceil(cy + r).toInt() + 1)
+        }
+        bx0 = max(0, bx0)
+        by0 = max(0, by0)
+        bx1 = min(clipWidth, bx1)
+        by1 = min(clipHeight, by1)
+        if (bx1 <= bx0 || by1 <= by0) return
+        val w = bx1 - bx0
+        val h = by1 - by0
+        if (w.toLong() * h > MAX_RUN_PIXELS) {
+            for (i in 0 until n) stamp(xs[i], ys[i], rs[i], ds[i], toDevice, toDocument, clipWidth, clipHeight, out)
+            return
+        }
+        val lit = java.util.BitSet(w * h)
+        val inverse = toDocument
+        for (i in 0 until n) {
+            val radius = rs[i]
+            val density = ds[i]
+            if (!(radius > 0f) || !(density > 0f) || !xs[i].isFinite() || !ys[i].isFinite()) continue
+            val cx = toDevice.mapX(xs[i], ys[i])
+            val cy = toDevice.mapY(xs[i], ys[i])
+            val r = radius * scale
+            val x0 = max(bx0, floor(cx - r).toInt())
+            val x1 = min(bx1, ceil(cx + r).toInt() + 1)
+            val y0 = max(by0, floor(cy - r).toInt())
+            val y1 = min(by1, ceil(cy + r).toInt() + 1)
+            if (x1 <= x0 || y1 <= y0) continue
+            val d = min(1f, density)
+            val r2 = r * r
+            for (py in y0 until y1) {
+                val dy = py + 0.5f - cy
+                val row = (py - by0) * w - bx0
+                for (px in x0 until x1) {
+                    if (lit.get(row + px)) continue
+                    val dx = px + 0.5f - cx
+                    val d2 = dx * dx + dy * dy
+                    if (d2 >= r2) continue
+                    val level = d * falloff(sqrt(d2) / r)
+                    if (!(level > 0f)) continue
+                    val fx = px + 0.5f
+                    val fy = py + 0.5f
+                    val gx = floor(scale * inverse.mapX(fx, fy)).toInt()
+                    val gy = floor(scale * inverse.mapY(fx, fy)).toInt()
+                    if (threshold(gx, gy) < level) {
+                        lit.set(row + px)
+                        out.on(px, py)
+                    }
+                }
+            }
+        }
+    }
+
+    /** The largest area [stamps] keeps track of; a run over more (a long stroke at a high zoom) goes stamp by stamp. */
+    private const val MAX_RUN_PIXELS = 16L * 1024 * 1024
 }

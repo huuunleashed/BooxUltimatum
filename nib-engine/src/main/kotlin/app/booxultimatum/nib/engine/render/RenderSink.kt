@@ -55,6 +55,14 @@ interface RenderSink {
     fun stipple(x: Float, y: Float, radius: Float, density: Float, color: Int, blend: Blend)
 
     /**
+     * Lays [n] stipple stamps of one stroke at once (centres [xs], [ys], radii [rs], densities [ds]), as [stipple] does
+     * one by one. A sink may draw each pixel only once however many stamps turn it on ([Stipple.stamps]).
+     */
+    fun stippleRun(xs: FloatArray, ys: FloatArray, rs: FloatArray, ds: FloatArray, n: Int, color: Int, blend: Blend) {
+        for (i in 0 until n) stipple(xs[i], ys[i], rs[i], ds[i], color, blend)
+    }
+
+    /**
      * Strokes an open polyline [width] wide with round joins. [dash], when given, alternates on and off lengths in
      * document pixels, starting with on.
      */

@@ -32,7 +32,7 @@ class NibSettings internal constructor(private val prefs: SharedPreferences) {
 
     private val markerState = mutableStateOf(MarkerPreview.of(prefs.getString("marker_preview", null)))
 
-    /** How marker and highlighter previews carry colour (Settings › Display preview). */
+    /** How marker and highlighter previews carry colour (Settings › Display). */
     var markerPreview: MarkerPreview
         get() = markerState.value
         set(v) {
@@ -42,7 +42,7 @@ class NibSettings internal constructor(private val prefs: SharedPreferences) {
 
     private val revealState = mutableStateOf(RevealChoice.of(prefs.getString("reveal", null)))
 
-    /** When Nib's own ink replaces the display's preview (Settings › Display preview › Show the finished ink). */
+    /** When Nib's own ink replaces the display's preview (Settings › Writing › Show the finished ink). */
     var reveal: RevealChoice
         get() = revealState.value
         set(v) {
@@ -61,13 +61,13 @@ class NibSettings internal constructor(private val prefs: SharedPreferences) {
             prefs.edit { putInt("reveal_pause_ms", ms) }
         }
 
-    /** The display's fast mode while fingers move the page (Settings › Fingers). */
+    /** The display's fast mode while fingers move the page (Settings › Display). */
     var fastGestures by pref("fast_gestures", true)
 
     /** Finger touch switched off over the canvas while the pen is near (Settings › Fingers); unverified, so off. */
     var palmGuard by pref("palm_guard", false)
 
-    /** Diagnostics: the display previews the pen's eraser end itself, rather than Nib pausing the preview for it. */
+    /** Settings › Writing: the display previews the pen's eraser end itself, rather than Nib pausing the preview for it. */
     var eraserEndPreview by pref("eraser_end_preview", true)
 
     /** Diagnostics › Pen recorder. */

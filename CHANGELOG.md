@@ -4,15 +4,24 @@ All notable changes to BooxUltimatum. Newest first. The project follows [Semanti
 
 ## [Unreleased]
 
-Writing and drawing the way BOOX's own apps do it, continued in Nib. Nothing below has been tried on the tablet yet unless it says so.
+## [0.8.0] (2026-10-07)
+
+Nib 0.3.0, its biggest release: Nib writes the way BOOX's own apps do, and each of its pens draws the ink the display previews, measured on the tablet. The hub's Instant ink gains two of those previews. Tested on a Note Air6 C with firmware 4.3 through ten test builds of Nib; the owner judged the pencil, the brush pen and Diagnostics by eye. What hasn't been seen on the tablet says so below.
+
+### Added
+
+- **Nib: moving a selection keeps up with the pen.** The lasso's strokes are drawn once, ahead of time, into a picture at the page's own pixels, and each frame of a move, scale or turn just places it, where it used to draw every stroke twice a frame: with the stipple pencil that was several seconds a frame on the emulator, now a few tens of milliseconds. The display follows the drag in its fast mode, as it does a moving page, and cleans up after. After the drop the page is drawn again in the background while the strokes stay where you put them, so nothing jumps back or waits. Settings › Display › *Fast refresh while things move* turns the fast mode off.
+- **Instant ink: two more previews**, measured for Nib: *Brush pen*, which swells with pressure as BOOX's brush does, and *Grainy pencil*, BOOX's black stipple, darker as you press and broader as you lean, for apps whose pencil or charcoal has grain.
 
 ### Changed
 
+- **Nib: Settings in four pages**, Writing, Display, Fingers and Layout, each a screen's worth instead of one long list. *Preview the eraser end* moved there from Diagnostics, which keeps only what's for testing the tablet.
+- **Nib: the stipple pencil draws much faster.** Each stroke's dots are worked out once however many stamps overlap (about seven), and drawn into the page as one mask instead of thousands of points; a stroke crossing many tiles is worked out once for all of them. Drawing a page again after a zoom or a move takes about half the time.
 - **Nib writes the way BOOX's own apps do.**
   - Quick strokes follow each other with nothing reaching the panel in between. The display holds Nib's frames for the whole writing session, and Nib's ink replaces the preview only at a break: a touch on a control, a panel, undo, a tool change, a gesture.
   - Every floating card is kept clear of the preview at once.
   - While you write, the cards that change (undo, redo, the pen slots, the sizes) are drawn straight into the display's layer, so they stay current.
-- **Nib: Show the finished ink** (Settings › Display preview):
+- **Nib: Show the finished ink** (Settings › Writing):
   - **Auto**, the default: at breaks for the pens the display previews faithfully; for textured, blended and see-through ink, after you pause, by drawing Nib's exact ink into the display's layer without a refresh.
   - Or at breaks only, after a pause of your choice (0.4 to 2 s), or after every stroke as before.
 - **Nib: the display draws more of what you do.** The pen's eraser end shows its track as you erase, and the lasso its dashed path, instead of pausing the preview.
@@ -23,7 +32,7 @@ Writing and drawing the way BOOX's own apps do it, continued in Nib. Nothing bel
   - Pencil, graphite and both charcoals shade broader and lighter when you tilt the pen.
   - A new Asian calligraphy pen joins the Latin one.
   - Every preview style BOOX Notes uses is offered.
-- **Nib: fast refresh while you move the page** with your fingers, as in BOOX's own apps, cleaned up once you stop. You can turn it off in Settings › Fingers.
+- **Nib: fast refresh while you move the page** with your fingers, as in BOOX's own apps, cleaned up once you stop. You can turn it off in Settings › Display.
 - **Nib: Palm guard** (Settings › Fingers, off until it's confirmed on the tablet): finger touch is switched off over the page while the pen is near, so a resting hand can't move it.
 - **Nib: Refresh screen** in the menu, and one gentle clean after a drawing opens or a panel closes.
 - **Nib: Diagnostics › Lab**, with a check for each new display call, and the answers logged for the next build.

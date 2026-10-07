@@ -170,10 +170,6 @@ private fun StatusPage() {
                 settings.tryUnverifiedStyles = it
                 log.i("setting", "try unverified styles" to it)
             }, onText = on, offText = off)
-            Toggle(stringResource(R.string.diag_eraser_end_preview), stringResource(R.string.diag_eraser_end_preview_detail), settings.eraserEndPreview, onToggle = {
-                settings.eraserEndPreview = it
-                log.i("setting", "eraser end preview" to it)
-            }, onText = on, offText = off)
             Text(stringResource(R.string.diag_swap_delay), style = StudioType.Title, modifier = Modifier.padding(top = Studio.S2))
             Text(stringResource(R.string.diag_swap_delay_detail), style = StudioType.Body, color = Studio.Legend)
             Segmented(

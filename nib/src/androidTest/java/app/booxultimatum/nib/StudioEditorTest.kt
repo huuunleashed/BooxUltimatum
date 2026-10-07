@@ -171,8 +171,8 @@ class StudioEditorTest {
         assertTrue(abs(first.x - 400f) < 1.5f && abs(first.y - 500f) < 1.5f, "the start is under the pen: $first")
         assertTrue(abs(last.x - 1000f) < 1.5f && abs(last.y - 900f) < 1.5f, "so is the end: $last")
         assertEquals(scale, vp.scale, "turning never zooms")
-        // The brush's width is the document's, however the page is turned.
-        assertEquals(BrushPreset.DEFAULTS[0].width, s.brush.width)
+        // The brush's width is the document's, however the page is turned (with the fountain pen's 3 screen pixels).
+        assertEquals(BrushPreset.DEFAULTS[0].spec().inkAt(scale).width, s.brush.width, 1e-4f)
     }
 
     @Test fun resetViewStandsThePageUprightAndFitsIt() {

@@ -135,7 +135,7 @@ kit/ink/src/main/java/app/booxultimatum/kit/ink/
 ## Nib on the framework
 
 - The canvas drives an `InkCanvasController`. Every floating control records its screen rectangle, and all of them are the session's exclusions.
-- Reveal policy (Settings › Display preview): at breaks, as the native apps do (the default); or after a pause, which pushes Nib's exact rendering into the display's layer; or after every stroke.
+- Reveal policy (Settings › Writing): at breaks, as the native apps do (the default); or after a pause, which pushes Nib's exact rendering into the display's layer; or after every stroke.
 - During a hold, the pills whose state changed (undo and redo, the pen slots, the size) are pushed as bitmaps.
 - Finger pans, zooms and turns use the native fast mode and clean up after.
 - The lasso path is previewed by the display in its dashed style, and the eraser end pauses the preview, as in the native app.
@@ -150,6 +150,7 @@ Instant ink runs in the hub for other apps, which render their own strokes, so i
 - **Ending a hold.** It ends at once when the pen leaves range, the eraser end comes near, the chosen app leaves the front, the lock screen shows or the screen turns off. After any swap, a hovering pen holds again only after 500 ms, NeoReader's wait for the colour panel, while a touch holds at once.
 - **Log and watchdog.** Each hold with strokes is logged under `ink` (strokes, time held, why it ended). A watchdog lets the frames through after 30 s without a touch.
 - **Recovery.** Recovery (the Ink page, the notification) and home's stray-session check use `Epd.release()` and `TouchPanel.reset()`, which also clear fast mode, the region mode, exclusions, pen-part configurations and finger-touch suppression. `InkGuard` records a drawing session, so a hub that dies mid-session is cleaned up at its next start.
+- **Preview styles** (from hub 0.8.0): pencil, fountain pen, marker, brush pen (the brush style, `2w·√p`) and grainy pencil (charcoal v2, BOOX's 1-bit stipple, with the display's own tilt defaults), each at the width chosen. They're the styles measured for Nib; Instant ink never changes a style's parameters, so another app's session finds them as the display keeps them.
 - **Clean screen.** A Quick Settings tile and a key on the Ink page run `Eink.cleanScreen()` (a deep-GC repaint of everything), for ghosting. The tile waits until Quick Settings has closed.
 
 ## Verified and not

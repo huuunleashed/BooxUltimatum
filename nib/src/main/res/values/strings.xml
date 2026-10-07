@@ -153,6 +153,18 @@
     <string name="selection_done">Done</string>
 
     <!-- Settings -->
+    <string name="settings_tab_writing">Writing</string>
+    <string name="settings_tab_writing_detail">The pen, the eraser end, and when the finished ink replaces the preview</string>
+    <string name="settings_tab_display">Display</string>
+    <string name="settings_tab_display_detail">How the display previews and refreshes</string>
+    <string name="settings_tab_fingers_detail">What fingers do on the page</string>
+    <string name="settings_tab_layout">Layout</string>
+    <string name="settings_tab_layout_detail">Where the tools and cards sit</string>
+    <string name="settings_refresh">Refresh</string>
+    <string name="settings_preview_size">Preview size</string>
+    <string name="settings_tools">Tools</string>
+    <string name="setting_eraser_end">Preview the eraser end</string>
+    <string name="setting_eraser_end_detail">The display draws the eraser end’s track at once while you erase, and Nib erases when you lift. Off: the page updates as you erase, more slowly.</string>
     <string name="settings_pen">Pen</string>
     <string name="settings_fingers">Fingers</string>
     <string name="settings_panels">Panels</string>
@@ -175,8 +187,8 @@
     <string name="setting_finger_drawing_detail">Off: fingers only move the page, and the pen is the only thing that draws.</string>
     <string name="setting_finger_pan">One finger moves the page</string>
     <string name="setting_finger_pan_detail">When fingers don’t draw. Two fingers always pinch, move and turn it.</string>
-    <string name="setting_fast_gestures">Fast refresh while moving the page</string>
-    <string name="setting_fast_gestures_detail">The display’s quick mode while fingers pan, zoom or turn the page, as in BOOX’s own apps. It cleans up the screen once they stop.</string>
+    <string name="setting_fast_gestures">Fast refresh while things move</string>
+    <string name="setting_fast_gestures_detail">The display’s quick mode while fingers pan, zoom or turn the page, and while you drag a selection, as in BOOX’s own apps. It cleans up the screen once you stop.</string>
     <string name="setting_palm_guard">Palm guard</string>
     <string name="setting_palm_guard_detail">The display ignores fingers on the canvas while the pen is near, so a resting hand can’t move the page. Not yet tested on this tablet: try it in Diagnostics › Lab first.</string>
     <string name="setting_reveal">Show the finished ink</string>
@@ -381,8 +393,6 @@
     <string name="diag_preview">Preview</string>
     <string name="diag_try_unverified">Try unverified preview styles</string>
     <string name="diag_try_unverified_detail">Ask the display for each brush’s own style even where it hasn’t been seen working on this tablet. Off: a verified style stands in.</string>
-    <string name="diag_eraser_end_preview">Preview the eraser end on the display</string>
-    <string name="diag_eraser_end_preview_detail">The display draws the eraser end’s track itself while you erase, and Nib erases when you lift. Off: the preview pauses while the eraser end is used, and the page updates as you go.</string>
     <string name="diag_swap_delay">Extra swap delay</string>
     <string name="diag_swap_delay_detail">How long Nib waits after drawing the finished stroke before replacing the display’s preview with it.</string>
     <string name="diag_recorder">Pen recorder</string>

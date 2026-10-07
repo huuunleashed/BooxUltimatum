@@ -192,7 +192,7 @@ fun InkScreen(readKey: Int, compact: Boolean) {
             }
             Spacer(Modifier.height(Space.xl))
             Plate(stringResource(R.string.ink_stroke)) {
-                Choice(stringResource(R.string.ink_style), InkStyle.entries, prefs.style, { stringResource(when (it) { InkStyle.Fountain -> R.string.ink_style_fountain; InkStyle.Pencil -> R.string.ink_style_pencil; InkStyle.Marker -> R.string.ink_style_marker }) }) { commit(prefs.copy(style = it)) }
+                Choice(stringResource(R.string.ink_style), InkStyle.entries, prefs.style, { stringResource(when (it) { InkStyle.Fountain -> R.string.ink_style_fountain; InkStyle.Pencil -> R.string.ink_style_pencil; InkStyle.Marker -> R.string.ink_style_marker; InkStyle.Brush -> R.string.ink_style_brush; InkStyle.Grain -> R.string.ink_style_grain }) }) { commit(prefs.copy(style = it)) }
                 Choice(stringResource(R.string.ink_width), listOf(2, 3, 4, 6, 8), prefs.widthPx, { stringResource(R.string.ink_px, it) }) { commit(prefs.copy(widthPx = it)) }
                 Text(stringResource(R.string.ink_style_hint), style = MaterialTheme.typography.bodySmall, color = Ink.Legend)
                 Choice(stringResource(R.string.ink_latency), HoldPolicy.LATENCY_CHOICES, prefs.latencyMs, { stringResource(R.string.ink_ms, it) }) { commit(prefs.copy(latencyMs = it)) }

@@ -86,7 +86,7 @@ Boox gives you six preset screensavers. BooxUltimatum gives you twenty-one faces
 
 In Boox Notes, ink appears under the nib in about 10 ms. In Sketchbook and most other apps, it trails behind. The reason is that the display system draws the stroke straight from the pen, a firmware feature Onyx offers app developers through its public [pen SDK](https://github.com/onyx-intl/OnyxAndroidDemo/blob/master/doc/Onyx-Pen-SDK.md), for drawing inside their own app. Most apps don't include that SDK. BooxUltimatum switches the same path on from the outside for apps you choose, and hands the stroke back to them after you lift the pen.
 
-A preview stroke lands at once, and once you pause (0.8 s by default, 0.4 to 2 s to choose), the app's own brush takes its place; quick strokes share one preview, as in BOOX's own apps. The display holds the app's own drawing back while the pen touches, so its brush and colour always appear after the lift. Instant ink keeps a paused display session ready, so even the first stroke after unlocking or switching apps gets the preview, and it steps aside for Boox's own apps. The app isn't modified in any way, and it needs no root and no Shizuku, only *usage access*, which you allow on the tablet so it knows which app is in front. A Quick Settings switch and the buttons on its notification turn it off or recover the screen without leaving your app. The Ink page shows what it found (pen input, display route) and has a pen test, which is what helps most in a report from another tablet. The brush and width of the preview are adjustable. It's new and has only been tried in Sketchbook so far, next to Boox Notes; see [Known limits](#known-limits).
+A preview stroke lands at once, and once you pause (0.8 s by default, 0.4 to 2 s to choose), the app's own brush takes its place; quick strokes share one preview, as in BOOX's own apps. The display holds the app's own drawing back while the pen touches, so its brush and colour always appear after the lift. Instant ink keeps a paused display session ready, so even the first stroke after unlocking or switching apps gets the preview, and it steps aside for Boox's own apps. The app isn't modified in any way, and it needs no root and no Shizuku, only *usage access*, which you allow on the tablet so it knows which app is in front. A Quick Settings switch and the buttons on its notification turn it off or recover the screen without leaving your app. The Ink page shows what it found (pen input, display route) and has a pen test, which is what helps most in a report from another tablet. The preview's brush (pencil, fountain pen, marker, brush pen or a grainy pencil that follows tilt) and width are adjustable. It's new and has only been tried in Sketchbook so far, next to Boox Notes; see [Known limits](#known-limits).
 
 ### A battery doctor that doesn't drain the battery
 
@@ -166,7 +166,7 @@ Firmware 4.3 hides the Wireless debugging switch from Developer options — the 
 
 ## Install
 
-**From a release:** download `BooxUltimatum-0.7.2.apk` from this repository's [Releases](https://github.com/huuunleashed/BooxUltimatum/releases) page, allow your browser or file manager to install apps, and open it. The Access page shows what each level unlocks and the exact commands for it. Releases are signed with the project's own key, so later releases update it in place. The hub's Suite page installs Nib for you, or download `Nib-0.2.0.apk` from the same page; Nib's releases are tagged `nib-v…`.
+**From a release:** download `BooxUltimatum-0.8.0.apk` from this repository's [Releases](https://github.com/huuunleashed/BooxUltimatum/releases) page, allow your browser or file manager to install apps, and open it. The Access page shows what each level unlocks and the exact commands for it. Releases are signed with the project's own key, so later releases update it in place. The hub's Suite page installs Nib for you, or download `Nib-0.3.0.apk` from the same page; Nib's releases are tagged `nib-v…`.
 
 **Test builds for the tablet:** unfinished builds of the hub or Nib are sometimes published as `test-…` pre-releases so they can be checked on a real tablet. The hub offers them only when *Offer test builds* is on (Device page), and a release always replaces its own test build.
 
@@ -196,12 +196,12 @@ Recents, gestures, NaviBall and EinkWise belong to the system, so they behave th
 ## Known limits
 
 - **Nib is new:**
-  - 0.3's way of writing is built from BOOX's own apps and checked on an emulator, but not yet on the tablet: pushing ink and cards into the display, the eraser end's and lasso's previews, fast refresh and palm guard are all waiting for their check in Diagnostics › Lab.
+  - 0.3's way of writing was checked on the tablet through ten test builds: one hold per writing session, SurfaceFlinger reporting every held stroke's frame, the pencil and the brush pen against their previews. Still to be confirmed there: Palm guard, pushing ink and cards into the display (Diagnostics › Lab), and 0.3.0's faster lasso drag in the display's fast mode.
   - While you write, the page shows the display's preview. With the native-matched pens it looks like the ink; other brushes show Nib's ink after you pause.
-  - The fountain pen's preview looked wider than its ink, because the display draws it 3 px wider than it's sent and Nib didn't allow for that. From 0.3.0-test.6 the ink is drawn 3 px wider too, as BOOX Notes draws its own, which is still to be judged by eye on the tablet. Diagnostics › *Match preview* tunes any style's preview size.
-  - The pencil is drawn as the display previews it, in BOOX's 1-bit stipple with tilt, and the owner finds the two all but identical (0.3.0-test.7). Its thinnest line is about 6 px. From 0.3.0-test.8 the brush pen and the highlighter drop what the display can't preview (taper, speed thinning, the chisel nib). The marker's preview is still solid where its ink is see-through, because the display drops translucent colours; fineliners under 1 px look darker in the preview than their anti-aliased ink.
+  - The fountain pen's ink is drawn 3 px wider than the width the display is sent, as BOOX Notes draws its own, so it follows the preview's width; that is measured, but still to be judged by eye. Diagnostics › *Match preview* tunes any style's preview size.
+  - The pencil is drawn as the display previews it, in BOOX's 1-bit stipple with tilt, and the owner finds the two all but identical. Its thinnest line is about 6 px. The brush pen and the highlighter draw only what the display can preview (no taper, speed thinning or chisel nib), and only the fountain pen's pressure response can be changed, since the display follows it for no other pen. The marker's preview is still solid where its ink is see-through, because the display drops translucent colours; fineliners under 1 px look darker in the preview than their anti-aliased ink.
   - Styles 3 to 7 (neo brush, charcoal, dash, charcoal v2, square pen) are the ones BOOX Notes uses, but haven't been judged on this tablet with their settings. How thin a preview the panel draws cleanly isn't measured yet.
-  - Marker and highlighter previews are in solid colour, covering what's under the stroke until you lift the pen, because the display drops translucent colours. Blue looks grey in the preview. Settings › Display preview offers a see-through grey instead.
+  - Marker and highlighter previews are in solid colour, covering what's under the stroke until you lift the pen, because the display drops translucent colours. Blue looks grey in the preview. Settings › Display offers a see-through grey instead.
   - Its Diagnostics page asks what the panel shows and records your answers, which is the most useful thing to send from another tablet.
 - **One key for the whole suite.** Every suite app declares the same signature permission, so a development build (signed differently) can't be installed next to a release of another suite app. Install both from Releases, or both from the same build.
 - **One tablet, one firmware.** Everything is verified on a Note Air6 C with firmware 4.3. The Note Air4 C and Air5 C run very similar Boox software, so much of it may work there, but nothing is tested on them yet. Results from those tablets, and from other Boox models, are the most welcome contribution; use the *Device finding* issue form.
@@ -275,7 +275,7 @@ No dates promised; this is a spare-time project, and each release ships when it 
   - Round trips recorded for the last three unverified tweaks.
   - Refinements to the faces from how they look on the panel.
   - Over Transparent seen through a real sleep in both orientations, and on the route that needs no Shizuku.
-- **Nib 0.3, native writing (in progress)**
+- **0.8 with Nib 0.3, native writing (released 2026-10-07)**
   - Built on `kit:ink`, the suite's new ink framework:
     - one hold per writing session;
     - every card kept clear of the preview;
@@ -285,11 +285,12 @@ No dates promised; this is a spare-time project, and each release ships when it 
     - fast refresh while the page moves;
     - a palm guard;
     - a Lab for the checks on the tablet.
-  - Instant ink batches strokes the same way, and a Clean screen tile arrives.
+  - Pens that draw what the display previews, measured on the tablet: a 1-bit stipple pencil with tilt, the fountain pen's 3 px, the brush pen's square-root law, pressure presets only where the display follows them.
+  - A lasso that keeps up with the pen, Settings in four pages, and Instant ink's brush pen and grainy pencil previews.
 - **Nib 0.4 and on**
   - The thinnest clean preview, and anything the Lab shows needs changing.
   - Image import, PDF and OpenRaster export, templates, and pages or an endless canvas.
-- **0.8, home polish**
+- **0.9, home polish**
   - Notification dots (opt-in).
   - Front-light and refresh-mode quick actions.
   - Backing up and restoring the layout.

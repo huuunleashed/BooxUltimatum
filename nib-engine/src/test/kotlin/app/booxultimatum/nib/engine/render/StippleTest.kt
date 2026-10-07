@@ -169,4 +169,22 @@ class StippleTest {
         assertTrue(stamps.all { abs(2f * it.radius - Stipple.diameter(4f, 1f)) < 1e-3f })
         assertTrue(sink.calls.none { it is Call.Dab || it is Call.Path }, "stipple only")
     }
+
+    @Test
+    fun aRunLightsEachPixelOfItsStampsOnce() {
+        // A stroke's stamps at once, as the canvas lays them, against the same stamps one by one.
+        val xs = FloatArray(60) { 30f + 1.4f * it }
+        val ys = FloatArray(60) { 40f + 6f * kotlin.math.sin(it * 0.3f) }
+        val rs = FloatArray(60) { 4f + (it % 5) * 0.3f }
+        val ds = FloatArray(60) { 0.2f + 0.8f * (it % 7) / 6f }
+        for (toDevice in listOf(Affine(scaleX = 0.78f, scaleY = 0.78f, transX = 3f, transY = -2f), Affine(scaleX = 2f, scaleY = 2f), Affine.IDENTITY)) {
+            val inverse = toDevice.invert()!!
+            val single = HashSet<Pair<Int, Int>>()
+            for (i in xs.indices) Stipple.stamp(xs[i], ys[i], rs[i], ds[i], toDevice, inverse, 500, 500) { x, y -> single.add(x to y) }
+            val run = ArrayList<Pair<Int, Int>>()
+            Stipple.stamps(xs, ys, rs, ds, xs.size, toDevice, inverse, 500, 500) { x, y -> run.add(x to y) }
+            assertEquals(single, run.toSet(), "the same pixels at $toDevice")
+            assertEquals(run.size, run.toSet().size, "each pixel once")
+        }
+    }
 }

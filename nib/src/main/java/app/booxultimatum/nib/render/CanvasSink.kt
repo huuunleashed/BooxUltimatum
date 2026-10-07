@@ -11,6 +11,7 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
+import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Shader
 import app.booxultimatum.nib.engine.brush.Blend
@@ -19,6 +20,7 @@ import app.booxultimatum.nib.engine.render.Cap
 import app.booxultimatum.nib.engine.render.RenderSink
 import app.booxultimatum.nib.engine.render.Stipple
 import app.booxultimatum.nib.engine.render.Texture
+import java.nio.ByteBuffer
 import kotlin.math.roundToInt
 
 /** Android's blend for an engine [Blend]. Multiply is the separable W3C one, so it paints over transparency too. */
@@ -187,7 +189,91 @@ class CanvasSink : RenderSink {
      * wide, without antialiasing, so the dots are the screen's whatever the zoom, and never grey.
      */
     override fun stipple(x: Float, y: Float, radius: Float, density: Float, color: Int, blend: Blend) {
-        if ((color ushr 24) == 0) return
+        if ((color ushr 24) == 0 || !deviceMatrix()) return
+        stippleCount = 0
+        val hardware = canvas.isHardwareAccelerated
+        Stipple.stamp(
+            x, y, radius, density, toDevice, toDocument,
+            if (hardware) Int.MAX_VALUE else canvas.width, if (hardware) Int.MAX_VALUE else canvas.height, collectStipple,
+        )
+        drawStipple(color, blend)
+    }
+
+    /** A stroke's stamps at once, each pixel drawn once ([Stipple.stamps]), in one draw call. */
+    override fun stippleRun(xs: FloatArray, ys: FloatArray, rs: FloatArray, ds: FloatArray, n: Int, color: Int, blend: Blend) {
+        if ((color ushr 24) == 0 || n <= 0 || !deviceMatrix()) return
+        if (canvas.isHardwareAccelerated) {
+            stippleCount = 0
+            Stipple.stamps(xs, ys, rs, ds, n, toDevice, toDocument, Int.MAX_VALUE, Int.MAX_VALUE, collectStipple)
+            drawStipple(color, blend)
+            return
+        }
+        // On a bitmap the dots are its own pixels: they go in as one 1-bit mask, drawn unscaled at their place, which
+        // is many times quicker than as thousands of points.
+        litCount = 0
+        litMinX = Int.MAX_VALUE
+        litMinY = Int.MAX_VALUE
+        litMaxX = Int.MIN_VALUE
+        litMaxY = Int.MIN_VALUE
+        Stipple.stamps(xs, ys, rs, ds, n, toDevice, toDocument, canvas.width, canvas.height, collectLit)
+        if (litCount == 0) return
+        val w = litMaxX - litMinX + 1
+        val h = litMaxY - litMinY + 1
+        val m = mask(w, h)
+        val stride = m.rowBytes
+        val bytes = maskBytes
+        for (row in 0 until h) java.util.Arrays.fill(bytes, row * stride, row * stride + w, 0)
+        for (k in 0 until litCount) bytes[(litYs[k] - litMinY) * stride + (litXs[k] - litMinX)] = -1
+        m.copyPixelsFromBuffer(ByteBuffer.wrap(bytes))
+        maskPaint.color = color
+        maskPaint.blendMode = blend.toBlendMode()
+        maskSrc.set(0, 0, w, h)
+        maskDst.set(litMinX, litMinY, litMinX + w, litMinY + h)
+        canvas.save()
+        canvas.setMatrix(null)
+        canvas.drawBitmap(m, maskSrc, maskDst, maskPaint)
+        canvas.restore()
+    }
+
+    private var litXs = IntArray(4096)
+    private var litYs = IntArray(4096)
+    private var litCount = 0
+    private var litMinX = 0
+    private var litMinY = 0
+    private var litMaxX = 0
+    private var litMaxY = 0
+    private var maskBitmap: Bitmap? = null
+    private var maskBytes = ByteArray(0)
+    private val maskPaint = Paint()
+    private val maskSrc = Rect()
+    private val maskDst = Rect()
+
+    private val collectLit = Stipple.Pixels { px, py ->
+        if (litCount == litXs.size) {
+            litXs = litXs.copyOf(litCount * 2)
+            litYs = litYs.copyOf(litCount * 2)
+        }
+        litXs[litCount] = px
+        litYs[litCount] = py
+        litCount++
+        if (px < litMinX) litMinX = px
+        if (px > litMaxX) litMaxX = px
+        if (py < litMinY) litMinY = py
+        if (py > litMaxY) litMaxY = py
+    }
+
+    /** An alpha-only bitmap at least [w] × [h], kept for the next run, with [maskBytes] laid out as its pixels. */
+    private fun mask(w: Int, h: Int): Bitmap {
+        val m = maskBitmap
+        if (m != null && m.width >= w && m.height >= h) return m
+        val next = Bitmap.createBitmap(maxOf(w, m?.width ?: 0), maxOf(h, m?.height ?: 0), Bitmap.Config.ALPHA_8)
+        maskBitmap = next
+        maskBytes = ByteArray(next.rowBytes * next.height)
+        return next
+    }
+
+    /** Reads the canvas's matrix into [toDevice] and [toDocument]; false when it can't be inverted. */
+    private fun deviceMatrix(): Boolean {
         @Suppress("DEPRECATION")
         canvas.getMatrix(deviceMatrix)
         deviceMatrix.getValues(deviceValues)
@@ -195,15 +281,13 @@ class CanvasSink : RenderSink {
         val d = toDevice
         if (d.scaleX != v[0] || d.skewX != v[1] || d.transX != v[2] || d.skewY != v[3] || d.scaleY != v[4] || d.transY != v[5]) {
             val next = Affine(v[0], v[1], v[2], v[3], v[4], v[5])
-            toDocument = next.invert() ?: return
+            toDocument = next.invert() ?: return false
             toDevice = next
         }
-        stippleCount = 0
-        val hardware = canvas.isHardwareAccelerated
-        Stipple.stamp(
-            x, y, radius, density, toDevice, toDocument,
-            if (hardware) Int.MAX_VALUE else canvas.width, if (hardware) Int.MAX_VALUE else canvas.height, collectStipple,
-        )
+        return true
+    }
+
+    private fun drawStipple(color: Int, blend: Blend) {
         if (stippleCount == 0) return
         stipplePaint.color = color
         stipplePaint.blendMode = blend.toBlendMode()

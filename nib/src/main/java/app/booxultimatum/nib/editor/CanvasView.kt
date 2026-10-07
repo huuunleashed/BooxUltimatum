@@ -59,6 +59,7 @@ import app.booxultimatum.nib.engine.record.PenAction
 import app.booxultimatum.nib.engine.render.DocumentRenderer
 import app.booxultimatum.nib.engine.render.StrokeRenderer
 import app.booxultimatum.nib.engine.render.TileGrid
+import app.booxultimatum.nib.engine.render.TileKey
 import app.booxultimatum.nib.pen.FrameLatch
 import app.booxultimatum.nib.pen.NibPen
 import app.booxultimatum.nib.pen.PenPart
@@ -107,6 +108,9 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
     private val tools = ToolState.get(context)
     private val grid = TileGrid(256)
     private val tiles = TileCache(grid, TileCache.budgetFor(context.getSystemService(ActivityManager::class.java).memoryClass)) { invalidate() }
+    private val lift = SelectionLift(grid) { if (grab is Grab.Transform) invalidate() }
+    private val holeOf: (TileKey, Boolean) -> Bitmap? = { key, _ -> lift.hole(key) }
+    private val settlingHoleOf: (TileKey, Boolean) -> Bitmap? = { key, current -> if (current) null else lift.settlingHole(key) }
     private val density = resources.displayMetrics.density
 
     /** The display's writing choreography, on the session shared with the probes through [NibPen]. */
@@ -162,6 +166,7 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
             controller.releaseNow("drawing")
             field = value
             tiles.clear()
+            lift.endSettling()
             fitted = false
             setSelection(null)
             value?.addEditListener(onEdit)
@@ -234,8 +239,14 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
             var x = 0f
             var y = 0f
         }
-        class Transform(id: Int, stylus: Boolean, val handle: SelectionHandle, val start: Vec, val corners: FloatArray, val centre: Vec) : Grab(id, stylus) {
+        class Transform(
+            id: Int, stylus: Boolean, val handle: SelectionHandle, val start: Vec, val corners: FloatArray, val centre: Vec,
+            val downX: Float, val downY: Float,
+        ) : Grab(id, stylus) {
             var affine: Affine = Affine.IDENTITY
+
+            /** Moved far enough to be a drag, which the display follows in its fast mode. */
+            var dragging = false
         }
     }
 
@@ -334,6 +345,10 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
 
     // Edits the selection makes re-render their tiles at once, so the strokes never flash back to where they were.
     private var renderNextEditNow = false
+
+    // A drop leaves its tiles to the worker and shows the lifted strokes where they went until they're current.
+    private var settleNextEdit = false
+    private var settleBounds: Box? = null
 
     private val previewUpdate = Runnable { applyStroke() }
 
@@ -520,6 +535,7 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
         invalidate()
         onViewportChanged?.invoke(viewport)
         refreshPreview()
+        prepareLift()
     }
 
     // ---- The pen session ----
@@ -604,7 +620,7 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
         applyPolicy()
     }
 
-    /** The reveal for the pen in hand (Settings › Display preview), the fast mode switch and Palm guard. */
+    /** The reveal for the pen in hand (Settings › Writing), the fast mode switch and Palm guard. */
     private fun applyPolicy() {
         val p = tools.current
         val spec = p.spec()
@@ -1035,7 +1051,9 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
                     val handle = SelectionMath.hit(view, SelectionMath.rotateHandle(view, ROTATE_LIFT_DP * density), x, y, HANDLE_TOUCH_DP * density)
                     if (handle != SelectionHandle.Outside) {
                         if (stylus) controller.down()
-                        grab = Grab.Transform(id, stylus, handle, viewport.toDoc(Vec(x, y)), sel.corners(), sel.centre)
+                        settleNow(sel.layerId)
+                        grab = Grab.Transform(id, stylus, handle, viewport.toDoc(Vec(x, y)), sel.corners(), sel.centre, x, y)
+                        prepareLift()
                         return
                     }
                     setSelection(null)
@@ -1067,6 +1085,11 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
                 invalidate()
             }
             is Grab.Transform -> {
+                // Past a few pixels it's a drag: the display follows it in its fast mode, as it does a moving page.
+                if (!g.dragging && hypot(x - g.downX, y - g.downY) >= GESTURE_SLOP_DP * density) {
+                    g.dragging = true
+                    controller.gestureStarted()
+                }
                 val p = viewport.toDoc(Vec(x, y))
                 g.affine = when (val h = g.handle) {
                     SelectionHandle.Inside -> SelectionMath.move(p.x - g.start.x, p.y - g.start.y)
@@ -1099,6 +1122,7 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
             is Grab.Transform -> {
                 val sel = selection
                 if (sel != null && !g.affine.isIdentity) commitTransform(sel, g.affine)
+                if (g.dragging) controller.gestureEnded()
                 invalidate()
             }
         }
@@ -1108,6 +1132,7 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
         val g = grab ?: return
         grab = null
         if (g.stylus) penLifted(null)
+        if (g is Grab.Transform && g.dragging) controller.gestureEnded()
         invalidate()
     }
 
@@ -1573,6 +1598,7 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
     private fun setSelection(s: Selection?) {
         if (s == selection) return
         selection = s
+        if (s == null) lift.clear() else prepareLift()
         updateBlocks()
         invalidate()
         onSelectionChanged?.invoke(s)
@@ -1581,17 +1607,46 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
     /** Ends the selection, leaving its strokes where they are. */
     fun clearSelection() = setSelection(null)
 
+    /** The selection's strokes in the layer's order, as they are now. */
+    private fun selectedStrokes(layer: Layer, sel: Selection): List<Stroke> =
+        sel.ids.mapNotNull { layer.stroke(it) }.sortedBy { layer.indexOf(it.id) }
+
+    /** Draws the selection for a drag ahead of time, at the tiles' level and around what's on screen. */
+    private fun prepareLift() {
+        val sel = selection ?: return
+        val s = session ?: return
+        val layer = s.document.layer(sel.layerId) ?: return
+        if (width == 0 || height == 0) return
+        val visible = viewport.visibleDocRect(width.toFloat(), height.toFloat()).intersect(s.document.bounds)
+        lift.prepare(sel.layerId, selectedStrokes(layer, sel), TileGrid.scaleBucket(viewport.scale), visible)
+    }
+
     private fun commitTransform(sel: Selection, affine: Affine) {
         val s = session ?: return
-        renderNextEditNow = true
+        val start = SystemClock.elapsedRealtimeNanos()
+        // The tiles catch up in the background while the lifted strokes are shown where they went.
+        lift.settle(sel.layerId, affine)
+        settleNextEdit = true
         val ok = s.transformStrokes(sel.layerId, sel.ids, affine)
-        renderNextEditNow = false
+        settleNextEdit = false
         if (ok) {
             setSelection(sel.transformed(affine))
-            uiLog.i("selection transformed", "count" to sel.ids.size)
+            uiLog.i("selection transformed", "count" to sel.ids.size, "ms" to round2((SystemClock.elapsedRealtimeNanos() - start) / 1e6))
         } else {
+            lift.endSettling()
             onMessage?.invoke(R.string.message_layer_locked)
         }
+    }
+
+    /** Makes the tiles under strokes still settling from a drop current at once, before they're lifted again. */
+    private fun settleNow(layerId: Long) {
+        val s = session ?: return
+        val layer = s.document.layer(layerId) ?: return
+        val b = settleBounds
+        if (b != null && lift.settling(layerId)) {
+            tiles.renderNow(layer, b) { box -> s.history.index.query(layerId, box).sortedBy { layer.indexOf(it.id) } }
+        }
+        lift.endSettling()
     }
 
     /** Copies of the selection, a little down and right, which become the selection. */
@@ -1684,6 +1739,8 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
         val s = session
         tiles.retainLayers(doc.layers.mapTo(HashSet()) { it.id })
         val c = e.effective
+        // Strokes still settling from a drop make way for any other edit (an undo, say), which redraws its own tiles.
+        if (!settleNextEdit) lift.endSettling()
         when {
             c is AddStroke -> {
                 val stored = doc.layer(c.layerId)?.strokes?.lastOrNull()
@@ -1691,6 +1748,11 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
             }
             // Tiles hold only a layer's strokes; its opacity, blend, visibility and place apply when compositing.
             c is SetLayerProps || c is MoveLayer -> Unit
+            // A drop: the lifted strokes are shown where they went until the tiles catch up in the background.
+            settleNextEdit && c is TransformStrokes -> {
+                settleBounds = e.change.bounds
+                for (id in e.change.layers) if (doc.layer(id) != null) tiles.invalidate(id, e.change.bounds)
+            }
             renderNextEditNow || c is TransformStrokes || c is ReplaceStrokes || c is MoveStrokes -> for (id in e.change.layers) {
                 val layer = doc.layer(id) ?: continue
                 tiles.renderNow(layer, e.change.bounds) { box ->
@@ -1701,7 +1763,7 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
         }
         // Undo and redo, or anything that took the picked strokes away, end the selection.
         val sel = selection
-        if (sel != null && !renderNextEditNow) {
+        if (sel != null && !renderNextEditNow && !settleNextEdit) {
             val layer = doc.layer(sel.layerId)
             if (e.action != HistoryAction.Do || layer == null || sel.ids.any { !layer.contains(it) }) setSelection(null)
         }
@@ -1711,6 +1773,8 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
             e.action == HistoryAction.Redo -> controller.releaseNow("redo")
             c !is AddStroke -> controller.releaseNow("edit")
         }
+        // A recoloured or moved selection is drawn again for the next drag.
+        if (selection != null && c !is AddStroke) prepareLift()
         updateBlocks()
         invalidate()
     }
@@ -1769,15 +1833,25 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
                 if (!layer.visible || layer.opacity <= 0f) continue
                 val liveHere = l != null && layer.id == l.layerId && showsLive(l)
                 val movingHere = moving != null && sel != null && layer.id == sel.layerId
-                val isolate = layer.opacity < 1f || layer.blend != Blend.Normal || liveHere || movingHere
+                val settlingHere = !movingHere && lift.settling(layer.id)
+                val isolate = layer.opacity < 1f || layer.blend != Blend.Normal || liveHere || movingHere || settlingHere
                 if (isolate) {
                     layerPaint.alpha = (layer.opacity.coerceIn(0f, 1f) * 255f).roundToInt()
                     layerPaint.blendMode = layer.blend.toBlendMode()
                     canvas.saveLayer(flatPage, layerPaint)
                 }
-                tiles.drawLayer(canvas, layer, flat, range) { box -> s.history.index.query(layer.id, box).isNotEmpty() }
+                // A dragged selection's tiles are drawn without it, and it's drawn where it's going; once dropped, the
+                // same stands in for each tile until the tile is drawn again.
+                val lifted = movingHere && lift.lift(tiles, layer.id, selectedStrokes(layer, sel!!), level, visible)
+                val substitute: ((TileKey, Boolean) -> Bitmap?)? = when {
+                    lifted -> holeOf
+                    settlingHere -> settlingHoleOf
+                    else -> null
+                }
+                tiles.drawLayer(canvas, layer, flat, range, substitute) { box -> s.history.index.query(layer.id, box).isNotEmpty() }
                 if (liveHere) drawLive(canvas, l!!, flat)
-                if (movingHere) drawMoving(canvas, layer, sel!!, moving!!, flat)
+                if (lifted) lift.drawMoved(canvas, flat, moving!!)
+                if (settlingHere) lift.drawSettling(canvas, tiles, flat, layer.id, level, range)
                 if (isolate) canvas.restore()
             }
             canvas.restore()
@@ -1866,17 +1940,6 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
             val current = l.builder.current()
             StrokeRenderer.render(if (l.straight) StraightLine.straighten(current, l.endX, l.endY) else current, sink, tolerance)
         }
-    }
-
-    /** A selection being dragged: its strokes lifted out of the layer and drawn where they're going. */
-    private fun drawMoving(canvas: Canvas, layer: Layer, sel: Selection, affine: Affine, flat: Viewport) = canvas.withSave {
-        docMatrix.setValues(flat.docToView().toMatrixValues())
-        concat(docMatrix)
-        val sink = viewSink.on(this)
-        val tolerance = 0.25f / viewport.scale
-        val strokes = sel.ids.mapNotNull { layer.stroke(it) }.sortedBy { layer.indexOf(it.id) }
-        for (st in strokes) StrokeRenderer.render(st.copy(brush = st.brush.copy(blend = Blend.Erase, opacity = 1f)), sink, tolerance)
-        for (st in strokes) StrokeRenderer.render(st.transformed(affine), sink, tolerance)
     }
 
     private fun drawMarks(canvas: Canvas, l: Live) {

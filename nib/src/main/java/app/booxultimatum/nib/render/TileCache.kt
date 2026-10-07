@@ -104,9 +104,13 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
 
     /**
      * Draws [layer]'s tiles covering [range] (at the frame's level) onto [canvas] in view pixels, asking the worker for
-     * any that are missing. [hasInk] says whether any stroke of the layer reaches a document box.
+     * any that are missing. [hasInk] says whether any stroke of the layer reaches a document box. [substitute] may give
+     * a bitmap to draw in place of a tile (told whether the tile is current), as a lifted selection does.
      */
-    fun drawLayer(canvas: Canvas, layer: Layer, viewport: Viewport, range: TileRange, hasInk: (Box) -> Boolean) {
+    fun drawLayer(
+        canvas: Canvas, layer: Layer, viewport: Viewport, range: TileRange,
+        substitute: ((TileKey, Boolean) -> Bitmap?)? = null, hasInk: (Box) -> Boolean,
+    ) {
         val tiles = layers.getOrPut(layer.id) { HashMap() }
         var fallback: List<Tile>? = null
         for (key in range) {
@@ -121,6 +125,13 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
                 t.gen++
             }
             if (t.state != State.Ready && !t.inFlight) request(t, layer)
+            val sub = substitute?.invoke(key, t.state == State.Ready)
+            if (sub != null) {
+                if (t.state != State.Ready) frameComplete = false
+                viewRect(key, viewport, dst)
+                canvas.drawBitmap(sub, null, dst, tilePaint)
+                continue
+            }
             val bmp = t.bitmap
             if (t.state == State.Ready || (t.state == State.Stale && bmp != null)) {
                 if (bmp != null) {
@@ -234,6 +245,7 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
         }
         val start = SystemClock.elapsedRealtimeNanos()
         val tolerance = 0.25f / TileGrid.bucketScale(level)
+        val recordings = Recordings()
         for (key in keys) {
             val t = tiles[key]!!
             t.gen++
@@ -258,15 +270,8 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
             tileCanvas.setBitmap(bmp)
             tileCanvas.setMatrix(tileMatrix(key))
             for (s in reaching) {
-                if (s.brush.kind in DAB_KINDS) {
-                    val rec = DabRecording()
-                    StrokeRenderer.render(s, rec, tolerance)
-                    if (!rec.general) {
-                        rec.replay(sink.on(tileCanvas), box)
-                        continue
-                    }
-                }
-                StrokeRenderer.render(s, sink.on(tileCanvas), tolerance)
+                val rec = recordings.of(s, level, tolerance)
+                if (rec != null) rec.replay(sink.on(tileCanvas), box) else StrokeRenderer.render(s, sink.on(tileCanvas), tolerance)
             }
             tileCanvas.setBitmap(null)
             t.state = State.Ready
@@ -287,6 +292,18 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
             t.state = if (t.bitmap != null) State.Stale else State.Missing
         }
     }
+
+    /** Calls [action] for each of [layerId]'s tiles in [range] that doesn't hold current pixels yet. */
+    fun forEachPending(layerId: Long, range: TileRange, action: (TileKey) -> Unit) {
+        val tiles = layers[layerId] ?: return
+        for (key in range) {
+            val t = tiles[key] ?: continue
+            if (t.state != State.Ready) action(key)
+        }
+    }
+
+    /** The pixels [layerId]'s tile [key] holds, current or not, or null when it has none. Read-only. */
+    fun bitmapOf(layerId: Long, key: TileKey): Bitmap? = layers[layerId]?.get(key)?.bitmap
 
     /** Forgets everything about [layerId] (the layer was removed). */
     fun dropLayer(layerId: Long) {
@@ -481,10 +498,12 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
         val canvas = Canvas()
         val sink = CanvasSink()
         val m = Matrix()
+        val recordings = Recordings()
         while (worker === Thread.currentThread()) {
             val job = try {
                 // While idle, keep a few blank tiles ready so a commit never waits to allocate one.
                 queue.pollFirst(WARM_AFTER_MS, TimeUnit.MILLISECONDS) ?: run {
+                    recordings.clear()
                     warmPool()
                     queue.takeFirst()
                 }
@@ -504,15 +523,8 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
                         canvas.setMatrix(m)
                     }
                     val tolerance = 0.25f / TileGrid.bucketScale(job.key.level)
-                    if (s.brush.kind in DAB_KINDS) {
-                        val rec = DabRecording()
-                        StrokeRenderer.render(s, rec, tolerance)
-                        if (!rec.general) {
-                            rec.replay(sink.on(canvas), box)
-                            continue
-                        }
-                    }
-                    StrokeRenderer.render(s, sink.on(canvas), tolerance)
+                    val rec = recordings.of(s, job.key.level, tolerance)
+                    if (rec != null) rec.replay(sink.on(canvas), box) else StrokeRenderer.render(s, sink.on(canvas), tolerance)
                 }
             } catch (e: Exception) {
                 log.e("tile render failed", "level" to job.key.level, error = e)
@@ -556,4 +568,35 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
     }
 
     private fun round2(v: Double): Double = Math.round(v * 100.0) / 100.0
+
+    /**
+     * Dab recordings by stroke, for one thread and one zoom level, so a stroke crossing many tiles is worked out once
+     * rather than once per tile (a re-render at a new zoom, or a moved selection, crosses dozens). Kept for a few dozen
+     * strokes at most; the worker forgets them whenever it runs out of work.
+     */
+    private class Recordings {
+        private val map = java.util.IdentityHashMap<Stroke, DabRecording>()
+        private var level = Int.MIN_VALUE
+
+        /** [s]'s dabs, or null when it isn't a dab stroke or draws more than dabs (it's then rendered whole). */
+        fun of(s: Stroke, level: Int, tolerance: Float): DabRecording? {
+            if (s.brush.kind !in DAB_KINDS) return null
+            if (level != this.level) {
+                map.clear()
+                this.level = level
+            }
+            val rec = map[s] ?: DabRecording().also {
+                StrokeRenderer.render(s, it, tolerance)
+                if (map.size >= MAX_RECORDINGS) map.clear()
+                map[s] = it
+            }
+            return rec.takeUnless { it.general }
+        }
+
+        fun clear() = map.clear()
+
+        private companion object {
+            const val MAX_RECORDINGS = 48
+        }
+    }
 }

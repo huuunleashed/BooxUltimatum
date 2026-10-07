@@ -34,9 +34,11 @@
     <string name="ink_style_fountain">Fountain pen</string>
     <string name="ink_style_pencil">Pencil</string>
     <string name="ink_style_marker">Marker</string>
+    <string name="ink_style_brush">Brush pen</string>
+    <string name="ink_style_grain">Grainy pencil</string>
     <string name="ink_width">Width</string>
     <string name="ink_px">%1$d px</string>
-<string name="ink_style_hint">Pencil draws a steady line exactly this wide. Fountain pen follows your pressure as BOOX’s own does, and draws up to 3 px wider than the width set here.</string>
+<string name="ink_style_hint">Pencil draws a steady line exactly this wide. Fountain pen follows your pressure as BOOX’s own does, and draws up to 3 px wider than the width set here. Brush pen swells with pressure up to twice the width. Grainy pencil is BOOX’s black stipple, darker as you press and broader as you lean the pen, about 5 px wider than set: for apps whose pencil or charcoal has grain.</string>
     <string name="ink_latency">Show the app’s strokes after a pause of</string>
     <string name="ink_ms">%1$d ms</string>
     <string name="ink_latency_hint">While you write, the display holds the app’s own drawing back, so quick strokes share one preview, as in Boox Notes, and the app’s screen doesn’t change until you pause. Once the pen has rested this long after a lift, or leaves the screen, the app’s strokes take over in its own brush and colour. A shorter pause shows them sooner; a longer one keeps quick writing on the preview. Boox’s own screen notes wait between 400 ms and 2 s the same way.</string>

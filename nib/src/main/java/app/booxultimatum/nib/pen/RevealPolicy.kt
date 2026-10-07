@@ -6,7 +6,7 @@ import app.booxultimatum.nib.engine.brush.BrushSpec
 import app.booxultimatum.nib.engine.brush.HardwareStyle
 import app.booxultimatum.nib.engine.brush.MarkerPreview
 
-/** Settings › Display preview › Show the finished ink: when Nib's own ink replaces the display's preview. */
+/** Settings › Writing › Show the finished ink: when Nib's own ink replaces the display's preview. */
 enum class RevealChoice(val id: String) {
     /** At breaks for pens the display previews faithfully, after a pause for the others ([RevealPolicy.effective]). */
     Auto("auto"),
