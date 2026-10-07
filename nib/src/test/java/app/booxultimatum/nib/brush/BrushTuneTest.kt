@@ -40,9 +40,11 @@ class BrushTuneTest {
         val s = tuned.spec()
         assertEquals(10f, s.width)
         assertEquals(0.6f, s.opacity)
-        assertEquals(1.7f, s.curve.exponent)
-        assertEquals(0.2f, s.curve.floor)
-        assertEquals(1.2f, s.curve.ceiling)
+        assertEquals(BrushSpec.defaults(BrushKind.Charcoal).curve, s.curve, "the charcoal style draws pressure its own way, so its curve isn't tuned")
+        val fountain = tuned.copy(kind = BrushKind.Fountain).spec()
+        assertEquals(1.7f, fountain.curve.exponent, "the fountain style takes it as its sensitivity")
+        assertEquals(0.2f, fountain.curve.floor)
+        assertEquals(1.2f, fountain.curve.ceiling)
         assertEquals(0.1f, s.smoothing)
         assertEquals(0.3f, s.spacing)
         assertEquals(0.5f, s.flow)
@@ -56,18 +58,23 @@ class BrushTuneTest {
 
     @Test fun choosingAPressurePresetReplacesATunedSensitivity() {
         assertTrue(tuned.customCurve)
-        val firm = tuned.withPressure(PressurePreset.Firm)
+        val firm = tuned.copy(kind = BrushKind.Fountain).withPressure(PressurePreset.Firm)
         assertNull(firm.tune.exponent)
-        assertEquals(PressurePreset.Firm.curve(BrushKind.Charcoal).exponent, firm.spec().curve.exponent)
+        assertEquals(PressurePreset.Firm.curve(BrushKind.Fountain).exponent, firm.spec().curve.exponent)
         assertEquals(0.2f, firm.spec().curve.floor, "the floor stays as tuned")
         assertFalse(BrushPreset(BrushKind.Fountain, 3f, PressurePreset.Soft, -0x1000000).customCurve)
     }
 
-    @Test fun aConstantBrushCanBeMadeToFollowPressure() {
-        val fineliner = BrushPreset(BrushKind.Fineliner, 2f, PressurePreset.Medium, -0x1000000)
-        assertTrue(fineliner.spec().curve.isConstant)
-        val pressed = fineliner.copy(tune = BrushTune(floor = 0.3f))
-        assertFalse(pressed.spec().curve.isConstant)
-        assertEquals(0.3f, pressed.spec().curve.factor(0f))
+    @Test fun onlyTheFountainPensPressureResponseCanBeChanged() {
+        // Every other style draws pressure its own way, and a reshaped curve made the ink differ from the preview.
+        val fineliner = BrushPreset(BrushKind.Fineliner, 2f, PressurePreset.Medium, -0x1000000, BrushTune(floor = 0.3f))
+        assertTrue(fineliner.spec().curve.isConstant, "the plain pen style draws a constant width")
+        val brush = BrushPreset(BrushKind.BrushPen, 6f, PressurePreset.Soft, -0x1000000, BrushTune(exponent = 0.2f))
+        assertEquals(BrushSpec.NEO_BRUSH_CURVE, brush.spec().curve, "the brush style's square root, preset or not")
+        for (k in listOf(BrushKind.Calligraphy, BrushKind.CalligraphyAsian, BrushKind.SquarePen)) {
+            assertTrue(BrushPreset(k, 8f, PressurePreset.Firm, -0x1000000).spec().curve.isConstant, "$k: the square pen style ignores pressure")
+        }
+        assertEquals(listOf(BrushKind.Fountain), BrushKind.entries.filter { PressurePreset.applies(it) })
+        assertFalse(BrushPreset(BrushKind.Fountain, 3f, PressurePreset.Soft, -0x1000000).spec().curve == BrushPreset(BrushKind.Fountain, 3f, PressurePreset.Firm, -0x1000000).spec().curve)
     }
 }

@@ -206,6 +206,8 @@
     <string name="pen_title">Pen %1$d · %2$s</string>
     <string name="pen_pressure">Pressure</string>
     <string name="pen_pressure_none">This brush draws the same width however hard you press.</string>
+    <string name="pen_pressure_follows_preview">This pen’s width follows your pressure exactly as the display’s preview of it does, so the two stay alike.</string>
+    <string name="pen_pressure_only_fountain">Only the fountain pen’s pressure response can be changed: the display takes its sensitivity and previews it, while it draws every other pen’s its own way.</string>
     <string name="pen_pressure_stipple">Pressure sets how dark the pencil lays down, from a few specks at a light touch to solid black at full pressure, exactly as its preview does. Its width stays the same.</string>
     <string name="pressure_enable">Make it follow pressure</string>
     <string name="pressure_tile">%1$s pressure</string>

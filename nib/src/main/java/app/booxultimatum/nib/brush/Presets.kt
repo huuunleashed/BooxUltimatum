@@ -25,8 +25,14 @@ enum class PressurePreset(val key: String, private val exponentFactor: Float) {
     companion object {
         fun of(key: String?): PressurePreset = entries.firstOrNull { it.key == key } ?: Medium
 
-        /** Whether presets change anything for [kind]. */
-        fun applies(kind: BrushKind): Boolean = !BrushSpec.defaults(kind).curve.isConstant
+        /**
+         * Whether presets, and a tuned curve, change anything for [kind]: only for the fountain pen, whose preview style
+         * takes the curve as its sensitivity. Every other style draws pressure by its own fixed law (the brush style's
+         * square root, the marker's 0.8 to 1, none for the pencil, plain pen, square pen and charcoals), so a reshaped
+         * curve made the ink differ from its preview: a soft preset flattened the brush pen's thick and thin strokes
+         * against the preview's (owner's report, 2026-10-07).
+         */
+        fun applies(kind: BrushKind): Boolean = !kind.isEraser && BrushSpec.defaults(kind).preview.style == HardwareStyle.Fountain
     }
 }
 
@@ -140,10 +146,13 @@ data class BrushPreset(
     /** The full brush this preset draws with. */
     fun spec(): BrushSpec {
         val base = BrushSpec.defaults(kind).withWidth(width)
-        var curve = pressure.curve(kind)
-        tune.floor?.let { curve = curve.copy(floor = it) }
-        tune.ceiling?.let { curve = curve.copy(ceiling = it) }
-        tune.exponent?.let { curve = curve.copy(exponent = it) }
+        var curve = base.curve
+        if (PressurePreset.applies(kind)) {
+            curve = pressure.curve(kind)
+            tune.floor?.let { curve = curve.copy(floor = it) }
+            tune.ceiling?.let { curve = curve.copy(ceiling = it) }
+            tune.exponent?.let { curve = curve.copy(exponent = it) }
+        }
         return base.copy(
             curve = curve,
             opacity = tune.opacity ?: base.opacity,

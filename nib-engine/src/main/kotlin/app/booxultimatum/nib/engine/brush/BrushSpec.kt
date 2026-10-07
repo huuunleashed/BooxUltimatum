@@ -299,15 +299,16 @@ data class BrushSpec(
                 kind, width = 6f, curve = NEO_BRUSH_CURVE, smoothing = 0.45f,
                 preview = Preview(HardwareStyle.NeoBrush, widthFactor = NEO_BRUSH_PREVIEW_FACTOR),
             )
-            // BOOX's Latin calligraphy: a flat nib at +45 degrees.
+            // BOOX's Latin calligraphy: a flat nib at +45 degrees, whatever the pressure, as BOOX's square pen draws it and the
+            // display's square pen style previews it (its width followed pressure from 0.7 until 0.3.0-test.10).
             BrushKind.Calligraphy -> BrushSpec(
-                kind, width = 8f, curve = PressureCurve(1f, 0.7f, 1f), smoothing = 0.4f,
+                kind, width = 8f, smoothing = 0.4f,
                 nibAngle = (PI / 4).toFloat(), minRatio = 0.12f,
                 preview = Preview(HardwareStyle.SquarePen),
             )
             // BOOX's Asian calligraphy: the other diagonal, -45 degrees, kept as the same nib turned half a turn (135).
             BrushKind.CalligraphyAsian -> BrushSpec(
-                kind, width = 8f, curve = PressureCurve(1f, 0.7f, 1f), smoothing = 0.4f,
+                kind, width = 8f, smoothing = 0.4f,
                 nibAngle = (3 * PI / 4).toFloat(), minRatio = 0.12f,
                 preview = Preview(HardwareStyle.SquarePen),
             )
@@ -335,8 +336,10 @@ data class BrushSpec(
                 kind, width = 2f, smoothing = 0.35f, dashOn = 3f, dashOff = 2.2f,
                 preview = Preview(HardwareStyle.Dash),
             )
+            // A square nib, previewed in the square pen style, which ignores pressure (it followed pressure from 0.6 until
+            // 0.3.0-test.10).
             BrushKind.SquarePen -> BrushSpec(
-                kind, width = 4f, curve = PressureCurve(1f, 0.6f, 1f), smoothing = 0.35f,
+                kind, width = 4f, smoothing = 0.35f,
                 nibAngle = (PI / 4).toFloat(), minRatio = 0.55f,
                 preview = Preview(HardwareStyle.SquarePen),
             )

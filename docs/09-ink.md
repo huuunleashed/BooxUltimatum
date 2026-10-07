@@ -50,7 +50,7 @@ BOOX's own pen library was measured on the tablet with penlab (`tools/host/penla
 |---|---|---|
 | Fountain | max(2, W · v · p^(2s)) | s is the `pressureSensitivity` (0.3 by default), exact for s from 0.15 to 1; s = 0 gives a constant width. v = 1 / (1 + 0.077 · speed in px/ms): 0.99 when slow, 0.76 at 4 px/ms. BOOX Notes configures W as the pen's width + 3, while it sends the display the pen's width: the display's fountain preview of a pen sent w px wide is this law at w + 3, and its thinning follows s the same way. |
 | Fountain, the older algorithm | 2 + (W + 1) · p² | BOOX's library still has it (its type 2). Its width ignores sensitivity, speed and the minimum width, so the display, whose preview thins with sensitivity, isn't drawing it. The constant in Notes that adds the 3 px is named after it (`FOUNTAIN_PEN_V1_COMPENSATION`): at full pressure the newer law at W + 3 equals this one at W. |
-| Brush | 2W · √p | Pressure sensitivity is ignored. |
+| Brush | 2W · √p | Pressure sensitivity is ignored. Exactly 2W·√p when fast, about 0.6 px wider when slow (2026-10-07). The display's brush style draws the same law for the width it's sent: its update rectangles grow by 3 px from pressure 0.24 to 0.72 at 4 px, as 2W·√p does, plus a fixed 13 px margin (measured while the owner drew). The library's type 10 (brush sign) keeps a constant width. |
 | Marker | about W · (0.8 + 0.2p) | 0.8W up to p 0.2, 0.9W at 0.5, W from 0.8. Speed is ignored. |
 | Ballpoint | W | Constant. |
 | Calligraphy (square) | about W | BOOX Notes configures 2W with the nib ratio min(W, 10). Pressure is ignored. |
@@ -196,7 +196,7 @@ Every finding from the study, and where it's used. Nothing is kept only in notes
 | A session outlives its process | `InkGuard` and home's stray-session check, which also notify the display its client died (`APP_DIE` with the dead pid) |
 | Sessions set the SDK's raw-drawing defaults (brush previews on, the eraser end previews Nib's eraser track) and put them back on release | `InkSession.arm`, `Epd.release` |
 | Screen-note choreography (repaint after a latency, no state change) | Instant ink's batched swaps |
-| Fed-stroke widths | Nib's Diagnostics probe; if it returns widths without drawing, it calibrates the fountain |
+| Fed-stroke widths | None: `startStroke`, `addStrokePoint` and `finishStroke` return 0 on FW 4.3 (2026-10-07) |
 | Eraser end reported by the pen (`BTN_TOOL_RUBBER`) and side buttons (`BTN_STYLUS`, `BTN_STYLUS2`) | `PenInput` (Instant ink); Nib's eraser end and side button tool |
 | The native apps' own reader library, stroke library and display listener | Not usable: an ordinary app may not load them and bundling them breaks the licensing rules. Our own client and engine replace them |
 | NeoReader re-arms only after the panel's update finishes (200 ms, 500 ms on colour panels, 600 ms in Regal) | `InkCanvasController.rearmMs` (Nib: 500 ms on colour panels); a pen touch still resumes at once |

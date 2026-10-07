@@ -326,6 +326,13 @@ private fun PressurePage(ed: Editor, shown: BrushPreset, spec: BrushSpec, live: 
         Text(stringResource(R.string.pen_pressure_stipple), style = StudioType.Body, color = Studio.Legend)
         return
     }
+    if (!PressurePreset.applies(shown.kind)) {
+        // Only the fountain style takes a pressure response from the app; every other style draws its own, which the
+        // ink keeps to so the two look alike.
+        Text(stringResource(if (curve.isConstant) R.string.pen_pressure_none else R.string.pen_pressure_follows_preview), style = StudioType.Body, color = Studio.Legend)
+        Text(stringResource(R.string.pen_pressure_only_fountain), style = StudioType.Small, color = Studio.Legend)
+        return
+    }
     if (curve.isConstant) {
         Text(stringResource(R.string.pen_pressure_none), style = StudioType.Body, color = Studio.Legend)
         SlabButton(stringResource(R.string.pressure_enable), onClick = { commit(shown.copy(tune = shown.tune.copy(floor = 0.3f, ceiling = curve.ceiling.coerceAtLeast(0.31f)))) })
