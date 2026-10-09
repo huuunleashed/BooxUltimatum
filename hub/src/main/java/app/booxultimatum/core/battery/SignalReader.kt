@@ -29,6 +29,8 @@ object SignalReader {
         mode != AppOpsManager.MODE_IGNORED
     }.getOrNull()
 
+    // The dropbox service accepts READ_LOGS, which the owner grants over adb (T1); lint only knows READ_DROPBOX_DATA, a system-only permission.
+    @android.annotation.SuppressLint("MissingPermission")
     private fun restartAtMs(context: Context): Long? = runCatching {
         val dropBox = context.getSystemService(DropBoxManager::class.java)
         val bootMs = System.currentTimeMillis() - SystemClock.elapsedRealtime()

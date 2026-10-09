@@ -408,6 +408,8 @@ object BatteryLog {
     }
 
     /** The newest framework restart after [since] (a dropbox `system_server_crash` or `SYSTEM_RESTART`), or null. */
+    // The dropbox service accepts READ_LOGS, which the owner grants over adb (T1); lint only knows READ_DROPBOX_DATA, a system-only permission.
+    @android.annotation.SuppressLint("MissingPermission")
     private fun restartSince(c: Context, since: Long): Long? = runCatching {
         val dropbox = c.getSystemService(DropBoxManager::class.java)
         var newest: Long? = null
