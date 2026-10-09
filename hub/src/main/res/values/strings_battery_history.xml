@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- History: the window's totals, the standby trend, the days and the discharge sessions. Counts use plurals. -->
+    <string name="bhi_question">How has it been? Did the change help?</string>
+    <string name="bhi_read_window">Read at %1$s · window %2$s</string>
+    <string name="bhi_window_label">Time window</string>
+    <plurals name="bhi_window_hours">
+        <item quantity="one">%d hour</item>
+        <item quantity="other">%d hours</item>
+    </plurals>
+    <plurals name="bhi_window_days">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+    <string name="bhi_nothing_yet">Nothing recorded in this window yet.</string>
+    <string name="bhi_value_pair">%1$s · %2$s</string>
+    <string name="bhi_none">none</string>
+
+    <string name="bhi_plate_over">Over this window</string>
+    <string name="bhi_average_draw">Average draw</string>
+    <string name="bhi_average_note">%/h is the share of the full charge used in an hour.</string>
+
+    <string name="bhi_plate_standby">Standby trend</string>
+    <string name="bhi_standby_explain">The charge drawn per hour while asleep, day by day. A hatched day had the display on while asleep.</string>
+    <string name="bhi_standby_none">Not enough sleep yet. A day counts once it has an hour asleep.</string>
+    <string name="bhi_standby_detail">%1$s asleep</string>
+    <string name="bhi_standby_detail_display">%1$s asleep, with the display on</string>
+    <string name="bhi_median">Median</string>
+    <string name="bhi_normal_spread">Normal spread</string>
+    <string name="bhi_normal_spread_note">The day-to-day spread in your own log. A change smaller than this is not a result.</string>
+
+    <string name="bhi_plate_days">Days</string>
+    <string name="bhi_days_explain">Each day, newest first. Used is the charge drawn while the tablet was unplugged.</string>
+    <string name="bhi_days_none">No day has been recorded in this window yet.</string>
+    <string name="bhi_used">used %1$s</string>
+    <string name="bhi_day_figures">in use %1$s · asleep %2$s · charging %3$s</string>
+    <string name="bhi_display_on_tag">Display on while asleep</string>
+
+    <string name="bhi_plate_sessions">Discharge sessions</string>
+    <string name="bhi_sessions_explain">Each run on battery, from unplug to the next plug-in. Runs under 15 minutes are left out.</string>
+    <string name="bhi_sessions_none">No run on battery of 15 minutes or more in this window yet.</string>
+    <string name="bhi_session_range">%1$s to %2$s</string>
+    <string name="bhi_day_time">%1$s %2$s</string>
+    <string name="bhi_percent_range">%1$d %% to %2$d %%</string>
+    <string name="bhi_session_figures">%1$s · in use %2$s · asleep %3$s</string>
+</resources>
