@@ -3,5 +3,6 @@
     <string name="action_test_shizuku">Test Shizuku</string>
     <string name="shizuku_testing">Testing…</string>
     <string name="action_copy_result">Copy result</string>
+    <string name="plate_dev_test">Developer test</string>
     <string name="shizuku_test_hint">Checks each step between this app and Shizuku and shows where it stops. If something fails, paste the result into a problem report.</string>
 </resources>

@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -25,9 +26,11 @@ import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
 import app.booxultimatum.R
 import app.booxultimatum.core.PrivilegeStatus
+import app.booxultimatum.core.SystemState
 import app.booxultimatum.core.exec.Privileged
 import app.booxultimatum.core.exec.ProbeStep
 import app.booxultimatum.kit.ui.CodeBlock
+import app.booxultimatum.kit.ui.ErrorLine
 import app.booxultimatum.kit.ui.InstrumentPage
 import app.booxultimatum.kit.ui.Key
 import app.booxultimatum.kit.ui.LampRow
@@ -49,6 +52,10 @@ fun AccessScreen(readKey: Int, accessKey: Int, compact: Boolean, onReadAgain: ()
     var probing by remember { mutableStateOf(false) }
     var probeCopied by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    var idleKey by remember { mutableIntStateOf(0) }
+    var idleError by remember { mutableStateOf<String?>(null) }
+    val granted = access?.shizukuGranted == true
+    val idleForced = rememberReading(Triple(readKey, idleKey, granted)) { granted && SystemState.doze()?.forced == true } ?: false
 
     InstrumentPage(compact) {
         item {
@@ -144,6 +151,22 @@ fun AccessScreen(readKey: Int, accessKey: Int, compact: Boolean, onReadAgain: ()
                 }
             }
             Spacer(Modifier.height(Space.xl))
+        }
+        if (granted) {
+            item {
+                Plate(stringResource(R.string.plate_dev_test)) {
+                    Paragraph(stringResource(R.string.tools_force_idle_note), color = Ink.Legend, modifier = Modifier.padding(vertical = Space.s))
+                    Key(stringResource(if (idleForced) R.string.action_unforce_idle else R.string.action_force_idle), primary = false, onClick = {
+                        scope.launch {
+                            val r = SystemState.forceIdle(!idleForced)
+                            idleError = if (r.ok) null else context.getString(R.string.tweak_failed, r.message)
+                            idleKey++
+                        }
+                    })
+                    idleError?.let { ErrorLine(it) }
+                }
+                Spacer(Modifier.height(Space.xl))
+            }
         }
         item {
             Plate(stringResource(R.string.tier_root)) {
