@@ -55,7 +55,7 @@ Each suite app has its own version (`versionName` and `versionCode` in its modul
 1. Bump `versionCode` by one and set `versionName`. Before 1.0, the minor number is for features and the patch number for fixes. A test build carries a pre-release suffix, such as `0.6.0-test.1`, and still needs a new `versionCode`.
 2. Move *[Unreleased]* in `CHANGELOG.md` under the new version with its date, and update the README's install line (the APK name), roadmap and status. Test builds don't move the changelog; their notes list what to check on the tablet.
 3. Build release-signed with `.\gradlew.bat :<module>:assembleRelease -Pbu.signing=$env:USERPROFILE\.booxultimatum\signing.properties`. Check the signer with apksigner: the certificate SHA-256 is `75dbdea9807374ce0a269432528187798d9f662e4fbf8953129f2993d99a2121`.
-4. Commit only when the owner asks, and push before publishing: `gh release create` tags the pushed commit.
+4. Commit only when the owner asks, and push before publishing: `publish.ps1` refuses a dirty tree or an unpushed commit, and tags that exact commit with `--target` (since 2026-10-09; before, `gh release create` tagged the default branch's tip, which is wrong for a test build made from a branch). A test build can be published from a pushed branch without merging it.
 5. Name tags and assets exactly:
 
    | Kind | Tag | Asset |

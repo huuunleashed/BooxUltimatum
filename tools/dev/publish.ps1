@@ -7,7 +7,8 @@
 #   add -DryRun to build and check everything without publishing.
 #
 # Test builds need a pre-release versionName such as 0.1.0-test.1, and are only offered to tablets whose owner turned
-# on test builds. Hubs from before the suite (0.5.x) never see them. The commit being released must already be pushed.
+# on test builds. Hubs from before the suite (0.5.x) never see them. The commit being released must already be pushed and
+# the tree clean: the release is tagged on that exact commit (from any branch), so the tag always matches what was built.
 param(
     [Parameter(Mandatory = $true)][ValidateSet('hub', 'nib')][string]$App,
     [Parameter(Mandatory = $true)][string]$Notes,
@@ -26,6 +27,10 @@ $apps = @{
 $a = $apps[$App]
 if (-not (Test-Path $Notes)) { throw "Notes file not found: $Notes" }
 if (-not (Test-Path $Signing)) { throw "Signing properties not found: $Signing" }
+
+$commit = (git rev-parse HEAD).Trim()
+if (git status --porcelain) { throw 'The tree has uncommitted changes; commit them first, so the tag is what gets built' }
+if (-not (git branch -r --contains $commit)) { throw "Commit $commit isn't pushed; push it first" }
 
 $gradleFile = Get-Content "$($a.Module)\build.gradle.kts" -Raw
 $version = [regex]::Match($gradleFile, 'versionName\s*=\s*"([^"]+)"').Groups[1].Value
@@ -70,7 +75,7 @@ Write-Host "SHA-256 $hash"
 
 $title = if ($Test) { "$($a.Title) $version (test build)" } else { "$($a.Title) $version" }
 if ($DryRun) { Write-Host "Dry run: would publish $($files -join ', ') as $tag, '$title'"; return }
-& gh release create $tag @files --repo $Repo --title $title --notes-file $Notes --prerelease
+& gh release create $tag @files --repo $Repo --target $commit --title $title --notes-file $Notes --prerelease
 if ($LASTEXITCODE -ne 0) { throw 'gh release create failed' }
 
 # Check what anyone would download matches what was built.
