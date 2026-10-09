@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- MarksPlate: a mark is a labelled moment. Results are built from BatteryText's mA and the hours here. -->
+    <string name="bm_title">Marks</string>
+    <string name="bm_hint">Label this moment, for example ‘turned off Wi-Fi’</string>
+    <string name="bm_add">Add mark</string>
+    <string name="bm_paused">Recording is paused, so a mark won’t be kept.</string>
+    <string name="bm_legend">A mark is a labelled moment in the log, and tweaks you apply or undo are marked automatically. BooxUltimatum compares the quiet-asleep draw before and after each mark, and says so plainly when the difference is within a normal day-to-day change.</string>
+    <string name="bm_none">No marks yet.</string>
+    <string name="bm_tag_tweak">Tweak</string>
+    <string name="bm_row">%1$s, %2$s. %3$s</string>
+    <string name="bm_not_enough">Not enough data yet: it needs about 12 hours asleep on each side.</string>
+    <string name="bm_hours_before_after">(%1$s h before, %2$s h after)</string>
+    <string name="bm_within">Not distinguishable from a normal day: %1$s before, %2$s after.</string>
+    <string name="bm_lower">Quiet-asleep draw fell from %1$s to %2$s.</string>
+    <string name="bm_higher">Quiet-asleep draw rose from %1$s to %2$s.</string>
+    <string name="bm_spread">Day to day it varies by about %1$s.</string>
+</resources>
