@@ -1,17 +1,25 @@
 package app.booxultimatum.core
 
 import android.app.AlarmManager
+import android.app.AppOpsManager
 import android.app.PendingIntent
+import android.app.usage.UsageEvents
+import android.app.usage.UsageStatsManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
 import android.os.Build
+import android.os.DropBoxManager
 import android.os.PowerManager
+import android.os.Process
 import android.os.SystemClock
 import android.provider.Settings
 import androidx.core.content.ContextCompat
+import app.booxultimatum.core.battery.BatteryCsv
+import app.booxultimatum.core.battery.BatteryEvents
+import app.booxultimatum.core.battery.DisplayWatch
 import app.booxultimatum.core.exec.Privileged
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -72,8 +80,10 @@ object BatteryLog {
     private const val DEEP_EVERY = 3L * 3600 * 1000
     private const val OPEN_GAP = 10L * 60 * 1000
     private const val KEEP_DAYS = 60
-    private const val HEADER = "epoch,reason,level,charge_mAh,voltage_mV,temp_C,plugged,screen_on,elapsed_ms,uptime_ms," +
-        "boot_count,current_mA,frontlight,frontlight_ct,wifi,idle,saver"
+    const val HEADER = BatteryCsv.HEADER
+    private const val TOP_WINDOW_MS = 30 * 60_000L
+    private const val TOP_CACHE_MS = 20_000L
+    private val RESTART_TAGS = listOf("system_server_crash", "SYSTEM_RESTART")
     private const val FRONTLIGHT = "/sys/class/backlight/onyx_bl_br/brightness"
     private const val FRONTLIGHT_CT = "/sys/class/backlight/onyx_bl_ct/brightness"
 
@@ -87,6 +97,10 @@ object BatteryLog {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val watching = java.util.concurrent.atomic.AtomicBoolean(false)
     @Volatile private var lastLevel = -1
+
+    /** Files whose layout was checked and then written to in this process, so each file is scanned once. Used under [lock] only. */
+    private val layoutChecked = HashSet<String>()
+    @Volatile private var topCache: Pair<Long, String>? = null
 
     fun dir(c: Context) = File(c.getExternalFilesDir(null), "logs").apply { mkdirs() }
     private fun prefs(c: Context) = c.getSharedPreferences("battery_log", Context.MODE_PRIVATE)
@@ -173,10 +187,28 @@ object BatteryLog {
                     }
                     else -> if (Build.VERSION.SDK_INT >= 33 && i.action == PowerManager.ACTION_DEVICE_LIGHT_IDLE_MODE_CHANGED) "doze_light" else return
                 }
+                when (i.action) {
+                    Intent.ACTION_SCREEN_OFF -> {
+                        prefs(app).edit().putLong("last_screen_off", System.currentTimeMillis()).apply()
+                        DisplayWatch.recheck(app)
+                    }
+                    Intent.ACTION_SCREEN_ON -> DisplayWatch.recheck(app)
+                }
                 val pending = goAsync()
-                record(c, reason) { pending.finish() }
+                record(c, reason) {
+                    if (i.action == Intent.ACTION_SCREEN_ON) woke(app)
+                    pending.finish()
+                }
             }
         }, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
+    }
+
+    /** A screen-on ends the sleep that a screen-off began: BatteryEvents hears how long it lasted, once. */
+    private fun woke(app: Context) {
+        val off = prefs(app).getLong("last_screen_off", 0)
+        if (off <= 0) return
+        prefs(app).edit().putLong("last_screen_off", 0).apply()
+        runCatching { BatteryEvents.woke(app, off) }
     }
 
     private fun cancel(c: Context) {
@@ -184,15 +216,18 @@ object BatteryLog {
         pending(c).cancel()
     }
 
-    /** Records a light sample now, and a deep one if it is due. Runs off the main thread, one record at a time. */
-    fun record(c: Context, reason: String, done: (() -> Unit)? = null) {
+    /**
+     * Records a light sample now, and a deep one if it is due. [note] fills the row's note column. Runs off the main
+     * thread, one record at a time.
+     */
+    fun record(c: Context, reason: String, note: String = "", done: (() -> Unit)? = null) {
         if (!enabled(c)) { done?.invoke(); return }
         val app = c.applicationContext
         // Opening the app is a free moment to sample, but not a reason to crowd the log: at most one every 10 minutes.
         if (reason == "open" && System.currentTimeMillis() - prefs(app).getLong("last_sample", 0) < OPEN_GAP) { done?.invoke(); return }
         scope.launch {
             lock.withLock {
-                runCatching { writeSample(app, reason); prefs(app).edit().putLong("last_sample", System.currentTimeMillis()).apply() }
+                runCatching { writeSample(app, reason, note); prefs(app).edit().putLong("last_sample", System.currentTimeMillis()).apply() }
                 runCatching {
                     val last = prefs(app).getLong("last_deep", 0)
                     if (System.currentTimeMillis() - last > DEEP_EVERY || reason == "boot") {
@@ -208,17 +243,16 @@ object BatteryLog {
 
     private val lock = kotlinx.coroutines.sync.Mutex()
 
+    /** A labelled moment in the log, such as a tweak applied or a note from the owner. */
+    fun mark(c: Context, label: String) = record(c, "mark", note = label)
+
     /**
      * Boox background-restricts some apps it did not ship. If that ever happens to BooxUltimatum the log would stop
      * sampling, so with Shizuku available the app lifts the restriction on itself.
      */
     fun ensureNotRestricted(c: Context) {
         // An app may read its own app-ops without any permission; the Shizuku helper starts only when there is work.
-        val restricted = runCatching {
-            val ops = c.getSystemService(android.app.AppOpsManager::class.java)
-            ops.unsafeCheckOpNoThrow("android:run_any_in_background", android.os.Process.myUid(), c.packageName) == android.app.AppOpsManager.MODE_IGNORED
-        }.getOrDefault(true)
-        if (!restricted) return
+        if (hubBackgroundAllowed(c) == true) return
         scope.launch {
             if (!Privileged.ready()) return@launch
             if (SystemState.backgroundMode(c.packageName) == BgMode.Ignore) {
@@ -227,6 +261,12 @@ object BatteryLog {
             }
         }
     }
+
+    /** The hub's own RUN_ANY_IN_BACKGROUND, or null when the app-op can't be read. */
+    private fun hubBackgroundAllowed(c: Context): Boolean? = runCatching {
+        c.getSystemService(AppOpsManager::class.java)
+            .unsafeCheckOpNoThrow("android:run_any_in_background", Process.myUid(), c.packageName) != AppOpsManager.MODE_IGNORED
+    }.getOrNull()
 
     private fun day(t: Long) = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date(t))
 
@@ -257,12 +297,19 @@ object BatteryLog {
         return br to ct
     }
 
-    private suspend fun writeSample(c: Context, reason: String) {
+    /**
+     * A file's rows share one layout. A header line goes first when the file is new, or when its last header is another
+     * layout (a layout change appends a header rather than renaming the file). A file is scanned once per process, and
+     * only once a row has been written to it.
+     */
+    private fun needsHeader(f: File): Boolean {
+        if (!f.exists()) return true
+        return f.name !in layoutChecked && f.useLines { BatteryCsv.lastHeader(it) } != HEADER
+    }
+
+    private suspend fun writeSample(c: Context, reason: String, note: String) {
         val b = BatterySnapshot.read(c)
         val f = File(dir(c), "battery-${day(b.readAtMillis).substring(0, 7)}.csv")
-        // Rows written before the extra columns existed keep their own file, so each file has a single layout.
-        if (f.exists() && f.bufferedReader().use { it.readLine() } != HEADER) f.renameTo(File(dir(c), f.name.removeSuffix(".csv") + ".v1.csv"))
-        if (!f.exists()) f.writeText(HEADER + "\n")
         val pm = c.getSystemService(PowerManager::class.java)
         val idle = when {
             pm.isDeviceIdleMode -> "deep"
@@ -270,16 +317,47 @@ object BatteryLog {
             else -> "none"
         }
         val fl = frontlight()
-        f.appendText(
+        val row = BatteryCsv.line(
             listOf(
-                b.readAtMillis, reason, b.levelPct, b.chargeCounterMah?.let { "%.0f".format(Locale.US, it) } ?: "",
-                b.voltageMv ?: "", b.tempC ?: "", if (b.source != PowerSource.None) 1 else 0, if (b.interactive) 1 else 0,
+                b.readAtMillis, reason, b.levelPct, b.chargeCounterMah?.let { "%.0f".format(Locale.US, it) },
+                b.voltageMv, b.tempC, if (b.source != PowerSource.None) 1 else 0, if (b.interactive) 1 else 0,
                 SystemClock.elapsedRealtime(), SystemClock.uptimeMillis(),
-                bootCount(c) ?: "", b.currentNowMa?.let { "%.0f".format(Locale.US, it) } ?: "",
+                bootCount(c), b.currentNowMa?.let { "%.0f".format(Locale.US, it) },
                 fl.first, fl.second,
                 wifiState(c), idle, if (pm.isPowerSaveMode) 1 else 0,
-            ).joinToString(",") + "\n",
+                displayNow(c), if (b.interactive) topPackage(c) else "", BatteryCsv.sanitizeNote(note),
+            ),
         )
+        val header = if (needsHeader(f)) HEADER + "\n" else ""
+        f.appendText(header + row + "\n")
+        layoutChecked += f.name
+    }
+
+    /** The `display` column: the default display's state, empty when it can't be read. */
+    private fun displayNow(c: Context): String = DisplayWatch.displayState(c)?.let { BatteryCsv.displayColumn(it) } ?: ""
+
+    /**
+     * The package in front over the last 30 minutes, from UsageStats; empty without usage access. Asked at most once per
+     * [TOP_CACHE_MS], so a burst of rows costs one query.
+     */
+    private fun topPackage(c: Context): String {
+        val now = System.currentTimeMillis()
+        topCache?.let { (at, cached) -> if (now - at < TOP_CACHE_MS) return cached }
+        val pkg = runCatching {
+            val events = c.getSystemService(UsageStatsManager::class.java).queryEvents(now - TOP_WINDOW_MS, now)
+            val e = UsageEvents.Event()
+            val resumes = ArrayList<Pair<String, Boolean>>()
+            while (events.hasNextEvent()) {
+                events.getNextEvent(e)
+                when (e.eventType) {
+                    UsageEvents.Event.ACTIVITY_RESUMED -> resumes += e.packageName to true
+                    UsageEvents.Event.ACTIVITY_PAUSED -> resumes += e.packageName to false
+                }
+            }
+            BatteryCsv.frontmost(resumes)
+        }.getOrDefault("")
+        topCache = now to pkg
+        return pkg
     }
 
     private fun wifiState(c: Context): String = runCatching {
@@ -294,6 +372,10 @@ object BatteryLog {
 
     private suspend fun writeDeep(c: Context, reason: String, since: Long) {
         val o = JSONObject().put("epoch", System.currentTimeMillis()).put("reason", reason).put("since", since)
+        o.put("display", displayNow(c))
+        hubBackgroundAllowed(c)?.let { o.put("bgAllowed", it) }
+        bootCount(c)?.let { o.put("bootCount", it) }
+        restartSince(c, since)?.let { o.put("restartAt", it) }
         SystemState.doze(preferApp = true)?.let {
             o.put(
                 "doze",
@@ -310,6 +392,7 @@ object BatteryLog {
             })
         }
         SystemState.power(since, preferApp = true)?.let { p ->
+            o.put("dozeLockHeld", p.held.any { it.tag == "dream:doze" })
             o.put("wakelocks", JSONArray().apply { p.held.forEach { put(JSONObject().put("type", it.type).put("tag", it.tag).put("uid", it.owner)) } })
             o.put("wakelockAcquisitions", JSONObject().apply { p.acquisitions.forEach { (k, v) -> put(k, v) } })
             p.onyxPm?.let { o.put("onyxPm", it) }
@@ -323,6 +406,24 @@ object BatteryLog {
         o.put("powerSave", c.getSystemService(android.os.PowerManager::class.java).isPowerSaveMode)
         File(dir(c), "deep-${day(System.currentTimeMillis())}.jsonl").appendText(o.toString() + "\n")
     }
+
+    /** The newest framework restart after [since] (a dropbox `system_server_crash` or `SYSTEM_RESTART`), or null. */
+    private fun restartSince(c: Context, since: Long): Long? = runCatching {
+        val dropbox = c.getSystemService(DropBoxManager::class.java)
+        var newest: Long? = null
+        for (tag in RESTART_TAGS) {
+            var after = since
+            while (true) {
+                val entry = dropbox.getNextEntry(tag, after) ?: break
+                val at = entry.timeMillis
+                entry.close()
+                if (at <= after) break
+                newest = maxOf(newest ?: at, at)
+                after = at
+            }
+        }
+        newest
+    }.getOrNull()
 
     /** CPU ms and Wi-Fi bytes per uid since the previous snapshot; batterystats resets at full charge, so a drop means a reset. */
     private fun uidDelta(c: Context, now: Map<Int, UidStat>): JSONObject {
@@ -447,12 +548,20 @@ object BatteryLog {
                     appendLine()
                     appendLine("battery-YYYY-MM.csv: one light sample per row (level, charge counter in mAh, voltage, temperature, plugged, screen on,")
                     appendLine("  elapsed and uptime in ms, boot count, instant current in mA, front light and warmth 0-32, Wi-Fi off/on/connected,")
-                    appendLine("  Doze mode, Battery Saver). Reasons: tick (30 min alarm, never wakes the tablet), screen_on/screen_off, plug/unplug,")
+                    appendLine("  Doze mode, Battery Saver, display (on, doze or off; other for any other state; empty when unknown), top (the package")
+                    appendLine("  in front while the tablet is interactive and usage access works, else empty), note (free text without commas, 80 characters).")
+                    appendLine("  Reasons: tick (30 min alarm, never wakes the tablet), screen_on/screen_off, plug/unplug,")
                     appendLine("  level (1 % step on battery), doze_deep/doze_light/saver, open/manual, boot (real reboot), unstop (first start after a")
-                    appendLine("  force-stop, which Android 15+ reports as BOOT_COMPLETED), update. 1 - Δuptime/Δelapsed is the share of time the SoC slept;")
-                    appendLine("  on Boox it also sleeps with the screen on. battery-YYYY-MM.v1.csv files hold rows from before the extra columns.")
+                    appendLine("  force-stop, which Android 15+ reports as BOOT_COMPLETED), update, display_on (the display was on while the tablet was not")
+                    appendLine("  interactive for 2 minutes), display_stuck (the same for 10 minutes), mark (a labelled moment; the note is the label).")
+                    appendLine("  For display_on and display_stuck the note is the time the display went on, in epoch ms.")
+                    appendLine("  1 - Δuptime/Δelapsed is the share of time the SoC slept; on Boox it also sleeps with the screen on.")
+                    appendLine("  A line starting with epoch, is a header; a file holds one for each layout it has had.")
+                    appendLine("  battery-YYYY-MM.v1.csv files hold rows from earlier builds, written before the columns were extended.")
                     appendLine("deep-YYYY-MM-DD.jsonl: every few hours, Doze state and history, alarm wakeups by app and tag, wakelock acquisitions,")
-                    appendLine("  CPU ms and Wi-Fi KB by uid since the previous snapshot, foreground seconds by app, and our own process exits.")
+                    appendLine("  CPU ms and Wi-Fi KB by uid since the previous snapshot, foreground seconds by app, our own process exits, the display")
+                    appendLine("  state, whether dream:doze is held, whether the hub may run in the background, the boot count, and restartAt, the newest")
+                    appendLine("  framework restart since the previous snapshot (dropbox system_server_crash or SYSTEM_RESTART).")
                 }.toByteArray(),
             )
             z.closeEntry()
@@ -478,6 +587,9 @@ class BatteryLogReceiver : BroadcastReceiver() {
         // Boot and force-stop clear the alarm, an update keeps it; schedule() re-arms only what is missing, so frequent
         // reinstalls no longer restart the 30-minute countdown.
         if (reason != "tick") BatteryLog.schedule(context)
-        BatteryLog.record(context, reason) { result.finish() }
+        BatteryLog.record(context, reason) {
+            if (reason == "boot") runCatching { BatteryEvents.booted(context.applicationContext) }
+            result.finish()
+        }
     }
 }
