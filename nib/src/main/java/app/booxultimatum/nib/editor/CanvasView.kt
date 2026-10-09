@@ -653,7 +653,7 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
     private fun updateSessionOpen() {
         val want = isAttachedToWindow && resumed && hasWindowFocus() && session != null
         if (want) {
-            if (controller.session.state == InkSession.State.Closed) {
+            if (settings.instantInk && controller.session.state == InkSession.State.Closed) {
                 val stroke = currentStroke()
                 // The session is shared with the probes: what it re-arms with must be this canvas's.
                 sentParts = null

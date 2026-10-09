@@ -14,6 +14,17 @@ class NibSettingsTest {
         assertTrue(s.fastGestures, "fast refresh while moving the page is on")
         assertFalse(s.palmGuard, "Palm guard is off until it's verified")
         assertTrue(s.eraserEndPreview)
+        assertTrue(s.instantInk, "Instant ink stays on for owners who already have it")
+    }
+
+    @Test fun instantInkCanBeSwitchedOffAndStaysOff() {
+        val prefs = MemoryPrefs()
+        val s = NibSettings(prefs)
+        s.instantInk = false
+        assertFalse(s.instantInk)
+        assertFalse(NibSettings(prefs).instantInk)
+        s.instantInk = true
+        assertTrue(NibSettings(prefs).instantInk)
     }
 
     @Test fun choicesAreKeptAndThePauseIsClamped() {

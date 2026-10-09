@@ -4,6 +4,10 @@ All notable changes to BooxUltimatum. Newest first. The project follows [Semanti
 
 ## [Unreleased]
 
+### Added
+
+- **Nib: a switch for instant ink.** Settings › Writing › Instant ink (marked experimental, on by default) turns the display-drawn preview off. Off, Nib never opens a display pen session and draws every stroke itself, a little slower, as it does where there is no such display; Diagnostics still tests the display. It applies when a drawing is next opened. Checked on the emulator in both orientations: with it on, the canvas tries to open the session; with it off, it makes no attempt and a stylus stroke is committed without a preview.
+
 ### Research
 
 - **The night of 2026-10-08: the display stayed on while the tablet slept.** Twice, exactly 90 minutes after the display last went to sleep (18:37 to 21:02, and 23:46 until the battery died at about 06:17), and both times after Android's system process crashed and restarted at 16:32. It drew a steady 330 mA with the processor unable to sleep: 2 879 mAh in 8.6 hours, 38 % of everything the tablet drew on battery in three days, against 9 mA for 50.8 hours of ordinary sleep. Reconstructed from Android's battery history (which survives a battery shutdown but is written only every 30 minutes), the hub's own log and the dropbox; Android billed the screen to Tachiyomi, which was idle. The mechanism of a refresh that never returns to doze, the crash, the hub's lost background permission and the per-app costs are recorded in `knowledge/experiments.md`; what starts the 90-minute event is still unknown.

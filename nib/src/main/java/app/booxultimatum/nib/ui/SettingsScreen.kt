@@ -99,6 +99,10 @@ private fun SettingToggle(title: Int, detail: Int, on: Boolean, logKey: String, 
 
 @Composable
 private fun WritingPage(settings: NibSettings, type: (EntryRequest) -> Unit) {
+    StudioSection(stringResource(R.string.settings_instant_ink)) {
+        SettingToggle(R.string.setting_instant_ink, R.string.setting_instant_ink_detail, settings.instantInk, "instant ink") { settings.instantInk = it }
+        Text(stringResource(if (settings.instantInk) R.string.setting_instant_ink_on_note else R.string.setting_instant_ink_off_note), style = StudioType.Small, color = Studio.Legend)
+    }
     StudioSection(stringResource(R.string.settings_pen)) {
         SettingToggle(R.string.setting_straight, R.string.setting_straight_detail, settings.straightLineHold, "straight line hold") { settings.straightLineHold = it }
         SettingToggle(R.string.setting_eraser_end, R.string.setting_eraser_end_detail, settings.eraserEndPreview, "eraser end preview") { settings.eraserEndPreview = it }

@@ -15,6 +15,12 @@ import app.booxultimatum.nib.pen.RevealPolicy
 
 /** Nib's switches, kept in shared preferences and readable as Compose state. */
 class NibSettings internal constructor(private val prefs: SharedPreferences) {
+    /**
+     * Settings › Writing › Instant ink: the display draws the pen's stroke itself as it's written. Off, the editor never opens a
+     * display pen session and Nib draws every stroke itself, as it does where there's no such display. Diagnostics still opens one.
+     */
+    var instantInk by pref("instant_ink", true)
+
     /** Fingers draw (off: fingers only move the page). */
     var fingerDrawing by pref("finger_drawing", false)
 

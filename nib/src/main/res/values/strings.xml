@@ -165,6 +165,11 @@
     <string name="settings_tools">Tools</string>
     <string name="setting_eraser_end">Preview the eraser end</string>
     <string name="setting_eraser_end_detail">The display draws the eraser end’s track at once while you erase, and Nib erases when you lift. Off: the page updates as you erase, more slowly.</string>
+    <string name="settings_instant_ink">Instant ink (experimental)</string>
+    <string name="setting_instant_ink">Instant ink</string>
+    <string name="setting_instant_ink_detail">The display draws your pen strokes itself while you write, as BOOX’s own apps do, so ink appears at once. It’s still being finished: if strokes look wrong or leave marks, turn it off.</string>
+    <string name="setting_instant_ink_on_note">Applies the next time you open a drawing.</string>
+    <string name="setting_instant_ink_off_note">Nib draws every stroke itself, a little slower. The preview settings here and under Display have no effect while this is off. Applies the next time you open a drawing.</string>
     <string name="settings_pen">Pen</string>
     <string name="settings_fingers">Fingers</string>
     <string name="settings_panels">Panels</string>
