@@ -62,7 +62,7 @@ The rail has five sections, and a section with several pages shows them as tabs.
 |---|---|
 | Overview | Overview |
 | Suite | Apps and modules, Home screen, Sleep, Ink |
-| Battery | Battery |
+| Battery | Today (`Destination.Battery`), History, Causes, Health |
 | System | Tweaks, Apps, Appearance, Fonts, Settings |
 | Device | Device (this tablet and this app's updates), Access, Logs, Storage |
 
