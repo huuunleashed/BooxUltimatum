@@ -71,6 +71,8 @@ internal object Codecs {
         if (b.tiltResponse != TiltResponse.Eased) w.fieldVarint(21, b.tiltResponse.code.toLong())
         if (b.speedDamping != 0f) w.fieldFloat(22, b.speedDamping)
         if (b.minWidth != 0f) w.fieldFloat(23, b.minWidth)
+        // Since format 1.3.
+        if (b.dot != 1f) w.fieldFloat(24, b.dot)
     }
 
     /**
@@ -78,7 +80,7 @@ internal object Codecs {
      * out takes the kind's default, except the ones added after format 1.0, which take the value that draws as the
      * brush drew before they existed, so old ink looks as it did: [BrushSpec.tiltScale] (from 1.1) is
      * [BrushSpec.NO_TILT], and [BrushSpec.tiltResponse], [BrushSpec.speedDamping] and [BrushSpec.minWidth] (from 1.2)
-     * are [TiltResponse.Eased], 0 and 0.
+     * are [TiltResponse.Eased], 0 and 0, and [BrushSpec.dot] (from 1.3) is 1, one document pixel.
      */
     fun readBrush(r: ByteReader): BrushSpec {
         var kind: BrushKind? = null
@@ -104,6 +106,7 @@ internal object Codecs {
         var tiltResponse = TiltResponse.Eased
         var speedDamping = 0f
         var minWidth = 0f
+        var dot = 1f
         r.fields { tag, f ->
             when (tag) {
                 1 -> kind = BrushKind.fromId(f.string()) ?: BrushKind.Fineliner
@@ -129,6 +132,7 @@ internal object Codecs {
                 21 -> tiltResponse = TiltResponse.fromCode(f.count())
                 22 -> speedDamping = f.float().let { if (it.isFinite() && it > 0f) it else 0f }
                 23 -> minWidth = f.float().let { if (it.isFinite() && it > 0f) it else 0f }
+                24 -> dot = f.float().let { if (it.isFinite() && it > 0f) it.coerceIn(BrushSpec.MIN_DOT, BrushSpec.MAX_DOT) else 1f }
             }
         }
         val base = BrushSpec.defaults(kind ?: BrushKind.Fineliner)
@@ -155,6 +159,7 @@ internal object Codecs {
             tiltResponse = tiltResponse,
             speedDamping = speedDamping,
             minWidth = minWidth,
+            dot = dot,
         )
     }
 

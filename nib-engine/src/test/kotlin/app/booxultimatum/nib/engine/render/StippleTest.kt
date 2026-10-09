@@ -224,4 +224,46 @@ class StippleTest {
             val differ = (run - plain).size + (plain - run).size
             assertTrue(differ <= plain.size / 1000, "$differ of ${plain.size} pixels differ at $toDevice")
         }
+    }
+
+    @Test
+    fun zoomingScalesTheGrainWithThePage() {
+        // Drawn at 2x, the dots are half a document pixel: one screen pixel there, as the display drew them. Seen at 4x each
+        // is two pixels across, and the same dots, the very same ones, are on: the stroke is the same picture, magnified.
+        val s = line(5f, 0.5f, zoom = 2f)
+        assertEquals(0.5f, s.brush.dot)
+        val drawn = inked(raster(s, scale = 2f))
+        val magnified = inked(raster(s, scale = 4f))
+        assertTrue(drawn.size > 400, "a real stroke to compare: ${drawn.size}")
+        assertEquals(4 * drawn.size, magnified.size, "every dot is a 2 x 2 block")
+        assertTrue(drawn.all { (x, y) -> (2 * x to 2 * y) in magnified && (2 * x + 1 to 2 * y + 1) in magnified }, "and sits where it was, doubled")
+        val r = raster(s, scale = 3f)
+        var odd = 0
+        var n = 0
+        for (y in 0 until r.height step 3) for (x in 0 until r.width - 3 step 3) {
+            // At 3x a dot is 1.5 pixels: a pixel and its neighbour agree more often than not.
+            n++
+            if ((r.alpha(x, y) > 0f) != (r.alpha(x + 1, y) > 0f)) odd++
+        }
+        assertTrue(odd < n / 8, "dots are bigger than pixels at 3x: $odd of $n pairs differ")
+    }
+
+    @Test
+    fun aStrokeKeepsItsToneAtAnyZoom() {
+        // The cover at the centre of the line is the pressure, whatever the zoom it's looked at, in the dots it was drawn with.
+        val s = line(4f, 0.5f, zoom = 1.5f)
+        for (scale in listOf(0.75f, 1.5f, 3f)) {
+            val r = raster(s, scale = scale)
+            val y = (100f * scale).roundToInt()
+            assertEquals(0.5f, cover(r, y - 1, y + 1, (60 * scale).roundToInt(), (150 * scale).roundToInt()), 0.1f, "at $scale")
+        }
+    }
+
+    @Test
+    fun aStrokeFromBeforeDotsAreOneDocumentPixel() {
+        val s = Stroke(11, pencil.copy(width = 9f), BLACK, line(4f, 0.5f).points)
+        assertEquals(1f, s.brush.dot)
+        val a = inked(raster(s, scale = 1f))
+        val b = inked(raster(s, scale = 2f))
+        assertEquals(4 * a.size, b.size, "scaled with the page at 2x, as every stroke is")
     }}

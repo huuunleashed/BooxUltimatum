@@ -35,7 +35,7 @@ private class CountingSink : RenderSink {
     override fun dab(x: Float, y: Float, radius: Float, angle: Float, color: Int, alpha: Float, texture: Texture, blend: Blend) {
         dabs++
     }
-    override fun stipple(x: Float, y: Float, radius: Float, density: Float, color: Int, blend: Blend) {
+    override fun stipple(x: Float, y: Float, radius: Float, density: Float, color: Int, blend: Blend, dot: Float) {
         calls += "stipple"
     }
     override fun strokePolyline(xy: FloatArray, count: Int, width: Float, color: Int, cap: Cap, dash: FloatArray?, blend: Blend) {

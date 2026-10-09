@@ -14,8 +14,8 @@ android {
         applicationId = "app.booxultimatum.nib"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 17
-        versionName = "0.4.1-test.1"
+        versionCode = 18
+        versionName = "0.4.1-test.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

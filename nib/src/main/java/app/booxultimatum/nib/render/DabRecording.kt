@@ -24,6 +24,9 @@ class DabRecording : RenderSink {
     private var groupAlpha = 1f
     private var groupBlend = Blend.Normal
 
+    // A stroke has one brush, so one dot size for all its stamps.
+    private var stippleDot = 1f
+
     private var n = 0
     private var xs = FloatArray(256)
     private var ys = FloatArray(256)
@@ -61,7 +64,8 @@ class DabRecording : RenderSink {
         general = true
     }
 
-    override fun stipple(x: Float, y: Float, radius: Float, density: Float, color: Int, blend: Blend) {
+    override fun stipple(x: Float, y: Float, radius: Float, density: Float, color: Int, blend: Blend, dot: Float) {
+        stippleDot = dot
         record(x, y, radius, 0f, color, density, Texture.Solid, blend, stipple = true)
     }
 
@@ -93,7 +97,7 @@ class DabRecording : RenderSink {
         var runColor = 0
         var runBlend = Blend.Normal
         fun flush() {
-            if (run > 0) sink.stippleRun(runXs, runYs, runRs, runDs, run, runColor, runBlend)
+            if (run > 0) sink.stippleRun(runXs, runYs, runRs, runDs, run, runColor, runBlend, stippleDot)
             run = 0
         }
         for (i in 0 until n) {

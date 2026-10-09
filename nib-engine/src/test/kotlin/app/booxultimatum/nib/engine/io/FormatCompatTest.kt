@@ -86,7 +86,7 @@ class FormatCompatTest {
         }
         // Saved again, it becomes a file of today's format and reads back the same.
         val again = write(doc)
-        assertEquals(1 to 2, manifestVersion(again))
+        assertEquals(1 to 3, manifestVersion(again))
         assertEquals(doc, read(again).document)
     }
 
@@ -134,10 +134,38 @@ class FormatCompatTest {
         assertEquals(BrushSpec.NATIVE_TILT_SCALE, byKind.getValue(BrushKind.Charcoal).brush.tiltScale)
         assertEquals(0.9f, byKind.getValue(BrushKind.Charcoal).brush.pressureFlow)
         val again = write(doc)
-        assertEquals(1 to 2, manifestVersion(again))
+        assertEquals(1 to 3, manifestVersion(again))
         assertEquals(doc, read(again).document)
     }
 
+    @Test
+    fun theDotSizeIsABrushFieldThatOlderBrushesLack() {
+        fun roundTrip(b: BrushSpec): BrushSpec = Codecs.readBrush(ByteReader(ByteWriter().also { Codecs.writeBrush(it, b) }.toByteArray()))
+        val pencil = BrushSpec.defaults(BrushKind.Pencil)
+        assertEquals(1f, pencil.dot, "one document pixel unless the stroke says")
+        val drawnAtTwo = pencil.inkAt(2f)
+        assertEquals(0.5f, drawnAtTwo.dot, "committed with the display's dots, one screen pixel, at the zoom it was drawn at")
+        assertEquals(drawnAtTwo, roundTrip(drawnAtTwo))
+        assertTrue(ByteWriter().also { Codecs.writeBrush(it, pencil) }.size < ByteWriter().also { Codecs.writeBrush(it, drawnAtTwo) }.size, "one pixel, no field")
+        // A 1.2 record has no dot: its strokes read with one document pixel dots.
+        val old = Codecs.readBrush(ByteReader(ByteWriter().apply {
+            fieldString(1, "stipple_pencil")
+            fieldFloat(2, 9f)
+        }.toByteArray()))
+        assertEquals(1f, old.dot)
+        // Damaged or absurd values are made sane.
+        fun dotOf(v: Float) = Codecs.readBrush(ByteReader(ByteWriter().apply {
+            fieldString(1, "stipple_pencil")
+            fieldFloat(24, v)
+        }.toByteArray())).dot
+        assertEquals(1f, dotOf(Float.NaN))
+        assertEquals(1f, dotOf(-3f))
+        assertEquals(1f, dotOf(0f))
+        assertEquals(BrushSpec.MAX_DOT, dotOf(1e6f))
+        assertEquals(BrushSpec.MIN_DOT, dotOf(1e-6f))
+        // Only the stipple pencil gets dots; no other brush changes with the zoom it's drawn at.
+        for (kind in BrushKind.entries) if (!kind.rendersAsStipple) assertEquals(1f, BrushSpec.defaults(kind).inkAt(2f).dot, kind.id)
+    }
     @Test
     fun theCalibratedFieldsAreBrushFieldsThatOlderBrushesLack() {
         fun roundTrip(b: BrushSpec): BrushSpec = Codecs.readBrush(ByteReader(ByteWriter().also { Codecs.writeBrush(it, b) }.toByteArray()))

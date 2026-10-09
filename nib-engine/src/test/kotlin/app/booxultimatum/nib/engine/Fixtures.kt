@@ -98,7 +98,7 @@ class RecordingSink : RenderSink {
             val texture: Texture, val blend: Blend,
         ) : Call()
         data class Polyline(val xy: FloatArray, val width: Float, val color: Int, val cap: Cap, val dash: FloatArray?, val blend: Blend) : Call()
-        data class Stipple(val x: Float, val y: Float, val radius: Float, val density: Float, val color: Int, val blend: Blend) : Call()
+        data class Stipple(val x: Float, val y: Float, val radius: Float, val density: Float, val color: Int, val blend: Blend, val dot: Float = 1f) : Call()
     }
 
     val calls = ArrayList<Call>()
@@ -127,8 +127,8 @@ class RecordingSink : RenderSink {
         calls.add(Call.Polyline(xy.copyOf(count * 2), width, color, cap, dash?.copyOf(), blend))
     }
 
-    override fun stipple(x: Float, y: Float, radius: Float, density: Float, color: Int, blend: Blend) {
-        calls.add(Call.Stipple(x, y, radius, density, color, blend))
+    override fun stipple(x: Float, y: Float, radius: Float, density: Float, color: Int, blend: Blend, dot: Float) {
+        calls.add(Call.Stipple(x, y, radius, density, color, blend, dot))
     }
 }
 
@@ -152,7 +152,7 @@ class NullSink : RenderSink {
         points++
     }
 
-    override fun stipple(x: Float, y: Float, radius: Float, density: Float, color: Int, blend: Blend) {
+    override fun stipple(x: Float, y: Float, radius: Float, density: Float, color: Int, blend: Blend, dot: Float) {
         points++
     }
 

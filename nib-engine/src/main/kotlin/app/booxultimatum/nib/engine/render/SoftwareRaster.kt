@@ -114,7 +114,7 @@ class SoftwareRaster(val width: Int, val height: Int, var transform: Affine = Af
         disc(transform.mapX(x, y), transform.mapY(x, y), radius * scale(), color, alpha, texture, blend)
     }
 
-    override fun stipple(x: Float, y: Float, radius: Float, density: Float, color: Int, blend: Blend) {
+    override fun stipple(x: Float, y: Float, radius: Float, density: Float, color: Int, blend: Blend, dot: Float) {
         val ca = (color ushr 24) / 255f
         if (!(ca > 0f)) return
         val t = transform
@@ -132,12 +132,32 @@ class SoftwareRaster(val width: Int, val height: Int, var transform: Affine = Af
         var y0 = height
         var x1 = 0
         var y1 = 0
-        Stipple.stamp(x, y, radius, density, transform, inverse, width, height) { px, py ->
+        val on = Stipple.Pixels { px, py ->
             put(buf, (py * width + px) * 4, cr, cg, cb, ca, blend)
             if (px < x0) x0 = px
             if (py < y0) y0 = py
             if (px >= x1) x1 = px + 1
             if (py >= y1) y1 = py + 1
+        }
+        val perDot = scale() * dot
+        if (!(perDot > 0f) || kotlin.math.abs(perDot - 1f) < 1e-3f) {
+            // The cells are the pixels: the display's dots.
+            Stipple.stamp(x, y, radius, density, transform, inverse, width, height, on)
+        } else {
+            // The cells are the page's, scaled with it: each pixel takes the cell under its centre.
+            val cx = transform.mapX(x, y)
+            val cy = transform.mapY(x, y)
+            val reach = (radius + dot) * scale() + 1f
+            val z = 1f / dot
+            for (py in maxOf(0, kotlin.math.floor(cy - reach).toInt()) until minOf(height, kotlin.math.ceil(cy + reach).toInt() + 1)) {
+                for (px in maxOf(0, kotlin.math.floor(cx - reach).toInt()) until minOf(width, kotlin.math.ceil(cx + reach).toInt() + 1)) {
+                    val fx = px + 0.5f
+                    val fy = py + 0.5f
+                    val gx = kotlin.math.floor(inverse.mapX(fx, fy) * z).toInt()
+                    val gy = kotlin.math.floor(inverse.mapY(fx, fy) * z).toInt()
+                    if (Stipple.cellOn(gx, gy, x * z, y * z, radius * z, density)) on.on(px, py)
+                }
+            }
         }
         if (x1 > x0 && y1 > y0) frame.mark(x0, y0, x1, y1)
     }

@@ -101,7 +101,7 @@ object StrokeRenderer {
         when (mode) {
             Mode.Outline -> drawOutline(stroke, s, drawColor, drawBlend, tolerance, sink)
             Mode.Dabs -> drawDabs(stroke, line, drawColor, drawBlend, sink)
-            Mode.Stipple -> drawStipple(line, s.stamps, drawColor, drawBlend, sink)
+            Mode.Stipple -> drawStipple(line, s.stamps, drawColor, drawBlend, brush.dot, sink)
             Mode.Dashed -> drawDashed(stroke, s, drawColor, drawBlend, sink)
             Mode.None -> Unit
         }
@@ -236,7 +236,7 @@ object StrokeRenderer {
      * Stipple stamps along the line, close enough that their edges merge: overlapping stamps never build up (a pixel
      * is on where the page's threshold is below the strongest stamp over it), so the spacing only smooths the edge.
      */
-    private fun drawStipple(line: Centreline, stamps: Stamps, color: Int, blend: Blend, sink: RenderSink) {
+    private fun drawStipple(line: Centreline, stamps: Stamps, color: Int, blend: Blend, dot: Float, sink: RenderSink) {
         val x = line.x
         val y = line.y
         val r = line.r
@@ -264,7 +264,7 @@ object StrokeRenderer {
             val last = line.n - 1
             stamp(x[last], y[last], r[last], p[last], a[last])
         }
-        if (stamps.n > 0) sink.stippleRun(stamps.xs, stamps.ys, stamps.rs, stamps.ds, stamps.n, color, blend)
+        if (stamps.n > 0) sink.stippleRun(stamps.xs, stamps.ys, stamps.rs, stamps.ds, stamps.n, color, blend, dot)
     }
 
     private fun stippleStep(radius: Float): Float = (STIPPLE_STEP * 2f * radius).coerceIn(MIN_STIPPLE_STEP, MAX_STIPPLE_STEP)

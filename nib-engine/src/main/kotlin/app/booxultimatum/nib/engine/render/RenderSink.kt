@@ -49,17 +49,19 @@ interface RenderSink {
 
     /**
      * Lays one stamp of BOOX's 1-bit stipple ([Stipple]) of [radius] at ([x], [y]), with [density] 0..1 (the pen's
-     * pressure): pixels of the sink's own grid within the radius turn fully to [color] where the page's fixed threshold
-     * is below the density at that distance from the centre. Never grey, never antialiased.
+     * pressure), on the page's lattice of cells [dot] document pixels across (the stroke's [BrushSpec.dot]): each cell
+     * within the radius is fully on or off, on where the page's fixed threshold at that cell is below the density at
+     * that distance from the centre. Where a cell is one device pixel (a sink drawing at the zoom the stroke was drawn
+     * at) that is the display's own dots, never grey; at any other zoom the cells scale with the page.
      */
-    fun stipple(x: Float, y: Float, radius: Float, density: Float, color: Int, blend: Blend)
+    fun stipple(x: Float, y: Float, radius: Float, density: Float, color: Int, blend: Blend, dot: Float)
 
     /**
      * Lays [n] stipple stamps of one stroke at once (centres [xs], [ys], radii [rs], densities [ds]), as [stipple] does
-     * one by one. A sink may draw each pixel only once however many stamps turn it on ([Stipple.stamps]).
+     * one by one. A sink may draw each cell only once however many stamps turn it on ([Stipple.stamps]).
      */
-    fun stippleRun(xs: FloatArray, ys: FloatArray, rs: FloatArray, ds: FloatArray, n: Int, color: Int, blend: Blend) {
-        for (i in 0 until n) stipple(xs[i], ys[i], rs[i], ds[i], color, blend)
+    fun stippleRun(xs: FloatArray, ys: FloatArray, rs: FloatArray, ds: FloatArray, n: Int, color: Int, blend: Blend, dot: Float) {
+        for (i in 0 until n) stipple(xs[i], ys[i], rs[i], ds[i], color, blend, dot)
     }
 
     /**

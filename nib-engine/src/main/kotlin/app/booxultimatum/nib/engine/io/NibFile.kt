@@ -63,10 +63,14 @@ data class NibSummary(val width: Int, val height: Int, val layers: Int, val stro
  *   brushes calibrated against BOOX's own pens use. A 1.1 file reads as before: its tilting brushes keep the eased
  *   response they were drawn with, and nothing is damped by speed or held to a minimum width. A 1.1 reader skips the
  *   new fields.
+ * - 1.3: a brush carries its dot size, the size in document pixels of the stipple pencil's dots (brush field 24), so a
+ *   stroke keeps the grain the display drew while it was previewed and zooming scales it with the page. A 1.2 file reads
+ *   as before: its dots are one document pixel. A 1.2 reader skips the new field and draws the dots at the screen's
+ *   pixels as it always did.
  */
 object NibFile {
     const val FORMAT_MAJOR = 1
-    const val FORMAT_MINOR = 2
+    const val FORMAT_MINOR = 3
 
     private val MANIFEST_MAGIC = "NIB1".toByteArray(Charsets.US_ASCII)
     private val STROKES_MAGIC = "NIBS".toByteArray(Charsets.US_ASCII)

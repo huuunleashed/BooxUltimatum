@@ -21,7 +21,15 @@ import app.booxultimatum.nib.engine.render.RenderSink
 import app.booxultimatum.nib.engine.render.Stipple
 import app.booxultimatum.nib.engine.render.Texture
 import java.nio.ByteBuffer
+import kotlin.math.abs
+import kotlin.math.ceil
+import kotlin.math.floor
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.roundToInt
+
+/** The most cells a piece of a stipple stroke on the page's lattice spans each way (a piece's cells fit [Stipple]'s table). */
+private const val STIPPLE_PIECE = 1024
 
 /** Android's blend for an engine [Blend]. Multiply is the separable W3C one, so it paints over transparency too. */
 fun Blend.toBlendMode(): BlendMode = when (this) {
@@ -184,12 +192,22 @@ class CanvasSink : RenderSink {
     }
 
     /**
-     * The stipple is worked out on the canvas's own pixels (its matrix maps document to them: a tile's, a picture's,
-     * an export's), then each pixel that turns on is drawn back through the matrix as a square exactly one of them
-     * wide, without antialiasing, so the dots are the screen's whatever the zoom, and never grey.
+     * The stipple's dots are cells of the page's lattice, each [dot] document pixels across. Where a cell is one of the
+     * canvas's own pixels (a canvas at the zoom the stroke was drawn at, which is the preview's dots exactly) the cells
+     * are worked out on its pixels and each that turns on is drawn back as a square exactly one pixel wide, without
+     * antialiasing: the display's own dots, never grey. At any other zoom they are worked out on the lattice and
+     * scaled with the page ([latticeRun]).
      */
-    override fun stipple(x: Float, y: Float, radius: Float, density: Float, color: Int, blend: Blend) {
+    override fun stipple(x: Float, y: Float, radius: Float, density: Float, color: Int, blend: Blend, dot: Float) {
         if ((color ushr 24) == 0 || !deviceMatrix()) return
+        if (!cellsArePixels(dot)) {
+            oneXs[0] = x
+            oneYs[0] = y
+            oneRs[0] = radius
+            oneDs[0] = density
+            latticeRun(oneXs, oneYs, oneRs, oneDs, 1, color, blend, dot)
+            return
+        }
         stippleCount = 0
         val hardware = canvas.isHardwareAccelerated
         Stipple.stamp(
@@ -199,9 +217,28 @@ class CanvasSink : RenderSink {
         drawStipple(color, blend)
     }
 
-    /** A stroke's stamps at once, each pixel drawn once ([Stipple.stamps]), in one draw call. */
-    override fun stippleRun(xs: FloatArray, ys: FloatArray, rs: FloatArray, ds: FloatArray, n: Int, color: Int, blend: Blend) {
+    private val oneXs = FloatArray(1)
+    private val oneYs = FloatArray(1)
+    private val oneRs = FloatArray(1)
+    private val oneDs = FloatArray(1)
+
+    /**
+     * Whether a cell [dot] document pixels across is one pixel of the current canvas, so the stamps can be worked out on
+     * the pixels as the display does. It also holds where it can't be done any other way: a hardware canvas, which the
+     * live stroke is drawn on at the zoom it was started at, and a matrix that turns or skews.
+     */
+    private fun cellsArePixels(dot: Float): Boolean {
+        val uniform = toDevice.skewX == 0f && toDevice.skewY == 0f && toDevice.scaleX == toDevice.scaleY && toDevice.scaleX > 0f
+        return canvas.isHardwareAccelerated || !uniform || !(dot > 0f) || abs(toDevice.scaleX * dot - 1f) < 1e-3f
+    }
+
+    /** A stroke's stamps at once, each cell drawn once ([Stipple.stamps]), in one draw call. */
+    override fun stippleRun(xs: FloatArray, ys: FloatArray, rs: FloatArray, ds: FloatArray, n: Int, color: Int, blend: Blend, dot: Float) {
         if ((color ushr 24) == 0 || n <= 0 || !deviceMatrix()) return
+        if (!cellsArePixels(dot)) {
+            latticeRun(xs, ys, rs, ds, n, color, blend, dot)
+            return
+        }
         if (canvas.isHardwareAccelerated) {
             stippleCount = 0
             Stipple.stamps(xs, ys, rs, ds, n, toDevice, toDocument, Int.MAX_VALUE, Int.MAX_VALUE, collectStipple)
@@ -227,6 +264,7 @@ class CanvasSink : RenderSink {
         m.copyPixelsFromBuffer(ByteBuffer.wrap(bytes))
         maskPaint.color = color
         maskPaint.blendMode = blend.toBlendMode()
+        maskPaint.isFilterBitmap = false
         maskSrc.set(0, 0, w, h)
         maskDst.set(litMinX, litMinY, litMinX + w, litMinY + h)
         canvas.save()
@@ -234,6 +272,116 @@ class CanvasSink : RenderSink {
         canvas.drawBitmap(m, maskSrc, maskDst, maskPaint)
         canvas.restore()
     }
+
+    /**
+     * Stamps on the page's lattice of cells [dot] document pixels across, drawn at a zoom where a cell isn't a pixel of
+     * this canvas: the cells are worked out once on the lattice, which is the same at every zoom, then scaled with the
+     * page. Magnified, each cell is a block of pixels (nearest, so still never grey); shrunk, the cells under a pixel are
+     * averaged, which is the stroke's tone, in grey. The blocks are those of the whole lattice, not of this canvas, so
+     * neighbouring tiles meet without a seam. A canvas the cells would fill too many of is done a piece at a time.
+     */
+    private fun latticeRun(xs: FloatArray, ys: FloatArray, rs: FloatArray, ds: FloatArray, n: Int, color: Int, blend: Blend, dot: Float) {
+        val s = toDevice.scaleX
+        val z = 1f / dot
+        val q = s * dot
+        // Cells per averaged block: the whole number of them that fit in a pixel, when they're smaller than one.
+        val f = if (q < 1f) floor(1f / q + 1e-3f).toInt().coerceAtLeast(1) else 1
+        // The cells the canvas can show (a block more all round, for the filter), and the cells the stamps can reach.
+        val pad = 2 * f
+        val vl = floor(-toDevice.transX / s * z).toInt() - pad
+        val vt = floor(-toDevice.transY / s * z).toInt() - pad
+        val vr = ceil((canvas.width - toDevice.transX) / s * z).toInt() + pad
+        val vb = ceil((canvas.height - toDevice.transY) / s * z).toInt() + pad
+        var sl = Int.MAX_VALUE
+        var st = Int.MAX_VALUE
+        var sr = Int.MIN_VALUE
+        var sb = Int.MIN_VALUE
+        for (i in 0 until n) {
+            if (!(rs[i] > 0f) || !(ds[i] > 0f) || !xs[i].isFinite() || !ys[i].isFinite()) continue
+            sl = min(sl, floor((xs[i] - rs[i]) * z).toInt())
+            st = min(st, floor((ys[i] - rs[i]) * z).toInt())
+            sr = max(sr, ceil((xs[i] + rs[i]) * z).toInt())
+            sb = max(sb, ceil((ys[i] + rs[i]) * z).toInt())
+        }
+        // Whole blocks, from a multiple of the block size, so every canvas cuts the lattice in the same places.
+        val x0 = Math.floorDiv(max(vl, sl), f) * f
+        val y0 = Math.floorDiv(max(vt, st), f) * f
+        val x1 = min(vr, sr + 1)
+        val y1 = min(vb, sb + 1)
+        if (x1 <= x0 || y1 <= y0) return
+        val piece = (STIPPLE_PIECE / f).coerceAtLeast(1) * f
+        var y = y0
+        while (y < y1) {
+            var x = x0
+            while (x < x1) {
+                latticePiece(xs, ys, rs, ds, n, color, blend, z, q, f, x, y, min(piece, x1 - x), min(piece, y1 - y))
+                x += piece
+            }
+            y += piece
+        }
+    }
+
+    /** One piece of [latticeRun]: the cells from ([cx], [cy]) on, [cw] by [ch] of them, whole blocks of [f] from a block's corner. */
+    private fun latticePiece(
+        xs: FloatArray, ys: FloatArray, rs: FloatArray, ds: FloatArray, n: Int, color: Int, blend: Blend,
+        z: Float, q: Float, f: Int, cx: Int, cy: Int, cw: Int, ch: Int,
+    ) {
+        // The lattice's cell (gx, gy) is this piece's pixel (gx - cx, gy - cy): a whole-pixel offset, so the threshold of
+        // every cell is the same whichever piece or canvas asks.
+        val toCells = Affine(z, 0f, -cx.toFloat(), 0f, z, -cy.toFloat())
+        val toDoc = toCells.invert() ?: return
+        litCount = 0
+        litMinX = Int.MAX_VALUE
+        litMinY = Int.MAX_VALUE
+        litMaxX = Int.MIN_VALUE
+        litMaxY = Int.MIN_VALUE
+        Stipple.stamps(xs, ys, rs, ds, n, toCells, toDoc, cw, ch, collectLit)
+        if (litCount == 0) return
+        // The mask is one texel per cell, or per f x f cells' share of them, with an empty texel all round so the filter
+        // has a neighbour to blend with beyond the stamps.
+        val gx0 = litMinX / f
+        val gy0 = litMinY / f
+        val w = litMaxX / f - gx0 + 1
+        val h = litMaxY / f - gy0 + 1
+        val mw = w + 2
+        val mh = h + 2
+        val m = mask(mw, mh)
+        val stride = m.rowBytes
+        val bytes = maskBytes
+        for (row in 0 until mh) java.util.Arrays.fill(bytes, row * stride, row * stride + mw, 0)
+        if (f == 1) {
+            for (k in 0 until litCount) bytes[(litYs[k] - gy0 + 1) * stride + (litXs[k] - gx0 + 1)] = -1
+        } else {
+            if (coverage.size < w * h) coverage = IntArray(w * h)
+            java.util.Arrays.fill(coverage, 0, w * h, 0)
+            for (k in 0 until litCount) coverage[(litYs[k] / f - gy0) * w + (litXs[k] / f - gx0)]++
+            val full = f * f
+            for (row in 0 until h) for (col in 0 until w) {
+                val c = coverage[row * w + col]
+                if (c > 0) bytes[(row + 1) * stride + col + 1] = ((c * 255 + full / 2) / full).toByte()
+            }
+        }
+        m.copyPixelsFromBuffer(ByteBuffer.wrap(bytes))
+        // A texel is q * f pixels across, and the piece's cell (cx, cy) is the document's (cx, cy) * dot: whole cells from
+        // the page's origin, so a texel's corner is at its cell index times q, plus the canvas's translation.
+        val unit = q * f
+        val left = (cx + gx0 * f) * q + toDevice.transX
+        val top = (cy + gy0 * f) * q + toDevice.transY
+        maskPaint.color = color
+        maskPaint.blendMode = blend.toBlendMode()
+        // Magnified, or exactly 1:1, nearest keeps every pixel on or off; shrunk by a fraction, the filter blends.
+        maskPaint.isFilterBitmap = unit < 1f - 1e-3f
+        // The whole mask, empty border included: an edge that falls between pixels is then soft only where nothing is on.
+        maskSrc.set(0, 0, mw, mh)
+        maskDstF.set(left - unit, top - unit, left + (w + 1) * unit, top + (h + 1) * unit)
+        canvas.save()
+        canvas.setMatrix(null)
+        canvas.drawBitmap(m, maskSrc, maskDstF, maskPaint)
+        canvas.restore()
+    }
+
+    private var coverage = IntArray(0)
+    private val maskDstF = RectF()
 
     private var litXs = IntArray(4096)
     private var litYs = IntArray(4096)

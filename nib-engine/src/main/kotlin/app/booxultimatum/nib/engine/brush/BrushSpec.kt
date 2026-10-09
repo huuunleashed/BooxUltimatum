@@ -43,6 +43,10 @@ import kotlin.math.min
  *   [width]; 0 (every stroke drawn before) for none. BOOX's fountain pen never draws thinner than 2 px. BOOX works in
  *   page pixels, which are screen pixels at 100 %; Nib keeps the floor in document pixels, which are screen pixels at
  *   100 % too, so it's 2 screen px there and scales with the zoom like the rest of the stroke.
+ * @property dot for the stipple pencil, how big its dots are, in document pixels: the page's lattice of cells, each on or
+ *   off, is this size. A stroke is committed with the dots the display drew while it was previewed, one screen pixel, so
+ *   `1 / zoom` at the zoom it's drawn at ([inkAt]); zooming then scales the grain with the page, like any image, and at
+ *   the zoom it was drawn at it's the preview's dots exactly. 1 (every stroke drawn before) is one document pixel.
  */
 data class BrushSpec(
     val kind: BrushKind,
@@ -68,6 +72,7 @@ data class BrushSpec(
     val tiltResponse: TiltResponse = TiltResponse.Native,
     val speedDamping: Float = 0f,
     val minWidth: Float = 0f,
+    val dot: Float = 1f,
 ) {
     /** The allowed width range for this kind. */
     val widthRange: ClosedFloatingPointRange<Float> get() = widthRange(kind)
@@ -131,11 +136,13 @@ data class BrushSpec(
      *
      * The pencil's ink is the stipple the display's charcoal v2 style draws: a stamp of `1.16 w + 5` screen pixels for
      * the `w` it's sent ([app.booxultimatum.nib.engine.render.Stipple.diameter]), `w` being exactly what [hardwarePreview]
-     * sends. Its stroke is committed with that diameter, in document pixels at the zoom it's drawn at, as its width.
+     * sends, made of dots one screen pixel across. Its stroke is committed with that diameter, in document pixels at the
+     * zoom it's drawn at, as its width, and with those dots, `1 / zoom` document pixels across, as its [dot], so it is the
+     * preview at that zoom and, at any other, the same stroke scaled with the page.
      */
     fun inkAt(viewScale: Float): BrushSpec {
         val z = if (viewScale.isFinite() && viewScale > 0f) viewScale else 1f
-        if (kind.rendersAsStipple) return copy(width = Stipple.diameter(preview.widthPx(width, z), z))
+        if (kind.rendersAsStipple) return copy(width = Stipple.diameter(preview.widthPx(width, z), z), dot = (1f / z).coerceIn(MIN_DOT, MAX_DOT))
         if (kind != BrushKind.Fountain || preview.style != HardwareStyle.Fountain) return this
         return copy(
             width = width + FOUNTAIN_DISPLAY_PAD_PX / z,
@@ -146,6 +153,10 @@ data class BrushSpec(
 
     companion object {
         private const val OPAQUE_BLACK = -0x1000000
+
+        /** The range of [dot]: one screen pixel at the furthest zoom the canvas allows (a quarter) and at the nearest (sixteen times). */
+        const val MIN_DOT = 1f / 16f
+        const val MAX_DOT = 4f
 
         /** The [tiltScale] that ignores tilt. */
         const val NO_TILT = 1f

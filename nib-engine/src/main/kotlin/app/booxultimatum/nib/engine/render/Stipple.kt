@@ -18,8 +18,11 @@ import kotlin.math.sqrt
  * - each stamp is [diameter] across, solid out to [SOLID] of its radius, then fading linearly to nothing at its edge;
  * - tilt scales the whole stamp without making it lighter, and speed changes nothing.
  *
- * The dots are the sink's own pixels, so they stay one screen pixel at any zoom as the display draws them; the
- * threshold is fixed to the page at the sink's scale, so the grain stays put while the page moves.
+ * The dots are cells of a lattice fixed to the page, each as big as the stroke's `BrushSpec.dot`: the screen's own pixel at
+ * the zoom the stroke was drawn at, where they are the display's dots exactly, and scaled with the page at any other
+ * zoom, as an image's pixels are (a cell's threshold is a hash of its place on the lattice, so the grain also stays put
+ * while the page moves). A sink that draws at the cells' own size works them out on its pixels ([stamps]); at another it
+ * works them out on the lattice and scales them ([cellOn]).
  */
 object Stipple {
     /** The display draws a stamp of `SIZE_SLOPE * w + SIZE_BASE` screen pixels for a width w it's sent (fitted, ±0.9 px). */
@@ -65,6 +68,22 @@ object Stipple {
         if (!(t < density)) return false
         val reach = radius - radius * slope * t
         return d2 < reach * reach
+    }
+
+    /**
+     * Whether cell ([gx], [gy]) of the page's lattice is on for a stamp centred at ([cx], [cy]), in cells, of [radius]
+     * cells and [density] (the pressure, 0..1): the cell's centre is within the radius and its threshold is below the
+     * stamp's level there. The same test [stamp] and [stamps] make for a pixel, so on a lattice that is the sink's pixels
+     * they agree.
+     */
+    fun cellOn(gx: Int, gy: Int, cx: Float, cy: Float, radius: Float, density: Float): Boolean {
+        if (!(radius > 0f) || !(density > 0f)) return false
+        val dx = gx + 0.5f - cx
+        val dy = gy + 0.5f - cy
+        val d2 = dx * dx + dy * dy
+        if (d2 >= radius * radius) return false
+        val d = min(1f, density)
+        return on(threshold(gx, gy), d, radius, (1f - SOLID) / d, d2)
     }
 
     /**
