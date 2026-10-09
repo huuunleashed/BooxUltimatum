@@ -1,19 +1,32 @@
 package app.booxultimatum.ui.screens
 
 import android.content.Intent
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import app.booxultimatum.kit.ui.Paragraph
 import app.booxultimatum.kit.ui.theme.Ink
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import app.booxultimatum.R
 import app.booxultimatum.core.BatterySnapshot
+import app.booxultimatum.core.battery.BatteryModel
+import app.booxultimatum.core.battery.BatteryView
+import app.booxultimatum.core.battery.VerdictState
 import app.booxultimatum.core.DeviceReader
 import app.booxultimatum.core.PrivilegeStatus
 import app.booxultimatum.core.Report
@@ -25,7 +38,9 @@ import app.booxultimatum.kit.ui.Reading
 import app.booxultimatum.kit.ui.ScreenHeader
 import app.booxultimatum.kit.ui.TuningScale
 import app.booxultimatum.kit.ui.rememberReading
+import app.booxultimatum.kit.ui.theme.Lines
 import app.booxultimatum.kit.ui.theme.Space
+import app.booxultimatum.ui.battery.BatteryText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.runtime.rememberCoroutineScope
@@ -44,6 +59,7 @@ fun OverviewScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val battery = rememberReading(readKey) { BatterySnapshot.read(context) }
+    val batteryView = rememberReading(readKey) { BatteryModel.load(context, BATTERY_WINDOW_MS, fresh = readKey > 0) }
     val access = rememberReading(readKey to accessKey) { PrivilegeStatus.check(context) }
     val identity = rememberReading(readKey) { DeviceReader.identity() }
 
@@ -74,7 +90,7 @@ fun OverviewScreen(
         item {
             Spacer(Modifier.height(Space.xxl))
             PlatePair(
-                left = { m -> DrainPlate(m, onMeasure = onOpenBattery) },
+                left = { m -> BatteryPlate(batteryView, battery, m, onOpen = onOpenBattery) },
                 right = { m -> AccessSummary(access, m, onOpenAccess) },
             )
         }
@@ -98,6 +114,57 @@ fun OverviewScreen(
                 PlannedRow(stringResource(R.string.pillar_firewall), stringResource(R.string.pillar_firewall_purpose))
                 PlannedRow(stringResource(R.string.pillar_scheduler), stringResource(R.string.pillar_scheduler_purpose))
             }
+        }
+    }
+}
+
+@Composable
+private fun BatteryPlate(view: BatteryView?, battery: BatterySnapshot?, modifier: Modifier, onOpen: () -> Unit) {
+    val context = LocalContext.current
+    Plate(stringResource(R.string.dest_battery), modifier, action = { Key(stringResource(R.string.action_details), onClick = onOpen) }) {
+        if (view == null || battery == null) Reading() else {
+            val state = view.verdict.state
+            val worst = view.verdict.findings.firstOrNull().takeIf { state == VerdictState.Watch || state == VerdictState.Problem }
+            Row(Modifier.padding(top = Space.s), verticalAlignment = Alignment.CenterVertically) {
+                VerdictMark(state, Modifier.size(20.dp))
+                Text(BatteryText.verdictTitle(context, state), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = Space.s))
+            }
+            worst?.let { Text(BatteryText.findingTitle(context, it), style = MaterialTheme.typography.bodyMedium, color = Ink.Legend, modifier = Modifier.padding(top = Space.xs)) }
+            Text(stringResource(R.string.bt_percent, battery.levelPct), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = Space.m))
+            TimeLeft(view, battery)
+        }
+    }
+}
+
+@Composable
+private fun VerdictMark(state: VerdictState, modifier: Modifier) {
+    Canvas(modifier) {
+        val ring = Lines.engraved.toPx()
+        val outline = Stroke(width = ring, join = StrokeJoin.Round)
+        val radius = (size.minDimension - ring) / 2
+        val triangle = Path().apply {
+            moveTo(size.width / 2, size.height * 0.06f)
+            lineTo(size.width * 0.96f, size.height * 0.92f)
+            lineTo(size.width * 0.04f, size.height * 0.92f)
+            close()
+        }
+        when (state) {
+            VerdictState.Normal -> {
+                drawCircle(Ink.Black, radius = radius, style = outline)
+                val tick = Path().apply {
+                    moveTo(size.width * 0.28f, size.height * 0.52f)
+                    lineTo(size.width * 0.44f, size.height * 0.68f)
+                    lineTo(size.width * 0.72f, size.height * 0.36f)
+                }
+                drawPath(tick, Ink.Black, style = Stroke(width = ring * 1.5f, cap = StrokeCap.Round, join = StrokeJoin.Round))
+            }
+            VerdictState.Watch -> drawPath(triangle, Ink.Black, style = outline)
+            VerdictState.Problem -> drawPath(triangle, Ink.Black)
+            VerdictState.NoData -> drawCircle(
+                Ink.Black,
+                radius = radius,
+                style = Stroke(width = ring, pathEffect = PathEffect.dashPathEffect(floatArrayOf(6.dp.toPx(), 4.dp.toPx()))),
+            )
         }
     }
 }

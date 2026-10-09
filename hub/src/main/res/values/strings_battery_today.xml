@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Today page and the Overview battery plate. Units are abbreviations, so they carry no plural forms. -->
+    <string name="bd_read_at_since">Read at %1$s · recorded since %2$s (%3$s)</string>
+    <string name="bd_read_at_empty">Read at %1$s · nothing recorded yet</string>
+    <plurals name="bd_days">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+    <string name="bd_hours">%1$d h</string>
+    <string name="bd_recorded">Recorded %1$s of %2$s</string>
+    <string name="bd_plate_now">Battery now</string>
+    <string name="bd_estimate_about">About %1$s at your usual use</string>
+    <plurals name="bd_estimate_range">
+        <item quantity="one">range %1$s to %2$s · %3$d day of your log</item>
+        <item quantity="other">range %1$s to %2$s · %3$d days of your log</item>
+    </plurals>
+    <string name="bd_needs_day">Needs about a day of unplugged use</string>
+    <string name="bd_rate_unknown">The charge rate isn’t reported right now</string>
+    <string name="bd_charging_at">Charging at %1$s</string>
+    <string name="bd_plate_last_24h">Last 24 hours</string>
+    <string name="bd_plate_happened">What happened</string>
+    <plurals name="bd_more_findings">
+        <item quantity="one">%d more finding in the log</item>
+        <item quantity="other">%d more findings in the log</item>
+    </plurals>
+    <string name="bd_background_restricted">BooxUltimatum can’t record in the background. Lifting that needs Shizuku running.</string>
+    <string name="bd_allow_background">Allow background use</string>
+    <string name="bd_recording_paused">Recording is paused. Resume it on History.</string>
+</resources>
