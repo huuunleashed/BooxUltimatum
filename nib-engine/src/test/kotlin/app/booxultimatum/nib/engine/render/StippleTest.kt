@@ -136,10 +136,10 @@ class StippleTest {
 
     @Test
     fun itsDotsStayOneScreenPixelAtAnyZoom() {
-        // At 2x the display is sent 8 px for a 4 px pencil and draws 1.16 * 8 + 5 = 14.3 screen px: the committed width
-        // is that in document pixels, and the dots are the screen's own.
+        // At 2x the display is sent what makes it draw twice the stamp a 4 px pencil has at 100 % (1.16 * 4 + 5 = 9.64 px),
+        // 19.3 screen px: the committed width is the page's 9.64, and the dots are the screen's own.
         val s = line(4f, 0.5f, zoom = 2f)
-        assertEquals((1.16f * 8f + 5f) / 2f, s.brush.width, 1e-4f)
+        assertEquals(1.16f * 4f + 5f, s.brush.width, 1e-4f)
         val r = raster(s, scale = 2f)
         assertEquals(0.5f, cover(r, 198, 201, 120, 300), 0.05f, "the same cover at 2x")
         var lone = 0
@@ -153,7 +153,7 @@ class StippleTest {
     fun thePreviewIsTheDisplaysCharcoalV2WithTilt() {
         val p = pencil.copy(width = 3f).hardwarePreview(BLACK, 2f)
         assertEquals(HardwareStyle.CharcoalV2, p.style)
-        assertEquals(6f, p.widthPx, "sent its own width times the zoom, as BOOX Notes sends its pens")
+        assertEquals((Stipple.diameter(3f, 1f) * 2f - Stipple.SIZE_BASE) / Stipple.SIZE_SLOPE, p.widthPx, 1e-4f, "sent what draws twice its stamp at 100 %: its width times the zoom, plus the display's 5 px base less once at 2x")
         assertEquals(listOf(1f, BrushSpec.NATIVE_TILT_SCALE), p.params, "tilt on, at the display's own scale")
         assertTrue(pencil.curve.isConstant, "pressure sets the cover, never the width")
         assertEquals(1f, pencil.opacity)

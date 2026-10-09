@@ -1,6 +1,7 @@
 package app.booxultimatum.nib.engine.brush
 
 import app.booxultimatum.nib.engine.input.PressureCurve
+import app.booxultimatum.nib.engine.render.Stipple
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
@@ -105,12 +106,13 @@ class BrushSpecTest {
         assertEquals(7f, one.width, "4 px sent, drawn as BOOX Notes draws it: 3 screen px wider")
         assertEquals(BrushSpec.NATIVE_FOUNTAIN_MIN_WIDTH, one.minWidth)
         assertEquals(BrushSpec.NATIVE_FOUNTAIN_SPEED_DAMPING, one.speedDamping)
-        assertEquals(4f, fountain.hardwarePreview(0, 1f).widthPx, "the display is still sent the pen's own width")
+        assertEquals(4f, fountain.hardwarePreview(0, 1f).widthPx, "at 100 % the display is sent the pen's own width")
         val two = fountain.inkAt(2f)
-        assertEquals(5.5f, two.width, 1e-6f, "the pad is 3 screen px at the zoom it's drawn at")
+        assertEquals(7f, two.width, 1e-6f, "the same 7 px on the page as at 100 %: zoomed in it is bigger on screen")
+        assertEquals(11f, fountain.hardwarePreview(0, 2f).widthPx, 1e-5f, "the display is sent (4 + 3) x 2 less its 3 px pad, and draws the 14 px the ink is")
         assertEquals(1f, two.minWidth, 1e-6f, "the 2 px floor in screen px")
         assertEquals(2f * BrushSpec.NATIVE_FOUNTAIN_SPEED_DAMPING, two.speedDamping, 1e-6f, "speed measured on screen")
-        assertEquals(4f + 12f, fountain.inkAt(0.25f).width, 1e-5f)
+        assertEquals(4f + 12f, fountain.inkAt(0.25f).width, 1e-5f, "zoomed far out it is as thin on screen as the display can be sent: 1 + 3 px")
         assertEquals(one, fountain.inkAt(Float.NaN), "an unknown zoom is 100 %")
         assertEquals(one, fountain.inkAt(0f))
         for (kind in BrushKind.entries.filter { it != BrushKind.Fountain && !it.rendersAsStipple }) {
@@ -121,6 +123,31 @@ class BrushSpecTest {
         assertEquals(standIn, standIn.inkAt(1f), "only the fountain style draws wider than it's sent")
     }
 
+    @Test
+    fun aPensWidthIsThePagesWhateverTheZoom() {
+        // Drawn at any zoom a pen lays down the same width on the page, so zoomed in it is bigger on screen in proportion,
+        // as in any drawing app; the display is sent what draws that, and where it can't be sent less (zoomed far out) the
+        // stroke is as thin as the display can show it.
+        for (kind in listOf(BrushKind.Pencil, BrushKind.Fountain)) {
+            val pen = BrushSpec.defaults(kind).withWidth(3f)
+            val atOnce = pen.inkAt(1f).width
+            for (z in listOf(1f, 1.25f, 2f, 3f, 8f, 16f)) {
+                assertEquals(atOnce, pen.inkAt(z).width, 1e-3f, "$kind drawn at $z")
+                val ink = pen.inkAt(z)
+                val shown = if (kind == BrushKind.Pencil) Stipple.diameter(pen.hardwarePreview(0, z).widthPx, z) else pen.hardwarePreview(0, z).widthPx / z + BrushSpec.FOUNTAIN_DISPLAY_PAD_PX / z
+                assertEquals(ink.width, shown, 1e-3f, "$kind's preview at $z is the width its ink has")
+            }
+            for (z in listOf(0.25f, 0.1f)) {
+                val ink = pen.inkAt(z)
+                assertTrue(ink.width > atOnce, "$kind at $z: not thinner than the display can show")
+                assertEquals(pen.preview.minWidthPx, pen.hardwarePreview(0, z).widthPx, 1e-5f, "$kind at $z: the thinnest preview")
+            }
+        }
+        for (kind in BrushKind.entries.filter { it != BrushKind.Fountain && !it.rendersAsStipple && !it.isEraser }) {
+            val b = BrushSpec.defaults(kind)
+            assertEquals(b.width, b.inkAt(3f).width, "$kind's width was always the page's")
+        }
+    }
     @Test
     fun catalogListsEveryKindOnceWithStableIds() {
         assertEquals(BrushKind.entries.filterNot { it.retired }.toSet(), BrushCatalog.kinds.toSet())

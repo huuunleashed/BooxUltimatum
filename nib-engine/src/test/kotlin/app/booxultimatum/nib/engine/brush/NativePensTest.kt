@@ -71,7 +71,7 @@ class NativePensTest {
         assertEquals(BrushSpec.NATIVE_FOUNTAIN_SMOOTHING, b.smoothing)
         val p = b.hardwarePreview(BLACK, 2f)
         assertEquals(HardwareStyle.Fountain, p.style)
-        assertEquals(6f, p.widthPx, "width times zoom")
+        assertEquals(9f, p.widthPx, "the pen's 3 px and the display's 3 px pad, times the zoom, less the pad: the same stroke on the page as at 100 %")
         assertFloats(listOf(0.3f, 0.6f), p.params)
         assertFloats(DisplayParams.displayDefaults(HardwareStyle.Fountain)!!, p.params, "the display's own defaults")
         assertFloats(listOf(0.5f, 0.2f), params(BrushKind.Fountain) { it.copy(curve = PressureCurve.ofSensitivity(0.5f), smoothing = 0.2f) })
@@ -238,7 +238,7 @@ class NativePensTest {
     fun theTipAndTheEraserEndOfThePen() {
         val tip = PenButtons.tip(BrushSpec.defaults(BrushKind.Fountain), 0x80D2232A.toInt(), 2f)
         assertEquals(1, tip.style)
-        assertEquals(6f, tip.widthPx)
+        assertEquals(9f, tip.widthPx, "sized as the preview is")
         assertEquals(0xFFD2232A.toInt(), tip.argb, "opaque")
         assertFloats(listOf(0.3f, 0.6f), tip.params.toList())
         val calligraphy = PenButtons.tip(BrushSpec.defaults(BrushKind.Calligraphy), BLACK, 1f, viewRotation = (PI / 2).toFloat())

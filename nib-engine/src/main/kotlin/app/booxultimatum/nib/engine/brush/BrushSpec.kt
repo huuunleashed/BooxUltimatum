@@ -98,7 +98,7 @@ data class BrushSpec(
         viewRotation: Float = 0f,
     ): HardwarePreview {
         val style = preview.styleFor(width, viewScale, verifiedOnly)
-        val px = preview.widthPx(width, viewScale)
+        val px = sentWidthPx(style, viewScale)
         val argb = preview.argb(color).let { if (style == HardwareStyle.Marker) marker.adapt(it) else it }
         return HardwarePreview(style, px, argb, DisplayParams.of(style, this, px, viewRotation))
     }
@@ -125,12 +125,20 @@ data class BrushSpec(
      * The brush a stroke drawn at [viewScale] (screen pixels per document pixel) is committed with, so that its ink is
      * what the display previewed: this brush, except for the fountain pen and the pencil.
      *
+     * A pen's width is the page's: the same stroke, the same number of document pixels wide, whatever the zoom it's
+     * drawn at, as in any drawing app, so zoomed in it is bigger on screen in proportion. The display's styles add a
+     * constant of their own, in screen pixels, to what they're sent (the pencil's stamp is `1.16 w + 5`, the fountain's
+     * line `w + 3`), so for those two [sentWidthPx] sends the display less than the pen's width times the zoom, by just
+     * that constant, and the ink is the size the display draws it: the same on the page at every zoom, and the same as
+     * the preview. Where the display can't be sent less (its thinnest preview, [Preview.minWidthPx]) the stroke is that
+     * thin on screen instead, as thin as the display can show it, which is only when the page is zoomed far out.
+     *
      * The display's fountain style draws a stroke it's sent `w` screen pixels wide the way BOOX's fountain pen draws one
      * `w + 3` wide. BOOX Notes therefore sends the display the pen's width but draws its own fountain ink 3 screen pixels
      * wider (`FountainShapes.createNeoPenV2`, whose constant is named `FOUNTAIN_PEN_V1_COMPENSATION`), with its 2 px
      * floor and speed measured on screen at the zoom the stroke is drawn at. The fountain pen here does the same: its
-     * ink gets [FOUNTAIN_DISPLAY_PAD_PX] screen pixels more, and its floor and speed thinning are taken on screen, while
-     * the display is still sent the pen's own width ([hardwarePreview]). Without it the preview stood about
+     * ink gets [FOUNTAIN_DISPLAY_PAD_PX] screen pixels more than what the display is sent ([hardwarePreview]), and its
+     * floor and speed thinning are taken on screen. Without it the preview stood about
      * `3 · pressure^(2s)` pixels wider than the ink that replaced it, and swelled with pressure while the ink, held at its
      * floor, hardly did (owner's report, Note Air6 C, FW 4.3, 2026-10-06; `docs/09-ink.md` › *Measured pens*).
      *
@@ -142,13 +150,34 @@ data class BrushSpec(
      */
     fun inkAt(viewScale: Float): BrushSpec {
         val z = if (viewScale.isFinite() && viewScale > 0f) viewScale else 1f
-        if (kind.rendersAsStipple) return copy(width = Stipple.diameter(preview.widthPx(width, z), z), dot = (1f / z).coerceIn(MIN_DOT, MAX_DOT))
+        if (kind.rendersAsStipple) {
+            return copy(width = Stipple.diameter(sentWidthPx(HardwareStyle.CharcoalV2, z), z), dot = (1f / z).coerceIn(MIN_DOT, MAX_DOT))
+        }
         if (kind != BrushKind.Fountain || preview.style != HardwareStyle.Fountain) return this
         return copy(
-            width = width + FOUNTAIN_DISPLAY_PAD_PX / z,
+            width = (sentWidthPx(HardwareStyle.Fountain, z) + FOUNTAIN_DISPLAY_PAD_PX) / z,
             minWidth = if (minWidth > 0f) minWidth / z else 0f,
             speedDamping = speedDamping * z,
         )
+    }
+
+    /**
+     * The width in view pixels the display is sent for a stroke of this brush previewed in [style] at [viewScale]. For
+     * the styles that draw what they're sent it is the width times the zoom, and the ink is the width. For the pencil's
+     * (charcoal v2) and the fountain's, which draw more than they're sent by a constant number of screen pixels, it is
+     * what makes the display draw `(the stroke's size at 100 %) x zoom`: so the stroke is the same size on the page at
+     * any zoom ([inkAt]), as thin as the display can be sent at the thinnest.
+     */
+    private fun sentWidthPx(style: HardwareStyle, viewScale: Float): Float {
+        val w = width * preview.widthFactor
+        val wanted = when {
+            kind.rendersAsStipple && style == HardwareStyle.CharcoalV2 ->
+                (Stipple.diameter(w, 1f) * viewScale - Stipple.SIZE_BASE) / Stipple.SIZE_SLOPE
+            kind == BrushKind.Fountain && style == HardwareStyle.Fountain ->
+                (w + FOUNTAIN_DISPLAY_PAD_PX) * viewScale - FOUNTAIN_DISPLAY_PAD_PX
+            else -> w * viewScale
+        }
+        return max(preview.minWidthPx, wanted)
     }
 
     companion object {

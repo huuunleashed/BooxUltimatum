@@ -105,10 +105,13 @@ class NativePenRenderTest {
                 assertEquals(expected, width(straight(pen.inkAt(1f), pressure = p, step = 4f, dt = 8L)), 0.04f, "$w px at pressure $p")
             }
         }
-        // At 200 % the same pen covers twice the screen, so it's drawn as a 4 px pen would be at 100 %, on screen: its
-        // pad, floor and speed are screen pixels, and the stroke's document pixels are half as many.
+        // At 200 % the same pen is the same stroke on the page and twice as big on screen, so it's drawn as a pen of
+        // (2 + 3) * 2 - 3 = 7 px would be at 100 %, on screen: the display is sent that, its pad, floor and speed are screen
+        // pixels, and the stroke's document pixels are half as many.
         val pen = BrushSpec.defaults(BrushKind.Fountain).withWidth(2f)
-        for ((p, expected) in pressures.zip(measured.getValue(4f))) {
+        val sevenAtOnce = BrushSpec.defaults(BrushKind.Fountain).withWidth(7f)
+        for (p in pressures) {
+            val expected = width(straight(sevenAtOnce.inkAt(1f), pressure = p, step = 4f, dt = 8L))
             val doc = width(straight(pen.inkAt(2f), pressure = p, step = 2f, dt = 8L))
             assertEquals(expected, doc * 2f, 0.04f, "2 px at 200 %, pressure $p")
         }
