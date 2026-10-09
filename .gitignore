@@ -33,3 +33,6 @@ firmware/
 
 # Penlab build output (tools/host/penlab/build.ps1)
 tools/host/penlab/build/
+
+# Output of the locked Gradle script
+build.log
