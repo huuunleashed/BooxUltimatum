@@ -36,3 +36,4 @@ tools/host/penlab/build/
 
 # Output of the locked Gradle script
 build.log
+/*.log
