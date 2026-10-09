@@ -81,6 +81,11 @@ class LiveSleepService : AccessibilityService() {
         super.onDestroy()
     }
 
+    override fun onUnbind(intent: Intent?): Boolean {
+        instance = null
+        return super.onUnbind(intent)
+    }
+
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {}
     override fun onInterrupt() {}
 
@@ -217,6 +222,9 @@ class LiveSleepService : AccessibilityService() {
         @Volatile private var instance: LiveSleepService? = null
 
         val running: Boolean get() = instance != null
+
+        /** Locks the screen through this service (the sleep guard's second step); false when the service isn't connected. */
+        fun lockScreen(): Boolean = instance?.performGlobalAction(AccessibilityService.GLOBAL_ACTION_LOCK_SCREEN) ?: false
 
         fun tick(context: Context) {
             val s = instance
