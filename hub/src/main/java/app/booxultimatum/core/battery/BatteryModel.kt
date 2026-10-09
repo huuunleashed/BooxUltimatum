@@ -49,7 +49,11 @@ object BatteryModel {
         val baseline = Baselines.of(full, nowMs)
         val signals = runCatching { SignalReader.read(ctx) }.getOrDefault(Signals(null, true, false, null))
         val window = full.window(nowMs - windowMs, nowMs)
-        val verdict = Findings.evaluate(window, baseline, signals, nowMs)
+        val evaluated = Findings.evaluate(window, baseline, signals, nowMs)
+        val heavy = Findings.appHeavy(Summaries.byApp(window, window.fromMs, nowMs, foreground), baseline, nowMs)
+        val verdict = if (heavy.isEmpty()) evaluated else evaluated.copy(
+            findings = (evaluated.findings + heavy).sortedWith(compareByDescending<Finding> { it.severity }.thenByDescending { it.startMs }),
+        )
         val snapshot = runCatching { BatterySnapshot.read(ctx) }.getOrNull()
         val stored = snapshot?.chargeCounterMah ?: snapshot?.let { full.capacityMah * it.levelPct / 100.0 }
         val estimate = stored?.let { Estimates.timeLeft(full, baseline, it, nowMs) }

@@ -95,7 +95,7 @@ The verdict is the worst finding in the window: **Normal**, **Watch** or **Probl
 | A wake lock kept it awake | A partial wake lock held an hour or more while asleep (Android vitals' *stuck* definition), or two hours in 24, and the processor didn't sleep | Watch | Not seen: 58 s in the whole cycle | The app's page |
 | Android restarted | The dropbox has `system_server_crash` or `SYSTEM_RESTART` since the last boot, or `BOOT_COMPLETED` came without a new boot count | Info; Watch when one of the above follows within a day | 10-08, 16:32:41 | Restart the tablet before sleeping |
 | The hub can't record | Its background use is `ignore`, or no row for 2 hours on battery with the processor awake | Watch | 17:02 to 07:41 | Allow background use |
-| An app used much more than usual | An app's in-use mA is over twice its own 28-day median for 30 minutes | Info | Chrome, 867 mA | Open the app's page |
+| An app used much more than usual | An app's in-use mA is over 2.5 times the tablet's average in-use draw (the baseline's) over at least 30 minutes | Info | Chrome, 867 mA | Open the app's page |
 | The battery ran out | The last row is at 1 % or less, and a boot with `shutdown,battery` follows | Report | 06:17 | The morning report (§4.7) |
 
 Every finding states its evidence (*23:46 to 06:17, 333 mA, 2 183 mAh, processor never slept*), never a cause it hasn't shown, and at most three are shown at once. The cause of the stuck display isn't known (§10), so the copy says *happened*, not *because*.
@@ -281,7 +281,7 @@ A pure-Kotlin package, `core/battery/`, with no Android types in its logic so it
 
 - `Episode(kind, start, end, level0, level1, mah, avgMa, sleptShare, topApp, flags)`.
 - `Timeline`: episodes for a window, built from the log rows (T0) and, when available, Android's history and the deep snapshots (T1).
-- `Baseline`: the rolling median and spread of the quiet-asleep rate over 28 days, and per-app in-use medians.
+- `Baseline`: the rolling median and spread of the quiet-asleep rate over 28 days, and the average in-use draw. Per-app medians are not kept in 0.9.0, so *an app used much more than usual* compares an app with the tablet's own in-use average.
 - `Finding(kind, severity, evidence, action)` and `Verdict`, from the rules in §4.1.
 - `Estimate`: time left with its basis (§4.3).
 
