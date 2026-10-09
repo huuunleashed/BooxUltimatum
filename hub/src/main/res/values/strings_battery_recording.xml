@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- RecordingPlate and EarlierMeasurementsPlate. They also use log_explain, log_pause, log_resume, log_status, log_off, history_detail, rate_value, rate_value_pct and tag_charged from strings_features.xml. -->
+    <string name="brc_recording_title">Recording</string>
+    <string name="brc_under_a_day">Under a day covered</string>
+    <plurals name="brc_covered_days">
+        <item quantity="one">%d day covered</item>
+        <item quantity="other">%d days covered</item>
+    </plurals>
+    <string name="brc_nothing_recorded">Nothing recorded yet</string>
+    <string name="brc_detail">%1$s · %2$s on disk</string>
+    <string name="brc_size_kb">%1$d KB</string>
+    <string name="brc_size_mb">%1$s MB</string>
+    <string name="brc_folder">Folder</string>
+    <string name="brc_folder_path">Android/data/app.booxultimatum/files/logs/</string>
+    <string name="brc_export">Export the log</string>
+    <string name="brc_export_empty">There is no log to export yet.</string>
+    <string name="brc_report_title">Battery report</string>
+    <string name="brc_report_explain">The last 72 hours of the log, the findings with their evidence and a plain summary, in one zip.</string>
+    <string name="brc_include_apps">Include app names</string>
+    <string name="brc_apps_in">Included</string>
+    <string name="brc_apps_out">Left out</string>
+    <string name="brc_apps_explain">App use is behaviour, so app names are left out of the report unless you tick Include app names.</string>
+    <string name="brc_share_report">Share battery report</string>
+    <string name="brc_preparing">Preparing the files…</string>
+    <string name="brc_failed">Couldn’t prepare the files: %1$s</string>
+    <string name="brc_earlier_title">Earlier measurements</string>
+    <string name="brc_earlier_explain">Results of the old Measure drain, kept so they stay readable.</string>
+</resources>
