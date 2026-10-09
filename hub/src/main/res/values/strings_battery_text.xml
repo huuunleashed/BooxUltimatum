@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- BatteryText: units are abbreviations, so they carry no plural forms. -->
+    <string name="bt_duration_under_minute">under a minute</string>
+    <string name="bt_duration_dh">%1$d d %2$d h</string>
+    <string name="bt_duration_hm">%1$d h %2$d min</string>
+    <string name="bt_duration_m">%1$d min</string>
+    <string name="bt_mah">%1$s mAh</string>
+    <string name="bt_ma">%1$s mA</string>
+    <string name="bt_pct_per_hour">%1$s %%/h</string>
+    <string name="bt_percent">%1$d %%</string>
+    <string name="bt_level_range">%1$s to %2$s</string>
+    <string name="bt_unknown">Not known yet</string>
+    <string name="bt_time_range">%1$s to %2$s</string>
+    <string name="bt_day_time">%1$s %2$s</string>
+    <string name="bt_kind_in_use">In use</string>
+    <string name="bt_kind_asleep">Asleep</string>
+    <string name="bt_kind_display_on">Display on while asleep</string>
+    <string name="bt_kind_charging">Charging</string>
+    <string name="bt_kind_off">Off</string>
+    <string name="bt_finding_display_on">Display on while asleep</string>
+    <string name="bt_finding_standby_high">Standby drain above normal</string>
+    <string name="bt_finding_not_sleeping">The processor didn’t sleep</string>
+    <string name="bt_finding_wake_lock">Something kept the tablet awake</string>
+    <string name="bt_finding_restart">Android restarted</string>
+    <string name="bt_finding_hub_restricted">BooxUltimatum can’t record in the background</string>
+    <string name="bt_finding_recording_paused">Recording is paused</string>
+    <string name="bt_finding_app_heavy">An app used much more than usual</string>
+    <string name="bt_finding_died">The battery ran out</string>
+    <string name="bt_held_for">held for %1$s</string>
+    <string name="bt_slept_never">processor never slept</string>
+    <string name="bt_slept_share">processor slept %1$s</string>
+    <string name="bt_inferred">inferred from the drain</string>
+    <string name="bt_evidence_sep">" · "</string>
+    <string name="bt_severity_info">Info</string>
+    <string name="bt_severity_watch">Watch</string>
+    <string name="bt_severity_problem">Problem</string>
+    <string name="bt_verdict_normal">Normal</string>
+    <string name="bt_verdict_watch">Watch</string>
+    <string name="bt_verdict_problem">Problem</string>
+    <string name="bt_verdict_no_data">Not enough data yet</string>
+    <string name="bt_sum_last_24h">Last 24 hours</string>
+    <string name="bt_sum_from_to">From %1$s to %2$s</string>
+    <string name="bt_sum_fell">%1$s: the battery fell from %2$s.</string>
+    <string name="bt_sum_rose">%1$s: the battery rose from %2$s.</string>
+    <string name="bt_sum_stayed">%1$s: the battery stayed at %2$s.</string>
+    <string name="bt_sum_display_on">The display stayed on while asleep from %1$s.</string>
+    <string name="bt_sum_display_on_inferred">The display seems to have stayed on while asleep from %1$s.</string>
+    <string name="bt_sum_in_use">The tablet was in use for %1$s.</string>
+    <string name="bt_sum_nothing">Nothing recorded in this window.</string>
+
+    <!-- VerdictBlock and FindingRow -->
+    <string name="vb_normal_line">Nothing unusual in what was recorded</string>
+    <string name="vb_no_data_line">Needs about a day of unplugged use</string>
+    <string name="vb_see_what_happened">See what happened</string>
+    <string name="fr_sentence">%1$s: %2$s. %3$s</string>
+</resources>
