@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ds_level">Level</string>
+    <string name="ds_screen">Screen</string>
+    <string name="ds_power">Power</string>
+    <string name="ds_step_through">Step through what happened</string>
+    <string name="ds_none">Nothing recorded in this window</string>
+    <string name="ds_previous">Previous episode</string>
+    <string name="ds_next">Next episode</string>
+    <string name="ep_tag_problem">Problem</string>
+    <string name="ep_tag_inferred">inferred</string>
+    <string name="ep_levels">%1$d %% to %2$d %%</string>
+    <string name="ep_slept">The processor slept %1$d %% of this time</string>
+    <string name="ep_top_app">Mostly in front: %1$s</string>
+    <string name="ep_expanded">Expanded</string>
+    <string name="ep_collapsed">Collapsed</string>
+</resources>
