@@ -13,6 +13,7 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -21,8 +22,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import kotlinx.coroutines.launch
 import app.booxultimatum.R
 import app.booxultimatum.core.PrivilegeStatus
+import app.booxultimatum.core.exec.Privileged
+import app.booxultimatum.core.exec.ProbeStep
 import app.booxultimatum.kit.ui.CodeBlock
 import app.booxultimatum.kit.ui.InstrumentPage
 import app.booxultimatum.kit.ui.Key
@@ -41,6 +45,10 @@ fun AccessScreen(readKey: Int, accessKey: Int, compact: Boolean, onReadAgain: ()
     val access = rememberReading(readKey to accessKey) { PrivilegeStatus.check(context) }
     var shizukuMessage by remember { mutableStateOf<String?>(null) }
     var copied by remember { mutableStateOf(false) }
+    var probe by remember { mutableStateOf<List<ProbeStep>?>(null) }
+    var probing by remember { mutableStateOf(false) }
+    var probeCopied by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     InstrumentPage(compact) {
         item {
@@ -103,6 +111,37 @@ fun AccessScreen(readKey: Int, accessKey: Int, compact: Boolean, onReadAgain: ()
                     Spacer(Modifier.height(Space.s))
                     Text(it, style = MaterialTheme.typography.bodyMedium, color = Ink.Alert)
                 }
+                if (access.shizukuGranted) {
+                    Spacer(Modifier.height(Space.m))
+                    Paragraph(stringResource(R.string.shizuku_test_hint), color = Ink.Legend)
+                    Spacer(Modifier.height(Space.s))
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.m)) {
+                        Key(stringResource(if (probing) R.string.shizuku_testing else R.string.action_test_shizuku), primary = false, enabled = !probing, onClick = {
+                            probing = true
+                            probeCopied = false
+                            scope.launch {
+                                probe = Privileged.probe()
+                                probing = false
+                            }
+                        })
+                        probe?.let { steps ->
+                            Key(stringResource(R.string.action_copy_result), primary = false, onClick = {
+                                context.getSystemService(ClipboardManager::class.java)
+                                    .setPrimaryClip(ClipData.newPlainText("shizuku", steps.joinToString("\n") { step -> probeLine(step) }))
+                                probeCopied = true
+                            })
+                            if (probeCopied) Text(stringResource(R.string.state_copied), style = MaterialTheme.typography.labelLarge, color = Ink.Legend)
+                        }
+                    }
+                    probe?.let { steps ->
+                        Spacer(Modifier.height(Space.s))
+                        SelectionContainer {
+                            Column(verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+                                steps.forEach { Text(probeLine(it), style = MaterialTheme.typography.bodyMedium) }
+                            }
+                        }
+                    }
+                }
             }
             Spacer(Modifier.height(Space.xl))
         }
@@ -115,3 +154,5 @@ fun AccessScreen(readKey: Int, accessKey: Int, compact: Boolean, onReadAgain: ()
         }
     }
 }
+
+private fun probeLine(step: ProbeStep) = (if (step.ok) "OK      " else "FAILED  ") + step.label + ": " + step.detail
