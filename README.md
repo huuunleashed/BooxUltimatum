@@ -91,14 +91,16 @@ A preview stroke lands at once, and once you pause (0.8 s by default, 0.4 to 2 s
 ### A battery doctor that doesn't drain the battery
 
 <p align="center">
-  <img src="docs/screenshots/overview.png" width="300" alt="Overview: the battery gauge, drain rate, access level and tweak count">
+  <img src="docs/screenshots/overview.png" width="300" alt="Overview: the battery verdict and time left, access level and tweak count">
   &nbsp;
-  <img src="docs/screenshots/battery.png" width="300" alt="Battery: measure drain, past measurements and the battery log">
+  <img src="docs/screenshots/battery.png" width="300" alt="Battery, Today: the verdict, its findings, the charge, time left and the 24-hour strip">
 </p>
 
-- **Measure drain:** unplug, use the tablet, and read the rate. The time-left estimate comes from real mAh, not guesses.
-- **Battery log:** runs without ever waking the tablet, logging every screen, plug and level change, with a chart and a one-zip export.
-- **Findings so far on this tablet:** standby is excellent (0–12 mA, 9 mA over three days) as long as the display goes to sleep, and screen-on use is where the battery goes, mostly because background downloads, music and chat apps keep the processor awake. The tweaks aim at exactly that. One exception is large: on 2026-10-08 the display stayed on while the tablet slept, twice, and drew 330 mA until the battery died (see Known limits).
+- **Today** says whether it is OK: a verdict (Normal, Watch, Problem, or Not enough data yet), the findings behind it with their numbers and never a guessed cause, the charge and how long it should last at your usual use (with its range and what it rests on), and a 24-hour strip with the list of what happened as its text twin.
+- **History, Causes and Health:** windows of 24 hours to 30 days, the standby draw day by day, discharge sessions, marks that show whether a change helped (or say it is not distinguishable from a normal day), what used the charge by state and by app, what kept the tablet awake, the battery's learned capacity and condition, and a battery report you can share.
+- **Battery log:** runs without ever waking the tablet, logging every screen, plug and level change with the display's state and the app in front, and noticing when the display stays on while the tablet sleeps. Export or share it from History.
+- **A morning report and a sleep guard:** a quiet notification after a night asleep (on by default, with a switch on Today), and an opt-in, experimental guard that tries to put the tablet back to sleep when the display has stayed on for 10 minutes. Nothing has shown yet that any of the guard's steps works.
+- **Findings so far on this tablet:** standby is excellent (about 15 mA over its last ten days, 9 mA on its quietest nights) as long as the display goes to sleep, and screen-on use is where the battery goes, mostly because background downloads, music and chat apps keep the processor awake. The tweaks aim at exactly that. One exception is large: on 2026-10-08 the display stayed on while the tablet slept, twice, and drew 330 mA until the battery died (see Known limits).
 
 ### Tweaks you can undo
 
@@ -134,7 +136,7 @@ Most of BooxUltimatum works straight after installing, with no computer, no Shiz
 
 ### What Shizuku is, and how to start it
 
-Shizuku lets ordinary apps use the same commands you could type over `adb`, without root. It needs `adb` (from a computer, or wireless debugging on the tablet) to start its helper, and on this firmware the helper stops whenever the tablet restarts. BooxUltimatum works without it; Shizuku only adds the features in the T2 row.
+Shizuku lets ordinary apps use the same commands you could type over `adb`, without root. It needs `adb` (from a computer, or wireless debugging on the tablet) to start its helper, and on this firmware the helper stops whenever the tablet restarts. BooxUltimatum works without it; Shizuku only adds the features in the T2 row. If a tweak says it didn't work although Shizuku is running and allowed, open Device › Access and press *Test Shizuku*: it shows which step between the app and Shizuku stops, and copies the result for a report.
 
 1. Install Shizuku from [GitHub](https://github.com/RikkaApps/Shizuku/releases) or Google Play.
 2. On the tablet, turn on USB debugging: Boox Settings › More Settings › USB Debug Mode (firmware 4.3).
@@ -166,7 +168,7 @@ Firmware 4.3 hides the Wireless debugging switch from Developer options — the 
 
 ## Install
 
-**From a release:** download `BooxUltimatum-0.8.0.apk` from this repository's [Releases](https://github.com/huuunleashed/BooxUltimatum/releases) page, allow your browser or file manager to install apps, and open it. The Access page shows what each level unlocks and the exact commands for it. Releases are signed with the project's own key, so later releases update it in place. The hub's Suite page installs Nib for you, or download `Nib-0.3.0.apk` from the same page; Nib's releases are tagged `nib-v…`.
+**From a release:** download `BooxUltimatum-0.9.0.apk` from this repository's [Releases](https://github.com/huuunleashed/BooxUltimatum/releases) page, allow your browser or file manager to install apps, and open it. The Access page shows what each level unlocks and the exact commands for it. Releases are signed with the project's own key, so later releases update it in place. The hub's Suite page installs Nib for you, or download `Nib-0.3.0.apk` from the same page; Nib's releases are tagged `nib-v…`.
 
 **Test builds for the tablet:** unfinished builds of the hub or Nib are sometimes published as `test-…` pre-releases so they can be checked on a real tablet. The hub offers them only when *Offer test builds* is on (Device page), and a release always replaces its own test build.
 
@@ -213,7 +215,7 @@ Recents, gestures, NaviBall and EinkWise belong to the system, so they behave th
 - **Updates while asleep are new.** They're verified on battery on the Note Air6 C, but their battery cost isn't measured yet, and the faces don't yet have much that changes while the tablet sleeps. Without them, Boox doesn't read the picture again until the tablet wakes. The power-off screen is a copy Boox keeps, so it changes only when you set it again. Live updates are Sleep image mode only: Boox doesn't reload a sticker during a sleep, so an Over Transparent plate is redrawn while the tablet is awake.
 - **Over Transparent is waiting for its tablet check.** The band Boox keeps, the write permission and following a re-picked sticker are all read from Boox's own code and checked against emulator renders, not against a sleeping tablet; the Sleep page says which file and which route it is using.
 - **Charging:** without updates while asleep, Boox always draws its battery bar over the sleep screen while the tablet charges.
-- **The display can stay on while the tablet sleeps, and BooxUltimatum doesn't yet notice.** It happened twice on 2026-10-08, both times exactly 90 minutes after the display last went to sleep and after Android's system process crashed and restarted, and it drew about 330 mA until the battery was empty. The cause isn't known, so the app can't prevent it, and today its Battery page counts those hours as standby. A revised Battery section that detects it, says what happened and can put the tablet back to sleep is planned (`docs/10-battery.md`); until then, restart the tablet after any unexpected restart of Android.
+- **The display can stay on while the tablet sleeps, and the cause isn't known.** It happened twice on 2026-10-08, both times exactly 90 minutes after the display last went to sleep and after Android's system process crashed and restarted, and it drew about 330 mA until the battery was empty. BooxUltimatum now notices it (the log records the display's state, Today flags it as a Problem, and the morning report says so), but it can't prevent it, and the sleep guard that tries to undo it is experimental and has not been seen to work. Until it is understood, restart the tablet after any unexpected restart of Android.
 - **Charge limit:** Boox's *Charging protection* stops at 80 %. Other levels would need root, because the threshold files are closed even to Shizuku.
 - **Other Boox models and other tablets:** the app recognises Boox tablets and, elsewhere, hides what needs Boox firmware (the sleep screen and Instant ink). Instant ink had no effect on a Note Air 2 Plus and a Go 10.3 Gen II Lumi; the Ink page now shows why, and those reports are open.
 - **Shizuku stops on every restart**, and starting it again needs a computer on firmware 4.3 (see [How much access it needs](#how-much-access-it-needs)). Everything in the T0 row works without it.
@@ -288,14 +290,16 @@ No dates promised; this is a spare-time project, and each release ships when it 
     - a Lab for the checks on the tablet.
   - Pens that draw what the display previews, measured on the tablet: a 1-bit stipple pencil with tilt, the fountain pen's 3 px, the brush pen's square-root law, pressure presets only where the display follows them.
   - A lasso that keeps up with the pen, Settings in four pages, and Instant ink's brush pen and grainy pencil previews.
-- **Next, the Battery section revised (planned, `docs/10-battery.md`)**
-  - 0.8.1: the log records the display's state and the app in front, the standby figure stops counting a display that stayed on, and the page says so.
-  - 0.9: four pages (Today, History, Causes, Care) built on a verdict, a 24-hour strip and a list of what happened, with a time-left estimate that says what it rests on.
-  - Later: marks and before-and-after for tweaks, a morning report, and an opt-in guard that puts the tablet back to sleep.
-- **Nib 0.4 and on**
+- **0.9, the Battery section revised (released; `docs/10-battery.md`)**
+  - Four pages, Today, History, Causes and Health, built on a verdict, findings with their numbers, a 24-hour strip and a list of what happened, and a time-left estimate that says what it rests on.
+  - The log records the display's state and the app in front, notices a display that stayed on while the tablet slept, and the standby figure no longer counts it.
+  - Marks and before-and-after replace Measure drain, a morning report (with a switch), a battery report to share, and an opt-in, experimental sleep guard.
+  - *Test Shizuku* on Access, and a direct route for Shizuku commands when the helper service can't start (issue #4, awaiting the reporters).
+- **Next: System › Tweaks revised**, with the findings on the Battery pages opening the right tweak and showing its measured effect.
+- **Nib 0.5 and on**
   - The thinnest clean preview, and anything the Lab shows needs changing.
   - Image import, PDF and OpenRaster export, templates, and pages or an endless canvas.
-- **0.9, home polish**
+- **Home polish**
   - Notification dots (opt-in).
   - Front-light and refresh-mode quick actions.
   - Backing up and restoring the layout.

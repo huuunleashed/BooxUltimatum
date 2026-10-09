@@ -360,6 +360,25 @@ Not designed here. What the Battery work needs from it, and what the round shoul
 - **Groups by goal, not mechanism.** Today they are Apps, Sleep, Power, Radios, Interface and Privacy, 19 tweaks of equal weight. Interface and Privacy don't belong with the battery ones, and presets (*Reading*, *Night*) would sit above the list.
 - **Same rules.** Plate and row components from §5.3, 48 dp keys, a word for every state, semantics on every row.
 
+## 12. What shipped in 0.9.0
+
+Built as one release on 2026-10-09 (phases 0 to 3 of §8, which the owner asked to be built together). The code is `hub/.../core/battery/` (the model: `Rows`, `Timelines`, `Summaries`, `Baselines`, `Findings`, `Estimates`, `Marks`, the readers `ForegroundReader`, `SignalReader` and `DeepLog`, `BatteryModel` which every page loads through, and `MorningReport`, `SleepGuard` and `BatteryReport`), the log writer in `core/BatteryLog.kt` with `DisplayWatch`, and the pages in `ui/screens/Battery{Today,History,Causes,Health}.kt` over the components in `ui/battery/`. The generic components (`Segmented`, `RateBar`, `drawHatch` and `Modifier.hatch`, `DayPager`) are in `:kit:ui`.
+
+Checked: the model against two months of the real log (the rows dated 2026-10-09 in `knowledge/experiments.md`), `GoldenNightTest` over the night of 2026-10-08, JVM tests for each rule, the pages on the emulator with the real log pushed into the app's log folder, and Today, the Test Shizuku probe and the new log writer on the Note Air6 C. Not yet seen on the tablet: History, Causes and Health on its own font, the morning report as a notification, the guard's steps, and a night recorded by the display detector (§9's E1 to E3 are still to run).
+
+Decided on the way, differing from the plan above:
+
+- **The fourth tab is Health, not Care.** The guard is opt-in and labelled Experimental, and the morning report is sent after every qualifying sleep, with a visible switch (default on); both switches are the *Alerts* plate at the foot of Today.
+- **Baselines are the tablet's own.** The quiet-asleep baseline is the hours-weighted median of its asleep episodes over 28 days, 15 mA on the owner's tablet, not the 9 mA of its quietest nights, so a day of ordinary background sync is not a finding. With under 6 hours of asleep log it is unknown and the standby rule uses 30 mA.
+- **Display on while asleep is inferred from the drain when the display column is missing:** 120 mA or more with the processor awake 90 % or more (measured on the real log: quiet sleep keeps the processor asleep a median 0.92 of the time, the stuck display 0.00). A run of such segments continues through a shorter one at the same rate, so one 3.8-minute segment does not split a night in two.
+- **An app used much more than usual** compares an app with 2.5 times the baseline's average in-use draw, since per-app medians are not kept.
+- **Android's own history (`dumpsys batterystats --history`) is not parsed.** The findings rest on the log, the three-hourly snapshots, the dropbox (`system_server_crash`, `SYSTEM_RESTART`, read with the `READ_LOGS` grant) and the app in front from UsageStats.
+- **Not built:** the guard's fourth step (notify once that the display was on and what was done; the morning report mentions it instead), per-app *Background restricted* and *Doze exempt* tags and a restricted-apps count in Causes (they need Shizuku), the line comparing Android's per-app figure with the log's, a day pager on History (windows are chosen with the segmented control), and the Overview block's own strip.
+- **Moved:** *Force deep sleep* is a developer test on Device › Access; *Battery usage* is a link in Causes › More; the battery log's controls are History › Recording; the old manual *Measure drain* is gone and its past results are History › Earlier measurements.
+- **Marks:** *Add mark* writes through `BatteryLog.record(..., "mark", label)` so the page can re-read when the row exists; tweak marks come from the Journal ("Applied X", "Undid X").
+- **The battery report** redacts by column and JSON key (the app in front, the marks' words, the wake sources and per-app usage are left out unless *Include app names* is ticked).
+- **Rows added to the log:** `display_on`, `display_stuck`, `mark` and `guard`, and the columns `display`, `top` and `note`.
+
 ## Sources
 
 - Android Developers, *Analyze power use with Battery Historian* (a timeline of screen, CPU and wake lock rows under the level line; the tool is no longer maintained) and *Excessive partial wake locks* and *Stuck partial wake locks* in Android vitals (two hours in 24 and one hour in the background), and the Play Developer Reporting API's anomalies, which judge a metric against its own previous 28 days.

@@ -243,7 +243,7 @@ object Privileged {
         if (helper == null) {
             add("Helper service", false, "didn’t start (${lastBindError ?: "no answer within ${BIND_TIMEOUT_MS / 1000} s"})")
         } else {
-            add("Helper service", true, "started in $bindMs ms")
+            add("Helper service", true, "connected in $bindMs ms")
             val r = sh("id")
             add("Command through the helper", r.ok, if (r.ok) r.out.trim().take(120) else r.message)
         }

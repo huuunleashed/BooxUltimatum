@@ -48,6 +48,14 @@ The owner may have the tablet with them, away from the computer. Then:
 - **Stylus input on the emulator.** `adb -e shell input stylus swipe x1 y1 x2 y2 ms` draws a stroke Android reports as a stylus. Instrumented tests can inject `MotionEvent`s with `TOOL_TYPE_STYLUS` and pressure.
 - **Reaching the tablet.** With the owner's agreement, publish a release-signed test build (`tools/dev/publish.ps1 -Test`). The owner turns on *Offer test builds* (Device page) and installs it from the hub. Then they run the checks listed in the release notes, including Nib's Diagnostics probes, and send back the zip from Device › Logs › *Share logs*. Turn the probe answers and log lines into rows in `knowledge/experiments.md`.
 
+## The emulator with real data, and adb with two devices (2026-10-09)
+
+- **`adb -e` fails with "more than one emulator" while the tablet is connected over TCP.** Pass `-s emulator-5554` instead, and `-s <ip>:<port>` for the tablet. The wireless-debugging port changes on every re-toggle or reboot, so ask the owner for the current one.
+- **A release-signed hub won't install next to a debug-signed Nib** (the SUITE permission, `INSTALL_FAILED_DUPLICATE_PERMISSION`). On the emulator, `adb -s emulator-5554 uninstall app.booxultimatum.nib` first; it only holds test drawings.
+- **To see the Battery pages with real data on the emulator**, install the release hub, start it once so it creates its folder, then `adb -s emulator-5554 push` the captured `battery-*.csv` and `deep-*.jsonl` into `/sdcard/Android/data/app.booxultimatum/files/logs/` (adb's shell may write there). The emulator's clock is the PC's, so a capture from the last 24 hours lands in Today's window. The emulator's battery reports about 10 mAh stored, so the time-left line there is meaningless; the tablet's is right. The stuck night shows as a Problem with its two display-on findings.
+- **Navigation by `uiautomator dump`, not by guessing.** Parse each `bounds` with the regex `\[(\d+),(\d+)\]\[(\d+),(\d+)\]` and tap the centre; splitting on whitespace gave a tap at 22403,60918. A launcher intent with `--es app.booxultimatum.extra.DESTINATION <Name>` is ignored when the hub is already in front; tap the rail instead (the Battery rail item opens Today, then the tabs).
+- **Right after a script writes a screenshot, the `read` tool may say "File not found";** reading it again a moment later works.
+- **Device › Access › *Test Shizuku*** walks the server, the permission, the helper service, a command through the helper and a command through Shizuku directly, and prints each result. On the tablet with Shizuku running every step passes (uid 2000 both ways, 2026-10-09). With the server down the key isn't offered and the lamp rows say "Not running".
 ## Both orientations
 
 - Test portrait and landscape, and check that state survives a turn.

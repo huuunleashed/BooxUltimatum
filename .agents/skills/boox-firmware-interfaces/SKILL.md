@@ -118,3 +118,7 @@ Everything here was verified on a Note Air6 C with firmware 4.3 (Android 16) unl
 ## Device detection
 
 `kit/core`'s `TabletProfile.kt` (`Tablet.current`, package `app.booxultimatum.kit.core`) is the single answer, shared by every suite app. It recognises Boox from build fields that contain "onyx" or "boox", or from the `com.onyx` package, and reads the series from the model name. Gate Boox-only UI on it, and still probe each interface before use.
+
+## Shizuku's two routes (2026-10-09)
+
+- A command reaches the shell uid through the hub's helper user service (`ShellService`, started by `Shizuku.bindUserService`) or, when that service can't start, through Shizuku's own remote process: `Shizuku.newProcess` is private since API 13.1 and slated for removal in 14, so it is called by reflection (`getDeclaredMethod("newProcess", Array<String>, Array<String>, String)`), which the release build's R8 rules (`-keep class rikka.shizuku.** { *; }`) keep. Verified on the Note Air6 C (Shizuku API 13, release build): `id` ran as uid 2000 both ways. Issue #4 (a Go 10.3 where the helper never starts) is why the direct route exists; whether it works there is still to be confirmed by the reporters.
