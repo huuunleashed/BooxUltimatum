@@ -7,7 +7,7 @@ import android.content.Context
 /** The foreground app over time, from UsageStats events (needs usage access; empty without it). */
 object ForegroundReader {
     /** Events from five minutes before the window, so an app already in front when the window opens is seen. */
-    private const val LEAD_MS = 5 * 60_000L
+    private const val LEAD_MS = 6 * 3_600_000L
 
     /** Spans where one package was resumed and not yet paused, clipped to [fromMs, toMs]. Blocking: call off the main thread. */
     fun read(context: Context, fromMs: Long, toMs: Long): List<ForegroundSpan> =
