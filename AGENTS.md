@@ -48,7 +48,7 @@ This file holds the rules; the skills hold the how-to. When they disagree, this 
     - `src/test/` and `src/androidTest/`: JVM tests, and the instrumented ones (the plate renders in `SleepOverlayTest`, which need a device or emulator: `.\gradlew.bat :hub:connectedDebugAndroidTest`).
   - `nib/`: Nib, the drawing app, package `app.booxultimatum.nib`. `nib-engine/`: its drawing model in pure Kotlin (strokes, brushes, layers, undo, files), tested on the JVM.
   - `kit/`: the libraries every suite app builds on. `core` (the tablet profile and the suite registry), `log` (the logbook), `ui` (the e-ink design system), `ink` (the SurfaceFlinger pen path and pen input) and `update` (releases and installs). The kit never depends on an app.
-- `docs/`: numbered design docs (`00` device research to `09` Instant ink) and `screenshots/` for the README.
+- `docs/`: numbered design docs (`00` device research to `10` the Battery section plan) and `screenshots/` for the README.
 - `knowledge/`: `experiments.md` (the evidence log) and `onyx-packages.json` (bundled into app assets via `sourceSets`).
 - `tools/host/`: PowerShell scripts over adb (`common.ps1` holds shared helpers, `ui.ps1` drives the app's UI for tests and screenshots). `tools/dev/`: repository hygiene and `publish.ps1`, which publishes a suite app's release or test build.
 - `.agents/skills/`: the Agent Skills described above.

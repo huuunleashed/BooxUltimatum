@@ -4,6 +4,12 @@ All notable changes to BooxUltimatum. Newest first. The project follows [Semanti
 
 ## [Unreleased]
 
+### Research
+
+- **The night of 2026-10-08: the display stayed on while the tablet slept.** Twice, exactly 90 minutes after the display last went to sleep (18:37 to 21:02, and 23:46 until the battery died at about 06:17), and both times after Android's system process crashed and restarted at 16:32. It drew a steady 330 mA with the processor unable to sleep: 2 879 mAh in 8.6 hours, 38 % of everything the tablet drew on battery in three days, against 9 mA for 50.8 hours of ordinary sleep. Reconstructed from Android's battery history (which survives a battery shutdown but is written only every 30 minutes), the hub's own log and the dropbox; Android billed the screen to Tachiyomi, which was idle. The mechanism of a refresh that never returns to doze, the crash, the hub's lost background permission and the per-app costs are recorded in `knowledge/experiments.md`; what starts the 90-minute event is still unknown.
+- **A plan for the Battery section** (`docs/10-battery.md`): four pages (Today, History, Causes, Care), a verdict and findings built from the log, a 24-hour strip with an episode list as its accessible twin, one source of truth instead of two drain systems, accessibility rules for the charts, and a phased route from a 0.8.1 detector to an opt-in sleep guard. System › Tweaks is left for later, with the contract between the two written down.
+- **Wireless debugging exists on this firmware after all.** It was on and reachable on build `2026-09-16` (after the 2026-10-01 OTA), which reopens whether Shizuku can be started from the tablet itself *[verify]*.
+
 ## [0.8.0] (2026-10-07)
 
 Nib 0.3.0, its biggest release: Nib writes the way BOOX's own apps do, and each of its pens draws the ink the display previews, measured on the tablet. The hub's Instant ink gains two of those previews. Tested on a Note Air6 C with firmware 4.3 through ten test builds of Nib; the owner judged the pencil, the brush pen and Diagnostics by eye. What hasn't been seen on the tablet says so below.

@@ -98,7 +98,7 @@ A preview stroke lands at once, and once you pause (0.8 s by default, 0.4 to 2 s
 
 - **Measure drain:** unplug, use the tablet, and read the rate. The time-left estimate comes from real mAh, not guesses.
 - **Battery log:** runs without ever waking the tablet, logging every screen, plug and level change, with a chart and a one-zip export.
-- **Findings so far on this tablet:** standby is already excellent (0–12 mA), and screen-on use is where the battery goes, mostly because background downloads, music and chat apps keep the processor awake. The tweaks aim at exactly that.
+- **Findings so far on this tablet:** standby is excellent (0–12 mA, 9 mA over three days) as long as the display goes to sleep, and screen-on use is where the battery goes, mostly because background downloads, music and chat apps keep the processor awake. The tweaks aim at exactly that. One exception is large: on 2026-10-08 the display stayed on while the tablet slept, twice, and drew 330 mA until the battery died (see Known limits).
 
 ### Tweaks you can undo
 
@@ -213,6 +213,7 @@ Recents, gestures, NaviBall and EinkWise belong to the system, so they behave th
 - **Updates while asleep are new.** They're verified on battery on the Note Air6 C, but their battery cost isn't measured yet, and the faces don't yet have much that changes while the tablet sleeps. Without them, Boox doesn't read the picture again until the tablet wakes. The power-off screen is a copy Boox keeps, so it changes only when you set it again. Live updates are Sleep image mode only: Boox doesn't reload a sticker during a sleep, so an Over Transparent plate is redrawn while the tablet is awake.
 - **Over Transparent is waiting for its tablet check.** The band Boox keeps, the write permission and following a re-picked sticker are all read from Boox's own code and checked against emulator renders, not against a sleeping tablet; the Sleep page says which file and which route it is using.
 - **Charging:** without updates while asleep, Boox always draws its battery bar over the sleep screen while the tablet charges.
+- **The display can stay on while the tablet sleeps, and BooxUltimatum doesn't yet notice.** It happened twice on 2026-10-08, both times exactly 90 minutes after the display last went to sleep and after Android's system process crashed and restarted, and it drew about 330 mA until the battery was empty. The cause isn't known, so the app can't prevent it, and today its Battery page counts those hours as standby. A revised Battery section that detects it, says what happened and can put the tablet back to sleep is planned (`docs/10-battery.md`); until then, restart the tablet after any unexpected restart of Android.
 - **Charge limit:** Boox's *Charging protection* stops at 80 %. Other levels would need root, because the threshold files are closed even to Shizuku.
 - **Other Boox models and other tablets:** the app recognises Boox tablets and, elsewhere, hides what needs Boox firmware (the sleep screen and Instant ink). Instant ink had no effect on a Note Air 2 Plus and a Go 10.3 Gen II Lumi; the Ink page now shows why, and those reports are open.
 - **Shizuku stops on every restart**, and starting it again needs a computer on firmware 4.3 (see [How much access it needs](#how-much-access-it-needs)). Everything in the T0 row works without it.
@@ -287,6 +288,10 @@ No dates promised; this is a spare-time project, and each release ships when it 
     - a Lab for the checks on the tablet.
   - Pens that draw what the display previews, measured on the tablet: a 1-bit stipple pencil with tilt, the fountain pen's 3 px, the brush pen's square-root law, pressure presets only where the display follows them.
   - A lasso that keeps up with the pen, Settings in four pages, and Instant ink's brush pen and grainy pencil previews.
+- **Next, the Battery section revised (planned, `docs/10-battery.md`)**
+  - 0.8.1: the log records the display's state and the app in front, the standby figure stops counting a display that stayed on, and the page says so.
+  - 0.9: four pages (Today, History, Causes, Care) built on a verdict, a 24-hour strip and a list of what happened, with a time-left estimate that says what it rests on.
+  - Later: marks and before-and-after for tweaks, a morning report, and an opt-in guard that puts the tablet back to sleep.
 - **Nib 0.4 and on**
   - The thinnest clean preview, and anything the Lab shows needs changing.
   - Image import, PDF and OpenRaster export, templates, and pages or an endless canvas.
@@ -312,7 +317,7 @@ It is written by an owner of the tablet working with an AI pair programmer (GitH
 | `hub/` | The hub app. `core/` holds system readers, tweaks, the battery log, `sleep/`, `ink/`, `suite/` and `feedback/`. `launcher/` is the home screen and `ui/` the screens |
 | `nib/`, `nib-engine/` | Nib, the drawing app, and its drawing model in pure Kotlin |
 | `kit/` | The libraries every suite app builds on: `core`, `log`, `ui`, `ink` and `update` ([`docs/07-suite.md`](docs/07-suite.md)) |
-| `docs/` | Numbered design docs (`00` device research to `09` Instant ink), plus the screenshots |
+| `docs/` | Numbered design docs (`00` device research to `10` the Battery section plan), plus the screenshots |
 | `knowledge/` | The evidence log (`experiments.md`) and the Onyx package knowledge base bundled with the app |
 | `site/` | The landing page and the technical guide, published to GitHub Pages by `.github/workflows/pages.yml` |
 | `tools/host/` | PowerShell scripts run from a computer over adb (recon, battery logger, Shizuku start) |
