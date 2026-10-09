@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chart_previous">Previous</string>
+    <string name="chart_next">Next</string>
+    <string name="rate_bar_description">%1$s: %2$s</string>
+    <string name="rate_bar_description_detail">%1$s: %2$s. %3$s</string>
+</resources>
