@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- BatteryAlertsPlate, at the foot of Today -->
+    <string name="ba_plate_title">Alerts</string>
+    <string name="ba_report_title">Morning report</string>
+    <string name="ba_report_body">A short note after a night asleep: how much the battery used, and anything unusual.</string>
+    <string name="ba_notify_blocked">Notifications are blocked for BooxUltimatum, so the note can’t show.</string>
+    <string name="ba_preview">Show last night’s report</string>
+    <string name="ba_preview_sent">Sent to the notifications.</string>
+    <string name="ba_preview_none">No sleep of 4 hours in the log yet</string>
+    <string name="ba_preview_failed">Couldn’t read the log just now.</string>
+    <string name="ba_guard_title">Sleep guard</string>
+    <string name="ba_experimental">Experimental</string>
+    <string name="ba_guard_body">If the display stays on for 10 minutes while the tablet is asleep, it tries to put the tablet to sleep: it asks the system to refresh its sleep screen, then locks the screen, then (with Shizuku) presses the sleep key. None of these steps has been seen to work on this tablet yet.</string>
+    <string name="ba_guard_last">Last time: %1$s, %2$s</string>
+    <string name="ba_guard_healed_by">healed by step %1$d</string>
+    <string name="ba_guard_not_healed_by">didn’t heal it</string>
+    <string name="ba_when">%1$s %2$s</string>
+    <string name="ba_state_on">On</string>
+    <string name="ba_state_off">Off</string>
+    <string name="ba_turn_on">Turn on</string>
+    <string name="ba_turn_off">Turn off</string>
+
+    <!-- MorningReport's notification -->
+    <string name="ba_channel">Battery report</string>
+    <string name="ba_normal_title">Slept %1$s, used %2$d %%</string>
+    <string name="ba_normal_text">Battery %1$d %% to %2$d %%. Nothing unusual.</string>
+    <string name="ba_normal_text_guard">Battery %1$d %% to %2$d %%. %3$s</string>
+    <string name="ba_finding_text">%1$s. %2$s</string>
+    <string name="ba_died_text">Ran out at %1$s on %2$s.</string>
+    <string name="ba_before_text">%1$s: %2$s.</string>
+    <string name="ba_guard_healed">Sleep guard (experimental): %1$s, and the display went to sleep.</string>
+    <string name="ba_guard_tried">Sleep guard (experimental) tried, and the display stayed on.</string>
+    <string name="ba_step_refresh">it asked the sleep screen to refresh</string>
+    <string name="ba_step_lock">it locked the screen</string>
+    <string name="ba_step_key">it pressed the sleep key</string>
+</resources>
