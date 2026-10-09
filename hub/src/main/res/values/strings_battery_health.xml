@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="bh_plate_capacity">Capacity</string>
+    <string name="bh_capacity_explain">Learned from your log: how much charge the battery holds, worked out from your own charging and use.</string>
+    <string name="bh_learned">Learned capacity</string>
+    <string name="bh_not_enough_log">Not enough log yet</string>
+    <string name="bh_unknown">Unknown</string>
+    <string name="bh_plate_condition">Condition</string>
+    <string name="bh_not_charging">Not charging right now.</string>
+    <string name="bh_time_to_full">Time to full</string>
+    <string name="bh_time_to_full_note">At the current rate</string>
+    <string name="bh_value_ma">%1$.0f mA</string>
+    <string name="bh_value_volts">%1$.2f V</string>
+    <string name="bh_value_celsius">%1$.1f °C</string>
+    <string name="bh_plate_protection">Charging protection</string>
+    <string name="bh_protection" formatted="false">Boox’s Charging protection stops charging at 80 %. That level is fixed: other levels need root, so this hub can’t change it. It is in Boox’s own settings, not here.</string>
+</resources>
