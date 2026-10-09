@@ -60,7 +60,10 @@ import app.booxultimatum.kit.ui.theme.Space
 import app.booxultimatum.ui.screens.AccessScreen
 import app.booxultimatum.ui.screens.AppearanceScreen
 import app.booxultimatum.ui.screens.AppsScreen
-import app.booxultimatum.ui.screens.BatteryScreen
+import app.booxultimatum.ui.screens.BatteryCausesScreen
+import app.booxultimatum.ui.screens.BatteryHealthScreen
+import app.booxultimatum.ui.screens.BatteryHistoryScreen
+import app.booxultimatum.ui.screens.BatteryTodayScreen
 import app.booxultimatum.ui.screens.DeviceScreen
 import app.booxultimatum.ui.screens.FontsScreen
 import app.booxultimatum.ui.screens.HomeScreenPage
@@ -93,7 +96,10 @@ enum class Destination(val section: Section, @StringRes val label: Int, val modu
     Home(Section.Suite, R.string.dest_home, Module.Home),
     Sleep(Section.Suite, R.string.dest_sleep, Module.Sleep),
     Ink(Section.Suite, R.string.dest_ink, Module.Ink),
-    Battery(Section.Battery, R.string.dest_battery),
+    Battery(Section.Battery, R.string.dest_battery_today),
+    BatteryHistory(Section.Battery, R.string.dest_battery_history),
+    BatteryCauses(Section.Battery, R.string.dest_battery_causes),
+    BatteryHealth(Section.Battery, R.string.dest_battery_health),
     Tweaks(Section.System, R.string.dest_tweaks),
     Apps(Section.System, R.string.dest_apps),
     Appearance(Section.System, R.string.dest_appearance),
@@ -149,7 +155,10 @@ fun BooxUltimatumApp(accessEvents: Int, initial: String? = null) {
                             Destination.Home -> HomeScreenPage(readKey, compact)
                             Destination.Sleep -> SleepScreen(readKey, accessEvents)
                             Destination.Ink -> InkScreen(readKey, compact)
-                            Destination.Battery -> BatteryScreen(readKey, compact, readAgain)
+                            Destination.Battery -> BatteryTodayScreen(readKey, compact, readAgain, onOpen = go)
+                            Destination.BatteryHistory -> BatteryHistoryScreen(readKey, compact, readAgain)
+                            Destination.BatteryCauses -> BatteryCausesScreen(readKey, compact, readAgain, onOpen = go)
+                            Destination.BatteryHealth -> BatteryHealthScreen(readKey, compact, readAgain)
                             Destination.Tweaks -> TweaksScreen(readKey, accessEvents, compact, readAgain) { go(Destination.Access) }
                             Destination.Apps -> AppsScreen(readKey, compact, readAgain) { go(Destination.Access) }
                             Destination.Appearance -> AppearanceScreen(readKey, compact) { go(Destination.Fonts) }
