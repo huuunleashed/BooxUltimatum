@@ -5,10 +5,7 @@ import app.booxultimatum.nib.engine.geom.Box
 import app.booxultimatum.nib.engine.geom.Viewport
 import kotlin.math.ceil
 import kotlin.math.floor
-import kotlin.math.ln
-import kotlin.math.pow
 import kotlin.math.roundToInt
-import kotlin.math.sqrt
 
 /** One tile: zoom [level] (see [TileGrid.scaleBucket]) and its column and row in view pixels at that level's scale. */
 data class TileKey(val level: Int, val tx: Int, val ty: Int)
@@ -44,9 +41,10 @@ data class TileRange(val level: Int, val tx0: Int, val ty0: Int, val tx1: Int, v
 }
 
 /**
- * Square tiles of [tileSize] view pixels. Zoom is quantised into levels a factor of sqrt(2) apart, so a tile rendered
- * at a level's scale is reused (drawn scaled by at most 2^(1/4)) across small zoom changes. Tile (tx, ty) at level L
- * covers view pixels [tx * tileSize, (tx + 1) * tileSize) at [bucketScale] (L), independent of panning.
+ * Square tiles of [tileSize] view pixels. A level is a zoom in 1/4096ths (see [scaleBucket]), fine enough that the view
+ * can sit exactly on one (see [snap]): the tiles are then drawn 1:1, so a pixel-exact ink such as the stipple pencil's dots
+ * reaches the screen as it was drawn, at every zoom, instead of resampled between two coarser levels. Tile (tx, ty) at
+ * level L covers view pixels [tx * tileSize, (tx + 1) * tileSize) at [bucketScale] (L), independent of panning.
  */
 class TileGrid(val tileSize: Int = 256) {
     init {
@@ -89,16 +87,20 @@ class TileGrid(val tileSize: Int = 256) {
     fun viewBox(key: TileKey, viewport: Viewport): Box = viewport.docRectToView(docBox(key))
 
     companion object {
-        private val SQRT2 = sqrt(2.0)
+        /** Levels per unit of zoom: the scale of level L is L / [STEPS]. */
+        const val STEPS = 4096f
 
-        /** The zoom level for [scale]: the nearest power of sqrt(2). */
+        /** The zoom level for [scale]: the nearest 1/4096th, at least 1. */
         fun scaleBucket(scale: Float): Int {
-            if (!(scale > 0f)) return 0
-            return (ln(scale.toDouble()) / ln(SQRT2)).roundToInt()
+            if (!(scale > 0f) || !scale.isFinite()) return 1
+            return (scale * STEPS).roundToInt().coerceIn(1, Int.MAX_VALUE / 2)
         }
 
         /** The scale tiles at [level] are rendered at. */
-        fun bucketScale(level: Int): Float = SQRT2.pow(level).toFloat()
+        fun bucketScale(level: Int): Float = level / STEPS
+
+        /** [scale] moved onto its level, at most a 8192th away, so that ucketScale(scaleBucket(s)) == s. */
+        fun snap(scale: Float): Float = bucketScale(scaleBucket(scale))
     }
 }
 

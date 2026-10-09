@@ -187,4 +187,41 @@ class StippleTest {
             assertEquals(run.size, run.toSet().size, "each pixel once")
         }
     }
-}
+
+    @Test
+    fun theFastRunAgreesWithThePlainFormula() {
+        // Each pixel is on where the page's threshold there is below the strongest stamp over it: density * falloff(distance / radius).
+        val xs = FloatArray(90) { 12f + 1.7f * it }
+        val ys = FloatArray(90) { 60f + 14f * kotlin.math.sin(it * 0.15f) }
+        val rs = FloatArray(90) { 3.5f + (it % 6) * 0.45f }
+        val ds = FloatArray(90) { 0.15f + 0.85f * (it % 11) / 10f }
+        for (toDevice in listOf(
+            Affine(scaleX = 0.78f, scaleY = 0.78f, transX = -5f, transY = 3f),
+            Affine(scaleX = 1.41421f, scaleY = 1.41421f, transX = 10f, transY = -20f),
+            Affine(scaleX = 2.8284f, scaleY = 2.8284f, transX = -20f, transY = -100f),
+        )) {
+            val size = 400
+            val run = HashSet<Pair<Int, Int>>()
+            Stipple.stamps(xs, ys, rs, ds, xs.size, toDevice, toDevice.invert()!!, size, size) { x, y -> run.add(x to y) }
+            val plain = HashSet<Pair<Int, Int>>()
+            val s = toDevice.meanScale
+            for (py in 0 until size) for (px in 0 until size) {
+                for (i in xs.indices) {
+                    val dx = px + 0.5f - toDevice.mapX(xs[i], ys[i])
+                    val dy = py + 0.5f - toDevice.mapY(xs[i], ys[i])
+                    val u = kotlin.math.sqrt(dx * dx + dy * dy) / (rs[i] * s)
+                    val level = ds[i] * Stipple.falloff(u)
+                    val gx = kotlin.math.floor(px + 0.5f - toDevice.transX).toInt()
+                    val gy = kotlin.math.floor(py + 0.5f - toDevice.transY).toInt()
+                    if (level > 0f && Stipple.threshold(gx, gy) < level) {
+                        plain.add(px to py)
+                        break
+                    }
+                }
+            }
+            assertTrue(plain.size > 500, "a real run to compare: ${plain.size}")
+            // Only a pixel exactly on a stamp's edge or threshold can differ, by the last bit of a float.
+            val differ = (run - plain).size + (plain - run).size
+            assertTrue(differ <= plain.size / 1000, "$differ of ${plain.size} pixels differ at $toDevice")
+        }
+    }}

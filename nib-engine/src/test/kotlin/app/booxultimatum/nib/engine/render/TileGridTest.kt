@@ -2,8 +2,8 @@ package app.booxultimatum.nib.engine.render
 
 import app.booxultimatum.nib.engine.geom.Box
 import app.booxultimatum.nib.engine.geom.Viewport
+import kotlin.math.abs
 import kotlin.math.floor
-import kotlin.math.pow
 import kotlin.random.Random
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -14,28 +14,34 @@ class TileGridTest {
     private val grid = TileGrid(256)
 
     @Test
-    fun scaleBucketsArePowersOfRootTwo() {
-        assertEquals(0, TileGrid.scaleBucket(1f))
-        assertEquals(1, TileGrid.scaleBucket(1.4142f))
-        assertEquals(2, TileGrid.scaleBucket(2f))
-        assertEquals(-2, TileGrid.scaleBucket(0.5f))
-        assertEquals(8, TileGrid.scaleBucket(16f))
-        assertEquals(0, TileGrid.scaleBucket(1.1f), "small zoom changes reuse the level")
-        assertEquals(0, TileGrid.scaleBucket(0.9f))
-        assertEquals(0, TileGrid.scaleBucket(0f))
-        val rnd = Random(4)
-        repeat(500) {
-            val s = 0.1f + rnd.nextFloat() * 16f
-            val ratio = s / TileGrid.bucketScale(TileGrid.scaleBucket(s))
-            assertTrue(ratio in 2f.pow(-0.2501f)..2f.pow(0.2501f), "scale $s within a quarter octave of its level")
-        }
+    fun aLevelIsTheZoomInFourThousandNinetySixths() {
+        assertEquals(4096, TileGrid.scaleBucket(1f))
+        assertEquals(8192, TileGrid.scaleBucket(2f))
+        assertEquals(2048, TileGrid.scaleBucket(0.5f))
+        assertEquals(65536, TileGrid.scaleBucket(16f))
+        assertEquals(1, TileGrid.scaleBucket(0f))
+        assertEquals(1, TileGrid.scaleBucket(Float.NaN))
+        assertEquals(1f, TileGrid.bucketScale(4096))
+        assertEquals(0.78f, TileGrid.bucketScale(TileGrid.scaleBucket(0.78f)), 1.3e-4f)
     }
 
+    @Test
+    fun aSnappedScaleIsExactlyItsLevelsScale() {
+        // The view sits on the level, so the tile is drawn 1:1: the ratio isn't merely close to 1, it is 1.
+        val rnd = Random(4)
+        repeat(500) {
+            val s = 0.25f + rnd.nextFloat() * 15.75f
+            val snapped = TileGrid.snap(s)
+            assertTrue(abs(snapped - s) <= 1f / 8192f + 1e-6f, "scale $s moves to $snapped")
+            assertEquals(1f, snapped / TileGrid.bucketScale(TileGrid.scaleBucket(snapped)), "scale $s")
+            assertEquals(snapped, TileGrid.snap(snapped), "snapping twice moves nothing")
+        }
+    }
     @Test
     fun rangesCoverTheirBoxExactly() {
         val rnd = Random(8)
         repeat(300) {
-            val level = rnd.nextInt(-6, 9)
+            val level = rnd.nextInt(1024, 65537)
             val l = rnd.nextFloat() * 2000f - 200f
             val t = rnd.nextFloat() * 2000f - 200f
             val box = Box(l, t, l + 1f + rnd.nextFloat() * 800f, t + 1f + rnd.nextFloat() * 800f)
@@ -57,7 +63,7 @@ class TileGridTest {
 
     @Test
     fun tileTransformsMatchTheirBoxes() {
-        for (key in listOf(TileKey(0, 0, 0), TileKey(2, 3, -1), TileKey(-3, 1, 5))) {
+        for (key in listOf(TileKey(4096, 0, 0), TileKey(8192, 3, -1), TileKey(2048, 1, 5), TileKey(3195, 2, 2))) {
             val box = grid.docBox(key)
             val m = grid.docToTile(key)
             assertEquals(0f, m.mapX(box.left, box.top), 1e-2f)
@@ -78,20 +84,21 @@ class TileGridTest {
     fun trackerInvalidatesOverlappingTilesAtEveryLevel() {
         val tracker = TileTracker(grid)
         val page = Box(0f, 0f, 1860f, 2480f)
-        for (level in listOf(0, 1, -2)) for (k in grid.range(page, level)) tracker.markValid(k)
+        val levels = listOf(4096, 5793, 2048)
+        for (level in levels) for (k in grid.range(page, level)) tracker.markValid(k)
         val total = tracker.validCount
-        assertEquals(grid.range(page, 0).count + grid.range(page, 1).count + grid.range(page, -2).count, total)
+        assertEquals(levels.sumOf { grid.range(page, it).count }, total)
         val dirty = Box(300f, 300f, 310f, 310f)
         val removed = tracker.invalidate(dirty)
-        val expected = listOf(0, 1, -2).sumOf { grid.range(dirty, it).count }
+        val expected = levels.sumOf { grid.range(dirty, it).count }
         assertEquals(expected, removed)
         assertEquals(total - expected, tracker.validCount)
-        assertFalse(tracker.isValid(TileKey(0, 1, 1)))
-        assertTrue(tracker.isValid(TileKey(0, 0, 0)))
-        assertEquals(listOf(TileKey(0, 1, 1)), tracker.dirtyIn(grid.range(Box(260f, 260f, 270f, 270f), 0)))
+        assertFalse(tracker.isValid(TileKey(4096, 1, 1)))
+        assertTrue(tracker.isValid(TileKey(4096, 0, 0)))
+        assertEquals(listOf(TileKey(4096, 1, 1)), tracker.dirtyIn(grid.range(Box(260f, 260f, 270f, 270f), 4096)))
         assertEquals(0, tracker.invalidate(Box.EMPTY))
-        tracker.retainLevel(0)
-        assertEquals(grid.range(page, 0).count - 1, tracker.validCount)
+        tracker.retainLevel(4096)
+        assertEquals(grid.range(page, 4096).count - 1, tracker.validCount)
         tracker.invalidateAll()
         assertEquals(0, tracker.validCount)
     }

@@ -29,16 +29,18 @@ import kotlin.math.roundToInt
 
 /**
  * Per-layer tile caches for the canvas. Each layer's strokes are rendered, without the layer's opacity or blend, into
- * 256 px ARGB tiles at the current zoom level ([TileGrid.scaleBucket]); tiles are made only where the layer has ink,
- * and the canvas composites them each frame with the layer's own opacity, blend and visibility.
+ * 256 px ARGB tiles at the current zoom level ([TileGrid.scaleBucket], which the view sits exactly on, so a tile is drawn
+ * 1:1); tiles are made only where the layer has ink, and the canvas composites them each frame with the layer's own
+ * opacity, blend and visibility.
  *
  * - A finished stroke is drawn straight into the tiles it touches (recorded once as a [Picture], played into each),
  *   on the main thread, so the committed stroke is in the next frame.
- * - Anything else (undo, zoom, eviction) re-renders tiles from the vectors on a background thread; the old pixels,
- *   or the tiles of the previous zoom level, stand in until the new ones arrive.
+ * - Anything else (undo, zoom, eviction) re-renders tiles from the vectors on background threads; the old pixels,
+ *   or the tiles of the previous zoom level, stand in until the new ones arrive. A new zoom level is shown only once
+ *   every tile of it on screen is ready, so it appears in one frame, not square by square.
  * - Tiles off screen are dropped least recently used first once the total passes the budget.
  *
- * Main thread only, except the worker it owns.
+ * Main thread only, except the workers it owns.
  */
 class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onReady: () -> Unit) {
     private val log = Logbook.logger("nib.render")
@@ -50,6 +52,9 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
         var state = State.Missing
         var gen = 0
         var inFlight = false
+
+        /** A stroke or an edit drew into this tile at the current level, so it shows even while the level before is held. */
+        var edited = false
         val ref = Ref(layer, key)
     }
 
@@ -68,16 +73,23 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
     private val matrix = Matrix()
     private val dst = Rect()
     private val pinned = HashSet<Ref>()
+    private val threads = ArrayList<Thread>()
 
     // Bitmaps dropped during a frame may still be drawn by that frame, so they reach the pool only at the next one.
     private val graveyard = ArrayList<Bitmap>()
     private var level = 0
     private var frameComplete = true
 
+    // After a zoom: the previous level's tiles are shown until the new level is whole (	ransitioning, which ends with the first frame in which every tile on screen is current). Whether a layer did so in this frame, and in the last.
+    private var transitioning = false
+    private var holdingFrame = false
+    private var holding = false
+
     private var outstanding = 0
     private var batchCount = 0
     private var batchMs = 0.0
     private var batchMax = 0.0
+    private var batchStart = 0L
 
     val tileSize: Int get() = grid.tileSize
     val tileCount: Int get() = lru.size
@@ -85,7 +97,12 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
     /** Tile renders asked for and not yet back. */
     val pendingJobs: Int get() = outstanding
 
-    @Volatile private var worker: Thread? = null
+    /** The threads that render tiles, and whether they should go on; replaced by a new set when the cache starts again. */
+    private class Workers {
+        @Volatile var alive = true
+    }
+
+    @Volatile private var workers: Workers? = null
 
     /** Starts a frame at zoom [level]; jobs for other levels are dropped. */
     fun beginFrame(level: Int) {
@@ -97,9 +114,11 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
             for (job in queue.toTypedArray()) if (job.key.level != level && queue.removeFirstOccurrence(job)) outstanding--
             for (m in layers.values) for (t in m.values) if (t.key.level != level) t.inFlight = false
             this.level = level
+            transitioning = true
         }
         pinned.clear()
         frameComplete = true
+        holdingFrame = false
     }
 
     /**
@@ -112,7 +131,7 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
         substitute: ((TileKey, Boolean) -> Bitmap?)? = null, hasInk: (Box) -> Boolean,
     ) {
         val tiles = layers.getOrPut(layer.id) { HashMap() }
-        var fallback: List<Tile>? = null
+        var current = true
         for (key in range) {
             var t = tiles[key]
             if (t == null) {
@@ -125,6 +144,15 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
                 t.gen++
             }
             if (t.state != State.Ready && !t.inFlight) request(t, layer)
+            if (t.state != State.Ready) current = false
+        }
+        // After a zoom the tiles of the level before stand in, all of them, until every tile of the new level is ready:
+        // the page then changes once, instead of tile by tile as each arrives.
+        val hold = transitioning && !current && tiles.values.any { it.key.level != level && it.bitmap != null }
+        if (hold) holdingFrame = true
+        var fallback: List<Tile>? = null
+        for (key in range) {
+            val t = tiles[key] ?: continue
             val sub = substitute?.invoke(key, t.state == State.Ready)
             if (sub != null) {
                 if (t.state != State.Ready) frameComplete = false
@@ -133,7 +161,8 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
                 continue
             }
             val bmp = t.bitmap
-            if (t.state == State.Ready || (t.state == State.Stale && bmp != null)) {
+            val shown = t.state == State.Ready && (!hold || t.edited)
+            if (shown || (t.state == State.Stale && bmp != null)) {
                 if (bmp != null) {
                     lru.touch(t.ref)
                     viewRect(key, viewport, dst)
@@ -157,10 +186,13 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
             canvas.restore()
         }
     }
-
     /** Ends the frame: once every tile on screen is current, other levels go; then the budget is enforced. */
     fun endFrame() {
-        if (frameComplete) dropOtherLevels()
+        holding = holdingFrame
+        if (frameComplete) {
+            transitioning = false
+            dropOtherLevels()
+        }
         for (ref in lru.evict { it in pinned }) remove(ref)
     }
 
@@ -222,6 +254,7 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
                 else -> StrokeRenderer.render(stroke, sink.on(tileCanvas), 0.25f / TileGrid.bucketScale(level))
             }
             tileCanvas.setBitmap(null)
+            t.edited = true
             drawn++
         }
         val ms = (SystemClock.elapsedRealtimeNanos() - start) / 1e6
@@ -257,6 +290,7 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
                 t.bitmap?.let { graveyard.add(it) }
                 t.bitmap = null
                 t.state = State.Ready
+                t.edited = true
                 continue
             }
             var bmp = t.bitmap
@@ -275,6 +309,7 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
             }
             tileCanvas.setBitmap(null)
             t.state = State.Ready
+            t.edited = true
         }
         log.d("tiles rendered at once", "tiles" to keys.size, "ms" to round2((SystemClock.elapsedRealtimeNanos() - start) / 1e6))
         return true
@@ -325,9 +360,11 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
 
     /** Stops the worker and frees every bitmap; the cache starts again, empty, when next drawn. */
     fun stop() {
-        val w = worker
-        worker = null
-        w?.interrupt()
+        val w = workers
+        workers = null
+        w?.alive = false
+        for (th in threads) th.interrupt()
+        threads.clear()
         clear()
         graveyard.forEach { it.recycle() }
         graveyard.clear()
@@ -349,15 +386,22 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
     }
 
     private fun request(t: Tile, layer: Layer) {
-        if (worker == null) {
-            worker = Thread({ workLoop() }, "nib-tiles").apply {
-                isDaemon = true
-                start()
-            }
-        }
+        if (workers == null) startWorkers()
         t.inFlight = true
+        if (outstanding == 0) batchStart = SystemClock.elapsedRealtime()
         outstanding++
         queue.addLast(Job(layer.id, t.key, t.gen, layer.strokes))
+    }
+
+    private fun startWorkers() {
+        val w = Workers()
+        workers = w
+        repeat(WORKER_COUNT) { i ->
+            threads.add(Thread({ workLoop(w) }, "nib-tiles-$i").apply {
+                isDaemon = true
+                start()
+            })
+        }
     }
 
     private fun record(stroke: Stroke): Picture {
@@ -413,8 +457,11 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
             return true
         }
 
-        private const val POOL_MAX = 24
+        private const val POOL_MAX = 32
         private const val POOL_WARM = 8
+
+        /** Tile render threads: spare cores, up to three, so a zoom's tiles are drawn side by side. */
+        private val WORKER_COUNT = (Runtime.getRuntime().availableProcessors() - 1).coerceIn(1, 3)
         private const val WARM_AFTER_MS = 400L
 
         /** The brushes the engine draws as dabs (its StrokeRenderer's Dabs mode). */
@@ -476,8 +523,8 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
         return Bitmap.createBitmap(grid.tileSize, grid.tileSize, Bitmap.Config.ARGB_8888)
     }
 
-    private fun warmPool() {
-        while (worker === Thread.currentThread()) {
+    private fun warmPool(w: Workers) {
+        while (w.alive) {
             val need = synchronized(pool) { pool.size < POOL_WARM }
             if (!need) return
             val b = Bitmap.createBitmap(grid.tileSize, grid.tileSize, Bitmap.Config.ARGB_8888)
@@ -493,18 +540,18 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
 
     // ---- The worker ----
 
-    private fun workLoop() {
+    private fun workLoop(w: Workers) {
         runCatching { Process.setThreadPriority(Process.THREAD_PRIORITY_DISPLAY + 2) }
         val canvas = Canvas()
         val sink = CanvasSink()
         val m = Matrix()
         val recordings = Recordings()
-        while (worker === Thread.currentThread()) {
+        while (w.alive) {
             val job = try {
                 // While idle, keep a few blank tiles ready so a commit never waits to allocate one.
                 queue.pollFirst(WARM_AFTER_MS, TimeUnit.MILLISECONDS) ?: run {
                     recordings.clear()
-                    warmPool()
+                    warmPool(w)
                     queue.takeFirst()
                 }
             } catch (_: InterruptedException) {
@@ -542,24 +589,29 @@ class TileCache(private val grid: TileGrid, budgetBytes: Long, private val onRea
         batchCount++
         batchMs += ms
         batchMax = max(batchMax, ms)
-        if (outstanding == 0) logBatch(job.key.level)
+        val last = outstanding == 0
+        if (last) logBatch(job.key.level)
         val t = layers[job.layer]?.get(job.key)
-        if (t == null || t.gen != job.gen || worker == null) {
+        if (t == null || t.gen != job.gen || workers == null) {
             bmp?.let { recycle(it) }
+            // The frame that shows a held zoom waits for the last job, whatever became of it.
+            if (last) onReady()
             return
         }
         t.inFlight = false
         t.bitmap?.let { graveyard.add(it) }
         t.bitmap = bmp
         t.state = State.Ready
+        t.edited = false
         if (bmp != null) lru.put(t.ref, bmp.allocationByteCount.toLong()) else lru.remove(t.ref)
-        onReady()
+        // While the level before is held nothing changes on screen until the last tile is in: one frame, not one per tile.
+        if (last || !holding) onReady()
     }
 
     private fun logBatch(level: Int) {
         log.d(
             "tiles rendered",
-            "count" to batchCount, "ms" to round2(batchMs), "max ms" to round2(batchMax),
+            "count" to batchCount, "ms" to round2(batchMs), "max ms" to round2(batchMax), "wall ms" to (SystemClock.elapsedRealtime() - batchStart),
             "level" to level, "tiles" to lru.size, "mb" to round2(lru.usedBytes / 1048576.0),
         )
         batchCount = 0

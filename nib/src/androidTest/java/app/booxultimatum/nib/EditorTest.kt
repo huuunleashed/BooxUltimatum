@@ -27,6 +27,7 @@ import app.booxultimatum.nib.engine.io.NibFile
 import app.booxultimatum.nib.engine.record.PenAction
 import app.booxultimatum.nib.engine.record.PenRecording
 import app.booxultimatum.nib.engine.record.PenRecordingCodec
+import app.booxultimatum.nib.engine.render.TileGrid
 import app.booxultimatum.nib.export.Exporter
 import app.booxultimatum.nib.pen.PenRecorderStore
 import app.booxultimatum.nib.store.DrawingStore
@@ -324,6 +325,72 @@ class EditorTest {
         assertTrue(!inkAt(800, 500), "undo re-renders the tiles from the vectors")
     }
 
+    /** Whether the canvas, drawn as it is now, has dark ink within three rows of ([x], [y]). */
+    private fun inkNear(v: CanvasView, x: Int, y: Int): Boolean {
+        var dark = false
+        instrumentation.runOnMainSync {
+            val bmp = Bitmap.createBitmap(v.width, v.height, Bitmap.Config.ARGB_8888)
+            v.draw(Canvas(bmp))
+            dark = (y - 3..y + 3).any { yy -> (bmp.getPixel(x, yy) and 0xFF) < 128 }
+            bmp.recycle()
+        }
+        return dark
+    }
+
+    @Test fun theStrokeEraserTakesWhatItCrossesOffThePageAsItGoes() {
+        val v = launch()
+        val s = session(v)
+        stroke(v, 200f, 500f, 1400f, 500f)
+        stroke(v, 200f, 900f, 1400f, 900f)
+        assertTrue(inkNear(v, 800, 500) && inkNear(v, 800, 900))
+        val tools = ToolState.get(context)
+        try {
+            instrumentation.runOnMainSync {
+                tools.mode = ToolMode.Eraser
+                tools.chooseEraser(BrushKind.StrokeEraser)
+            }
+            val down = SystemClock.uptimeMillis()
+            instrumentation.runOnMainSync {
+                v.dispatchTouchEvent(event(down, down, MotionEvent.ACTION_DOWN, floatArrayOf(800f), floatArrayOf(300f), MotionEvent.TOOL_TYPE_STYLUS))
+                for (i in 1..20) {
+                    v.dispatchTouchEvent(event(down, down + i * 4L, MotionEvent.ACTION_MOVE, floatArrayOf(800f), floatArrayOf(300f + i * 15f), MotionEvent.TOOL_TYPE_STYLUS))
+                }
+            }
+            // The pen is still down: the page already shows the crossed stroke gone and the other one where it was.
+            assertTrue(!inkNear(v, 800, 500), "taken off the page while the eraser is down")
+            assertTrue(inkNear(v, 800, 900), "a stroke it hasn't reached stays")
+            assertEquals(2, s.document.strokeCount, "nothing is removed from the drawing until the pen lifts")
+            instrumentation.runOnMainSync {
+                v.dispatchTouchEvent(event(down, down + 100L, MotionEvent.ACTION_UP, floatArrayOf(800f), floatArrayOf(600f), MotionEvent.TOOL_TYPE_STYLUS))
+            }
+            assertEquals(1, s.document.strokeCount)
+            // It stays off the page while its tiles are drawn again, and after.
+            assertTrue(!inkNear(v, 800, 500), "still gone just after the lift")
+            waitFor("the tiles to catch up") { v.pendingTiles.takeIf { it == 0 }?.let { true } }
+            SystemClock.sleep(200)
+            instrumentation.waitForIdleSync()
+            assertTrue(!inkNear(v, 800, 500) && inkNear(v, 800, 900), "the tiles agree with the drawing")
+            instrumentation.runOnMainSync { s.undo() }
+            waitFor("the tiles to catch up") { v.pendingTiles.takeIf { it == 0 }?.let { true } }
+            SystemClock.sleep(200)
+            instrumentation.waitForIdleSync()
+            assertTrue(inkNear(v, 800, 500), "undo brings the stroke back")
+        } finally {
+            instrumentation.runOnMainSync {
+                tools.chooseEraser(BrushKind.StrokeEraser)
+                tools.mode = ToolMode.Pen
+            }
+        }
+    }
+
+    @Test fun aZoomLandsOnATileLevelSoTheTilesAreDrawnOneToOne() {
+        val v = launch()
+        instrumentation.runOnMainSync { v.zoomBy(1.37f) }
+        val scale = v.viewport.scale
+        assertEquals(TileGrid.snap(scale), scale, "the view sits exactly on a level")
+        instrumentation.runOnMainSync { v.actualSize() }
+        assertEquals(1f, v.viewport.scale, "100 % is exactly one screen pixel to a document pixel")
+    }
     @Test fun twoFingersPinchToZoomAndThePenIgnoresPalms() {
         val v = launch()
         val before = v.viewport.scale

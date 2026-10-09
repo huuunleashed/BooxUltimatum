@@ -49,6 +49,7 @@ import app.booxultimatum.nib.engine.history.HistoryAction
 import app.booxultimatum.nib.engine.history.HistoryEvent
 import app.booxultimatum.nib.engine.history.MoveLayer
 import app.booxultimatum.nib.engine.history.MoveStrokes
+import app.booxultimatum.nib.engine.history.RemoveStrokes
 import app.booxultimatum.nib.engine.history.ReplaceStrokes
 import app.booxultimatum.nib.engine.history.SetLayerProps
 import app.booxultimatum.nib.engine.history.TransformStrokes
@@ -220,10 +221,14 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
         var straight = false
         val path = FloatList()
         val hits = LinkedHashSet<Long>()
-        var erasePreview: List<Stroke> = emptyList()
+        val hitStrokes = ArrayList<Stroke>()
     }
 
     private var live: Live? = null
+
+    // What the stroke eraser has crossed, shown taken out of its layer until its tiles are drawn again without them.
+    private val eraseMask = EraseMask()
+    private var eraseLayerId = -1L
 
     // Each finished stroke's summary waits for the end of its hold (or for its ink to be pushed), so the log says how
     // it was revealed.
@@ -530,6 +535,9 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
     }
 
     private fun viewportSettled() {
+        // Onto its tile level, so the tiles are drawn exactly 1:1 (a shift of under a third of a pixel at the page's edge).
+        val snapped = TileGrid.snap(viewport.scale)
+        if (snapped != viewport.scale) viewport = viewport.copy(scale = snapped)
         session?.lastViewport = viewport
         session?.lastViewportFitted = followFit
         invalidate()
@@ -734,6 +742,7 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
         closeSession()
         PenRouter.detach(this)
         tiles.stop()
+        eraseMask.release()
         super.onDetachedFromWindow()
     }
 
@@ -1177,6 +1186,10 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
             SystemClock.uptimeMillis(), NibPen.normalizer(event), controller.stroke?.widthPx ?: 0f,
         )
         live = l
+        if (l.kind == BrushKind.StrokeEraser) {
+            if (eraseLayerId != l.layerId) eraseMask.clear()
+            eraseLayerId = l.layerId
+        }
         hold.reset()
         PenRecorderStore.begin("canvas", eventNanos(event))
         PenRecorderStore.marker("viewport", "${viewport.scale},${viewport.offsetX},${viewport.offsetY},${viewport.rotation}", eventNanos(event))
@@ -1257,12 +1270,7 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
         val seg = l.path.data.copyOfRange(from * 2, n * 2)
         val radius = l.builder.brush.width / 2f
         val found = s.history.index.hitByEraser(l.layerId, seg, seg.size / 2, radius)
-        var added = false
-        for (st in found) if (l.hits.add(st.id)) added = true
-        if (added) {
-            val layer = s.document.layer(l.layerId) ?: return
-            l.erasePreview = l.hits.mapNotNull { id -> layer.stroke(id) }.map { it.copy(brush = it.brush.copy(blend = Blend.Erase, opacity = 1f)) }
-        }
+        for (st in found) if (l.hits.add(st.id)) l.hitStrokes.add(st)
     }
 
     private fun endStroke(event: MotionEvent, index: Int) {
@@ -1307,6 +1315,10 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
         }
         PenRecorderStore.marker("committed", committed.toString(), eventNanos(event))
         PenRecorderStore.end()
+        // The strokes the eraser took stay out of the picture until their tiles are drawn again without them.
+        if (l.kind == BrushKind.StrokeEraser) {
+            if (committed && l.hitStrokes.isNotEmpty()) eraseMask.sync(l.hitStrokes, viewport.unrotated(), width, height) else eraseMask.clear()
+        }
         invalidate()
         if (l.purpose != Purpose.Select) summarize(l, stroke, committed, removed)
     }
@@ -1405,6 +1417,7 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
     private fun cancelLive() {
         val l = live ?: return
         live = null
+        eraseMask.clear()
         removeCallbacks(holdCheck)
         if (l.tool != Tool.Finger) penLifted(null)
         PenRecorderStore.marker("cancelled", "true", SystemClock.uptimeMillis() * 1_000_000L)
@@ -1559,6 +1572,7 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
 
     private fun discardLive() {
         live = null
+        eraseMask.clear()
         removeCallbacks(holdCheck)
         PenRecorderStore.end()
         invalidate()
@@ -1741,6 +1755,7 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
         val c = e.effective
         // Strokes still settling from a drop make way for any other edit (an undo, say), which redraws its own tiles.
         if (!settleNextEdit) lift.endSettling()
+        if (c !is RemoveStrokes || e.action != HistoryAction.Do) eraseMask.clear()
         when {
             c is AddStroke -> {
                 val stored = doc.layer(c.layerId)?.strokes?.lastOrNull()
@@ -1829,12 +1844,15 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
             canvas.concat(docMatrix)
             GuidesPainter.draw(canvas, paper, doc.width, doc.height, visible, 0f)
             canvas.restore()
+            val erasing = l != null && l.kind == BrushKind.StrokeEraser
+            if (erasing) eraseMask.sync(l!!.hitStrokes, flat, width, height) else if (eraseMask.showing && !eraseMask.fits(flat, width, height)) eraseMask.clear()
             for (layer in doc.layers) {
                 if (!layer.visible || layer.opacity <= 0f) continue
                 val liveHere = l != null && layer.id == l.layerId && showsLive(l)
                 val movingHere = moving != null && sel != null && layer.id == sel.layerId
                 val settlingHere = !movingHere && lift.settling(layer.id)
-                val isolate = layer.opacity < 1f || layer.blend != Blend.Normal || liveHere || movingHere || settlingHere
+                val eraseHere = eraseMask.showing && layer.id == eraseLayerId
+                val isolate = layer.opacity < 1f || layer.blend != Blend.Normal || liveHere || movingHere || settlingHere || eraseHere
                 if (isolate) {
                     layerPaint.alpha = (layer.opacity.coerceIn(0f, 1f) * 255f).roundToInt()
                     layerPaint.blendMode = layer.blend.toBlendMode()
@@ -1849,6 +1867,12 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
                     else -> null
                 }
                 tiles.drawLayer(canvas, layer, flat, range, substitute) { box -> s.history.index.query(layer.id, box).isNotEmpty() }
+                if (eraseHere) {
+                    // What the eraser took stays out until the tiles are drawn again without it; a current tile needn't be taken from.
+                    var stale = erasing
+                    if (!stale) tiles.forEachPending(layer.id, range) { stale = true }
+                    if (stale) eraseMask.draw(canvas) else eraseMask.clear()
+                }
                 if (liveHere) drawLive(canvas, l!!, flat)
                 if (lifted) lift.drawMoved(canvas, flat, moving!!)
                 if (settlingHere) lift.drawSettling(canvas, tiles, flat, layer.id, level, range)
@@ -1925,7 +1949,7 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
 
     private fun showsLive(l: Live): Boolean = when {
         l.purpose == Purpose.Select || l.kind == BrushKind.LassoEraser -> false
-        l.kind == BrushKind.StrokeEraser -> l.erasePreview.isNotEmpty()
+        l.kind == BrushKind.StrokeEraser -> false
         else -> !l.previewed || l.tool == Tool.Eraser
     }
 
@@ -1934,9 +1958,7 @@ class CanvasView(context: Context) : View(context), PenRouter.Target {
         concat(docMatrix)
         val sink = viewSink.on(this)
         val tolerance = 0.25f / viewport.scale
-        if (l.kind == BrushKind.StrokeEraser) {
-            for (st in l.erasePreview) StrokeRenderer.render(st, sink, tolerance)
-        } else if (!l.builder.isEmpty) {
+        if (!l.builder.isEmpty) {
             val current = l.builder.current()
             StrokeRenderer.render(if (l.straight) StraightLine.straighten(current, l.endX, l.endY) else current, sink, tolerance)
         }

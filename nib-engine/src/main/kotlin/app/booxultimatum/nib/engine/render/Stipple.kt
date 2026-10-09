@@ -56,9 +56,21 @@ object Stipple {
     }
 
     /**
+     * Whether the pixel [d2] (squared, in the sink's pixels) from the centre of a stamp of [radius] and [density] is on,
+     * given the page's threshold [t] there: the stamp is solid to [SOLID] of its radius and fades linearly to nothing at
+     * its edge, and a pixel is on where its threshold is below that. Solved for the distance instead of the level, so
+     * it needs neither the square root nor the falloff; [slope] is `(1 - SOLID) / density`.
+     */
+    private fun on(t: Float, density: Float, radius: Float, slope: Float, d2: Float): Boolean {
+        if (!(t < density)) return false
+        val reach = radius - radius * slope * t
+        return d2 < reach * reach
+    }
+
+    /**
      * Lays one stamp centred at document ([x], [y]), [radius] document pixels across half, at [density] (the pressure,
      * 0..1), through [toDevice] (document to the sink's pixels), and reports each pixel it turns on within
-     * [clipWidth] × [clipHeight]. The threshold grid is the page at the device scale: cell `floor(scale * document)`,
+     * [clipWidth] by [clipHeight]. The threshold grid is the page at the device scale: cell `floor(scale * document)`,
      * which for a tile (a scale and a whole-pixel offset) is the tile's pixel less its offset.
      */
     fun stamp(x: Float, y: Float, radius: Float, density: Float, toDevice: Affine, clipWidth: Int, clipHeight: Int, out: Pixels) {
@@ -81,6 +93,7 @@ object Stipple {
         val y1 = min(clipHeight, ceil(cy + r).toInt() + 1)
         if (x1 <= x0 || y1 <= y0) return
         val d = min(1f, density)
+        val slope = (1f - SOLID) / d
         val r2 = r * r
         for (py in y0 until y1) {
             val dy = py + 0.5f - cy
@@ -88,13 +101,11 @@ object Stipple {
                 val dx = px + 0.5f - cx
                 val d2 = dx * dx + dy * dy
                 if (d2 >= r2) continue
-                val level = d * falloff(sqrt(d2) / r)
-                if (!(level > 0f)) continue
                 val fx = px + 0.5f
                 val fy = py + 0.5f
                 val gx = floor(scale * inverse.mapX(fx, fy)).toInt()
                 val gy = floor(scale * inverse.mapY(fx, fy)).toInt()
-                if (threshold(gx, gy) < level) out.on(px, py)
+                if (on(threshold(gx, gy), d, r, slope, d2)) out.on(px, py)
             }
         }
     }
@@ -103,7 +114,9 @@ object Stipple {
      * Lays [n] stamps of one stroke (centres [xs], [ys], radii [rs], densities [ds], in document pixels) as [stamp]
      * would one by one, but reports each pixel that turns on once, and doesn't work out again a pixel an earlier stamp
      * already turned on. A stroke's stamps overlap about seven deep, so that's most of the work and of the dots a
-     * sink would otherwise draw several times over.
+     * sink would otherwise draw several times over. Where the device's pixels line up with the page's (a scale, a
+     * translation, no turn: every tile), each page cell's threshold is also worked out once for the whole run, not
+     * once per stamp that covers it.
      */
     fun stamps(
         xs: FloatArray, ys: FloatArray, rs: FloatArray, ds: FloatArray, n: Int,
@@ -136,6 +149,11 @@ object Stipple {
             for (i in 0 until n) stamp(xs[i], ys[i], rs[i], ds[i], toDevice, toDocument, clipWidth, clipHeight, out)
             return
         }
+        val aligned = toDevice.skewX == 0f && toDevice.skewY == 0f && toDevice.scaleX == toDevice.scaleY
+        if (aligned && w * h <= CELL_CACHE_PIXELS) {
+            alignedRun(xs, ys, rs, ds, n, toDevice, bx0, by0, w, h, out)
+            return
+        }
         val lit = java.util.BitSet(w * h)
         val inverse = toDocument
         for (i in 0 until n) {
@@ -151,6 +169,7 @@ object Stipple {
             val y1 = min(by1, ceil(cy + r).toInt() + 1)
             if (x1 <= x0 || y1 <= y0) continue
             val d = min(1f, density)
+            val slope = (1f - SOLID) / d
             val r2 = r * r
             for (py in y0 until y1) {
                 val dy = py + 0.5f - cy
@@ -160,14 +179,71 @@ object Stipple {
                     val dx = px + 0.5f - cx
                     val d2 = dx * dx + dy * dy
                     if (d2 >= r2) continue
-                    val level = d * falloff(sqrt(d2) / r)
-                    if (!(level > 0f)) continue
                     val fx = px + 0.5f
                     val fy = py + 0.5f
                     val gx = floor(scale * inverse.mapX(fx, fy)).toInt()
                     val gy = floor(scale * inverse.mapY(fx, fy)).toInt()
-                    if (threshold(gx, gy) < level) {
+                    if (on(threshold(gx, gy), d, r, slope, d2)) {
                         lit.set(row + px)
+                        out.on(px, py)
+                    }
+                }
+            }
+        }
+    }
+
+    /** One thread's table of page thresholds for a run: a cell's value, [UNSEEN] before it's worked out, [LIT] once on. */
+    private val cells = ThreadLocal.withInitial { FloatArray(0) }
+
+    /**
+     * [stamps] where the device's pixels are the page's cells shifted by the translation: a cell is the pixel less the
+     * whole part of the translation, so there's no inverse to map through, each cell's threshold is hashed once, and a
+     * pixel already on is skipped with one look. The stamps are walked a row at a time, within each one's chord.
+     */
+    private fun alignedRun(xs: FloatArray, ys: FloatArray, rs: FloatArray, ds: FloatArray, n: Int, toDevice: Affine, bx0: Int, by0: Int, w: Int, h: Int, out: Pixels) {
+        val scale = toDevice.scaleX
+        val size = w * h
+        var table = cells.get()
+        if (table.size < size) {
+            table = FloatArray(maxOf(size, 4096))
+            cells.set(table)
+        }
+        java.util.Arrays.fill(table, 0, size, UNSEEN)
+        val tx = toDevice.transX
+        val ty = toDevice.transY
+        for (i in 0 until n) {
+            val radius = rs[i]
+            val density = ds[i]
+            if (!(radius > 0f) || !(density > 0f) || !xs[i].isFinite() || !ys[i].isFinite()) continue
+            val cx = toDevice.mapX(xs[i], ys[i])
+            val cy = toDevice.mapY(xs[i], ys[i])
+            val r = radius * scale
+            val y0 = max(by0, floor(cy - r).toInt())
+            val y1 = min(by0 + h, ceil(cy + r).toInt() + 1)
+            if (y1 <= y0) continue
+            val d = min(1f, density)
+            val slope = (1f - SOLID) / d
+            val r2 = r * r
+            for (py in y0 until y1) {
+                val dy = py + 0.5f - cy
+                val dy2 = dy * dy
+                if (dy2 >= r2) continue
+                val half = sqrt(r2 - dy2)
+                val xa = max(bx0, floor(cx - half - 0.5f).toInt())
+                val xb = min(bx0 + w, ceil(cx + half - 0.5f).toInt() + 1)
+                val row = (py - by0) * w - bx0
+                val gy = floor(py + 0.5f - ty).toInt()
+                for (px in xa until xb) {
+                    var t = table[row + px]
+                    if (t == LIT) continue
+                    if (t == UNSEEN) {
+                        t = threshold(floor(px + 0.5f - tx).toInt(), gy)
+                        table[row + px] = t
+                    }
+                    if (!(t < d)) continue
+                    val dx = px + 0.5f - cx
+                    if (on(t, d, r, slope, dx * dx + dy2)) {
+                        table[row + px] = LIT
                         out.on(px, py)
                     }
                 }
@@ -177,4 +253,10 @@ object Stipple {
 
     /** The largest area [stamps] keeps track of; a run over more (a long stroke at a high zoom) goes stamp by stamp. */
     private const val MAX_RUN_PIXELS = 16L * 1024 * 1024
+
+    /** The largest run whose cells [alignedRun] keeps in a table (4 MB per thread); a bigger one tracks only what's on. */
+    private const val CELL_CACHE_PIXELS = 1024 * 1024
+
+    private const val UNSEEN = -1f
+    private const val LIT = -2f
 }
