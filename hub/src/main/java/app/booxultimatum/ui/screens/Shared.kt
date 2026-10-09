@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -27,7 +26,6 @@ import app.booxultimatum.core.PowerSource
 import app.booxultimatum.kit.ui.Format
 import app.booxultimatum.kit.ui.Lamp
 import app.booxultimatum.kit.ui.Paragraph
-import app.booxultimatum.kit.ui.Plate
 import app.booxultimatum.kit.ui.theme.Ink
 import app.booxultimatum.kit.ui.theme.Lines
 import app.booxultimatum.kit.ui.theme.Space
@@ -64,45 +62,6 @@ fun StatusLines(b: BatterySnapshot) {
         if (b.source != app.booxultimatum.core.PowerSource.None && b.asleepFraction < 0.5) {
             Text(stringResource(R.string.status_asleep_usb), style = MaterialTheme.typography.bodySmall, color = Ink.Legend)
         }
-    }
-}
-
-/** The one number that matters most: the latest clean measurement, an open one, or an honest empty state. */
-@Composable
-fun DrainPlate(modifier: Modifier = Modifier, onMeasure: (() -> Unit)? = null) {
-    val context = LocalContext.current
-    val latest = app.booxultimatum.core.Measurement.latestClean(context)
-    val open = app.booxultimatum.core.Measurement.open(context)
-    Plate(
-        stringResource(R.string.plate_drain),
-        modifier,
-        action = onMeasure?.let { { app.booxultimatum.kit.ui.Key(stringResource(R.string.action_measure), onClick = it) } },
-    ) {
-        when {
-            latest != null -> {
-                Text(
-                    stringResource(R.string.drain_latest, String.format(java.util.Locale.getDefault(), "%.2f", latest.pctPerHour)),
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.padding(top = Space.s),
-                )
-                Spacer(Modifier.height(Space.xs))
-                Paragraph(
-                    stringResource(R.string.drain_latest_detail, Format.duration(context, (latest.hours * 3_600_000).toLong()), Format.percent(context, latest.asleepFraction)),
-                    color = Ink.Legend,
-                )
-            }
-            else -> {
-                Text(stringResource(R.string.drain_not_measured), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = Space.s))
-                Spacer(Modifier.height(Space.s))
-                Paragraph(stringResource(R.string.drain_explain), color = Ink.Legend)
-            }
-        }
-        if (open != null) {
-            Spacer(Modifier.height(Space.s))
-            Text(stringResource(R.string.drain_open, Format.clock(context, open.epoch)), style = MaterialTheme.typography.titleSmall)
-        }
-        Spacer(Modifier.height(Space.m))
-        Text(stringResource(R.string.drain_reference), style = MaterialTheme.typography.bodySmall, color = Ink.Legend)
     }
 }
 
