@@ -4,6 +4,23 @@ All notable changes to BooxUltimatum. Newest first. The project follows [Semanti
 
 ## [Unreleased]
 
+## [0.9.1] (2026-10-11)
+
+BooxUltimatum 0.9.1 follows up issue #4, where the Shizuku helper service doesn't start on a Go 10.3 (firmware 4.2). It doesn't fix why, because that isn't known yet; it stops the failure costing anything and makes *Test Shizuku* find the reason. Nib is unchanged. Checked by unit tests on the JVM and a release build with lint. Not run on any tablet: the failure has never been reproduced here, so nothing below has been seen on the Go 10.3.
+
+### Added
+
+- **When the helper service doesn't start, *Test Shizuku* now reads why.** Through Shizuku's direct route, which works there, it lists this app's processes (whether a `:shell` helper exists at all, or is running and silent) and the newest log lines about Shizuku, user services or a crash of this app, with other apps' names left out. *Copy result* includes them, so one report can show where the start stops.
+
+### Changed
+
+- **Once the helper service has failed to start, no command waits for it again.** Commands go the direct way at once and the helper is tried in the background after 10 minutes, then an hour, then every six hours, and straight away when Shizuku restarts. Before, the first command after each 10-minute pause waited the full ten seconds for a helper that still didn't start (by reading the code; not measured on a tablet).
+- **Test Shizuku waits up to half a minute for the helper** instead of ten seconds, and says when it connected later than a normal call would wait, so a slow helper can be told from one that never starts.
+
+### Research
+
+- **What the two Go 10.3 reports show** (user reports, not our measurements): on firmware 4.2-rel, Android 12, with Shizuku API 13 and then API 14, the server and the permission are fine and a command through Shizuku directly runs as uid 2000, while the helper service doesn't answer within ten seconds on both. The direct route also works against an API 14 server. Reading the helper's setup found nothing that differs from Shizuku's reference user service; the cause is still open. See `knowledge/experiments.md`.
+
 ## [Nib 0.4.1] (2026-10-09)
 
 Nib 0.4.1: zooming and the stroke eraser work properly, and a pen's width and the pencil's grain are the page's, as in any drawing app. The hub is unchanged (0.9.0). Tested on a Note Air6 C with firmware 4.3 through three test builds (0.4.1-test.1 to test.3): the owner checked the zoom and the stroke eraser, the pencil's grain and the pens' width on the tablet and reported that everything went well. The speed figures below were measured on the emulator; the tablet's own times were not recorded. Drawings are saved in file format 1.3 now (a stroke's dot size); Nib 0.4.0 and earlier open them, and draw the pencil's dots at the screen's pixels as they always did.

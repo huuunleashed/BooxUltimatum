@@ -4,7 +4,7 @@
 
 **A suite of apps for the BOOX Note Air6 C, without root: a hub with a home screen, sleep-screen designer, battery doctor and reversible tweaks, and Nib, a drawing app with Boox's instant pen.**
 
-![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue) ![Status: public preview](https://img.shields.io/badge/status-public%20preview%200.7.2-orange) ![Android 11+](https://img.shields.io/badge/Android-11%2B-3ddc84) ![Tested on Note Air6 C, FW 4.3](https://img.shields.io/badge/tested%20on-Note%20Air6%20C%20%C2%B7%20FW%204.3-black)
+![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue) ![Status: public preview](https://img.shields.io/badge/status-public%20preview%200.9.1-orange) ![Android 11+](https://img.shields.io/badge/Android-11%2B-3ddc84) ![Tested on Note Air6 C, FW 4.3](https://img.shields.io/badge/tested%20on-Note%20Air6%20C%20%C2%B7%20FW%204.3-black)
 
 [**Website and technical guide**](https://huuunleashed.github.io/BooxUltimatum/) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md) · [Report a bug or a finding](https://github.com/huuunleashed/BooxUltimatum/issues/new/choose)
 
@@ -18,7 +18,7 @@ The Note Air6 C is a lovely tablet with a frustrating side. Independent reviews 
 
 Nothing is flashed, and the bootloader stays locked. The hub, BooxUltimatum, is one APK; the apps that build on it, starting with Nib, install and uninstall on their own.
 
-> **Status: public preview (0.7.2).** It runs daily on the author's own tablet (Note Air6 C, firmware 4.3, Android 16), and hasn't been tested elsewhere yet. Download it from [Releases](https://github.com/huuunleashed/BooxUltimatum/releases), and please report how it behaves on your tablet. From 0.5 on, the app can update itself and file a report for you from its Device page.
+> **Status: public preview (0.9.1).** It runs daily on the author's own tablet (Note Air6 C, firmware 4.3, Android 16), and hasn't been tested elsewhere yet. Download it from [Releases](https://github.com/huuunleashed/BooxUltimatum/releases), and please report how it behaves on your tablet. From 0.5 on, the app can update itself and file a report for you from its Device page.
 
 ## What it does
 
@@ -169,7 +169,7 @@ Firmware 4.3 hides the Wireless debugging switch from Developer options — the 
 
 ## Install
 
-**From a release:** download `BooxUltimatum-0.9.0.apk` from this repository's [Releases](https://github.com/huuunleashed/BooxUltimatum/releases) page, allow your browser or file manager to install apps, and open it. The Access page shows what each level unlocks and the exact commands for it. Releases are signed with the project's own key, so later releases update it in place. The hub's Suite page installs Nib for you, or download `Nib-0.3.0.apk` from the same page; Nib's releases are tagged `nib-v…`.
+**From a release:** download `BooxUltimatum-0.9.1.apk` from this repository's [Releases](https://github.com/huuunleashed/BooxUltimatum/releases) page, allow your browser or file manager to install apps, and open it. The Access page shows what each level unlocks and the exact commands for it. Releases are signed with the project's own key, so later releases update it in place. The hub's Suite page installs Nib for you, or download `Nib-0.3.0.apk` from the same page; Nib's releases are tagged `nib-v…`.
 
 **Test builds for the tablet:** unfinished builds of the hub or Nib are sometimes published as `test-…` pre-releases so they can be checked on a real tablet. The hub offers them only when *Offer test builds* is on (Device page), and a release always replaces its own test build.
 
@@ -295,7 +295,9 @@ No dates promised; this is a spare-time project, and each release ships when it 
   - Four pages, Today, History, Causes and Health, built on a verdict, findings with their numbers, a 24-hour strip and a list of what happened, and a time-left estimate that says what it rests on.
   - The log records the display's state and the app in front, notices a display that stayed on while the tablet slept, and the standby figure no longer counts it.
   - Marks and before-and-after replace Measure drain, a morning report (with a switch), a battery report to share, and an opt-in, experimental sleep guard.
-  - *Test Shizuku* on Access, and a direct route for Shizuku commands when the helper service can't start (issue #4, awaiting the reporters).
+  - *Test Shizuku* on Access, and a direct route for Shizuku commands when the helper service can't start (issue #4: the direct route works on a Go 10.3 on firmware 4.2, per its owner; why the helper doesn't start there is still open).
+- **0.9.1, a follow-up to issue #4 (released)**
+  - After the helper service has failed, commands don't wait for it again, and Test Shizuku reads from the system log why it didn't start.
 - **Nib 0.4.1, zoom and the eraser (released 2026-10-09)**
   - Zooming shows the new page in one frame, drawn about as fast again, and the pencil is crisp at the zoom you stop on.
   - A pen's width and the pencil's grain are the page's, so a stroke is the same stroke at every zoom.

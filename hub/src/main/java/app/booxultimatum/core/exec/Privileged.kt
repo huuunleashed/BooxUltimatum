@@ -9,10 +9,13 @@ import app.booxultimatum.BuildConfig
 import app.booxultimatum.IShellService
 import app.booxultimatum.core.Shell
 import app.booxultimatum.kit.log.Logbook
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -20,6 +23,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import rikka.shizuku.Shizuku
 import java.io.InputStream
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.concurrent.thread
 import kotlin.coroutines.resume
@@ -39,6 +43,50 @@ data class ShellResult(val code: Int, val out: String, val err: String) {
 /** One line of [Privileged.probe]: a step between this app and the shell, whether it worked, and what was seen. */
 data class ProbeStep(val label: String, val ok: Boolean, val detail: String)
 
+/** How long a helper service that has failed [failures] times in a row is left alone: 10 minutes, then an hour, then six hours. */
+internal fun helperRetryDelayMs(failures: Int): Long = when {
+    failures <= 1 -> 10 * 60_000L
+    failures == 2 -> 60 * 60_000L
+    else -> 6 * 60 * 60_000L
+}
+
+/**
+ * Says from `ps -A` whether the helper's process exists: the same process name as ours with `:shell` after it. It tells a
+ * helper that was never started, or died while starting, from one that is running and never answers.
+ */
+internal fun describeHelperProcess(ps: String, appId: String): String {
+    val ours = ps.lineSequence().map { it.trim().split(Regex("\\s+")) }
+        .filter { it.size >= 3 && (it.last() == appId || it.last().startsWith("$appId:")) }
+        .map { it.last() to "pid ${it[1]}, user ${it.first()}" }
+        .toList()
+    val helper = ours.firstOrNull { it.first == "$appId:shell" }
+    val others = ours.filter { it.first != "$appId:shell" }.joinToString("; ") { "${it.first} (${it.second})" }
+    return when {
+        helper != null -> "$appId:shell is running (${helper.second}) and never answered. Other processes of this app: ${others.ifEmpty { "none" }}"
+        ours.isEmpty() -> "no process of this app is listed, so the list may be incomplete"
+        else -> "no $appId:shell process: the helper was never started, or it ended while starting. This app's processes: $others"
+    }
+}
+
+/**
+ * The log lines worth reading when the helper doesn't start: those that mention Shizuku, a user service or the helper's
+ * process, and a crash of one of this app's processes with the lines under its header. At most [max], the newest.
+ */
+internal fun helperLogLines(logcat: String, appId: String, max: Int = 30): List<String> {
+    val lines = logcat.lines()
+    val picked = sortedSetOf<Int>()
+    lines.forEachIndexed { i, line ->
+        val low = line.lowercase()
+        if (line.contains("AndroidRuntime") && line.contains(appId)) {
+            // The header's "Process:" line names the process; the exception and its frames follow it under the same tag.
+            if (i > 0 && lines[i - 1].contains("AndroidRuntime")) picked += i - 1
+            var j = i
+            while (j <= lines.lastIndex && j < i + 25 && lines[j].contains("AndroidRuntime")) picked += j++
+        } else if (low.contains("shizuku") || low.contains("userservice") || line.contains("$appId:shell")) picked += i
+    }
+    return picked.map { lines[it].trim().take(220) }.filter { it.isNotEmpty() }.takeLast(max)
+}
+
 /**
  * Tier T2: shell-uid commands through Shizuku.
  *
@@ -48,20 +96,28 @@ data class ProbeStep(val label: String, val ok: Boolean, val detail: String)
  *
  * Some tablets never let that service start (reported on a Go 10.3 with two Shizuku builds, while other Shizuku apps
  * worked). Shizuku's own remote process runs the same `sh -c` as the same user without any helper of ours, so when the
- * service can't be reached, calls go that way instead of failing, and the service is tried again after [BROKEN_FOR_MS]
- * or when Shizuku restarts.
+ * service can't be reached, calls go that way instead of failing.
+ *
+ * Once the service has failed, no call waits for it again: calls go straight to the direct route and the service is
+ * tried in the background, after [helperRetryDelayMs] (longer each time it fails) or when Shizuku restarts. The state is
+ * in memory, so a restart of the app starts afresh.
  *
  * Nothing here can hang a page: a call gives up after [CALL_TIMEOUT_MS]. Every failure is logged under `exec`.
  */
 object Privileged {
     private const val IDLE_MS = 45_000L
     private const val BIND_TIMEOUT_MS = 10_000L
+    /** The probe waits longer than a call does, to tell a helper that is slow from one that never starts. */
+    private const val PROBE_BIND_TIMEOUT_MS = 30_000L
     private const val CALL_TIMEOUT_MS = 25_000L
-    private const val BROKEN_FOR_MS = 10 * 60_000L
     private const val MAX_CHARS = 250_000
     private val log = Logbook.logger("exec")
     @Volatile private var helperBrokenUntil = 0L
+    /** Times in a row the helper failed to start; 0 until it has, and again once it has connected. */
+    @Volatile private var helperFailures = 0
     @Volatile private var lastBindError: String? = null
+    private val retrying = AtomicBoolean(false)
+    private val background = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     /** Blocking binder calls run here, so a stuck one never takes a thread other work needs. */
     private val calls = java.util.concurrent.Executors.newCachedThreadPool { r -> Thread(r, "shizuku-call").apply { isDaemon = true } }.asCoroutineDispatcher()
     private val mutex = Mutex()
@@ -110,7 +166,15 @@ object Privileged {
 
     suspend fun sh(command: String): ShellResult = withContext(Dispatchers.IO) {
         notReadyReason()?.let { return@withContext ShellResult(-1, "", it) }
-        if (liveService() == null && System.currentTimeMillis() < helperBrokenUntil) return@withContext direct(command)
+        if (liveService() == null && helperFailures > 0) {
+            // The helper has failed before, so this call doesn't wait for another try: it goes the direct way at once.
+            if (System.currentTimeMillis() >= helperBrokenUntil) retryHelperInBackground()
+            val d = direct(command)
+            if (d.ok || d.code != -1) return@withContext d
+            // The direct route is unavailable too (a Shizuku without it). Inside the pause there is nothing else to try;
+            // after it, the helper is the only way left, so the call waits for it below.
+            if (System.currentTimeMillis() < helperBrokenUntil) return@withContext d
+        }
         idle.removeCallbacks(release)
         busy.incrementAndGet()
         val started = android.os.SystemClock.elapsedRealtime()
@@ -199,13 +263,34 @@ object Privileged {
         return sb.toString()
     }
 
-    /** Lets calls try the helper service again at once, for example after Shizuku restarted. */
-    fun retryNow() { helperBrokenUntil = 0L }
+    /** Lets the helper service be tried again at once, from the shortest pause, for example after Shizuku restarted. */
+    fun retryNow() {
+        helperBrokenUntil = 0L
+        helperFailures = minOf(helperFailures, 1)
+    }
+
+    /** One try at a time, off the caller's thread: a call that finds the pause over is answered the direct way meanwhile. */
+    private fun retryHelperInBackground() {
+        if (!retrying.compareAndSet(false, true)) return
+        background.launch {
+            try {
+                if (connect() != null) {
+                    // Nobody is using it yet: let it go after the idle time rather than keep a 65 MB process resident.
+                    idle.removeCallbacks(release)
+                    idle.postDelayed(release, IDLE_MS)
+                }
+            } finally {
+                retrying.set(false)
+            }
+        }
+    }
 
     /**
      * Walks the steps between this app and the shell and says where it stops: the server, our permission, the helper
-     * service and a command through it, and a command through Shizuku's own process. It tries the helper afresh, so it
-     * can take ten seconds. Each step is logged under `exec` too.
+     * service and a command through it, and a command through Shizuku's own process. It tries the helper afresh and waits
+     * up to [PROBE_BIND_TIMEOUT_MS] for it, so it can take half a minute. When the helper doesn't start, it also reads
+     * from the shell why: whether the helper's process exists, and the log lines about Shizuku and the helper. Each step
+     * is logged under `exec` too.
      */
     suspend fun probe(): List<ProbeStep> = withContext(Dispatchers.IO) {
         val steps = mutableListOf<ProbeStep>()
@@ -238,17 +323,34 @@ object Privileged {
 
         retryNow()
         val started = android.os.SystemClock.elapsedRealtime()
-        val helper = connect()
+        val helper = connect(PROBE_BIND_TIMEOUT_MS, record = false)
         val bindMs = android.os.SystemClock.elapsedRealtime() - started
         if (helper == null) {
-            add("Helper service", false, "didn’t start (${lastBindError ?: "no answer within ${BIND_TIMEOUT_MS / 1000} s"})")
+            add("Helper service", false, "didn’t start (${lastBindError ?: "no answer within ${PROBE_BIND_TIMEOUT_MS / 1000} s"})")
         } else {
-            add("Helper service", true, "connected in $bindMs ms")
+            val slow = if (bindMs > BIND_TIMEOUT_MS) ", longer than the ${BIND_TIMEOUT_MS / 1000} s a call waits for it" else ""
+            add("Helper service", true, "connected in $bindMs ms$slow")
             val r = sh("id")
             add("Command through the helper", r.ok, if (r.ok) r.out.trim().take(120) else r.message)
         }
         val d = direct("id")
         add("Command through Shizuku directly", d.ok, if (d.ok) d.out.trim().take(120) else d.message)
+        // The helper didn't start: the direct route is how to look at why, from the same user the helper would run as.
+        if (helper == null && d.ok) {
+            val ps = direct("ps -A")
+            add("Evidence: the helper's process", ps.ok, if (ps.ok) describeHelperProcess(ps.out, BuildConfig.APPLICATION_ID) else ps.message)
+            val logcat = direct("logcat -d -t 3000 -v threadtime")
+            val lines = if (logcat.ok) helperLogLines(logcat.out, BuildConfig.APPLICATION_ID).map { scrub(it) } else emptyList()
+            add(
+                "Evidence: the system log",
+                logcat.ok,
+                when {
+                    !logcat.ok -> logcat.message
+                    lines.isEmpty() -> "no lines about Shizuku or the helper in the last 3000 log lines"
+                    else -> "the newest ${lines.size} lines about Shizuku or the helper (app names left out):\n" + lines.joinToString("\n")
+                },
+            )
+        }
         steps
     }
 
@@ -263,19 +365,23 @@ object Privileged {
 
     private val PACKAGE = Regex("""\b[a-zA-Z][\w]*(?:\.[\w]+){2,}\b""")
 
-    private suspend fun connect(): IShellService? = mutex.withLock {
+    /** [record] is false for the probe, whose failures say nothing about how long to leave the helper alone. */
+    private suspend fun connect(waitMs: Long = BIND_TIMEOUT_MS, record: Boolean = true): IShellService? = mutex.withLock {
         liveService()?.let { return it }
         if (!ready()) return null
         if (System.currentTimeMillis() < helperBrokenUntil) return null
         lastBindError = null
-        val bound = withTimeoutOrNull(BIND_TIMEOUT_MS) {
+        val bound = withTimeoutOrNull(waitMs) {
             withContext(Dispatchers.Main) {
                 suspendCancellableCoroutine { cont ->
                     val conn = object : ServiceConnection {
                         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
                             val s = binder?.takeIf { it.pingBinder() }?.let { IShellService.Stub.asInterface(it) }
                             service = s
-                            if (s != null) helperBrokenUntil = 0L
+                            if (s != null) {
+                                helperBrokenUntil = 0L
+                                helperFailures = 0
+                            }
                             if (cont.isActive) cont.resume(s)
                         }
 
@@ -293,8 +399,11 @@ object Privileged {
             }
         }
         if (bound == null) {
-            if (lastBindError == null) lastBindError = "no answer within ${BIND_TIMEOUT_MS / 1000} s"
-            helperBrokenUntil = System.currentTimeMillis() + BROKEN_FOR_MS
+            if (lastBindError == null) lastBindError = "no answer within ${waitMs / 1000} s"
+            if (record) {
+                helperFailures++
+                helperBrokenUntil = System.currentTimeMillis() + helperRetryDelayMs(helperFailures)
+            }
         }
         bound
     }

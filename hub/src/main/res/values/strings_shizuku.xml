@@ -4,5 +4,5 @@
     <string name="shizuku_testing">Testing…</string>
     <string name="action_copy_result">Copy result</string>
     <string name="plate_dev_test">Developer test</string>
-    <string name="shizuku_test_hint">Checks each step between this app and Shizuku and shows where it stops. If something fails, paste the result into a problem report.</string>
+    <string name="shizuku_test_hint">Checks each step between this app and Shizuku and shows where it stops. It can take half a minute. If the helper service doesn’t start, it also lists this app’s processes and the log lines about Shizuku and the helper, with other apps’ names left out. If something fails, paste the result into a problem report.</string>
 </resources>
