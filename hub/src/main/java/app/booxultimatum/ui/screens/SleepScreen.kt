@@ -616,6 +616,8 @@ private fun LivePlate(spec: SleepFaceSpec, shell: Boolean, readKey: Int) {
         prefs = next
         app.booxultimatum.core.sleep.LivePrefs.save(context, next)
         if (!next.enabled) app.booxultimatum.core.sleep.LiveSleep.cancel(context)
+        // The picture carries "Paused until …" when quiet hours are near: a change of hours redraws it.
+        app.booxultimatum.core.sleep.SleepScheduler.request(context, "live", 1_000)
     }
 
     SleepPlate(stringResource(R.string.sl_live)) {
@@ -643,6 +645,11 @@ private fun LivePlate(spec: SleepFaceSpec, shell: Boolean, readKey: Int) {
         val to = "%02d:00".format(prefs.quietTo)
         ToggleRow(stringResource(R.string.sl_live_quiet), stringResource(R.string.sl_live_quiet_detail, from, to), prefs.quiet) {
             Key(stringResource(if (prefs.quiet) R.string.sl_live_on else R.string.sl_live_off), onClick = { save(prefs.copy(quiet = !prefs.quiet)) })
+        }
+        if (prefs.quiet) {
+            HourStepper(stringResource(R.string.sl_live_quiet_from), prefs.quietFrom) { save(prefs.copy(quietFrom = it)) }
+            HourStepper(stringResource(R.string.sl_live_quiet_to), prefs.quietTo) { save(prefs.copy(quietTo = it)) }
+            Prose(stringResource(R.string.sl_live_quiet_note), color = Ink.Legend, modifier = Modifier.padding(vertical = Space.xs))
         }
 
         Spacer(Modifier.height(Space.m))
@@ -682,6 +689,22 @@ private fun LivePlate(spec: SleepFaceSpec, shell: Boolean, readKey: Int) {
         Text(last, style = MaterialTheme.typography.bodyMedium)
         if (record?.missed == true) Prose(stringResource(R.string.sl_live_missed), color = Ink.Alert, modifier = Modifier.padding(top = Space.xs))
         note?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Ink.Legend, modifier = Modifier.padding(top = Space.xs)) }
+    }
+}
+
+/** An hour of the day, from 00:00 to 23:00, stepped one hour at a time and wrapping past midnight. */
+@Composable
+private fun HourStepper(label: String, hour: Int, onChange: (Int) -> Unit) {
+    Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text(label, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f).padding(start = Space.m + 24.dp))
+        Key("−", onClick = { onChange((hour + 23) % 24) })
+        Text(
+            "%02d:00".format(hour),
+            style = MaterialTheme.typography.titleLarge,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            modifier = Modifier.widthIn(min = 88.dp),
+        )
+        Key("+", onClick = { onChange((hour + 1) % 24) })
     }
 }
 

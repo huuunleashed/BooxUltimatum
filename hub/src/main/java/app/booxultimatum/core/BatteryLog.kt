@@ -20,6 +20,8 @@ import androidx.core.content.ContextCompat
 import app.booxultimatum.core.battery.BatteryCsv
 import app.booxultimatum.core.battery.BatteryEvents
 import app.booxultimatum.core.battery.DisplayWatch
+import app.booxultimatum.core.battery.RestartAdvice
+import app.booxultimatum.core.battery.SleepGuard
 import app.booxultimatum.core.exec.Privileged
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -189,7 +191,8 @@ object BatteryLog {
                 }
                 when (i.action) {
                     Intent.ACTION_SCREEN_OFF -> {
-                        prefs(app).edit().putLong("last_screen_off", System.currentTimeMillis()).apply()
+                        // The guard's own wake-and-lock must not move the start of the sleep it is trying to save.
+                        if (!SleepGuard.causedWake()) prefs(app).edit().putLong("last_screen_off", System.currentTimeMillis()).apply()
                         DisplayWatch.recheck(app)
                     }
                     Intent.ACTION_SCREEN_ON -> DisplayWatch.recheck(app)
@@ -205,6 +208,7 @@ object BatteryLog {
 
     /** A screen-on ends the sleep that a screen-off began: BatteryEvents hears how long it lasted, once. */
     private fun woke(app: Context) {
+        if (SleepGuard.causedWake()) return
         val off = prefs(app).getLong("last_screen_off", 0)
         if (off <= 0) return
         prefs(app).edit().putLong("last_screen_off", 0).apply()
@@ -591,6 +595,8 @@ class BatteryLogReceiver : BroadcastReceiver() {
         if (reason != "tick") BatteryLog.schedule(context)
         BatteryLog.record(context, reason) {
             if (reason == "boot") runCatching { BatteryEvents.booted(context.applicationContext) }
+            // A restart of Android alone sends BOOT_COMPLETED again too: that is when the advice is due.
+            if (intent.action == Intent.ACTION_BOOT_COMPLETED) runCatching { RestartAdvice.check(context.applicationContext) }
             result.finish()
         }
     }

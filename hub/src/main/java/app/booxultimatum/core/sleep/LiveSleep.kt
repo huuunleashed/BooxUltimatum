@@ -13,6 +13,7 @@ import android.os.PowerManager
 import android.provider.Settings
 import androidx.core.content.edit
 import app.booxultimatum.core.Journal
+import app.booxultimatum.core.battery.DisplayWatch
 import app.booxultimatum.core.exec.Privileged
 import app.booxultimatum.kit.log.Logbook
 import org.json.JSONObject
@@ -206,14 +207,30 @@ object LiveSleep {
     internal fun nextDue(c: Context): Long = state(c).getLong("next", 0)
 
     /** Whether this moment is one the owner wants updates at: charging only, and outside quiet hours. */
-    fun wantedNow(context: Context, prefs: LivePrefs, now: Long = System.currentTimeMillis()): Boolean {
+    fun wantedNow(context: Context, prefs: LivePrefs, now: Long = System.currentTimeMillis(), ignoreQuiet: Boolean = false): Boolean {
         if (prefs.onlyCharging && !charging(context)) return false
-        if (prefs.quiet && prefs.quietFrom != prefs.quietTo) {
-            val h = Calendar.getInstance().apply { timeInMillis = now }.get(Calendar.HOUR_OF_DAY)
-            val inQuiet = if (prefs.quietFrom < prefs.quietTo) h in prefs.quietFrom until prefs.quietTo else h >= prefs.quietFrom || h < prefs.quietTo
-            if (inQuiet) return false
-        }
-        return true
+        return ignoreQuiet || !inQuiet(prefs, now)
+    }
+
+    /** Whether the tablet is on a charger, for the first frame of a sleep, which covers Boox's charging bar. */
+    fun isCharging(context: Context): Boolean = charging(context)
+
+    /** Whether [at] falls in the owner's quiet hours. A window that wraps midnight (23 to 7) is read as one night. */
+    fun inQuiet(prefs: LivePrefs, at: Long, zone: java.util.TimeZone = java.util.TimeZone.getDefault()): Boolean {
+        if (!prefs.quiet || prefs.quietFrom == prefs.quietTo) return false
+        val h = Calendar.getInstance(zone).apply { timeInMillis = at }.get(Calendar.HOUR_OF_DAY)
+        return if (prefs.quietFrom < prefs.quietTo) h in prefs.quietFrom until prefs.quietTo else h >= prefs.quietFrom || h < prefs.quietTo
+    }
+
+    /**
+     * The hour updates start again at, when the face drawn at [now] is the last until then: quiet hours are on and the
+     * next update would land in them. The face says so, because a picture that stands still all night otherwise looks
+     * like a screen that stopped working. Null when updates carry on.
+     */
+    fun pausedUntilHour(context: Context, prefs: LivePrefs, now: Long = System.currentTimeMillis()): Int? {
+        if (!prefs.enabled || !prefs.quiet || prefs.quietFrom == prefs.quietTo) return null
+        val next = now + effectiveStep(context, prefs) * 60_000L
+        return if (inQuiet(prefs, now) || inQuiet(prefs, next)) prefs.quietTo else null
     }
 
     fun active(context: Context): Boolean {
@@ -276,6 +293,9 @@ class LiveSleepReceiver : BroadcastReceiver() {
         else log.i("tick", "skew_s" to skewMs / 1_000)
         // Re-arm first: a tick that finds no bound service must not end the chain.
         runCatching { LiveSleep.schedule(context.applicationContext) }
+        // Every tick is also a look at a display left on while asleep, so a stuck one is found and healed even if the
+        // watch's own timers were frozen (a display stuck on keeps the processor awake, but this costs nothing to be sure).
+        runCatching { DisplayWatch.recheck(context.applicationContext) }
         LiveSleepService.tick(context.applicationContext)
     }
 }

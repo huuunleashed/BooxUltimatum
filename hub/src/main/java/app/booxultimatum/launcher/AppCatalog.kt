@@ -19,6 +19,9 @@ import android.os.UserHandle
 import android.os.UserManager
 import android.util.LruCache
 import androidx.core.graphics.drawable.toBitmap
+import app.booxultimatum.core.exec.Privileged
+import app.booxultimatum.kit.core.AppWork
+import kotlinx.coroutines.launch
 import org.json.JSONArray
 
 enum class IconStyle { Original, Monochrome, Grayscale }
@@ -394,24 +397,71 @@ class AppCatalog(private val context: Context) {
         return out
     }
 
-    fun launch(t: LaunchTarget): Boolean = runCatching {
+    /**
+     * Starts [t]. False when it can't be started from here at all, so the caller opens the app's details instead. A
+     * frozen package is started asynchronously (it has to be enabled first), and [onFailed] is called on the main
+     * thread if that didn't work after this returned true.
+     */
+    fun launch(t: LaunchTarget, onFailed: () -> Unit = {}): Boolean = runCatching {
         if (t.intent != null) {
             context.startActivity(android.content.Intent(t.intent).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
             true
         } else if (t.frozen) {
-            // Disabled components don't resolve a launch intent, so go explicit; if the system
-            // refuses a truly disabled package this throws and the UI opens its details instead.
-            val explicit = android.content.Intent(android.content.Intent.ACTION_MAIN)
-                .addCategory(android.content.Intent.CATEGORY_LAUNCHER)
-                .setComponent(t.component)
-                .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-            context.startActivity(explicit)
-            true
+            launchFrozen(t, onFailed)
         } else {
             launcherApps.startMainActivity(t.component, t.user, null, null)
             true
         }
     }.getOrDefault(false)
+
+    private val main = android.os.Handler(android.os.Looper.getMainLooper())
+
+    /**
+     * A package Boox froze is disabled, and Android refuses to start a disabled app (verified on 2026-10-12, when
+     * tapping a frozen app did nothing: the explicit start threw and the sheet's Open key repeated it). Boox's own home
+     * enables it first through a framework helper no other app can call (`ApplicationFreezeHelper`), so here it is
+     * done with Shizuku's shell (`pm enable`, T2), the same state change; Boox's own auto-freeze may freeze it again
+     * later, as it would for an app opened from Boox's home. Without Shizuku this returns false and the sheet explains.
+     */
+    private fun launchFrozen(t: LaunchTarget, onFailed: () -> Unit): Boolean {
+        val pkg = t.component.packageName
+        // It may have been unfrozen since the list was read, from Boox's own App Freeze page: start it as it is.
+        if (!isFrozen(pkg)) return startExplicit(t)
+        if (!Privileged.ready()) return false
+        val user = t.user.hashCode()
+        AppWork.scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            val enabled = runCatching { Privileged.sh("pm enable --user $user $pkg") }.getOrNull()
+            var started = false
+            if (enabled?.ok == true) {
+                repeat(20) { if (!started) { if (!isFrozen(pkg)) started = startExplicit(t) else Thread.sleep(100) } }
+            }
+            log.i("frozen app opened", "pkg" to pkg, "enabled" to (enabled?.ok == true), "started" to started)
+            if (!started) main.post(onFailed)
+        }
+        return true
+    }
+
+    private fun startExplicit(t: LaunchTarget): Boolean = runCatching {
+        context.startActivity(
+            android.content.Intent(android.content.Intent.ACTION_MAIN)
+                .addCategory(android.content.Intent.CATEGORY_LAUNCHER)
+                .setComponent(t.component)
+                .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),
+        )
+        true
+    }.getOrDefault(false)
+
+    /** Disabled by the owner or by Boox's freeze; an app with no state of its own set counts as enabled. */
+    private fun isFrozen(pkg: String): Boolean = runCatching {
+        when (context.packageManager.getApplicationEnabledSetting(pkg)) {
+            android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+            android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED_USER,
+            android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED_UNTIL_USED -> true
+            else -> false
+        }
+    }.getOrDefault(true)
+
+    private val log = app.booxultimatum.kit.log.Logbook.logger("launcher")
 
     fun openAppInfo(t: LaunchTarget) {
         runCatching {

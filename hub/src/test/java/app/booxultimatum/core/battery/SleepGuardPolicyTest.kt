@@ -20,9 +20,34 @@ class SleepGuardPolicyTest {
         listOf(0, 1, 2, 4).forEach { assertFalse(SleepGuardPolicy.isDock(it)) }
     }
 
-    @Test fun waitsTwentyMinutesAfterTheLastAction() {
-        assertFalse(SleepGuardPolicy.shouldAct(false, false, 19 * MIN, null))
-        assertTrue(SleepGuardPolicy.shouldAct(false, false, 20 * MIN, null))
+    @Test fun waitsFiveMinutesAfterTheLastActionOfAnotherEpisode() {
+        assertFalse(SleepGuardPolicy.shouldAct(false, false, 4 * MIN, null))
+        assertTrue(SleepGuardPolicy.shouldAct(false, false, 5 * MIN, null))
+    }
+
+    @Test fun roundsFallDueAtTheScheduledMinutesThenHourly() {
+        assertEquals(listOf(2, 5, 10, 20, 40, 100, 160, 220), (0..7).map { SleepGuardPolicy.roundDueMin(it) })
+    }
+
+    @Test fun aLateCheckRunsOneRoundNotABurst() {
+        assertEquals(0, SleepGuardPolicy.roundsDue(0))
+        assertEquals(0, SleepGuardPolicy.roundsDue(2 * MIN - 1))
+        assertEquals(1, SleepGuardPolicy.roundsDue(2 * MIN))
+        assertEquals(3, SleepGuardPolicy.roundsDue(10 * MIN))
+        // Five hours with the display on: the five scheduled rounds and four hourly ones (100, 160, 220 and 280 minutes).
+        assertEquals(9, SleepGuardPolicy.roundsDue(5 * 60 * MIN))
+    }
+
+    @Test fun theLadderIsLeastDrasticFirstAndCoversEveryStepOnce() {
+        val ladder = SleepGuardPolicy.LADDER
+        assertEquals(GuardStep.values().toSet(), ladder.toSet())
+        assertEquals(GuardStep.Refresh, ladder.first())
+        assertEquals(GuardStep.Key, ladder.last())
+        // The stored ids are part of the log format and the last-action record: they must not move.
+        assertEquals(listOf(1, 2, 3, 4, 5), GuardStep.values().map { it.id }.sorted())
+        assertEquals(GuardStep.Refresh.id, 1)
+        assertEquals(GuardStep.Lock.id, 2)
+        assertEquals(GuardStep.Key.id, 3)
     }
 
     @Test fun waitsAMinuteAfterInput() {

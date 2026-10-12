@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Today page and the Overview battery plate. Units are abbreviations, so they carry no plural forms. -->
-    <string name="bd_read_at_since">Read at %1$s · recorded since %2$s (%3$s)</string>
+    <string name="bd_read_at_recorded">Read at %1$s · %2$s of the last %3$s recorded</string>
     <string name="bd_read_at_empty">Read at %1$s · nothing recorded yet</string>
     <plurals name="bd_days">
         <item quantity="one">%d day</item>
         <item quantity="other">%d days</item>
     </plurals>
     <string name="bd_hours">%1$d h</string>
-    <string name="bd_recorded">Recorded %1$s of %2$s</string>
     <string name="bd_plate_now">Battery now</string>
     <string name="bd_estimate_about">About %1$s at your usual use</string>
     <plurals name="bd_estimate_range">

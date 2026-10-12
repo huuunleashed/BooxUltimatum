@@ -146,6 +146,22 @@ object SleepStudio {
     }.getOrNull()
 
     /**
+     * The picture Boox is about to show, decoded at the panel's size in the rotation it is in now, for the overlay that
+     * covers Boox's charging bar at the start of a sleep. Null when nothing current is kept (the studio is off, the
+     * face changed or the tablet turned since). Mutable, so the live updates reuse it as their spare buffer. Blocking.
+     */
+    fun coverBitmap(context: Context): Bitmap? {
+        val spec = SleepStore.load(context)
+        if (!spec.active || spec.mode != SleepMode.Image) return null
+        val (w, h) = panelSize(context)
+        val kept = cached(context, w, h, spec) ?: return null
+        val options = BitmapFactory.Options().apply { inMutable = true }
+        val bitmap = runCatching { BitmapFactory.decodeByteArray(kept.bytes, 0, kept.bytes.size, options) }.getOrNull() ?: return null
+        if (bitmap.width != w || bitmap.height != h) { bitmap.recycle(); return null }
+        return bitmap
+    }
+
+    /**
      * Renders the face for the other orientation and keeps it encoded, unless the one kept is already current. Onyx
      * centre-crops the picture to the rotation the tablet sleeps in, so the second orientation has to be ready before
      * anyone turns the tablet; rendering it only after the turn left seconds in which a sleep showed a cropped face.

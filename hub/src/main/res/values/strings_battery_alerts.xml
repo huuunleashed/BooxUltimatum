@@ -11,9 +11,9 @@
     <string name="ba_preview_failed">Couldn’t read the log just now.</string>
     <string name="ba_guard_title">Sleep guard</string>
     <string name="ba_experimental">Experimental</string>
-    <string name="ba_guard_body">If the display stays on for 10 minutes while the tablet is asleep, it tries to put the tablet to sleep: it asks the system to refresh its sleep screen, then locks the screen, then (with Shizuku) presses the sleep key. None of these steps has been seen to work on this tablet yet.</string>
+    <string name="ba_guard_body">If the display stays on while the tablet is asleep, which can drain a whole night, the guard starts after 2 minutes and keeps trying every few minutes until the display goes off. It tells the Boox sleep screen that the display is on, asks it to refresh, locks the screen, wakes the tablet and locks it again, and with Shizuku presses the wake and sleep keys. After each try the log says which step worked; none has been seen to work on this tablet yet, and Shizuku is only needed for the last.</string>
     <string name="ba_guard_last">Last time: %1$s, %2$s</string>
-    <string name="ba_guard_healed_by">healed by step %1$d</string>
+    <string name="ba_guard_healed_by">healed: %1$s</string>
     <string name="ba_guard_not_healed_by">didn’t heal it</string>
     <string name="ba_when">%1$s %2$s</string>
     <string name="ba_state_on">On</string>
@@ -31,7 +31,11 @@
     <string name="ba_before_text">%1$s: %2$s.</string>
     <string name="ba_guard_healed">Sleep guard (experimental): %1$s, and the display went to sleep.</string>
     <string name="ba_guard_tried">Sleep guard (experimental) tried, and the display stayed on.</string>
+    <string name="ba_restart_title">Android restarted by itself</string>
+    <string name="ba_restart_text">After a restart like this one, the tablet’s sleep got stuck twice, with the display on all night and the battery emptying. Restart the tablet (hold the power button, then Restart) before you leave it asleep.</string>
     <string name="ba_step_refresh">it asked the sleep screen to refresh</string>
     <string name="ba_step_lock">it locked the screen</string>
-    <string name="ba_step_key">it pressed the sleep key</string>
+    <string name="ba_step_key">it pressed the wake and sleep keys</string>
+    <string name="ba_step_nudge">it told the sleep screen the display was on</string>
+    <string name="ba_step_cycle">it woke the tablet and locked it again</string>
 </resources>

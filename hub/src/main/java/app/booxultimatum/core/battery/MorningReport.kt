@@ -240,12 +240,7 @@ object MorningReport {
 
     private fun guardClause(app: Context, guard: GuardRecord): String {
         val step = guard.healedByStep ?: return app.getString(R.string.ba_guard_tried)
-        val what = when (step) {
-            1 -> R.string.ba_step_refresh
-            2 -> R.string.ba_step_lock
-            else -> R.string.ba_step_key
-        }
-        return app.getString(R.string.ba_guard_healed, app.getString(what))
+        return app.getString(R.string.ba_guard_healed, app.getString(GuardStep.label(step)))
     }
 
     private fun clock(app: Context, ms: Long): String = DateFormat.getTimeFormat(app).format(Date(ms))

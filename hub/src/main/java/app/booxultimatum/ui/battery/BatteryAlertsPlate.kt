@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import app.booxultimatum.R
 import app.booxultimatum.core.battery.BatteryAlerts
 import app.booxultimatum.core.battery.GuardRecord
+import app.booxultimatum.core.battery.GuardStep
 import app.booxultimatum.core.battery.MorningReport
 import app.booxultimatum.kit.ui.Format
 import app.booxultimatum.kit.ui.Key
@@ -138,6 +139,7 @@ fun BatteryAlertsPlate(modifier: Modifier = Modifier) {
 
 private fun lastGuardLine(context: Context, last: GuardRecord): String {
     val at = context.getString(R.string.ba_when, BatteryText.day(context, last.atMs), Format.clock(context, last.atMs))
-    val how = last.healedByStep?.let { context.getString(R.string.ba_guard_healed_by, it) } ?: context.getString(R.string.ba_guard_not_healed_by)
+    val how = last.healedByStep?.let { context.getString(R.string.ba_guard_healed_by, context.getString(GuardStep.label(it))) }
+        ?: context.getString(R.string.ba_guard_not_healed_by)
     return context.getString(R.string.ba_guard_last, at, how)
 }

@@ -28,6 +28,18 @@
     <string name="bt_finding_app_heavy">An app used much more than usual</string>
     <string name="bt_finding_died">The battery ran out</string>
     <string name="bt_held_for">held for %1$s</string>
+    <!-- A finding in one plain sentence, for the verdict and the lists; the figures stay in the episode's details. -->
+    <string name="bt_s_display_on">The display stayed on while the tablet slept, %1$s (%2$s).</string>
+    <string name="bt_s_display_on_levels"> The battery went from %1$s.</string>
+    <string name="bt_s_standby_high">The tablet used more battery than usual while it slept, %1$s (%2$s).</string>
+    <string name="bt_s_not_sleeping">The processor stayed awake while the tablet slept, %1$s (%2$s).</string>
+    <string name="bt_s_wake_lock">%1$s kept the tablet awake for %2$s.</string>
+    <string name="bt_s_something_wake_lock">Something kept the tablet awake for %1$s.</string>
+    <string name="bt_s_restart">Android restarted on %1$s.</string>
+    <string name="bt_s_restart_watch">Android restarted by itself on %1$s and the tablet has not been restarted since. On this tablet that has twice been followed by a night with the display stuck on and the battery emptying; restarting the tablet clears it.</string>
+    <string name="bt_s_app_heavy">%1$s used much more battery than usual, about %2$s.</string>
+    <string name="bt_s_app_heavy_unnamed">An app used much more battery than usual.</string>
+    <string name="bt_s_died">The battery ran out on %1$s.</string>
     <string name="bt_slept_never">processor never slept</string>
     <string name="bt_slept_share">processor slept %1$s</string>
     <string name="bt_inferred">inferred from the drain</string>

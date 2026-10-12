@@ -440,7 +440,7 @@ private fun AppTile(model: LauncherModel, t: LaunchTarget, icon: Dp, modifier: M
     val prefs by model.prefs
     Column(
         modifier.clip(RoundedCornerShape(16.dp))
-            .combinedClickable(role = Role.Button, onClickLabel = t.label, onLongClick = { model.selected.value = t }, onClick = { if (!model.catalog.launch(t)) model.selected.value = t })
+            .combinedClickable(role = Role.Button, onClickLabel = t.label, onLongClick = { model.selected.value = t }, onClick = { if (!model.catalog.launch(t) { model.selected.value = t }) model.selected.value = t })
             .padding(horizontal = 4.dp, vertical = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -781,7 +781,7 @@ private fun AppList(model: LauncherModel, items: List<LaunchTarget>, cols: Int, 
                 column.forEach { t ->
                     Row(
                         Modifier.fillMaxWidth().height(ListRowHeight).clip(RoundedCornerShape(12.dp))
-                            .combinedClickable(role = Role.Button, onClickLabel = t.label, onLongClick = { model.selected.value = t }, onClick = { if (!model.catalog.launch(t)) model.selected.value = t })
+                            .combinedClickable(role = Role.Button, onClickLabel = t.label, onLongClick = { model.selected.value = t }, onClick = { if (!model.catalog.launch(t) { model.selected.value = t }) model.selected.value = t })
                             .padding(horizontal = Space.s),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -813,6 +813,7 @@ private fun AppActions(model: LauncherModel, t: LaunchTarget, modifier: Modifier
     val pinned = t.key in prefs.favourites || folder != null
     val hidden = t.key in prefs.hidden
     val shortcuts = remember(t.key) { model.catalog.shortcuts(t) }
+    val shizukuUp = remember(t.key) { t.frozen && app.booxultimatum.core.exec.Privileged.ready() }
     val focus = LocalFocusManager.current
     val keyboard = LocalSoftwareKeyboardController.current
     // The panel needs the lower screen; a keyboard left over from search would cover its keys.
@@ -827,11 +828,14 @@ private fun AppActions(model: LauncherModel, t: LaunchTarget, modifier: Modifier
         }
         if (t.frozen) {
             Spacer(Modifier.height(Space.m))
-            Paragraph(stringResource(R.string.l_frozen_explain), color = Ink.Legend)
+            Paragraph(stringResource(if (shizukuUp) R.string.l_frozen_explain_shizuku else R.string.l_frozen_explain), color = Ink.Legend)
         }
         Spacer(Modifier.height(Space.m))
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.s), verticalArrangement = Arrangement.spacedBy(Space.s)) {
-            Key(stringResource(R.string.action_open), primary = true, onClick = { model.selected.value = null; model.catalog.launch(t) })
+            Key(stringResource(R.string.action_open), primary = true, onClick = {
+                // A frozen app that can't be opened from here keeps the panel, which says why.
+                if (model.catalog.launch(t) { model.selected.value = t }) model.selected.value = null
+            })
             Key(stringResource(if (pinned) R.string.l_unpin else R.string.l_pin), onClick = { model.togglePin(t) })
             if (t.key in prefs.favourites) {
                 Key(stringResource(R.string.l_earlier), onClick = { model.move(t, -1) })
@@ -840,6 +844,7 @@ private fun AppActions(model: LauncherModel, t: LaunchTarget, modifier: Modifier
             if (folder != null) Key(stringResource(R.string.l_out_of_folder), onClick = { model.removeFromFolder(t, folder.id) })
             else Key(stringResource(R.string.l_add_to_folder), onClick = { model.selected.value = null; model.folderChooser.value = t })
             Key(stringResource(if (hidden) R.string.l_unhide else R.string.l_hide), onClick = { model.toggleHidden(t); if (!hidden) model.selected.value = null })
+            if (t.frozen) Key(stringResource(R.string.l_frozen_page), onClick = { model.selected.value = null; app.booxultimatum.ui.screens.openBooxFreezePage(context) })
             Key(stringResource(R.string.action_app_info), onClick = { model.selected.value = null; model.catalog.openAppInfo(t) })
             if (!model.catalog.isSystem(t)) {
                 Key(stringResource(R.string.l_uninstall), onClick = {

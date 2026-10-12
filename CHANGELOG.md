@@ -4,6 +4,29 @@ All notable changes to BooxUltimatum. Newest first. The project follows [Semanti
 
 ## [Unreleased]
 
+After the night of 2026-10-12, when the display stayed on while the tablet slept and the battery went from 62 % to 18 %, and the owner's list of complaints. Checked by unit tests on the JVM and a release build with lint. Not run on the tablet yet: the guard's new steps have never been seen to heal a stuck display, and the sleep screen and frozen-app changes need a person to look.
+
+### Added
+
+- **A note when Android restarts by itself.** Both stuck-display nights began after the system process crashed and restarted with no restart of the tablet since (2026-10-08 and 2026-10-11, in the dropbox), and a real restart was followed by three clean nights. The hub now posts one note per such restart (*Android restarted by itself*) saying so, and Today shows the restart as a Watch finding with the same advice until the tablet is restarted. Two cases are a pattern, not a cause.
+- **Quiet hours you set.** *Not at night* on Sleep has *Pause from* and *Resume at* steppers instead of fixed 23:00 to 07:00.
+- **The sleep screen says when it is paused.** A live face whose next update falls in quiet hours shows "Paused until 07:00" at its top left edge, so a picture that stands still all night no longer looks like a screen that stopped.
+- **Frozen apps open from home with Shizuku.** Tapping an app Boox froze enables it with Shizuku's shell and starts it, as Boox's own home does; without Shizuku the panel says why and offers Boox's App Freeze page.
+
+### Changed
+
+- **The sleep guard tries until the display is off.** On 2026-10-12 it made one attempt 10 minutes into a stuck display, both steps that could run failed, and nothing tried again for five hours. It now starts at 2 minutes, runs the whole ladder again at 5, 10, 20 and 40 minutes and hourly after, and has two new steps (telling the Boox dream the display is on, which is the report it waits for before it dozes again, and waking and locking the tablet with a wake lock). A wake it causes itself doesn't send the morning report. It is still opt-in (Battery › Today › Alerts). The ladder was never seen to heal a stuck display; each step's result is logged with its round.
+- **The sleep screen covers Boox's charging bar at once.** On the charger the overlay carries the published picture straight away, instead of the bar showing for about six seconds until a fresh render and refresh. The first frame of a sleep is also drawn in quiet hours, which is what shows the paused note.
+- **Battery › Today reads in sentences.** The verdict and the findings say what happened in one plain sentence (when, how long, what the battery did) instead of a line of figures, the read line carries how much of the day was recorded, *Battery now* is the scale, the charge state and the time left, and fewer findings are listed under the verdict. The figures remain in the episode's details.
+
+### Fixed
+
+- **Tapping a Boox-frozen app did nothing.** The start of a disabled app throws; the panel's Open key repeated it silently, and the panel told you opening it would work.
+
+### Research
+
+- **The display forced on 90 minutes after sleep, three episodes in 12 days.** Exactly 90.0 min after doze on 2026-10-12 and 90.1 min on 2026-10-08, each after a restart of Android's system process (a crash in `RecentTasks.getPersistableTaskIds` on 2026-10-11). The dream was alive and silent for the whole stuck period. `onyx.action.DISPLAY_CHANGED_STATE` isn't a protected broadcast and the dream listens for it with an exported receiver. See `knowledge/experiments.md` (2026-10-12).
+
 ## [0.9.1] (2026-10-11)
 
 BooxUltimatum 0.9.1 follows up issue #4, where the Shizuku helper service doesn't start on a Go 10.3 (firmware 4.2). It doesn't fix why, because that isn't known yet; it stops the failure costing anything and makes *Test Shizuku* find the reason. Nib is unchanged. Checked by unit tests on the JVM and a release build with lint. Not run on any tablet: the failure has never been reproduced here, so nothing below has been seen on the Go 10.3.

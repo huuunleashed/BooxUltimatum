@@ -340,8 +340,28 @@ object SleepRenderer {
             SleepFace.ReturnCard -> SleepFaces.returnCard(page)
             SleepFace.Minimal -> SleepFaces.minimal(page)
         }
+        if (!overlay) data.pausedUntil?.let { SleepPaused.draw(page, it) }
         // Onyx wants a plain 24-bit picture for the image style; only the sticker keeps its alpha.
         target.setHasAlpha(overlay)
+    }
+}
+
+/**
+ * The note on a live face whose next update falls in the owner's quiet hours. It sits in the top margin, left aligned
+ * and well clear of the Boox clock at the top centre, and says the picture is meant to stand still until then.
+ */
+internal object SleepPaused {
+    fun draw(page: SleepPage, text: String) {
+        if (page.dry) return
+        val p = page.paint(page.body, page.s * 0.034f, page.ink)
+        val cap = page.cap(p)
+        val capTop = page.margin * 0.42f
+        val x = page.margin
+        val bar = cap * 0.26f
+        val ink = page.fill(page.ink)
+        page.canvas.drawRect(x, capTop, x + bar, capTop + cap, ink)
+        page.canvas.drawRect(x + bar * 2f, capTop, x + bar * 3f, capTop + cap, ink)
+        page.text(text, x + bar * 4.6f, capTop, p)
     }
 }
 

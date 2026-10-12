@@ -1,9 +1,10 @@
 package app.booxultimatum.ui.screens
 
 import android.content.Context
-import android.text.format.DateFormat
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
@@ -16,10 +17,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import app.booxultimatum.R
 import app.booxultimatum.core.BatteryLog
 import app.booxultimatum.core.BatterySnapshot
@@ -31,6 +34,7 @@ import app.booxultimatum.core.battery.VerdictState
 import app.booxultimatum.kit.ui.Format
 import app.booxultimatum.kit.ui.InstrumentPage
 import app.booxultimatum.kit.ui.Key
+import app.booxultimatum.kit.ui.Lamp
 import app.booxultimatum.kit.ui.Pager
 import app.booxultimatum.kit.ui.Paragraph
 import app.booxultimatum.kit.ui.Plate
@@ -50,11 +54,6 @@ import app.booxultimatum.ui.battery.VerdictBlock
 import app.booxultimatum.ui.battery.episodesOverlapping
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.time.Instant
-import java.time.ZoneId
-import java.time.temporal.ChronoUnit
-import java.util.Date
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -103,15 +102,15 @@ fun BatteryTodayScreen(readKey: Int, compact: Boolean, onReadAgain: () -> Unit, 
         val safePage = page.coerceIn(0, pages - 1)
         val open = if (episodes.isEmpty()) null else openFinding
 
-        item { ReadLine(view) }
+        item { ReadLine(view, verdict.recordedHours, verdict.windowHours) }
         item {
             Spacer(Modifier.height(Space.l))
             VerdictBlock(verdict, onOpenFinding = open)
         }
-        items(others.take(3)) { f -> FindingRow(f, onOpen = open) }
-        if (others.size > 3) item {
+        items(others.take(2)) { f -> FindingRow(f, onOpen = open) }
+        if (others.size > 2) item {
             Text(
-                pluralStringResource(R.plurals.bd_more_findings, others.size - 3, others.size - 3),
+                pluralStringResource(R.plurals.bd_more_findings, others.size - 2, others.size - 2),
                 style = MaterialTheme.typography.bodyMedium,
                 color = Ink.Legend,
                 modifier = Modifier.padding(top = Space.s),
@@ -123,21 +122,13 @@ fun BatteryTodayScreen(readKey: Int, compact: Boolean, onReadAgain: () -> Unit, 
                 reading.snapshot?.let { b ->
                     TuningScale(b.levelPct)
                     Spacer(Modifier.height(Space.l))
-                    StatusLines(b)
+                    NowLine(b)
                 }
                 TimeLeft(view, reading.snapshot)
             }
         }
         if (view.rows.isEmpty()) return@InstrumentPage
 
-        item {
-            Spacer(Modifier.height(Space.l))
-            Text(
-                stringResource(R.string.bd_recorded, hours(context, verdict.recordedHours.toInt()), hours(context, verdict.windowHours.roundToInt())),
-                style = MaterialTheme.typography.bodyMedium,
-                color = Ink.Legend,
-            )
-        }
         if (view.signals.hubBackgroundAllowed == false) item {
             Text(stringResource(R.string.bd_background_restricted), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.s))
             Key(
@@ -182,18 +173,26 @@ private fun windowEpisodes(view: BatteryView): List<Episode> =
     episodesOverlapping(view.timeline.episodes, view.nowMs - BATTERY_WINDOW_MS, view.nowMs)
 
 @Composable
-private fun ReadLine(view: BatteryView) {
+private fun ReadLine(view: BatteryView, recordedHours: Double, windowHours: Double) {
     val context = LocalContext.current
     val clock = Format.clock(context, view.nowMs)
-    val first = view.rows.minOfOrNull { it.epoch }
-    val text = if (first == null) {
+    val text = if (view.rows.isEmpty()) {
         stringResource(R.string.bd_read_at_empty, clock)
     } else {
-        val zone = ZoneId.systemDefault()
-        val days = ChronoUnit.DAYS.between(Instant.ofEpochMilli(first).atZone(zone).toLocalDate(), Instant.ofEpochMilli(view.nowMs).atZone(zone).toLocalDate()).toInt()
-        stringResource(R.string.bd_read_at_since, clock, shortDate(context, first), pluralStringResource(R.plurals.bd_days, days, days))
+        stringResource(R.string.bd_read_at_recorded, clock, hours(context, recordedHours.toInt()), hours(context, windowHours.roundToInt()))
     }
     Text(text, style = MaterialTheme.typography.bodyMedium, color = Ink.Legend)
+}
+
+/** The charge state in one line under the scale: lit while charging. The stored charge and the sleep share are on Health and Causes. */
+@Composable
+private fun NowLine(b: BatterySnapshot) {
+    val context = LocalContext.current
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Lamp(on = b.charging, size = 16.dp)
+        Spacer(Modifier.size(12.dp))
+        Text(chargeLine(context, b), style = MaterialTheme.typography.titleLarge)
+    }
 }
 
 /** The time left: the charge rate while charging, else the estimate with its basis, else what is still missing. */
@@ -229,8 +228,3 @@ internal fun TimeLeft(view: BatteryView, battery: BatterySnapshot?, modifier: Mo
 }
 
 private fun hours(context: Context, value: Int): String = context.getString(R.string.bd_hours, value)
-
-private fun shortDate(context: Context, ms: Long): String {
-    val locale = context.resources.configuration.locales[0]
-    return SimpleDateFormat(DateFormat.getBestDateTimePattern(locale, "MMM d"), locale).format(Date(ms))
-}

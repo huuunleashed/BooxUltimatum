@@ -94,9 +94,31 @@ class LiveSleepService : AccessibilityService() {
         LiveSleep.onSlept(this)
         shown = 0
         LiveSleep.schedule(this)
+        // While charging, Boox draws its own bar over the bottom of the picture. The picture it is showing is the one the
+        // hub published, so the overlay can carry that very picture at once and the bar is covered for a moment, not
+        // for the seconds a fresh render and a refresh take (drawing before the display's state 2 was seen to work
+        // while plugged in, not on battery, where there is no bar to cover).
+        if (LiveSleep.isCharging(this)) coverBar()
         // The first live face goes up as soon as Onyx has drawn its own and dozed, not only at the first alarm: the
         // charging bar is covered from the start and the face reads the same from the first minute of sleep.
         main.postDelayed({ update(first = true) }, FIRST_DELAY_MS)
+    }
+
+    /** Puts the published picture up as the overlay straight away. Decoded off the main thread; dropped if the screen came on. */
+    private fun coverBar() {
+        if (view != null || face != null) return
+        work.post {
+            val picture = runCatching { SleepStudio.coverBitmap(this) }.getOrNull() ?: return@post
+            main.post {
+                if (LiveSleep.interactive(this) || view != null || face != null) { picture.recycle(); return@post }
+                val v = addFace()
+                if (v == null) { picture.recycle(); return@post }
+                face = picture
+                v.bitmap = picture
+                v.invalidate()
+                log.i("charging bar covered", "w" to picture.width, "h" to picture.height)
+            }
+        }
     }
 
     private fun onScreenOn() {
@@ -110,7 +132,8 @@ class LiveSleepService : AccessibilityService() {
         val prefs = LivePrefs.load(this)
         if (!LiveSleep.active(this) || LiveSleep.interactive(this)) return
         if (!first) LiveSleep.schedule(this, prefs)
-        if (!LiveSleep.wantedNow(this, prefs)) return
+        // The first frame of a sleep is drawn in quiet hours too: it carries "Paused until …" and covers the charging bar.
+        if (!LiveSleep.wantedNow(this, prefs, ignoreQuiet = first)) return
         hold(HOLD_MS)
         work.post {
             val slept = LiveSleep.record(this)?.sleptAt ?: System.currentTimeMillis()

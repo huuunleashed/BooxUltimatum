@@ -177,6 +177,8 @@ data class Signals(
     val shizukuRunning: Boolean,
     /** When the framework last restarted since the last boot (dropbox system_server_crash or SYSTEM_RESTART), else null. */
     val restartAtMs: Long?,
+    /** When the tablet last booted, from the clock: a restart at or after it is one that no reboot has cleared. */
+    val bootAtMs: Long? = null,
     /** Wake locks held an hour or more while asleep. */
     val heldLocks: List<HeldLock> = emptyList(),
 )

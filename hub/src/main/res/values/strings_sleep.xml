@@ -151,6 +151,10 @@
     <string name="sl_live_charging_detail">No wake-ups on battery at all</string>
     <string name="sl_live_quiet">Not at night</string>
     <string name="sl_live_quiet_detail">No updates from %1$s to %2$s</string>
+    <string name="sl_live_quiet_note">While paused, the screen keeps the last picture and says so at its top edge: Paused until the hour you set.</string>
+    <string name="sl_live_quiet_from">Pause from</string>
+    <string name="sl_live_quiet_to">Resume at</string>
+    <string name="sl_paused_until">Paused until %1$s</string>
     <string name="sl_live_on">On</string>
     <string name="sl_live_off">Off</string>
     <string name="sl_live_setup">Needs, all on the tablet</string>

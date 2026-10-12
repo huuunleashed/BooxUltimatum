@@ -34,7 +34,7 @@ fun FindingRow(finding: Finding, modifier: Modifier = Modifier, onOpen: ((Findin
     val context = LocalContext.current
     val severity = BatteryText.severityLabel(context, finding.severity)
     val title = BatteryText.findingTitle(context, finding)
-    val evidence = BatteryText.findingEvidence(context, finding)
+    val evidence = BatteryText.findingSentence(context, finding)
     val sentence = stringResource(R.string.fr_sentence, severity, title, evidence)
     val interaction = remember { MutableInteractionSource() }
     val tap = if (onOpen == null) Modifier else Modifier.clickable(interactionSource = interaction, indication = null, role = Role.Button) { onOpen(finding) }
@@ -49,7 +49,7 @@ fun FindingRow(finding: Finding, modifier: Modifier = Modifier, onOpen: ((Findin
             Tag(severity, strong = finding.severity == Severity.Problem)
             Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = Space.s))
         }
-        Text(evidence, style = MaterialTheme.typography.bodyMedium, color = Ink.Legend, modifier = Modifier.padding(top = Space.xs, bottom = Space.s))
+        Text(evidence, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.xs, bottom = Space.s))
         HorizontalDivider(thickness = Lines.hairline, color = Ink.Rule)
     }
 }

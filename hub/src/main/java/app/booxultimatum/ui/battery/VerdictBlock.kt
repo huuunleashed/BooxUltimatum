@@ -54,7 +54,7 @@ fun VerdictBlock(verdict: Verdict, modifier: Modifier = Modifier, onOpenFinding:
                 Text(word, style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
                 if (worst != null) {
                     Text(BatteryText.findingTitle(context, worst), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = Space.s))
-                    Text(BatteryText.findingEvidence(context, worst), style = MaterialTheme.typography.bodyMedium, color = Ink.Legend)
+                    Text(BatteryText.findingSentence(context, worst), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.xs))
                 }
                 if (line != null) Text(line, style = MaterialTheme.typography.bodyMedium, color = Ink.Legend, modifier = Modifier.padding(top = Space.s))
             }

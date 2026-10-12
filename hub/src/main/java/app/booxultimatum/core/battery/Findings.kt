@@ -49,7 +49,9 @@ object Findings {
         }
         val restart = signals.restartAtMs?.takeIf { it in t.fromMs..t.toMs }?.let { restartMs ->
             val stuckSoon = (displayOn + standby).any { it.startMs in restartMs..(restartMs + RESTART_WINDOW_MS) }
-            Finding(FindingKind.Restart, if (stuckSoon) Severity.Watch else Severity.Info, restartMs, restartMs)
+            // A restart no reboot has cleared is the state both stuck-display nights began in (2026-10-08 and 2026-10-12).
+            val unresolved = signals.bootAtMs?.let { restartMs >= it } == true
+            Finding(FindingKind.Restart, if (stuckSoon || unresolved) Severity.Watch else Severity.Info, restartMs, restartMs)
         }
         val hub = buildList {
             if (signals.hubBackgroundAllowed == false) add(Finding(FindingKind.HubRestricted, Severity.Watch, nowMs, nowMs))

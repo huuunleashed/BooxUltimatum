@@ -112,6 +112,43 @@ object BatteryText {
         return facts.joinToString(context.getString(R.string.bt_evidence_sep))
     }
 
+    /**
+     * A finding as one plain sentence, for the verdict and the finding lists: when, for how long, and what the battery
+     * did. The measured figures (mAh, mA, share of the time the processor slept) stay in [findingEvidence], which the
+     * episode's details show.
+     */
+    fun findingSentence(context: Context, f: Finding): String {
+        val span = timeRange(context, f.startMs, f.endMs)
+        val length = duration(context, f.endMs - f.startMs)
+        return when (f.kind) {
+            FindingKind.DisplayOn -> {
+                val levels = if (f.level0 != null && f.level1 != null) {
+                    context.getString(R.string.bt_s_display_on_levels, levelRange(context, f.level0, f.level1))
+                } else {
+                    ""
+                }
+                context.getString(R.string.bt_s_display_on, span, length) + levels
+            }
+            FindingKind.StandbyHigh -> context.getString(R.string.bt_s_standby_high, span, length)
+            FindingKind.NotSleeping -> context.getString(R.string.bt_s_not_sleeping, span, length)
+            FindingKind.WakeLock -> {
+                val held = duration(context, f.endMs - f.startMs)
+                f.subject?.let { context.getString(R.string.bt_s_wake_lock, it, held) } ?: context.getString(R.string.bt_s_something_wake_lock, held)
+            }
+            FindingKind.Restart -> context.getString(
+                if (f.severity == Severity.Watch) R.string.bt_s_restart_watch else R.string.bt_s_restart,
+                dayAndClock(context, f.startMs),
+            )
+            FindingKind.AppHeavy -> {
+                val name = f.subject?.let { appLabel(context, it) }
+                val rate = f.avgMa?.let { ma(context, it) }
+                if (name != null && rate != null) context.getString(R.string.bt_s_app_heavy, name, rate) else context.getString(R.string.bt_s_app_heavy_unnamed)
+            }
+            FindingKind.Died -> context.getString(R.string.bt_s_died, dayAndClock(context, f.startMs))
+            FindingKind.HubRestricted -> findingTitle(context, f)
+        }
+    }
+
     fun severityLabel(context: Context, s: Severity): String {
         val id = when (s) {
             Severity.Info -> R.string.bt_severity_info

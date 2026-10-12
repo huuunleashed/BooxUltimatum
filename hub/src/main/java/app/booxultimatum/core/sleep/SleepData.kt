@@ -17,6 +17,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.TextStyle
 import java.time.temporal.WeekFields
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -181,6 +182,11 @@ data class SleepData(
     val weather: SleepWeather? = null,
     val sky: SleepSky? = null,
     val words: SleepWords,
+    /**
+     * "Paused until 07:00", set on a live face whose next update would land in the owner's quiet hours, so the picture
+     * that stands still all night says so. Null when updates carry on, and on faces that never update.
+     */
+    val pausedUntil: String? = null,
 ) {
     /** Leaves out the exact clock, unless the face shows the time itself, in which case every minute is a change. */
     fun renderKey(): String = copy(now = 0L).toString()
@@ -293,7 +299,19 @@ data class SleepData(
                 weather = if (face?.readsSky == true) weather(context, now, today, zone, locale) else null,
                 sky = if (face?.readsSky == true) sky(context, faceAt, today, zone, dayStart) else null,
                 words = words(context, today),
+                pausedUntil = if (liveFace) pausedNote(context, now) else null,
             )
+        }
+
+        /** "Paused until 07:00" in the owner's clock format, or null when the next live update is not in quiet hours. */
+        private fun pausedNote(context: Context, now: Long): String? {
+            val hour = LiveSleep.pausedUntilHour(context, LivePrefs.load(context), now) ?: return null
+            val at = Calendar.getInstance().apply {
+                timeInMillis = now
+                set(Calendar.HOUR_OF_DAY, hour)
+                set(Calendar.MINUTE, 0)
+            }.time
+            return context.getString(R.string.sl_paused_until, DateFormat.getTimeFormat(context).format(at))
         }
 
         private val MOON = listOf(

@@ -132,14 +132,17 @@ Sent after every qualifying sleep, whatever was found, because a notification th
 
 ### 4.8 Sleep guard (opt-in, Experimental)
 
-Off until the owner turns it on, and labelled **Experimental** on the switch and in its text, because none of its steps has been seen healing a stuck display (§9). Detect first, intervene second. The trigger is *display ON, not interactive, for 10 minutes*; transient refreshes last about 1.3 s, so nothing ordinary reaches it. The ladder, each step logged with its result so the log shows which one healed it:
+Off until the owner turns it on (decided 2026-10-09), and labelled **Experimental** on the switch and in its text, because none of its steps has been seen healing a stuck display (§9). Whether to default it on is open: the display stuck on again on 2026-10-12 and emptied 44 % of the battery. Detect first, intervene second. The trigger is *display ON, not interactive*; transient refreshes last about 1.3 s, so nothing ordinary reaches it. It begins at 2 minutes, because the only cost of acting early is a harmless broadcast, and runs a *round* of the ladder at 2, 5, 10, 20 and 40 minutes and every hour after, for as long as the display stays on (`DisplayWatch`, which the live sleep alarm also calls every tick, so a missed timer costs nothing). The 0.9.0 guard made one attempt, 10 minutes in, and a failed attempt was never repeated: five hours of stuck display followed (2026-10-12). Each rung is logged with its round and result, so the log shows which one healed it:
 
-1. Send `onyx_dream_refresh`, which makes the dream run its show-and-doze path again. Check 15 s later.
-2. Still ON: `GLOBAL_ACTION_LOCK_SCREEN` through the accessibility service the live sleep screen already uses (no extra capability needed *[verify]*).
-3. Still ON: with Shizuku, `input keyevent 223`.
-4. Notify once: *the display was on for 12 minutes while asleep; put to sleep at 23:58*.
+1. Send `onyx_dream_refresh`, which makes the dream run its show-and-doze path again. Check 15 s later. When the dream believes the display is already ON, its `stopDozing` is a no-op and this does nothing.
+2. Send `onyx.action.DISPLAY_CHANGED_STATE` with `state` 2 to `com.onyx`: the report the dream waits for before it starts its doze timer. Not a protected broadcast, and the dream’s receiver is exported (§9, 2026-10-12). Check 6 s later.
+3. Still ON: `GLOBAL_ACTION_LOCK_SCREEN` through the accessibility service the live sleep screen already uses (no extra capability needed *[verify]*). Seen not to heal it on 2026-10-12.
+4. Still ON: wake the tablet with a wake lock that turns the screen on (`SCREEN_DIM_WAKE_LOCK | ACQUIRE_CAUSES_WAKEUP`), then lock it through the accessibility service, so the firmware sleeps it from awake and the dream starts afresh *[verify]*. The wake it causes is marked, so it neither sends the morning report nor counts as the owner’s input.
+5. Still ON: with Shizuku, `input keyevent 224; sleep 1; input keyevent 223` (wake, then sleep).
 
-It never acts while interactive or within a minute of input, and not while docked, where Android's own dream legitimately keeps the display on. It needs the hub's background use to be allowed, or its single check alarm is cleared at sleep. It ships off and Experimental, and stays labelled so until the experiments in §9 show that steps 1 and 2 heal a stuck display.
+The ids stored in the log and in the last-action record are 1 (refresh), 2 (lock), 3 (key), 4 (nudge) and 5 (cycle) and never change. It never acts while interactive or within a minute of input, and not while docked, where Android’s own dream legitimately keeps the display on; two separate episodes' first attempts are at least five minutes apart. It needs the hub’s background use to be allowed. Shizuku does not survive a restart, so after one the last rung is skipped until `start-shizuku.ps1` has been run again.
+
+**A restart of Android by itself** is the one precondition seen so far (§1 and `knowledge/experiments.md`, 2026-10-12): a `system_server_crash` and `SYSTEM_RESTART` in the dropbox with no restart of the tablet since. `RestartAdvice` posts one note per such restart and the Restart finding is a Watch until the next boot.
 
 ### 4.9 Health
 

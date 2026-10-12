@@ -21,6 +21,7 @@ object SignalReader {
         recordingEnabled = BatteryLog.enabled(context),
         shizukuRunning = runCatching { Shizuku.pingBinder() }.getOrDefault(false),
         restartAtMs = restartAtMs(context),
+        bootAtMs = System.currentTimeMillis() - SystemClock.elapsedRealtime(),
     )
 
     private fun hubBackgroundAllowed(context: Context): Boolean? = runCatching {
@@ -31,7 +32,7 @@ object SignalReader {
 
     // The dropbox service accepts READ_LOGS, which the owner grants over adb (T1); lint only knows READ_DROPBOX_DATA, a system-only permission.
     @android.annotation.SuppressLint("MissingPermission")
-    private fun restartAtMs(context: Context): Long? = runCatching {
+    internal fun restartAtMs(context: Context): Long? = runCatching {
         val dropBox = context.getSystemService(DropBoxManager::class.java)
         val bootMs = System.currentTimeMillis() - SystemClock.elapsedRealtime()
         newestRestart(RESTART_TAGS, bootMs - BEFORE_BOOT_MS) { tag, afterMs ->
