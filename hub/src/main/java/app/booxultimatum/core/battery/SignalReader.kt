@@ -6,11 +6,24 @@ import android.os.DropBoxManager
 import android.os.Process
 import android.os.SystemClock
 import app.booxultimatum.core.BatteryLog
+import app.booxultimatum.kit.log.Logbook
 import rikka.shizuku.Shizuku
+import java.util.concurrent.atomic.AtomicBoolean
 
 /** The Android state that findings need. */
 object SignalReader {
     private val RESTART_TAGS = listOf("system_server_crash", "SYSTEM_RESTART")
+    private val dropboxFailureLogged = AtomicBoolean(false)
+
+    /**
+     * Says once per process that the dropbox can't be read. For its first nine days this was silent: a build that targets
+     * API 35 or later needs READ_DROPBOX_DATA on Android 16, READ_LOGS no longer opens it, and the denial became a null.
+     */
+    internal fun noteDropboxFailure(error: Throwable) {
+        if (dropboxFailureLogged.compareAndSet(false, true)) {
+            Logbook.logger("battery").w("the dropbox can't be read, so a restart of Android goes unnoticed", error = error)
+        }
+    }
 
     /** A restart this long before the last boot still counts: a crash can be what rebooted the tablet. */
     private const val BEFORE_BOOT_MS = 12 * 3_600_000L
@@ -30,7 +43,8 @@ object SignalReader {
         mode != AppOpsManager.MODE_IGNORED
     }.getOrNull()
 
-    // The dropbox service accepts READ_LOGS, which the owner grants over adb (T1); lint only knows READ_DROPBOX_DATA, a system-only permission.
+    // The dropbox service wants READ_DROPBOX_DATA from an app that targets API 35 or later on Android 16 and READ_LOGS before
+    // that; the owner grants both over adb (T1). Lint only knows READ_DROPBOX_DATA, a system-only permission.
     @android.annotation.SuppressLint("MissingPermission")
     internal fun restartAtMs(context: Context): Long? = runCatching {
         val dropBox = context.getSystemService(DropBoxManager::class.java)
@@ -38,7 +52,7 @@ object SignalReader {
         newestRestart(RESTART_TAGS, bootMs - BEFORE_BOOT_MS) { tag, afterMs ->
             dropBox.getNextEntry(tag, afterMs)?.let { entry -> try { entry.timeMillis } finally { entry.close() } }
         }
-    }.getOrNull()
+    }.onFailure { noteDropboxFailure(it) }.getOrNull()
 }
 
 /**

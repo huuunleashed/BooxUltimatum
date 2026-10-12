@@ -412,7 +412,8 @@ object BatteryLog {
     }
 
     /** The newest framework restart after [since] (a dropbox `system_server_crash` or `SYSTEM_RESTART`), or null. */
-    // The dropbox service accepts READ_LOGS, which the owner grants over adb (T1); lint only knows READ_DROPBOX_DATA, a system-only permission.
+    // The dropbox service wants READ_DROPBOX_DATA from an app that targets API 35 or later on Android 16 and READ_LOGS before
+    // that; the owner grants both over adb (T1). Lint only knows READ_DROPBOX_DATA, a system-only permission.
     @android.annotation.SuppressLint("MissingPermission")
     private fun restartSince(c: Context, since: Long): Long? = runCatching {
         val dropbox = c.getSystemService(DropBoxManager::class.java)
@@ -429,7 +430,7 @@ object BatteryLog {
             }
         }
         newest
-    }.getOrNull()
+    }.onFailure { app.booxultimatum.core.battery.SignalReader.noteDropboxFailure(it) }.getOrNull()
 
     /** CPU ms and Wi-Fi bytes per uid since the previous snapshot; batterystats resets at full charge, so a drop means a reset. */
     private fun uidDelta(c: Context, now: Map<Int, UidStat>): JSONObject {

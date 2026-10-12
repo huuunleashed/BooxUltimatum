@@ -11,6 +11,8 @@
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
     <uses-permission android:name="android.permission.DUMP" />
     <uses-permission android:name="android.permission.READ_LOGS" />
+    <!-- Android 16 asks an app that targets API 35 or later for this to read the dropbox, where READ_LOGS used to do. -->
+    <uses-permission android:name="android.permission.READ_DROPBOX_DATA" />
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
     <!-- T0: master auto-sync switch (normal permissions). -->
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />

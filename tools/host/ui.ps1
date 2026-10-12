@@ -41,7 +41,16 @@ function Save-Shot([string]$name) {
 
 function Sh([string]$cmd) { & $script:adb shell $cmd }
 
-function Open-Main { Sh 'am force-stop app.booxultimatum' | Out-Null; Sh 'am start -n app.booxultimatum/.MainActivity' | Out-Null; Start-Sleep 5 }
+function Open-Main {
+    # Force-stopping the hub drops its accessibility service (the live sleep screen) from enabled_accessibility_services; an
+    # install doesn't. So the setting is put back as it was (found out 2026-10-12, when the owner's was left off).
+    $a11y = (Sh 'settings get secure enabled_accessibility_services' | Out-String).Trim()
+    Sh 'am force-stop app.booxultimatum' | Out-Null
+    Sh 'am start -n app.booxultimatum/.MainActivity' | Out-Null
+    Start-Sleep 5
+    $now = (Sh 'settings get secure enabled_accessibility_services' | Out-String).Trim()
+    if ($a11y -and $a11y -ne 'null' -and $now -ne $a11y) { Sh "settings put secure enabled_accessibility_services '$a11y'" | Out-Null; Write-Host "Put enabled_accessibility_services back." }
+}
 
 function Go-Rail([string]$label) { Tap-Text $label -wait 6 | Out-Null }
 

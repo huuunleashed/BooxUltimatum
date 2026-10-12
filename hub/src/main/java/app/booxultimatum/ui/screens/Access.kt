@@ -78,7 +78,7 @@ fun AccessScreen(readKey: Int, accessKey: Int, compact: Boolean, onReadAgain: ()
                 Paragraph(stringResource(R.string.tier_adb_explain), color = Ink.Legend, modifier = Modifier.padding(vertical = Space.s))
                 LampRow(access.secureSettings, stringResource(R.string.grant_secure_settings), stringResource(R.string.grant_secure_settings_why))
                 LampRow(access.dump, stringResource(R.string.grant_dump), stringResource(R.string.grant_dump_why))
-                LampRow(access.readLogs, stringResource(R.string.grant_logs), stringResource(R.string.grant_logs_why))
+                LampRow(access.logsReadable, stringResource(R.string.grant_logs), stringResource(R.string.grant_logs_why))
                 LampRow(access.usageStats, stringResource(R.string.grant_usage), stringResource(R.string.grant_usage_why))
                 if (access.t1Granted < PrivilegeStatus.T1_GRANTS) {
                     Spacer(Modifier.height(Space.m))

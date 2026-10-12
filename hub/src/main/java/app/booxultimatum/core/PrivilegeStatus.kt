@@ -14,11 +14,16 @@ data class PrivilegeStatus(
     val secureSettings: Boolean,
     val dump: Boolean,
     val readLogs: Boolean,
+    /** Held, or not asked for: only firmware that defines READ_DROPBOX_DATA (Android 16) needs it to read the dropbox. */
+    val readDropbox: Boolean,
     val usageStats: Boolean,
     val shizukuRunning: Boolean,
     val shizukuGranted: Boolean,
     val suBinary: String?,
 ) {
+    /** Whether the system logs and the dropbox can be read, which is what the "Read system logs" grant is for. */
+    val logsReadable get() = readLogs && readDropbox
+
     val highestTier: Tier
         get() = when {
             suBinary != null -> Tier.T3
@@ -28,7 +33,7 @@ data class PrivilegeStatus(
         }
 
     /** adb-granted permissions (tier T1) that are currently held, out of [T1_GRANTS]. */
-    val t1Granted get() = listOf(secureSettings, dump, readLogs, usageStats).count { it }
+    val t1Granted get() = listOf(secureSettings, dump, logsReadable, usageStats).count { it }
 
     companion object {
         const val T1_GRANTS = 4
@@ -37,7 +42,14 @@ data class PrivilegeStatus(
         const val ADB_GRANT_HELP = """adb shell pm grant app.booxultimatum android.permission.WRITE_SECURE_SETTINGS
 adb shell pm grant app.booxultimatum android.permission.DUMP
 adb shell pm grant app.booxultimatum android.permission.READ_LOGS
+adb shell pm grant app.booxultimatum android.permission.READ_DROPBOX_DATA
 adb shell appops set app.booxultimatum GET_USAGE_STATS allow"""
+
+        /** Not in the SDK's Manifest class; `signature|privileged|development`, so adb can grant it like READ_LOGS. */
+        const val READ_DROPBOX_DATA = "android.permission.READ_DROPBOX_DATA"
+
+        private fun dropboxPermissionDefined(context: Context): Boolean =
+            runCatching { context.packageManager.getPermissionInfo(READ_DROPBOX_DATA, 0) }.isSuccess
 
         fun check(context: Context): PrivilegeStatus {
             fun granted(p: String) = context.checkSelfPermission(p) == PackageManager.PERMISSION_GRANTED
@@ -51,6 +63,7 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow"""
                 secureSettings = granted(Manifest.permission.WRITE_SECURE_SETTINGS),
                 dump = granted(Manifest.permission.DUMP),
                 readLogs = granted(Manifest.permission.READ_LOGS),
+                readDropbox = granted(READ_DROPBOX_DATA) || !dropboxPermissionDefined(context),
                 usageStats = usage,
                 shizukuRunning = running,
                 shizukuGranted = shizukuOk,

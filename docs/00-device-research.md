@@ -92,7 +92,7 @@ Interpretation (hypotheses to test):
 | Tier | How obtained | Unlocks |
 |---|---|---|
 | T0 app | install APK | Battery APIs, UsageStats (user grant), accessibility service, QS tiles, notification listener, Onyx SDK (`onyxsdk-device`: EPD refresh, front light) |
-| T1 adb-grant | one-off `adb shell pm grant … WRITE_SECURE_SETTINGS / DUMP / PACKAGE_USAGE_STATS / READ_LOGS` | `settings put`, `dumpsys` from inside the app, and logcat reading |
+| T1 adb-grant | one-off `adb shell pm grant … WRITE_SECURE_SETTINGS / DUMP / PACKAGE_USAGE_STATS / READ_LOGS / READ_DROPBOX_DATA` | `settings put`, `dumpsys` from inside the app, and logcat reading |
 | T2 Shizuku | Shizuku via Wireless debugging (re-start after reboot) | runs as shell uid 2000: `pm disable-user`, `cmd appops`, `am set-standby-bucket`, `cmd deviceidle`, `dumpsys batterystats`, `/onyxconfig` writes, and more |
 | T3 root | Magisk/KernelSU (**needs a boot/init_boot image and a flashing path**, not yet known for NA6C) | sysfs (`wakeup_sources`, cpufreq/governor), private Onyx MMKV stores, LSPosed/Xposed module (OnyxTweaks-style), firewall (iptables) |
 

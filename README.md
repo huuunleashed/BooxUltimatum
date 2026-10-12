@@ -156,12 +156,13 @@ Shizuku lets ordinary apps use the same commands you could type over `adb`, with
 ./tools/host/start-shizuku.sh        # T2, after every reboot
 ```
 
-Without the scripts, the T1 grants are these four commands:
+Without the scripts, the T1 grants are these commands (the fifth is only needed, and only exists, on Android 16 firmware such as 4.3, where reading the dropbox asks for it in place of READ_LOGS):
 
 ```text
 adb shell pm grant app.booxultimatum android.permission.WRITE_SECURE_SETTINGS
 adb shell pm grant app.booxultimatum android.permission.DUMP
 adb shell pm grant app.booxultimatum android.permission.READ_LOGS
+adb shell pm grant app.booxultimatum android.permission.READ_DROPBOX_DATA
 adb shell appops set app.booxultimatum GET_USAGE_STATS allow
 ```
 

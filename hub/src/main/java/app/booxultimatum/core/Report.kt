@@ -25,7 +25,7 @@ object Report {
         appendLine("Since boot: ${battery.sinceBootMs / 60_000} min  Asleep: ${"%.1f".format(battery.asleepFraction * 100)} %")
         appendLine()
         appendLine("## Access")
-        appendLine("Tier: ${access.highestTier}  secure settings=${access.secureSettings} dump=${access.dump} logs=${access.readLogs} usage=${access.usageStats} shizuku=${access.shizukuRunning}/${access.shizukuGranted}")
+        appendLine("Tier: ${access.highestTier}  secure settings=${access.secureSettings} dump=${access.dump} logs=${access.readLogs} dropbox=${access.readDropbox} usage=${access.usageStats} shizuku=${access.shizukuRunning}/${access.shizukuGranted}")
         appendLine()
         appendLine("## Boox packages (${apps.count(AppFilter.Boox)}), Doze-exempt (${apps.count(AppFilter.DozeExempt)})")
         apps.filter(AppFilter.Boox).forEach { appendLine("${it.id}${if (!it.enabled) " [disabled]" else ""}${if (it.dozeExempt) " [doze-exempt]" else ""}") }

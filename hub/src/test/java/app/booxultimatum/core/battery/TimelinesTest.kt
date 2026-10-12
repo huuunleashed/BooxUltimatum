@@ -107,6 +107,30 @@ class TimelinesTest {
         assertEquals(EpisodeKind.Off, t.segments.single().kind)
     }
 
+    @Test fun aSampleThatCatchesTheRefreshIsNotADisplayOnEpisode() {
+        // The tick fell in the 1.3 s the live refresh keeps the display ON: 6 mA, the processor asleep for 98 % of the half hour.
+        val t = Timelines.build(
+            listOf(
+                row(0, 51, 1873.0, uptimeMin = 0.0, display = DisplayState.On),
+                row(30, 51, 1870.0, uptimeMin = 0.6, display = DisplayState.On),
+            ),
+            nowMs = start,
+        )
+        assertEquals(EpisodeKind.Asleep, t.segments.single().kind)
+        assertTrue(t.episodes.none { it.kind == EpisodeKind.DisplayOn })
+    }
+
+    @Test fun theHubsOwnConfirmedDisplayOnRowCountsEvenWhenTheProcessorSlept() {
+        val t = Timelines.build(
+            listOf(
+                row(0, 62, 2289.0, uptimeMin = 0.0, reason = "display_on", display = DisplayState.On),
+                row(30, 62, 2280.0, uptimeMin = 5.0, display = DisplayState.On),
+            ),
+            nowMs = start,
+        )
+        assertEquals(EpisodeKind.DisplayOn, t.segments.single().kind)
+    }
+
     @Test fun aDisplayColumnOfOnMakesDisplayOnThatIsNotInferred() {
         val t = Timelines.build(
             listOf(

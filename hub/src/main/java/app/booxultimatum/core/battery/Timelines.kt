@@ -54,7 +54,12 @@ object Timelines {
         }
         val drawn = max(0.0, counters?.let { (before, after) -> before - after } ?: ((a.level - b.level) * capacity / 100))
         if (interactive(a)) return Segment(a, b, EpisodeKind.InUse, drawn, sleptShare)
-        if (a.display == DisplayState.On || a.reason == "display_on" || a.reason == "display_stuck") {
+        // A sample that finds the display ON proves little: Boox's live refresh turns it ON for 1.3 s and the 30-minute tick can
+        // land in that window, which made 6:50 to 7:20 PM on 2026-10-11 a "display on while asleep" Problem at 6 mA with the
+        // processor asleep 98 % of the time. The hub's own confirmed rows count by themselves; a bare sample counts only if the
+        // processor could not sleep through the segment either, which is what a display stuck ON looks like.
+        val confirmed = a.reason == "display_on" || a.reason == "display_stuck"
+        if (confirmed || (a.display == DisplayState.On && sleptShare <= QUIET_SLEPT_MAX)) {
             return Segment(a, b, EpisodeKind.DisplayOn, drawn, sleptShare)
         }
         val rate = if (hours > 0) drawn / hours else 0.0
