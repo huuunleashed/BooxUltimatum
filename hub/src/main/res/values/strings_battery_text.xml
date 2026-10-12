@@ -30,7 +30,7 @@
     <string name="bt_held_for">held for %1$s</string>
     <!-- A finding in one plain sentence, for the verdict and the lists; the figures stay in the episode's details. -->
     <string name="bt_s_display_on">The display stayed on while the tablet slept, %1$s (%2$s).</string>
-    <string name="bt_s_display_on_levels"> The battery went from %1$s.</string>
+    <string name="bt_s_display_on_levels">The battery went from %1$s.</string>
     <string name="bt_s_standby_high">The tablet used more battery than usual while it slept, %1$s (%2$s).</string>
     <string name="bt_s_not_sleeping">The processor stayed awake while the tablet slept, %1$s (%2$s).</string>
     <string name="bt_s_wake_lock">%1$s kept the tablet awake for %2$s.</string>

@@ -4,7 +4,9 @@ All notable changes to BooxUltimatum. Newest first. The project follows [Semanti
 
 ## [Unreleased]
 
-After the night of 2026-10-12, when the display stayed on while the tablet slept and the battery went from 62 % to 18 %, and the owner's list of complaints. Checked by unit tests on the JVM and a release build with lint, and 0.9.2-test.2 has run on the tablet: the restart note fires (see Fixed). Not yet seen: the guard's new steps healing a stuck display, the sleep screen changes, and the frozen-app launch, which need a person to look or a stuck display to happen.
+## [0.10.0] (2026-10-12)
+
+BooxUltimatum 0.10.0 follows the night of 2026-10-12, when the display stayed on while the tablet slept and the battery went from 62 % to 18 %, and the owner's list of complaints. Tested on a Note Air6 C with firmware 4.3 (Android 16), by the owner and over adb. Checked on the tablet: the restart note, the end of the false stuck-display Problems, and frozen apps opening and freezing again from both the home screen and the lock. Not yet seen: the sleep guard's new steps healing a stuck display, and the quiet-hours steppers, the "Paused until" note and the charging-bar cover on the sleeping screen, which need a stuck display or a person looking. On Android 16 the restart note needs one extra grant after updating: `adb shell pm grant app.booxultimatum android.permission.READ_DROPBOX_DATA` (the Access page lists it).
 
 ### Added
 
@@ -24,6 +26,7 @@ After the night of 2026-10-12, when the display stayed on while the tablet slept
 - **The hub could never read the dropbox on this tablet, so it never saw a restart of Android.** Firmware 4.3 is Android 16, where the dropbox service asks an app that targets API 35 or later for `READ_DROPBOX_DATA` and no longer accepts `READ_LOGS` (compat change `ENFORCE_READ_DROPBOX_DATA`, read from `DropBoxManagerService` in android16-release and seen as `enableSinceTargetSdk=35` in `dumpsys platform_compat`). The hub targets 36 and only asked for `READ_LOGS`, so every read threw a `SecurityException` that the code turned into "no restart": no `restartAt` was ever written to a snapshot (not at 20:42:50 or 23:43 on 2026-10-11, with `system_server_crash` at 20:42:34 in the dropbox), and the new note and Watch finding could not have appeared. The hub now declares `READ_DROPBOX_DATA`, which is `signature|privileged|development` and so adb-grantable; Access counts the two grants as one lamp, the grant script and README list it, and a failed read is logged once instead of vanishing.
 - **Battery · Today no longer lists a sleeping half hour as a stuck display.** A battery sample that happened to land in the sleep screen's 1.3 s refresh read "display on", and the whole segment after it became a Problem even at 6 mA with the processor asleep for 98 % of it (6:50 to 7:20 PM and 3:50 to 4:50 PM on 2026-10-11, both at 51 % to 51 %). A bare sample now counts only if the processor could not sleep through the segment; the hub's own confirmed `display_on` and `display_stuck` rows still count by themselves.
 - **Tapping a Boox-frozen app did nothing.** The start of a disabled app throws; the panel's Open key repeated it silently, and the panel told you opening it would work.
+- **A finding's two sentences ran together.** Today wrote "(4 h 57 min).The battery went from…" because the second sentence's string began with a space, which Android's resource compiler trims.
 
 ### Research
 

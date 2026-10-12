@@ -123,7 +123,8 @@ object BatteryText {
         return when (f.kind) {
             FindingKind.DisplayOn -> {
                 val levels = if (f.level0 != null && f.level1 != null) {
-                    context.getString(R.string.bt_s_display_on_levels, levelRange(context, f.level0, f.level1))
+                    // A space in the string itself would be trimmed by aapt, and the two sentences ran together.
+                    " " + context.getString(R.string.bt_s_display_on_levels, levelRange(context, f.level0, f.level1))
                 } else {
                     ""
                 }

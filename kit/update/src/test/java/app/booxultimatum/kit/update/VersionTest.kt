@@ -35,6 +35,12 @@ class VersionTest {
         assertTrue(v("0.6.0-test.10") > v("0.6.0-test.9"))
     }
 
+    @Test fun aTwoDigitMinorOutranksAOneDigitMinor() {
+        assertTrue(v("0.10.0") > v("0.9.1"))
+        assertTrue(v("0.10.0") > v("0.9.2-test.3"))
+        assertTrue(v("0.10.1") > v("0.10.0"))
+    }
+
     @Test fun printsBack() {
         assertEquals("0.6.0-test.3", v("v0.6.0-test.3").toString())
         assertEquals("1.2.0", v("1.2").toString())

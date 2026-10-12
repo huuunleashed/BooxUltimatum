@@ -18,7 +18,7 @@ The Note Air6 C is a lovely tablet with a frustrating side. Independent reviews 
 
 Nothing is flashed, and the bootloader stays locked. The hub, BooxUltimatum, is one APK; the apps that build on it, starting with Nib, install and uninstall on their own.
 
-> **Status: public preview (0.9.1).** It runs daily on the author's own tablet (Note Air6 C, firmware 4.3, Android 16), and hasn't been tested elsewhere yet. Download it from [Releases](https://github.com/huuunleashed/BooxUltimatum/releases), and please report how it behaves on your tablet. From 0.5 on, the app can update itself and file a report for you from its Device page.
+> **Status: public preview (0.10.0).** It runs daily on the author's own tablet (Note Air6 C, firmware 4.3, Android 16), and hasn't been tested elsewhere yet. Download it from [Releases](https://github.com/huuunleashed/BooxUltimatum/releases), and please report how it behaves on your tablet. From 0.5 on, the app can update itself and file a report for you from its Device page.
 
 ## What it does
 
@@ -47,7 +47,7 @@ Its tools float over a full-screen page like cut cards on a desk. The pens are d
 A calm, paper-white launcher that uses about a third of the Boox home's memory and no CPU when idle.
 
 - **Widgets:** clock, month, agenda, weather, battery, next alarm, a note, a Boox shelf (Library, Notes, Storage) and any app's widget, including Boox's own. Library covers are pixelated in these screenshots.
-- **Apps:** paged grids you turn with a swipe, folders, and icon shapes that remove the frame Boox draws into its own icons.
+- **Apps:** paged grids you turn with a swipe, folders, and icon shapes that remove the frame Boox draws into its own icons. Apps Boox froze are listed dimmed with a frozen tag. With Shizuku, tapping one unfreezes and opens it, and the hub freezes it again about a minute after you are back on the home screen, and when the tablet locks (checked on the tablet, 2026-10-12).
 - **The header:** time, network, Bluetooth and battery in 8 Wi-Fi and 8 battery designs, plus keys for Boox Settings and BooxUltimatum.
 - **All apps:** includes the Boox functions that have no launcher icon, sorted by name, colour or recent use.
 - **Layout:** two panes in landscape. Nothing ever reflows while you type.
@@ -129,8 +129,8 @@ Most of BooxUltimatum works straight after installing, with no computer, no Shiz
 | Level | What it is | What it adds |
 | --- | --- | --- |
 | **T0: just the app** | Nothing to set up, or a switch you allow on the tablet itself | Nib, the drawing app, entirely. The suite's logbook and installs. The home screen, the sleep screen and power-off screen designer, the sleep screen **while asleep** (an accessibility service and background use), **Instant ink** (usage access), battery measurement and the battery log, the Google Fonts browser, **the whole tablet's font**, the settings hub, and making BooxUltimatum your home screen (Android asks you to confirm). For apps Boox restricts, a one-tap link to Android's own battery page and to Boox's hidden App Freeze page (also in the Settings hub). |
-| **T1: a one-time setup from a computer** | Four permissions granted once over `adb`; they survive reboots | Reading battery statistics inside the app, showing or hiding status bar icons tablet-wide, and the tweaks that are system settings |
-| **T2: Shizuku** | [Shizuku](https://shizuku.rikka.app), a free app that runs a small helper with the same rights as `adb` | Most tweaks (Doze, Battery Saver, pausing Boox apps), reading and lifting Boox's background restriction for every app at once, switching the home screen in one tap, the Wi-Fi network name in the header, *Sleep now*, and the *Over Transparent* sleep mode |
+| **T1: a one-time setup from a computer** | Four permissions granted once over `adb` (five commands on Android 16, which asks for `READ_DROPBOX_DATA` as well as `READ_LOGS` to read where a restart of Android is recorded); they survive reboots | Reading battery statistics inside the app, showing or hiding status bar icons tablet-wide, and the tweaks that are system settings |
+| **T2: Shizuku** | [Shizuku](https://shizuku.rikka.app), a free app that runs a small helper with the same rights as `adb` | Most tweaks (Doze, Battery Saver, pausing Boox apps), reading and lifting Boox's background restriction for every app at once, switching the home screen in one tap, opening Boox-frozen apps from home (and freezing them again), the Wi-Fi network name in the header, *Sleep now*, and the *Over Transparent* sleep mode |
 | T3: root |  | Out of scope. BooxUltimatum doesn't need or ask for it |
 
 **About the status bar:** tablet-wide, BooxUltimatum can show or hide the system's status bar icons (T1). The custom Wi-Fi and battery designs are drawn in BooxUltimatum's own home screen header. Replacing the system's own icon artwork would need a system overlay, which Android only allows with root, so that isn't possible.
@@ -170,7 +170,7 @@ Firmware 4.3 hides the Wireless debugging switch from Developer options — the 
 
 ## Install
 
-**From a release:** download `BooxUltimatum-0.9.1.apk` from this repository's [Releases](https://github.com/huuunleashed/BooxUltimatum/releases) page, allow your browser or file manager to install apps, and open it. The Access page shows what each level unlocks and the exact commands for it. Releases are signed with the project's own key, so later releases update it in place. The hub's Suite page installs Nib for you, or download `Nib-0.3.0.apk` from the same page; Nib's releases are tagged `nib-v…`.
+**From a release:** download `BooxUltimatum-0.10.0.apk` from this repository's [Releases](https://github.com/huuunleashed/BooxUltimatum/releases) page, allow your browser or file manager to install apps, and open it. The Access page shows what each level unlocks and the exact commands for it. Releases are signed with the project's own key, so later releases update it in place. The hub's Suite page installs Nib for you, or download `Nib-0.3.0.apk` from the same page; Nib's releases are tagged `nib-v…`.
 
 **Test builds for the tablet:** unfinished builds of the hub or Nib are sometimes published as `test-…` pre-releases so they can be checked on a real tablet. The hub offers them only when *Offer test builds* is on (Device page), and a release always replaces its own test build.
 
@@ -300,6 +300,13 @@ No dates promised; this is a spare-time project, and each release ships when it 
   - *Test Shizuku* on Access, and a direct route for Shizuku commands when the helper service can't start (issue #4: the direct route works on a Go 10.3 on firmware 4.2, per its owner; why the helper doesn't start there is still open).
 - **0.9.1, a follow-up to issue #4 (released)**
   - After the helper service has failed, commands don't wait for it again, and Test Shizuku reads from the system log why it didn't start.
+- **0.10, after the night of 2026-10-12 (released 2026-10-12)**
+  - The hub could never read the dropbox on Android 16, so it never saw Android restart by itself: it now declares `READ_DROPBOX_DATA`, says so once per restart, and shows it on Today (needs the extra grant).
+  - A battery sample caught in the sleep screen's refresh no longer shows up as a stuck display.
+  - The sleep guard keeps trying (2, 5, 10, 20 and 40 minutes, then hourly) and has two new steps; none has been seen to heal a stuck display.
+  - Quiet hours you choose, a "Paused until" note on the sleep screen, and the charging bar covered at once (these three not yet looked at on the tablet).
+  - Boox-frozen apps open from home with Shizuku and are frozen again afterwards.
+  - Battery › Today reads in sentences.
 - **Nib 0.4.1, zoom and the eraser (released 2026-10-09)**
   - Zooming shows the new page in one frame, drawn about as fast again, and the pencil is crisp at the zoom you stop on.
   - A pen's width and the pencil's grain are the page's, so a stroke is the same stroke at every zoom.
