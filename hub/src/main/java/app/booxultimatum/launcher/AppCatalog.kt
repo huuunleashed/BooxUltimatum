@@ -19,6 +19,7 @@ import android.os.UserHandle
 import android.os.UserManager
 import android.util.LruCache
 import androidx.core.graphics.drawable.toBitmap
+import app.booxultimatum.core.Refreeze
 import app.booxultimatum.core.exec.Privileged
 import app.booxultimatum.kit.core.AppWork
 import kotlinx.coroutines.launch
@@ -420,20 +421,23 @@ class AppCatalog(private val context: Context) {
      * A package Boox froze is disabled, and Android refuses to start a disabled app (verified on 2026-10-12, when
      * tapping a frozen app did nothing: the explicit start threw and the sheet's Open key repeated it). Boox's own home
      * enables it first through a framework helper no other app can call (`ApplicationFreezeHelper`), so here it is
-     * done with Shizuku's shell (`pm enable`, T2), the same state change; Boox's own auto-freeze may freeze it again
-     * later, as it would for an app opened from Boox's home. Without Shizuku this returns false and the sheet explains.
+     * done with Shizuku's shell (`pm enable`, T2), the same state change. Neither Boox's home nor its auto-freeze (which
+     * waits for days of disuse) freezes it again, so [Refreeze] does: about a minute after the owner is back on the home
+     * screen, and when the tablet locks. Without Shizuku this returns false and the sheet explains.
      */
     private fun launchFrozen(t: LaunchTarget, onFailed: () -> Unit): Boolean {
         val pkg = t.component.packageName
         // It may have been unfrozen since the list was read, from Boox's own App Freeze page: start it as it is.
-        if (!isFrozen(pkg)) return startExplicit(t)
+        if (!Refreeze.isFrozen(context, pkg)) return startExplicit(t)
         if (!Privileged.ready()) return false
         val user = t.user.hashCode()
         AppWork.scope.launch(kotlinx.coroutines.Dispatchers.IO) {
             val enabled = runCatching { Privileged.sh("pm enable --user $user $pkg") }.getOrNull()
             var started = false
             if (enabled?.ok == true) {
-                repeat(20) { if (!started) { if (!isFrozen(pkg)) started = startExplicit(t) else Thread.sleep(100) } }
+                // Noted before the start, so an app that is enabled but doesn't start is still frozen again.
+                Refreeze.opened(context, pkg, user)
+                repeat(20) { if (!started) { if (!Refreeze.isFrozen(context, pkg)) started = startExplicit(t) else Thread.sleep(100) } }
             }
             log.i("frozen app opened", "pkg" to pkg, "enabled" to (enabled?.ok == true), "started" to started)
             if (!started) main.post(onFailed)
@@ -450,16 +454,6 @@ class AppCatalog(private val context: Context) {
         )
         true
     }.getOrDefault(false)
-
-    /** Disabled by the owner or by Boox's freeze; an app with no state of its own set counts as enabled. */
-    private fun isFrozen(pkg: String): Boolean = runCatching {
-        when (context.packageManager.getApplicationEnabledSetting(pkg)) {
-            android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-            android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED_USER,
-            android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED_UNTIL_USED -> true
-            else -> false
-        }
-    }.getOrDefault(true)
 
     private val log = app.booxultimatum.kit.log.Logbook.logger("launcher")
 

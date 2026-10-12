@@ -28,6 +28,7 @@ class BooxUltimatumApplication : Application() {
             BatteryLog.watch(this)
             DisplayWatch.start(this)
             RestartAdvice.check(this)
+            app.booxultimatum.core.Refreeze.watch(this)
             if (Modules.added(this, Module.Sleep)) SleepScheduler.watch(this)
             // Before Instant ink starts: undoes what an ended process of the hub left on the display (a session still
             // drawing, for instance), then keeps this process's record.

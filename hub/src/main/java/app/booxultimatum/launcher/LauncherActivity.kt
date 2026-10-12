@@ -540,6 +540,8 @@ class LauncherActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        // Apps the hub unfroze are frozen again a minute after this screen is back, unless one is in front again.
+        app.booxultimatum.core.Refreeze.onHome(this)
         val started = android.os.SystemClock.elapsedRealtime()
         val decor = window.decorView
         // An app killed mid-session leaves the display's pen preview drawing everywhere; apps end theirs as they
