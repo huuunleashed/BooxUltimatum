@@ -232,6 +232,9 @@ def check(raw: str, test: bool = False) -> list[str]:
 
 
 def main() -> int:
+    # The preview prints the notes' own characters (› and the like), which the default Windows console encoding can't always carry.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     flags = {a for a in sys.argv[1:] if a.startswith("--")}
     if len(args) != 1 or not flags <= {"--test", "--preview"}:
