@@ -323,6 +323,7 @@ No dates promised; this is a spare-time project, and each release ships when it 
   - A pen's width and the pencil's grain are the page's, so a stroke is the same stroke at every zoom.
   - The stroke eraser keeps up however many strokes it crosses.
 - **Next: System › Tweaks revised**, with the findings on the Battery pages opening the right tweak and showing its measured effect.
+- **Sleep page: say what a Boox sticker is** before the steps that use it (asked in issue #5), and compare the steps with an Air 4C once its owner has described the screensaver screen.
 - **Nib 0.5 and on**
   - The thinnest clean preview, and anything the Lab shows needs changing.
   - Image import, PDF and OpenRaster export, templates, and pages or an endless canvas.
