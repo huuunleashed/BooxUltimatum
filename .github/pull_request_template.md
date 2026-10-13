@@ -1,10 +1,10 @@
 ## What this changes
 
-<!-- What it does for the person holding the tablet, then how. -->
+<!-- What it does for the person holding the tablet, then how. Follow the Words section of AGENTS.md for any text people read. -->
 
 ## Tested on
 
-<!-- Device, firmware and Android version. "Not tested on a device" is an honest and acceptable answer, just say so. -->
+<!-- Tablet model, firmware and Android version. "Not tested on a tablet" is an honest and acceptable answer, just say so. -->
 
 ## Checklist
 

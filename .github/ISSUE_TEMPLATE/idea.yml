@@ -13,7 +13,7 @@ body:
     id: idea
     attributes:
       label: What you'd like
-      description: How BooxUltimatum could help. Any known mechanism (a setting, an intent, a command) is very welcome.
+      description: How BooxUltimatum could help. Any known mechanism (a setting, an Android intent, a command) is very welcome.
   - type: checkboxes
     id: rules
     attributes:

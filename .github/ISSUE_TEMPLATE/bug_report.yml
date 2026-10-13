@@ -4,25 +4,26 @@ labels: ["bug"]
 body:
   - type: markdown
     attributes:
-      value: "Thanks for reporting. BooxUltimatum is tested on one tablet so far, so the details below matter a lot. Please remove personal data (network names, account names, notification text, book titles) from anything you paste."
+      value: "Thanks for reporting. BooxUltimatum is best tested on the maintainer's Note Air6 C, so the details below, above all your tablet model and firmware, matter a lot. Please remove personal data (network names, account names, notification text, book titles) from anything you paste."
   - type: input
     id: device
     attributes:
-      label: Device and firmware
-      description: Model, and the firmware version from Settings › About (for example "Note Air6 C, 4.3 (2026-08-17)").
+      label: Tablet and firmware
+      description: The tablet model, and the firmware version from Settings › About (for example "Note Air6 C, 4.3 (2026-08-17)").
     validations:
       required: true
   - type: input
     id: version
     attributes:
       label: BooxUltimatum version
-      description: Shown in the app's Settings, or the commit you built from.
+      description: Shown on BooxUltimatum's Device page as Installed version, or the commit you built from.
     validations:
       required: true
   - type: dropdown
     id: area
     attributes:
       label: Area
+      description: Choose the closest match. These are the same areas as in the app's Report a problem or idea page.
       options:
         - Home screen
         - Sleep screen
@@ -64,5 +65,5 @@ body:
     id: logs
     attributes:
       label: Logs or screenshots (optional)
-      description: "For example `adb logcat -d | findstr booxultimatum`, or a screenshot."
+      description: "For example the output of `adb logcat -d | findstr booxultimatum` (Android's log, read from a computer connected to the tablet), or a screenshot."
       render: text

@@ -1,14 +1,14 @@
 # 03 · Architecture
 
-> **Since 0.6 the project is a suite:** the hub (`:hub`, formerly `:app`), Nib (`:nib` with `:nib-engine`), and the shared kit (`:kit:core`, `:kit:log`, `:kit:ui`, `:kit:ink`, `:kit:update`). [`07-suite.md`](07-suite.md) describes the modules as built. The planned module table below is the original plan, kept for its upstream notes.
+> **Since 0.6 the project is a suite:** BooxUltimatum itself (`:hub`, formerly `:app`), Nib (`:nib` with `:nib-engine`), and the shared kit (`:kit:core`, `:kit:log`, `:kit:ui`, `:kit:ink`, `:kit:update`). [`07-suite.md`](07-suite.md) describes the modules as built. The planned module table below is the original plan, kept for its upstream notes.
 
 ## Shape
 
-One APK (`app.booxultimatum`), Kotlin + Jetpack Compose, minSdk 30, target/compile SDK 36 (Android 16). The UI is e-ink-first: monochrome, no ripples or animations, large targets, and pagination instead of scrolling where practical.
+BooxUltimatum is one APK (`app.booxultimatum`) written in Kotlin with Jetpack Compose. It supports Android 11 and later (minSdk 30) and targets and compiles against SDK 36 (Android 16). The UI is e-ink-first: monochrome, no ripples or animations, large targets, and pagination instead of scrolling where practical.
 
 ```mermaid
 flowchart TB
-  UI[Compose UI: Hub · Battery Doctor · E-Ink Profiles · Privacy · Tools]
+  UI[Compose UI: Settings Hub · Battery Doctor · E-ink profiles · Privacy · Tools]
   UI --> Tweaks[Tweak engine: apply / revert / verify, journal]
   Tweaks --> Exec[Privileged executor]
   Exec --> T0[T0 Android APIs + Onyx SDK]
@@ -19,6 +19,8 @@ flowchart TB
   UI --> Sampler[Power sampler: low-overhead, alarm-driven]
   Sampler --> Store[(Local DB: samples, runs, experiments)]
 ```
+
+T0 to T3 are the privilege tiers. T0 needs no special access, T1 uses permissions granted over adb (Android Debug Bridge, run from a computer), T2 uses Shizuku (a helper app that runs commands as the shell user, uid 2000) and T3 uses root. Doze is Android's deep idle mode, and a wake lock is what keeps the tablet awake.
 
 ## Planned modules (single `:app` for now; split when the code grows)
 
@@ -50,12 +52,12 @@ Each apply writes a journal entry with the previous state, so reverting works ev
 
 ## As built (0.2.0)
 
-Still a single `:app` module, organised by package:
+At 0.2.0 BooxUltimatum was still a single `:app` module, organised by package:
 
 | Package | Holds |
 |---|---|
-| `core` | Platform readers (battery, device, packages, privilege status), `SystemSettings`, `SystemState` parsers (Doze, allowlist, appops, standby buckets, alarm wakeups, wakelocks), the `Journal`, `BatteryLog`, `StatusBar`, `Launchers`, `Fonts`, `AppWork` (an app-wide scope for changes that must outlive their screen) |
-| `core.exec` | `Privileged`: the Shizuku user service (`ShellService`, AIDL `IShellService`) running as the shell uid, released after 45 s idle. When that service can't be started (reported on a Go 10.3, issue #4), commands go through Shizuku's own remote process instead (`Shizuku.newProcess`, private in API 13.1, reached by reflection) and once the service has failed no call waits for it again: the service is tried in the background after 10 minutes, then an hour, then six hours, or at once when Shizuku restarts (`helperRetryDelayMs`); `Privileged.probe` walks the steps for the *Test Shizuku* key on Access and, when the helper doesn't start, reads from the shell whether its `:shell` process exists and the log lines about Shizuku. `Diagnostics` for `dumpsys` with or without Shizuku |
+| `core` | Platform readers (battery, device, packages, privilege status), `SystemSettings`, `SystemState` parsers (Doze, allowlist, appops, standby buckets, alarm wakeups, wake locks), the `Journal`, `BatteryLog`, `StatusBar`, `Launchers`, `Fonts`, `AppWork` (an app-wide scope for changes that must outlive their screen) |
+| `core.exec` | `Privileged`: the Shizuku user service (`ShellService`, AIDL `IShellService`) running as the shell uid, released after 45 s idle. When that service can't be started (reported on a Go 10.3, issue #4), commands go through Shizuku's own remote process instead (`Shizuku.newProcess`, private in API 13.1, reached by reflection). Once the service has failed, no call waits for it again. The service is tried in the background after 10 minutes, then an hour, then six hours, or at once when Shizuku restarts (`helperRetryDelayMs`). `Privileged.probe` walks these steps for the *Test Shizuku* button on Access. When the helper doesn't start, it reads from the shell whether its `:shell` process exists, and the log lines about Shizuku. `Diagnostics` for `dumpsys` with or without Shizuku |
 | `core.tweaks` | The tweak framework and the catalogue of 19 tweaks |
 | `core.sleep` | The sleep screen studio: face spec and store, pure Canvas renderer and faces, publisher (MediaStore picture, Onyx broadcast, sticker copy), scheduler (non-wakeup alarm and event receivers). See `docs/06-sleep-screen.md` |
 | `ui` | Theme ("Braun Instrument"), components, glyphs, and one file per destination under `ui/screens` |
@@ -63,7 +65,7 @@ Still a single `:app` module, organised by package:
 
 ## Power sampler design (must not cause the drain it measures)
 
-- No foreground service and no partial wakelock. The battery log uses `AlarmManager.setInexactRepeating` on `ELAPSED_REALTIME` (not the wakeup variant) every 30 minutes, so it only fires when the tablet is already awake and adds no wakeups. The alarm is set only when absent, because re-setting it restarts the countdown; boot and app updates set it afresh.
-- Each light sample reads `BatteryManager` (capacity, `CHARGE_COUNTER`), sticky `ACTION_BATTERY_CHANGED` (voltage, temperature, plugged), `PowerManager.isInteractive`, and elapsed realtime and uptime. The first sample after a wake shows what the tablet lost while asleep: between two samples, 1 − Δuptime/Δelapsed is the share of time suspended. Opening the app adds a sample at most every 10 minutes.
-- Every 3 hours a deep snapshot adds Doze state, alarm wakeups by app and held wakelocks. Files are CSV and JSONL in `Android/data/app.booxultimatum/files/logs`, pruned after 60 days, and shared as one zip with a README.
-- For lab runs we still prefer the host-launched shell logger (`tools/host/power-logger.ps1`) because it involves zero app code.
+- No foreground service and no partial wake lock. The battery log uses `AlarmManager.setInexactRepeating` on `ELAPSED_REALTIME` (not the wakeup variant) every 30 minutes. It only fires when the tablet is already awake, so it adds no wakeups (times the tablet is woken from sleep). The alarm is set only when absent, because re-setting it restarts the countdown. Boot and app updates set it afresh.
+- Each light sample reads `BatteryManager` (capacity, `CHARGE_COUNTER`), the sticky `ACTION_BATTERY_CHANGED` broadcast (voltage, temperature, plugged), `PowerManager.isInteractive`, and elapsed realtime and uptime. The first sample after a wake shows what the tablet lost while asleep: between two samples, 1 − Δuptime/Δelapsed is the share of time suspended. Opening BooxUltimatum adds a sample at most every 10 minutes.
+- Every 3 hours a deep snapshot adds Doze state, alarm wakeups by app and held wake locks. Files are CSV and JSONL in `Android/data/app.booxultimatum/files/logs`, pruned after 60 days, and shared as one zip with a README.
+- For lab runs, the project still prefers the shell logger started from a computer (`tools/host/power-logger.ps1`), because it involves zero app code.
