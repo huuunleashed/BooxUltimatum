@@ -22,6 +22,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Prose rule
         run: python3 tools/dev/prose_wrap.py
+      - name: Release-notes checker
+        run: python3 -m unittest discover -s tools/dev -p "test_*.py"
       - name: Unit tests
         run: ./gradlew testDebugUnitTest :nib-engine:test --console=plain
       - name: Build and lint

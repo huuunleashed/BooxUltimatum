@@ -50,7 +50,7 @@ This file holds the rules; the skills hold the how-to. When they disagree, this 
   - `kit/`: the libraries every suite app builds on. `core` (the tablet profile and the suite registry), `log` (the logbook), `ui` (the e-ink design system), `ink` (the SurfaceFlinger pen path and pen input) and `update` (releases and installs). The kit never depends on an app.
 - `docs/`: numbered design docs (`00` device research to `10` the Battery section plan) and `screenshots/` for the README.
 - `knowledge/`: `experiments.md` (the evidence log) and `onyx-packages.json` (bundled into app assets via `sourceSets`).
-- `tools/host/`: PowerShell scripts over adb (`common.ps1` holds shared helpers, `ui.ps1` drives the app's UI for tests and screenshots). `tools/dev/`: repository hygiene and `publish.ps1`, which publishes a suite app's release or test build.
+- `tools/host/`: PowerShell scripts over adb (`common.ps1` holds shared helpers, `ui.ps1` drives the app's UI for tests and screenshots). `tools/dev/`: repository hygiene, `publish.ps1`, which publishes a suite app's release or test build, and the release-notes templates with their checker.
 - `.agents/skills/`: the Agent Skills described above.
 - **The GitHub side:**
   - Contribution rules are in `CONTRIBUTING.md` and the forms in `.github/ISSUE_TEMPLATE/`.
@@ -69,6 +69,8 @@ $env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.8.9-hotspot'   # JD
 .\gradlew.bat lintRelease          # lint (version-upgrade warnings are known and intentional)
 .\tools\dev\publish.ps1 -App hub|nib -Notes <file> [-Test] [-DryRun]   # publish a release or a test build (owner's say-so only)
 python tools\dev\prose_wrap.py     # prose rule check
+python tools\dev\check_release_notes.py [--test] [--preview] <file>   # release notes against the convention (publish.ps1 runs it)
+python -m unittest discover -s tools\dev -p "test_*.py"               # the checker's own tests
 .\tools\host\recon.ps1 -Label <name> [-Quick]
 .\tools\host\start-shizuku.ps1     # after every tablet reboot (Shizuku doesn't survive reboots)
 ```
@@ -102,7 +104,16 @@ Retake them when a screen changes noticeably, and never edit one to show a featu
   3. Run lint and build.
   4. Tag `vX.Y.Z` and attach the APK to a GitHub Release.
 - **Signing:** public releases are signed with a release key kept outside the repository. Build them with `.\gradlew.bat assembleRelease -Pbu.signing=<path to signing.properties>`, where that file holds `storeFile`, `storePassword`, `keyAlias` and `keyPassword`; the maintainer's lives in `%USERPROFILE%\.booxultimatum\`. Without `-Pbu.signing` the build is debug-signed. Since 0.5.1 the owner's tablet runs the published, release-signed app and updates itself, so builds for it must be release-signed too. Never publish a debug-signed build, and never install a build signed with one key over a copy signed with the other: Android refuses the update, and uninstalling loses the app's data and grants (the `build-release-and-docs` skill has the steps that keep them).
-- **Release notes** state which device and firmware were tested, and repeat the known limits.
+- **Release notes** are the GitHub release body, which the hub's updater also shows. They describe the release in general terms to someone using the app, not the work or the incident behind it. Write `CHANGELOG.md` first, where the dates, numbers and identifiers belong, then condense it; the notes may claim nothing the changelog doesn't. Start from `tools/dev/release-notes.template.md` (`release-notes-test.template.md` for a test build), which fixes the sections and their order:
+  1. **A summary:** one short paragraph saying what the release is about, by area or ability, never by the event that caused it.
+  2. **Before you update:** only if the update needs an action, in plain words with no commands or permission names in it.
+  3. **What's new:** at most eight items, ordered by what matters most to a user. Each is a bold statement of what they get, then one to three sentences on what it does and what it needs (Shizuku, a grant). Merge related changes.
+  4. **Fixed:** optional, in the same form, for what a user could see go wrong.
+  5. **Tested:** *Checked* (what, on which device and firmware, and how) and *Not yet seen* (say "nothing" if it all was).
+  6. **Known limits:** what the app can't do or doesn't know yet, ending with which tablet is tested.
+  7. **The footer:** a link to `CHANGELOG.md`, then *Not affiliated with Onyx or BOOX.*
+
+  Keep dates, times of day, file and class names, permission names and measurements taken on one occasion out of the summary and the items. The updater shows only the first 800 characters with Markdown and code blocks removed, so the summary and the first item must make sense on their own, in words. A test build's notes use *What changed* and *What to check* (numbered, each with the result to look for) instead. `publish.ps1` runs `tools/dev/check_release_notes.py` and refuses notes that don't conform, and the `build-release-and-docs` skill has the examples.
 
 ## UI conventions (e-ink)
 

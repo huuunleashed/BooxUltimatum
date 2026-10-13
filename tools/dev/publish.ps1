@@ -9,6 +9,9 @@
 # Test builds need a pre-release versionName such as 0.1.0-test.1, and are only offered to tablets whose owner turned
 # on test builds. Hubs from before the suite (0.5.x) never see them. The commit being released must already be pushed and
 # the tree clean: the release is tagged on that exact commit (from any branch), so the tag always matches what was built.
+#
+# -Notes is a Markdown file written from tools/dev/release-notes.template.md (tools/dev/release-notes-test.template.md for
+# -Test); tools/dev/check_release_notes.py refuses it, before the build, if it doesn't follow the convention.
 param(
     [Parameter(Mandatory = $true)][ValidateSet('hub', 'nib')][string]$App,
     [Parameter(Mandatory = $true)][string]$Notes,
@@ -27,6 +30,13 @@ $apps = @{
 $a = $apps[$App]
 if (-not (Test-Path $Notes)) { throw "Notes file not found: $Notes" }
 if (-not (Test-Path $Signing)) { throw "Signing properties not found: $Signing" }
+
+# The notes are the release body, and the hub's updater shows their first 800 characters: they follow the template
+# (tools/dev/release-notes.template.md, or release-notes-test.template.md with -Test), and are checked before anything is built.
+$noteCheck = @((Join-Path $PSScriptRoot 'check_release_notes.py'))
+if ($Test) { $noteCheck += '--test' }
+& python @noteCheck $Notes
+if ($LASTEXITCODE -ne 0) { throw "The release notes don't follow the convention (AGENTS.md, Releases); fix them and run again" }
 
 $commit = (git rev-parse HEAD).Trim()
 if (git status --porcelain) { throw 'The tree has uncommitted changes; commit them first, so the tag is what gets built' }
