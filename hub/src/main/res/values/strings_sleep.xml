@@ -3,14 +3,14 @@
 <resources>
     <string name="dest_sleep">Sleep</string>
     <string name="sl_title">Sleep screen</string>
-    <string name="sl_subtitle">Your own face for the Boox sleep screen, typeset for the panel and kept up to date while you use the tablet.</string>
+    <string name="sl_subtitle">Design your own face for the Boox sleep screen. BooxUltimatum draws it to fit the screen and keeps it up to date while you use the tablet.</string>
 
     <!-- Mode -->
     <string name="sl_mode">Mode</string>
     <string name="sl_mode_image">Sleep image</string>
-    <string name="sl_mode_image_detail">A full-screen face. Boox shows it as its screensaver picture and reads it fresh at every sleep.</string>
+    <string name="sl_mode_image_detail">A face that fills the screen. Boox shows it as its sleep screen picture and reads it again each time the tablet goes to sleep.</string>
     <string name="sl_mode_overlay">Over Transparent</string>
-    <string name="sl_mode_overlay_detail">A paper plate laid over what was on screen, through the Boox Transparent style and its sticker. Kept current through Shizuku, or with your permission to write the sticker.</string>
+    <string name="sl_mode_overlay_detail">A small paper plate laid over the screen as it was when the tablet went to sleep, using Boox’s Transparent style. Boox lays a sticker, a see-through picture, over that screen, and BooxUltimatum draws the plate on it. BooxUltimatum needs Shizuku, or your permission to change the sticker, to draw the plate.</string>
 
     <!-- Faces -->
     <string name="sl_face">Face</string>
@@ -28,23 +28,23 @@
     <string name="sl_ov_corner">Corner card</string>
     <string name="sl_ov_centre">Centre card</string>
     <string name="sl_note_almanac">The weekday, a big day number, the month with today marked, and what is coming up.</string>
-    <string name="sl_note_instrument">A Braun tuning scale for the battery, with the date and ruled readings below.</string>
-    <string name="sl_note_poster">The weekday set as large as the panel allows, over the quote of the day or your own.</string>
-    <string name="sl_note_under_clock">Leaves the top of the screen to the live Boox clock, which Boox refreshes every 5 minutes while asleep. Set Clock style to Digital in Boox for this face.</string>
-    <string name="sl_note_photo">Your picture, filled or fitted, with an optional caption band along the bottom.</string>
+    <string name="sl_note_instrument">The battery on a radio tuning scale in the style of Braun, with the date and ruled readings below.</string>
+    <string name="sl_note_poster">The weekday set as large as the screen allows, with the quote of the day or your own below it.</string>
+    <string name="sl_note_under_clock">Leaves the top of the screen to the Boox clock, which Boox redraws every 5 minutes while the tablet sleeps (seen on a Note Air6 C). Set Clock style to Digital in Boox’s screensaver settings for this face.</string>
+    <string name="sl_note_photo">Your picture, filling the screen or shown whole, with an optional caption along the bottom.</string>
     <string name="sl_note_note">Your note, set as large as it fits.</string>
     <string name="sl_note_return">Who to return the tablet to if it is found. Best on a tablet that leaves the house.</string>
-    <string name="sl_note_minimal">Only the date and the lamp.</string>
-    <string name="sl_note_overlay">Plates are drawn on a transparent sheet with a soft paper edge, so they stay legible over any page underneath.</string>
+    <string name="sl_note_minimal">Only the date and a small accent-coloured lamp.</string>
+    <string name="sl_note_overlay">Each plate is drawn on a see-through sheet with a soft paper edge, so it stays readable over whatever is on the screen.</string>
 
     <!-- Elements -->
     <string name="sl_shows">What it shows</string>
     <string name="sl_el_date">Date</string>
     <string name="sl_el_battery">Battery</string>
     <string name="sl_el_put_down">Put-down time</string>
-    <string name="sl_el_put_down_detail">When the tablet was last in use. It is rounded down to the refresh step, and exact with Sleep now.</string>
+    <string name="sl_el_put_down_detail">When you last used the tablet, rounded down to the refresh step. It is exact when you start the sleep with Sleep now.</string>
     <string name="sl_el_agenda">Next events</string>
-    <string name="sl_el_agenda_detail">From your calendars, the coming seven days.</string>
+    <string name="sl_el_agenda_detail">Events from your calendars in the next seven days.</string>
     <string name="sl_el_note">Note</string>
     <string name="sl_el_owner">Owner</string>
     <string name="sl_el_quote">Quote</string>
@@ -55,10 +55,10 @@
     <string name="sl_owner_none">No name or contact yet</string>
     <string name="sl_quote_source">Quote</string>
     <string name="sl_quote_daily">Quote of the day</string>
-    <string name="sl_quote_own">My own</string>
+    <string name="sl_quote_own">Your own</string>
     <string name="sl_quote_daily_detail">A short public-domain line, a new one each day.</string>
     <string name="sl_clock_room">Leave room for the Boox clock</string>
-    <string name="sl_clock_room_detail">Keeps the top of the screen free, for a live time from Boox\'s own clock.</string>
+    <string name="sl_clock_room_detail">Keeps the top of the screen free for the clock that Boox draws over the sleep screen. You choose that clock in Boox’s screensaver settings.</string>
 
     <!-- Photo -->
     <string name="sl_photo_choose">Choose picture</string>
@@ -71,11 +71,11 @@
     <string name="sl_dither">Dither</string>
     <string name="sl_dither_off">Let Boox do it</string>
     <string name="sl_dither_on">Pre-dither</string>
-    <string name="sl_dither_note">Boox dithers every picture itself. Pre-dithering spreads the photo over 16 levels per colour first, which can look finer on Kaleido; the text stays undithered either way.</string>
+    <string name="sl_dither_note">Boox dithers every picture itself, turning shades into patterns of dots that e-ink can show. Pre-dithering does it first, with 16 levels per colour, which can look finer on a Kaleido screen. Pre-dithering does not dither text.</string>
 
     <!-- Type and ink -->
     <string name="sl_type">Type</string>
-    <string name="sl_font">Typeface</string>
+    <string name="sl_font">Font</string>
     <string name="sl_font_system">Tablet font</string>
     <string name="sl_font_archivo">Archivo</string>
     <string name="sl_display_weight">Large type</string>
@@ -86,7 +86,7 @@
     <string name="sl_w_bold">Bold</string>
     <string name="sl_w_heavy">Heavy</string>
     <string name="sl_w_black">Black</string>
-    <string name="sl_type_note">Faces use real weights of the chosen typeface, including every instance of a variable font. Fonts you keep in Fonts appear here.</string>
+    <string name="sl_type_note">Faces use the real weights of the font you choose, including each weight of a variable font. Fonts you keep on the Fonts page appear in this list.</string>
     <string name="sl_ink">Ink</string>
     <string name="sl_ink_label">Page</string>
     <string name="sl_ink_paper">Black on paper</string>
@@ -98,7 +98,7 @@
     <string name="sl_ac_orange">Orange</string>
     <string name="sl_ac_yellow">Yellow</string>
     <string name="sl_ac_ink">Ink</string>
-    <string name="sl_accent_note">The accent fills the lamp, today\'s date and the needle. Kaleido shows solid colour areas best, so text always stays black or white.</string>
+    <string name="sl_accent_note">The accent fills shapes such as the lamp, today’s date and the needle. Kaleido shows solid areas of colour best, so text always stays black or white.</string>
 
     <!-- Refresh -->
     <string name="sl_refresh">Refresh</string>
@@ -107,7 +107,7 @@
         <item quantity="one">%d minute</item>
         <item quantity="other">%d minutes</item>
     </plurals>
-    <string name="sl_refresh_explain">Boox reads the picture when the tablet goes to sleep and never again until it wakes, so on its own nothing on it changes while asleep; the live updates below change that. The face is also redrawn when the battery, the date, the calendar, the rotation or your settings change, and not at all when nothing on it would change.</string>
+    <string name="sl_refresh_explain">Boox reads the picture once, when the tablet goes to sleep, so on its own nothing on it changes while the tablet sleeps. The updates under While asleep change that.\nBooxUltimatum also redraws the face when the battery, the date, the calendar, the rotation or your settings change. It skips the redraw when nothing on the face would change.</string>
     <string name="sl_live">While asleep</string>
     <string name="sl_live_used">%1$d %% used asleep</string>
     <string name="sl_live_used_charging">Charging</string>
@@ -130,81 +130,81 @@
     <string name="sl_face_dial">Dial</string>
     <string name="sl_face_clock">Clock</string>
     <string name="sl_face_monitor">Monitor</string>
-    <string name="sl_note_dial">A Braun-style wall clock that keeps time while the tablet sleeps, with the date, the battery and how long it has slept. Without updates while asleep, the hands show when it was put down.</string>
-    <string name="sl_note_clock">The time set as large as the panel allows, the date under it, and the battery, time asleep and the next event along the foot. Without updates while asleep, it shows when the tablet was put down.</string>
-    <string name="sl_note_monitor">A readout of the sleep itself: how long, the battery on a tuning scale with what it has used and the rate, the next event counted down and the next alarm. It needs updates while asleep to move.</string>
+    <string name="sl_note_dial">A wall clock in the style of Braun, with the date, the battery and how long the tablet has slept. With updates while asleep it keeps time. Without them, the hands show when the tablet was put down.</string>
+    <string name="sl_note_clock">The time set as large as the screen allows, with the date under it and the battery, time asleep and next event along the bottom. Without updates while asleep, it shows when the tablet was put down.</string>
+    <string name="sl_note_monitor">A readout of the sleep itself: how long the tablet has slept, and the battery on a tuning scale with its use and rate. It also counts down to the next event and shows the next alarm. It needs updates while asleep to change.</string>
     <string name="sl_element_asleep">Time asleep</string>
-    <string name="sl_element_asleep_detail">How long the tablet has slept, and the battery it has used. Shown with updates while asleep.</string>
+    <string name="sl_element_asleep_detail">How long the tablet has slept and how much battery it has used. Shown when updates while asleep are on.</string>
     <string name="sl_live_badge">Live</string>
-    <string name="sl_preview_legend_live">Drawn by the same renderer as the sleep screen, shown as it reads 1 h 25 min into a sleep with updates while asleep on. Tap it to see it at full size.</string>
+    <string name="sl_preview_legend_live">Drawn the same way as the sleep screen, as it would read 1 h 25 min into a sleep with updates while asleep turned on. Tap it to see it at full size.</string>
     <plurals name="sl_state_live">
         <item quantity="one">Updates while asleep every %d minute</item>
         <item quantity="other">Updates while asleep every %d minutes</item>
     </plurals>
-    <string name="sl_live_suggest">This face is made for updates while asleep. Turn them on below to keep it moving.</string>
-    <string name="sl_live_explain">Live updates redraw the face while the tablet sleeps, so the date, battery and agenda stay true, and Boox’s charging bar is covered (so is Boox’s own clock, if you show one). The time you put the tablet down stays as it was. Each update wakes the panel for about a second and a half — measured on this tablet at about 1.6 mAh an hour at the one-minute step, a fifth of that at five — which is why one minute is kept for charging.</string>
+    <string name="sl_live_suggest">This face is made for updates while asleep. Turn them on below to keep the face current while the tablet sleeps.</string>
+    <string name="sl_live_explain">Live updates redraw the face while the tablet sleeps, so the date, battery and agenda stay current. They also cover the bar Boox draws while charging, and Boox’s own clock if you show one. The time you put the tablet down stays as it was.\nEach update wakes the screen for about a second and a half. Measured on a Note Air6 C, the one-minute step cost about 1.6 mAh an hour, and the five-minute step wakes the screen a fifth as often. That is why the one-minute step runs only while charging.</string>
     <string name="sl_live_turn_on">Turn on</string>
     <string name="sl_live_turn_off">Turn off</string>
     <string name="sl_live_step">Update every</string>
-    <string name="sl_live_step_battery">One minute is used while charging. On battery the shortest step is %1$d minutes, which is what keeps the panel from waking sixty times an hour.</string>
+    <string name="sl_live_step_battery">The one-minute step runs only while charging. On battery the shortest step is %1$d minutes, so the screen doesn’t wake 60 times an hour.</string>
     <string name="sl_live_charging">Only while charging</string>
-    <string name="sl_live_charging_detail">No wake-ups on battery at all</string>
+    <string name="sl_live_charging_detail">No updates on battery, so nothing wakes the screen.</string>
     <string name="sl_live_quiet">Not at night</string>
     <string name="sl_live_quiet_detail">No updates from %1$s to %2$s</string>
-    <string name="sl_live_quiet_note">While paused, the screen keeps the last picture and says so at its top edge: Paused until the hour you set.</string>
+    <string name="sl_live_quiet_note">While updates are paused, the sleep screen keeps its last picture and says “Paused until” at its top edge, followed by the hour you set.</string>
     <string name="sl_live_quiet_from">Pause from</string>
     <string name="sl_live_quiet_to">Resume at</string>
     <string name="sl_paused_until">Paused until %1$s</string>
     <string name="sl_live_on">On</string>
     <string name="sl_live_off">Off</string>
-    <string name="sl_live_setup">Needs, all on the tablet</string>
+    <string name="sl_live_setup">What live updates need</string>
     <string name="sl_live_a11y">Accessibility service</string>
-    <string name="sl_live_a11y_detail">Android hides app windows behind the lock screen, except accessibility overlays. The service only holds the picture: it can’t read the screen or your typing and does nothing while the screen is on.</string>
+    <string name="sl_live_a11y_detail">Android hides app windows while the tablet is locked, except the overlay from an accessibility service, so BooxUltimatum holds the picture in one. It can’t read the screen or what you type, and it shows nothing while the screen is on.</string>
     <string name="sl_live_a11y_open">Open settings</string>
     <string name="sl_live_a11y_direct">Turn on for me</string>
     <string name="sl_live_a11y_off">Turn it off</string>
     <string name="sl_live_bg">Background use</string>
-    <string name="sl_live_bg_detail">Boox deletes the wake-up alarms of apps it restricts. Allow background usage on Android’s battery page; if updates still don’t arrive, switch it off and on once.</string>
+    <string name="sl_live_bg_detail">Boox removes the wake-up alarms of apps it restricts, so updates stop. Allow background usage for BooxUltimatum on Android’s battery page, and if updates still don’t arrive, turn it off and on once. With Shizuku, tap Register with Boox to do that for you.</string>
     <string name="sl_live_bg_open">Open battery page</string>
     <string name="sl_live_bg_register">Register with Boox</string>
     <string name="sl_live_exact">Exact alarms</string>
-    <string name="sl_live_exact_detail">So updates land on the minute</string>
+    <string name="sl_live_exact_detail">Lets updates run on the minute. Without it, they can arrive late.</string>
     <string name="sl_live_exact_open">Allow</string>
     <string name="sl_live_allowed">Allowed</string>
-    <string name="sl_live_waiting">The service is allowed but Android hasn’t started it yet. Leaving this page and coming back usually does it.</string>
-    <string name="sl_live_needs_image">Live updates redraw the full-screen picture; the Transparent sticker can’t be updated this way.</string>
-    <string name="sl_live_needs_apply">Apply a face first; live updates redraw the face you applied.</string>
-    <string name="sl_live_none">No sleep with live updates yet.</string>
+    <string name="sl_live_waiting">The accessibility service is on, but Android hasn’t started it yet. Leave this page and come back. That usually starts it.</string>
+    <string name="sl_live_needs_image">Live updates redraw a full-screen picture, so they work only in Sleep image mode. A plate can’t be updated this way, because Boox reads its sticker only when the tablet goes to sleep.</string>
+    <string name="sl_live_needs_apply">Apply a face first. Live updates redraw the face you applied.</string>
+    <string name="sl_live_none">The tablet hasn’t slept with live updates on yet.</string>
     <plurals name="sl_live_last">
         <item quantity="one">Last sleep: %1$d update, the last at %2$s.</item>
         <item quantity="other">Last sleep: %1$d updates, the last at %2$s.</item>
     </plurals>
     <string name="sl_live_last_none">Last sleep: no updates were due.</string>
-    <string name="sl_live_missed">The last sleep got no updates: Boox’s power manager most likely cleared the alarm. Switch Allow background usage off and on again on the battery page, or use Register with Boox, then try another sleep.</string>
+    <string name="sl_live_missed">The last sleep got no updates. Boox’s power manager most likely removed the wake-up alarm. Turn Allow background usage off and on again on the battery page, or, with Shizuku, tap Register with Boox, then try another sleep.</string>
     <string name="sl_live_registered">Registered with Boox’s power manager</string>
     <string name="live_service_label">BooxUltimatum live sleep screen</string>
     <string name="live_service_summary">Keeps the sleep screen current while the tablet sleeps</string>
-    <string name="live_service_description">Lets BooxUltimatum redraw its sleep screen every few minutes while the tablet is locked. Android hides ordinary app windows behind the lock screen; an accessibility overlay is the only window it doesn’t hide, so this service exists only to hold that picture. It can’t read what’s on screen, doesn’t see your typing and performs no actions. It shows nothing while the screen is on.</string>
+    <string name="live_service_description">Lets BooxUltimatum redraw its sleep screen at the interval you choose while the tablet sleeps. Android hides ordinary app windows while the tablet is locked but not the overlay from an accessibility service, so this service exists only to hold that picture. It can’t read the screen, can’t see what you type and performs no actions. It shows nothing while the screen is on.</string>
 
     <!-- Keys and state -->
     <string name="sl_apply">Apply</string>
     <string name="sl_apply_again">Apply again</string>
     <string name="sl_applied">This face is now the sleep screen.</string>
-    <string name="sl_applied_overlay">The plate is written to Boox\'s own sticker. BooxUltimatum can\'t read which screensaver style Boox is set to, so if Transparent isn\'t chosen there (with the sticker on), you\'ll still see whatever picture Boox was showing before.</string>
+    <string name="sl_applied_overlay">The plate is now written to Boox’s sticker. BooxUltimatum can’t see which sleep screen style Boox uses. Unless Boox is set to Transparent with the sticker on, you still see the picture Boox showed before.</string>
     <string name="sl_sleep_now">Sleep now</string>
     <string name="sl_restore">Restore Boox default</string>
     <string name="sl_restore_confirm">Tap again to restore</string>
-    <string name="sl_restored">Back to the Boox default picture. Choose your former style in Boox\'s screensaver settings.</string>
-    <string name="sl_open_boox">Boox screensaver settings</string>
-    <string name="sl_shell_note">Sleep now needs Shizuku. Over Transparent can also work through the sticker permission below.</string>
-    <string name="sl_mode_changed">Mode changed. Tap Apply to hand the new mode to Boox; until then the last picture stays and is no longer redrawn.</string>
+    <string name="sl_restored">Boox’s default picture is back. To use your earlier style again, choose it in Boox’s screensaver settings.</string>
+    <string name="sl_open_boox">Open Boox screensaver settings</string>
+    <string name="sl_shell_note">Sleep now needs Shizuku. Over Transparent can work without it if you allow BooxUltimatum to write Boox’s sticker, as described below.</string>
+    <string name="sl_mode_changed">Mode changed. Tap Apply to pass the new mode to Boox. Until then the last picture stays and BooxUltimatum no longer redraws it.</string>
     <string name="sl_state_on">%1$s, redrawn every %2$s while awake</string>
     <string name="sl_state_off">Not applied</string>
-    <string name="sl_status">Published %1$s · render %2$d ms, encode %3$d ms · %4$s · %5$s</string>
+    <string name="sl_status">Published %1$s · drawn in %2$d ms, compressed in %3$d ms · %4$s · %5$s</string>
     <string name="sl_status_skipped">Checked %1$s · nothing on the face changed, so the file was left as it is</string>
     <string name="sl_status_error">Failed %1$s · %2$s</string>
     <string name="sl_preview_ms">Preview drawn in %1$d ms</string>
-    <string name="sl_preview_legend">Drawn by the same renderer as the published picture. Dashes mark where Boox draws its clock when you leave room for it. Tap it to see it at full size.</string>
+    <string name="sl_preview_legend">Drawn the same way as the published picture. Dashes mark where Boox draws its clock when you leave room for it. Tap the preview to see it at full size.</string>
     <string name="sl_preview_description">Preview of the sleep screen</string>
     <string name="sl_zoom_open">See it at full size</string>
     <string name="sl_zoom_close">Close</string>
@@ -212,31 +212,31 @@
 
     <!-- Boox guidance -->
     <string name="sl_boox">Boox settings</string>
-    <string name="sl_boox_image">For a clean face, open Boox screensaver settings, set Clock style and Text display to None, and turn Bottom status bar off (it adds the battery and “Press power button to wake up”; Boox still shows it while the tablet is charging, whatever the setting). To keep a live time instead, leave Clock style on Digital and turn on Leave room for the Boox clock, or use Under the clock.</string>
-    <string name="sl_boox_overlay_intro">Boox needs you to choose the sticker once. After that BooxUltimatum keeps it up to date.</string>
-    <string name="sl_boox_overlay_style">BooxUltimatum can\'t see which style Boox is on. Until Boox itself is set to Transparent with the sticker on, Boox keeps showing the last sleep picture it was given — so after a switch from Sleep image, that older picture is what a sleep will show.</string>
-    <string name="sl_boox_leftover">If an older BooxUltimatum picture is still in Pictures, the app can\'t remove it: Android won\'t let an app change a picture it no longer owns, so the newest copy is written beside it and the old one is yours to delete in Files.</string>
-    <string name="sl_step_1">Tap Put in Sticker album below. The current plate appears in the gallery\'s Sticker album.</string>
-    <string name="sl_step_2">Open Boox screensaver settings, choose Transparent, turn on Show lockscreen sticker, then Select sticker, the + tile, the Sticker album and the BooxUltimatum picture, and confirm the crop with OK.</string>
+    <string name="sl_boox_image">For a clean face, open Boox screensaver settings. Set Clock style and Text display to None, and turn Bottom status bar off. That bar adds the battery and “Press power button to wake up”, and Boox shows it while the tablet is charging, whatever the setting. To keep a live time instead, leave Clock style on Digital and turn on Leave room for the Boox clock, or choose Under the clock.</string>
+    <string name="sl_boox_overlay_intro">A sticker is a see-through picture that Boox lays over the screen it kept when the tablet went to sleep. Boox needs you to choose it once. After that BooxUltimatum keeps it up to date.</string>
+    <string name="sl_boox_overlay_style">BooxUltimatum can’t see which style Boox is set to. Until you set Boox to Transparent with the sticker on, Boox keeps showing the last sleep picture it was given. After a switch from Sleep image, that older picture is what the tablet shows when it sleeps.</string>
+    <string name="sl_boox_leftover">If an older BooxUltimatum picture is still in Pictures, BooxUltimatum can’t remove it. Android doesn’t let an app change a picture it no longer owns, so the newest copy is written beside it. You can delete the old one in Files.</string>
+    <string name="sl_step_1">Tap Put in Sticker album below. The current plate appears in the gallery’s Sticker album.</string>
+    <string name="sl_step_2">Open Boox screensaver settings, choose Transparent and turn on Show lockscreen sticker. Then tap Select sticker, the + tile, the Sticker album and the BooxUltimatum picture, and confirm the crop with OK.</string>
     <string name="sl_step_3">Apply Transparent in Boox.</string>
     <string name="sl_step_4">Come back here and tap Apply. BooxUltimatum finds the sticker Boox saved and redraws it for you.</string>
     <string name="sl_prepare">Put in Sticker album</string>
     <string name="sl_prepared">The plate is in the Sticker album.</string>
-    <string name="sl_boox_overlay_settings">The Boox clock, the motto and the bottom status bar are drawn by Boox over any style; each can be turned off in Boox screensaver settings. Restore can\'t read back the style you had before, so it sets the Boox default picture; pick your former style in Boox afterwards.</string>
-    <string name="sl_limits">With a PIN, a tablet put to sleep from the lock screen shows a black privacy screen instead. That is Boox\'s choice and outside this app.</string>
+    <string name="sl_boox_overlay_settings">Boox draws its clock, the motto and the bottom status bar over any style. You can turn each off in Boox screensaver settings. Restore can’t read the style you had before, so it sets the Boox default picture. Choose your former style in Boox afterwards.</string>
+    <string name="sl_limits">With a PIN, a tablet put to sleep from the lock screen shows a black privacy screen instead (seen on a Note Air6 C). Boox decides this, and BooxUltimatum can’t change it.</string>
 
     <!-- Writing Boox's sticker without Shizuku -->
-    <string name="sl_write_title">Writing Boox\'s sticker</string>
+    <string name="sl_write_title">Writing Boox’s sticker</string>
     <string name="sl_write_shell">Shizuku is running, so the plate is written through it. Nothing else is needed.</string>
-    <string name="sl_write_ask_pictures">BooxUltimatum finds the sticker Boox saved by looking in the Sticker album. Allow it to read pictures for that: nothing else is looked at.</string>
+    <string name="sl_write_ask_pictures">BooxUltimatum finds the sticker Boox saved by looking in the Sticker album. Allow it to read pictures for that. It looks at nothing else.</string>
     <string name="sl_write_allow_pictures">Allow reading pictures</string>
-    <string name="sl_write_ask_consent">Android will ask once whether BooxUltimatum may change Boox\'s sticker picture. Saying yes keeps the plate current without Shizuku.</string>
+    <string name="sl_write_ask_consent">Android asks whether BooxUltimatum may change Boox’s sticker picture. If you allow it, BooxUltimatum keeps the plate current without Shizuku.</string>
     <string name="sl_write_allow_consent">Ask Android to allow it</string>
     <string name="sl_write_ready">BooxUltimatum may write the sticker itself, so no Shizuku is needed for the plate.</string>
-    <string name="sl_write_no_row">No sticker is visible in Boox\'s album. If Android was told to share only some pictures, allow all of them; otherwise do the four steps above first.</string>
-    <string name="sl_write_denied">Android did not allow changing the sticker picture, so the plate can\'t be kept current on its own. Start Shizuku from Access instead.</string>
+    <string name="sl_write_no_row">BooxUltimatum can’t see a sticker in Boox’s Sticker album. If Android is set to share only some pictures with BooxUltimatum, allow all of them. Otherwise, do the four steps above first.</string>
+    <string name="sl_write_denied">Android didn’t allow BooxUltimatum to change the sticker picture, so it can’t keep the plate current by itself. Start Shizuku from Access instead.</string>
     <string name="sl_write_file">Sticker: %1$s</string>
-    <string name="sl_write_scale">Boox draws the sticker over the whole panel, keeping the middle. Plates stay inside that band, so one file is right in both orientations. In Boox\'s screensaver settings the scale choice can also be set to fit, which shows the whole sheet.</string>
+    <string name="sl_write_scale">Boox scales the sticker to fill the screen and keeps only the middle. Plates stay inside the middle area that both orientations keep, so one file works in portrait and landscape. In Boox’s screensaver settings you can also set the scale to fit, which shows the whole sheet.</string>
 
     <!-- Editing -->
     <string name="sl_edit_note">Note</string>
@@ -277,22 +277,22 @@
     <!-- Errors and journal -->
     <string name="sl_err_needs_shizuku">This needs Shizuku. Start it from Access, then try again.</string>
     <string name="sl_err_no_sticker">No Boox sticker yet. Follow the steps under Boox settings to choose the BooxUltimatum sticker once.</string>
-    <string name="sl_err_stage">Could not stage the plate in the app\'s own files.</string>
-    <string name="sl_err_no_write">BooxUltimatum may not write Boox\'s sticker yet. Let it write the sticker under Boox settings, or start Shizuku from Access, then apply again.</string>
-    <string name="sl_err_backup">Could not read the sticker Boox made, so it was left untouched.</string>
-    <string name="sl_err_write">The sticker was not written. Check that Boox\'s sticker is still where it was, then apply again.</string>
-    <string name="sl_err_restore">Could not put Boox\'s own sticker back: %1$s. Boox\'s screensaver settings can choose another picture.</string>
-    <string name="sl_journal_image">Sleep screen set to the %1$s face, as the Boox sleep picture</string>
-    <string name="sl_journal_overlay">Sleep screen set to the %1$s plate, over the Boox Transparent style</string>
-    <string name="sl_journal_restore">Sleep screen handed back to the Boox default picture</string>
+    <string name="sl_err_stage">BooxUltimatum could not save the plate in its own files.</string>
+    <string name="sl_err_no_write">BooxUltimatum isn’t allowed to write Boox’s sticker yet. Tap Ask Android to allow it, or start Shizuku from Access, then tap Apply again.</string>
+    <string name="sl_err_backup">BooxUltimatum could not back up the sticker Boox made, so it left the sticker as it was.</string>
+    <string name="sl_err_write">BooxUltimatum couldn’t write the sticker. Check that Boox’s sticker is still in the Sticker album, then tap Apply again.</string>
+    <string name="sl_err_restore">BooxUltimatum couldn’t restore Boox’s own sticker: %1$s. You can choose another picture in Boox’s screensaver settings.</string>
+    <string name="sl_journal_image">Sleep screen set to the %1$s face in Sleep image mode</string>
+    <string name="sl_journal_overlay">Sleep screen set to the %1$s plate in Over Transparent mode</string>
+    <string name="sl_journal_restore">Sleep screen restored to the Boox default picture</string>
     <string name="sl_journal_poweroff">Power-off screen set to the %1$s face</string>
-    <string name="sl_journal_poweroff_restore">Power-off screen handed back to the Boox default</string>
+    <string name="sl_journal_poweroff_restore">Power-off screen restored to the Boox default picture</string>
     <string name="sl_poweroff">Use as power-off screen</string>
     <string name="sl_poweroff_again">Update power-off screen</string>
-    <string name="sl_poweroff_restore">Boox power-off screen</string>
+    <string name="sl_poweroff_restore">Restore Boox power-off screen</string>
     <string name="sl_poweroff_done">Set as the power-off screen</string>
-    <string name="sl_poweroff_restored">The Boox power-off screen is back</string>
-    <string name="sl_poweroff_note">What the tablet shows when it’s switched off. Boox keeps a copy of the picture, so it stays as it was when you set it: the battery and put-down time are left out, and after changing the face, update it again.</string>
+    <string name="sl_poweroff_restored">The Boox power-off screen is restored.</string>
+    <string name="sl_poweroff_note">This sets the picture the tablet shows while it is off, drawn in portrait. It needs Sleep image mode. The battery and the put-down time are left out, and a live face is replaced by the Almanac, because a clock would stop. Boox keeps a copy, so the picture stays as you set it. After you change the face, update it again.</string>
 
     <!-- The second set of faces -->
     <string name="sl_face_cube">Cube</string>
@@ -305,16 +305,16 @@
     <string name="sl_face_sky">Sky</string>
     <string name="sl_face_broadsheet">Broadsheet</string>
     <string name="sl_face_year">Year</string>
-    <string name="sl_note_cube">A cube clock drawn in true perspective: the time on the side facing you, the date on the side in shade, an accent button on top and a shadow in stipple or hatching. Without updates while asleep, it shows when the tablet was put down.</string>
-    <string name="sl_note_flip">Hours and minutes on split-flap cards, the upper flap leaning back on its hinge, with the date on small flaps below. Without updates while asleep, it shows when the tablet was put down.</string>
-    <string name="sl_note_dashboard">A grid of tiles you choose below: the time, the date and week, the battery and what it has used, time asleep, the alarm, what’s next, how far through the day and the year, the moon, and the home screen’s weather with the time it was read.</string>
-    <string name="sl_note_words">The time in words, lit in a grid of letters, in steps of five minutes; accent dots count the minutes in between. The letters are in English.</string>
-    <string name="sl_note_ring">The whole day on one 24-hour ring: today’s events as arcs, the sleep so far in the accent, now as a hand, and the night shaded once the home screen has a weather city.</string>
-    <string name="sl_note_timeline">Today along a line: events as blocks, the sleep so far in the accent and a marker for now, with the time and readings above.</string>
-    <string name="sl_note_lcd">A Braun-style LCD clock with drawn seven-segment figures, small fields for the date, time asleep, battery and alarm, and a row of keys with one in the accent.</string>
-    <string name="sl_note_sky">Today’s sun and tonight’s moon. The sun’s path, sunrise and sunset are worked out on the tablet for the home screen’s weather city, the only place the app knows; without one, the sun follows the clock and the face says so. The moon’s phase needs no place.</string>
-    <string name="sl_note_broadsheet">A newspaper front page: the next event as the headline (or the quote), the weather and battery in the masthead’s ears, and columns for the sleep, what’s ahead and the almanac. The issue number is the day of the year.</string>
-    <string name="sl_note_year">The year at a glance, every day a dot: the past filled, today in the accent, and how far through the year you are.</string>
+    <string name="sl_note_cube">A cube clock drawn in true perspective. The time is on the side facing you, the date on the side in shade, and a round button in the accent colour on top. The shadow is shaded with dots or lines. Without updates while asleep, it shows when the tablet was put down.</string>
+    <string name="sl_note_flip">The hours and minutes on split-flap cards, with the upper flap leaning back on its hinge and the date on small flaps below. Without updates while asleep, it shows when the tablet was put down.</string>
+    <string name="sl_note_dashboard">A grid of tiles. The time and the date, with the week, always show. You choose the others below: the battery and what it has used, time asleep, the alarm, next events, how far through the day and the year you are, the moon, and the home screen’s weather with the time it was read.</string>
+    <string name="sl_note_words">The time in words, lit in a grid of letters. The words change every five minutes, and dots in the accent colour count the minutes in between. The letters are in English.</string>
+    <string name="sl_note_ring">The whole day on one 24-hour ring. Today’s events are arcs, the sleep so far is in the accent colour, and a hand shows now. The night is shaded once the home screen has a weather city.</string>
+    <string name="sl_note_timeline">Today along a line. Events are blocks, the sleep so far is in the accent colour, and a marker shows now. The time and readings sit above.</string>
+    <string name="sl_note_lcd">A Braun-style LCD clock with seven-segment figures, small fields for the date, time asleep, battery and alarm, and a row of buttons with one in the accent colour.</string>
+    <string name="sl_note_sky">Today’s sun and tonight’s moon. The sun’s path, sunrise and sunset are worked out on the tablet for the home screen’s weather city, the only place BooxUltimatum knows. Without a weather city, the sun follows the clock and the face says so. The moon’s phase needs no place.</string>
+    <string name="sl_note_broadsheet">A newspaper front page. The headline is the next event or the quote, as you choose below. The weather and battery sit in small boxes beside the title, and columns cover the sleep, what’s ahead and the almanac. The issue number is the day of the year.</string>
+    <string name="sl_note_year">The year at a glance, with a dot for every day. Past days are filled, today is in the accent colour, and the face shows how far through the year you are.</string>
     <string name="sl_face_options">%1$s options</string>
     <plurals name="sl_group_live">
         <item quantity="one">%d live face</item>
@@ -324,13 +324,13 @@
         <item quantity="one">%d still face</item>
         <item quantity="other">%d still faces</item>
     </plurals>
-    <string name="sl_group_selected">Selected: %1$s, in the other tab.</string>
+    <string name="sl_group_selected">Your selected face, %1$s, is in the other tab.</string>
 
     <!-- Options that belong to one face -->
     <string name="so_on">On</string>
     <string name="so_off">Off</string>
     <string name="so_hours">Hours</string>
-    <string name="so_hours_system">As the tablet</string>
+    <string name="so_hours_system">Same as the tablet</string>
     <string name="so_hours_12">12-hour</string>
     <string name="so_hours_24">24-hour</string>
     <string name="so_dial_style">Style</string>
@@ -351,17 +351,17 @@
     <string name="so_tile_moon">Moon</string>
     <string name="so_tile_weather">Weather</string>
     <string name="so_tile_year">Year</string>
-    <string name="so_dash_note">The time and date always show. Weather appears when the home screen has read it in the last three days, and next events need calendar access.</string>
+    <string name="so_dash_note">The time and date always show. Weather shows only if the home screen has loaded it in the last three days. Next events need calendar access and stay hidden without it.</string>
     <string name="so_word_style">Style</string>
     <string name="so_word_grid">Letter grid</string>
     <string name="so_word_alone">Words alone</string>
     <string name="so_word_dots">Minute dots</string>
-    <string name="so_word_note">Words go in steps of five minutes and the dots add the minutes in between. Updates while asleep land on a round five, so there the dots stay dark.</string>
+    <string name="so_word_note">The words change every five minutes, and the dots add the minutes in between. With an update step of 5 minutes or more, updates while asleep land on a whole five minutes, so the dots stay dark while the tablet sleeps.</string>
     <string name="so_ring_top">At the top</string>
     <string name="so_ring_noon">Noon</string>
     <string name="so_ring_midnight">Midnight</string>
     <string name="so_ring_night">Shade the night</string>
-    <string name="so_sun_note">Sunrise and sunset need a weather city on the home screen; it’s the only place the app knows.</string>
+    <string name="so_sun_note">Sunrise and sunset need a weather city on the home screen. It’s the only place BooxUltimatum knows.</string>
     <string name="so_line_span">Span</string>
     <string name="so_line_around">Around now</string>
     <string name="so_line_waking">6:00 to midnight</string>

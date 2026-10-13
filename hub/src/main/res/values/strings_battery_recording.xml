@@ -8,7 +8,7 @@
         <item quantity="other">%d days covered</item>
     </plurals>
     <string name="brc_nothing_recorded">Nothing recorded yet</string>
-    <string name="brc_detail">%1$s · %2$s on disk</string>
+    <string name="brc_detail">%1$s · %2$s on the tablet</string>
     <string name="brc_size_kb">%1$d KB</string>
     <string name="brc_size_mb">%1$s MB</string>
     <string name="brc_folder">Folder</string>
@@ -16,14 +16,14 @@
     <string name="brc_export">Export the log</string>
     <string name="brc_export_empty">There is no log to export yet.</string>
     <string name="brc_report_title">Battery report</string>
-    <string name="brc_report_explain">The last 72 hours of the log, the findings with their evidence and a plain summary, in one zip.</string>
+    <string name="brc_report_explain">One zip with the last 72 hours of the log, the findings with their evidence and a plain summary. You choose where to send it.</string>
     <string name="brc_include_apps">Include app names</string>
     <string name="brc_apps_in">Included</string>
     <string name="brc_apps_out">Left out</string>
-    <string name="brc_apps_explain">App use is behaviour, so app names are left out of the report unless you tick Include app names.</string>
+    <string name="brc_apps_explain">App use says a lot about how you use the tablet. The report leaves out app names, and the labels of your marks, unless you turn on Include app names.</string>
     <string name="brc_share_report">Share battery report</string>
     <string name="brc_preparing">Preparing the files…</string>
     <string name="brc_failed">Couldn’t prepare the files: %1$s</string>
     <string name="brc_earlier_title">Earlier measurements</string>
-    <string name="brc_earlier_explain">Results of the old Measure drain, kept so they stay readable.</string>
+    <string name="brc_earlier_explain">Results from the old Measure drain test, which BooxUltimatum no longer has. They are kept so you can still read them.</string>
 </resources>

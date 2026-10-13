@@ -9,13 +9,13 @@
     </plurals>
     <string name="bd_hours">%1$d h</string>
     <string name="bd_plate_now">Battery now</string>
-    <string name="bd_estimate_about">About %1$s at your usual use</string>
+    <string name="bd_estimate_about">About %1$s left if you use the tablet as usual</string>
     <plurals name="bd_estimate_range">
         <item quantity="one">range %1$s to %2$s · %3$d day of your log</item>
-        <item quantity="other">range %1$s to %2$s · %3$d days of your log</item>
+        <item quantity="other">range %1$s to %2$s · based on %3$d days of unplugged use</item>
     </plurals>
-    <string name="bd_needs_day">Needs about a day of unplugged use</string>
-    <string name="bd_rate_unknown">The charge rate isn’t reported right now</string>
+    <string name="bd_needs_day">Needs about a day of unplugged use before it can estimate the time left</string>
+    <string name="bd_rate_unknown">The tablet isn’t reporting its charge rate right now</string>
     <string name="bd_charging_at">Charging at %1$s</string>
     <string name="bd_plate_last_24h">Last 24 hours</string>
     <string name="bd_plate_happened">What happened</string>
@@ -23,7 +23,7 @@
         <item quantity="one">%d more finding in the log</item>
         <item quantity="other">%d more findings in the log</item>
     </plurals>
-    <string name="bd_background_restricted">BooxUltimatum can’t record in the background. Lifting that needs Shizuku running.</string>
+    <string name="bd_background_restricted">BooxUltimatum can’t record in the background because its background use is restricted. Allowing it needs Shizuku to be running.</string>
     <string name="bd_allow_background">Allow background use</string>
-    <string name="bd_recording_paused">Recording is paused. Resume it on History.</string>
+    <string name="bd_recording_paused">Recording is paused. Open History to resume it.</string>
 </resources>

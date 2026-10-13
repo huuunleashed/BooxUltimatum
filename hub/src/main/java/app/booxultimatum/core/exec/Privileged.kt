@@ -338,7 +338,7 @@ object Privileged {
         // The helper didn't start: the direct route is how to look at why, from the same user the helper would run as.
         if (helper == null && d.ok) {
             val ps = direct("ps -A")
-            add("Evidence: the helper's process", ps.ok, if (ps.ok) describeHelperProcess(ps.out, BuildConfig.APPLICATION_ID) else ps.message)
+            add("Evidence: the helper’s process", ps.ok, if (ps.ok) describeHelperProcess(ps.out, BuildConfig.APPLICATION_ID) else ps.message)
             val logcat = direct("logcat -d -t 3000 -v threadtime")
             val lines = if (logcat.ok) helperLogLines(logcat.out, BuildConfig.APPLICATION_ID).map { scrub(it) } else emptyList()
             add(

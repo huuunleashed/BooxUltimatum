@@ -116,7 +116,7 @@ object Fonts {
             }
             val tmp = File(out.parentFile, out.name + ".part")
             tmp.writeText(lines.toString())
-            check(tmp.renameTo(out) || (out.delete() && tmp.renameTo(out))) { "Could not save the catalogue" }
+            check(tmp.renameTo(out) || (out.delete() && tmp.renameTo(out))) { "Couldn’t save the catalogue" }
         } finally {
             c.disconnect()
         }
@@ -674,7 +674,7 @@ object Fonts {
             check(c.responseCode == 200) { "Google Fonts answered ${c.responseCode}" }
             c.inputStream.use { input -> tmp.outputStream().use { input.copyTo(it) } }
             check(tmp.length() > 1024) { "Download was empty" }
-            check(tmp.renameTo(out)) { "Could not save ${out.name}" }
+            check(tmp.renameTo(out)) { "Couldn’t save ${out.name}" }
         } finally {
             c.disconnect()
             tmp.delete()

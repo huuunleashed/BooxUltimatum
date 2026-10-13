@@ -12,11 +12,11 @@
 
     <!-- The Suite page. -->
     <string name="suite_title">BooxUltimatum suite</string>
-    <string name="suite_subtitle">Apps you install, and modules built into this app</string>
+    <string name="suite_subtitle">Apps you install, and modules built into BooxUltimatum</string>
     <string name="suite_apps">Apps</string>
-    <string name="suite_apps_explain">Separate apps that build on BooxUltimatum. Each installs, updates and uninstalls on its own, and works without this app.</string>
+    <string name="suite_apps_explain">Separate apps that build on BooxUltimatum. Each one installs, updates and uninstalls on its own, and works without BooxUltimatum. BooxUltimatum downloads them from GitHub Releases and checks them before installing.</string>
     <string name="suite_modules">Built into BooxUltimatum</string>
-    <string name="suite_modules_explain">Removing a module stops it and undoes what it changed on the tablet, and its pages leave the menu. Add it back at any time.</string>
+    <string name="suite_modules_explain">Removing a module stops it, undoes what it changed on the tablet and takes its pages out of the menu. You can add it back at any time.</string>
     <string name="suite_installed">Installed: %1$s</string>
     <string name="suite_not_installed">Not installed</string>
     <string name="suite_install">Install</string>
@@ -31,17 +31,17 @@
     <string name="suite_idle">Added, not running</string>
     <string name="suite_removed">Removed</string>
     <string name="suite_go_to">Settings</string>
-    <string name="suite_nib_summary">Drawing with Boox’s instant pen: many brushes, very fine widths, unlimited layers.</string>
+    <string name="suite_nib_summary">A drawing app that uses Boox’s instant pen preview, with many brushes, very fine widths and unlimited layers.</string>
 
     <string name="module_home">Home screen</string>
-    <string name="module_home_summary">BooxUltimatum’s home screen and its widgets. Removing it hands the home back to Boox first.</string>
-    <string name="module_home_blocked">Make Boox the home screen first: Android needs Shizuku to switch it from here, or use Android’s Home app setting.</string>
+    <string name="module_home_summary">BooxUltimatum’s home screen and its widgets. Removing it first switches the tablet back to its previous home screen, normally Boox’s.</string>
+    <string name="module_home_blocked">Make Boox the home screen first. BooxUltimatum can switch it for you only with Shizuku. Otherwise, change it in Android’s Home app setting.</string>
     <string name="module_sleep">Sleep screen</string>
-    <string name="module_sleep_summary">Your own sleep and power-off screens. Removing it gives both back to Boox and stops the updates while asleep.</string>
+    <string name="module_sleep_summary">Your own sleep and power-off screens. Removing it gives both back to Boox and stops the sleep screen refreshing while the tablet sleeps.</string>
     <string name="module_ink">Instant ink</string>
     <string name="module_ink_summary">Boox’s instant pen preview in other drawing apps. Removing it turns it off and takes its Quick Settings tiles away.</string>
     <string name="module_battery_log">Battery log</string>
-    <string name="module_battery_log_summary">Records screen, charge and level changes without waking the tablet. Removing it stops recording; past logs stay.</string>
+    <string name="module_battery_log_summary">Records screen, charge and level changes without waking the tablet. Removing it stops recording and keeps past logs.</string>
     <string name="module_journal_added">Added %1$s</string>
     <string name="module_journal_removed">Removed %1$s</string>
 
@@ -53,7 +53,7 @@
     <string name="updates_tests">Test builds</string>
     <string name="updates_tests_on">Offered</string>
     <string name="updates_tests_off">Not offered</string>
-    <string name="updates_tests_explain">Test builds are unfinished work, published so they can be checked on a real tablet. They may break things; turn this on only when asked to test.</string>
+    <string name="updates_tests_explain">Test builds are unfinished work, published so they can be checked on a real tablet. They may not work properly, so turn this on only if you were asked to test.</string>
     <string name="updates_tests_enable">Offer test builds</string>
     <string name="updates_tests_disable">Stop offering test builds</string>
     <string name="updates_last_check">Last checked %1$s</string>
@@ -62,14 +62,14 @@
     <!-- The Logs page. -->
     <string name="logs_title">Logs</string>
     <string name="logs_subtitle">What every suite app recorded, kept on this tablet</string>
-    <string name="logs_explain">Each app keeps a log of what it did and what went wrong, including crashes, for about two weeks. The logs hold no drawings, typed text, or account and network names, and nothing leaves the tablet unless you share it.</string>
+    <string name="logs_explain">Each suite app keeps a log of what it did and what went wrong, including crashes, for about two weeks. The logs hold no drawings, typed text, or account and network names. Nothing leaves the tablet unless you share it.</string>
     <string name="logs_detailed">Detailed logging</string>
     <string name="logs_detailed_state">Now</string>
     <string name="logs_detailed_off">Off</string>
     <string name="logs_detailed_until">On until %1$s</string>
     <string name="logs_detailed_on">Turn on for 24 hours</string>
     <string name="logs_detailed_stop">Turn off</string>
-    <string name="logs_detailed_explain">Records much more, for tracking down a problem. It turns itself off after a day.</string>
+    <string name="logs_detailed_explain">Records more detail to help track down a problem. It turns itself off after 24 hours.</string>
     <string name="logs_share">Share logs</string>
     <string name="logs_sharing">Collecting logs…</string>
     <string name="logs_share_failed">Couldn’t collect the logs: %1$s</string>
@@ -88,9 +88,9 @@
     <string name="dest_storage">Storage</string>
     <string name="storage_title">Storage</string>
     <string name="storage_subtitle">%1$s kept by the suite’s apps</string>
-    <string name="storage_explain">Each app keeps its own leftovers in check by itself: cache files go after three days, downloaded updates after a day, shared exports after a week, and logs stay under 8 MB and two weeks. Drawings, fonts, the battery log and settings are yours, so they’re counted here but never cleared.</string>
+    <string name="storage_explain">Each app tidies its own leftovers. Cache files go after three days, downloaded updates after a day and shared exports after a week. Logs stay under 8 MB and two weeks. Drawings, sleep screen pictures, fonts, the battery log and settings are yours, so they’re counted here but never cleared.</string>
     <string name="storage_freed">Freed %1$s.</string>
-    <string name="storage_unreachable">This app didn’t answer. It may be signed with another key, or not have started yet since it was installed.</string>
+    <string name="storage_unreachable">The app didn’t answer. It may be signed with a different key from BooxUltimatum, or it may not have been opened since it was installed.</string>
     <plurals name="storage_files">
         <item quantity="one">%1$d file</item>
         <item quantity="other">%1$d files</item>

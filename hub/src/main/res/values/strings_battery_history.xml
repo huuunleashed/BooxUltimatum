@@ -21,16 +21,16 @@
     <string name="bhi_average_note">%/h is the share of the full charge used in an hour.</string>
 
     <string name="bhi_plate_standby">Standby trend</string>
-    <string name="bhi_standby_explain">The charge drawn per hour while asleep, day by day. A hatched day had the display on while asleep.</string>
-    <string name="bhi_standby_none">Not enough sleep yet. A day counts once it has an hour asleep.</string>
+    <string name="bhi_standby_explain">Each bar shows the charge used per hour while the tablet slept that day. A hatched bar means the display was on during that sleep.</string>
+    <string name="bhi_standby_none">Not enough sleep recorded yet. A day counts once it has an hour asleep.</string>
     <string name="bhi_standby_detail">%1$s asleep</string>
     <string name="bhi_standby_detail_display">%1$s asleep, with the display on</string>
     <string name="bhi_median">Median</string>
     <string name="bhi_normal_spread">Normal spread</string>
-    <string name="bhi_normal_spread_note">The day-to-day spread in your own log. A change smaller than this is not a result.</string>
+    <string name="bhi_normal_spread_note">How much your standby use normally varies from day to day. A change smaller than this could be that variation, not a result.</string>
 
     <string name="bhi_plate_days">Days</string>
-    <string name="bhi_days_explain">Each day, newest first. Used is the charge drawn while the tablet was unplugged.</string>
+    <string name="bhi_days_explain">Each day, newest first. Used is the charge taken from the battery while the tablet was unplugged.</string>
     <string name="bhi_days_none">No day has been recorded in this window yet.</string>
     <string name="bhi_used">used %1$s</string>
     <string name="bhi_day_figures">in use %1$s · asleep %2$s · charging %3$s</string>

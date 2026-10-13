@@ -32,11 +32,11 @@
     <string name="bt_s_display_on">The display stayed on while the tablet slept, %1$s (%2$s).</string>
     <string name="bt_s_display_on_levels">The battery went from %1$s.</string>
     <string name="bt_s_standby_high">The tablet used more battery than usual while it slept, %1$s (%2$s).</string>
-    <string name="bt_s_not_sleeping">The tablet’s processor stayed awake while it slept, %1$s (%2$s), so it used more battery than a normal sleep. Restarting the tablet has cleared this each time it has been seen.</string>
+    <string name="bt_s_not_sleeping">The tablet’s processor stayed awake while it slept, %1$s (%2$s), so it used more battery than a normal sleep. On a Note Air6 C, restarting the tablet cleared this each time it was seen.</string>
     <string name="bt_s_wake_lock">%1$s kept the tablet awake for %2$s.</string>
     <string name="bt_s_something_wake_lock">Something kept the tablet awake for %1$s.</string>
     <string name="bt_s_restart">Android restarted on %1$s.</string>
-    <string name="bt_s_restart_watch">Android restarted by itself on %1$s and the tablet has not been restarted since. On this tablet that has twice been followed by a night with the display stuck on and the battery emptying; restarting the tablet clears it.</string>
+    <string name="bt_s_restart_watch">Android restarted by itself on %1$s, and the tablet hasn’t been restarted since. On a Note Air6 C, this was twice followed by a night with the display stuck on and the battery draining. Restarting the tablet cleared it.</string>
     <string name="bt_s_app_heavy">%1$s used much more battery than usual, about %2$s.</string>
     <string name="bt_s_app_heavy_unnamed">An app used much more battery than usual.</string>
     <string name="bt_s_died">The battery ran out on %1$s.</string>
@@ -63,7 +63,7 @@
 
     <!-- VerdictBlock and FindingRow -->
     <string name="vb_normal_line">Nothing unusual in what was recorded</string>
-    <string name="vb_no_data_line">Needs about a day of unplugged use</string>
+    <string name="vb_no_data_line">Needs at least an hour of recording before it can judge the battery</string>
     <string name="vb_see_what_happened">See what happened</string>
     <string name="fr_sentence">%1$s: %2$s. %3$s</string>
 </resources>

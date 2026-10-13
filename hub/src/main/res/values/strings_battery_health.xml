@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="bh_plate_capacity">Capacity</string>
-    <string name="bh_capacity_explain">Learned from your log: how much charge the battery holds, worked out from your own charging and use.</string>
+    <string name="bh_capacity_explain">How much charge the battery holds, worked out from the charge counter and level recorded in your log. Until the log has a usable reading, it shows Not enough log yet.</string>
     <string name="bh_learned">Learned capacity</string>
     <string name="bh_not_enough_log">Not enough log yet</string>
     <string name="bh_unknown">Unknown</string>

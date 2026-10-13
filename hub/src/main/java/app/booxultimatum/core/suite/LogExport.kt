@@ -33,7 +33,7 @@ object LogExport {
         extra["device.txt"] = summary(app).toByteArray()
         SuiteApp.entries.filter { it.packageName != app.packageName && Suite.installed(app, it) != null }.forEach { other ->
             val files = SuiteLogs.listFiles(app, other.packageName)
-            if (files.isEmpty()) extra["${other.packageName}/unavailable.txt"] = "The app didn't share its logs: it may be signed with another key, or not have started yet.\n".toByteArray()
+            if (files.isEmpty()) extra["${other.packageName}/unavailable.txt"] = "The app didn’t share its logs. It may be signed with a different key, or it may not have been opened yet.\n".toByteArray()
             if (files.isNotEmpty()) others++
             files.forEach { f -> SuiteLogs.open(app, other.packageName, f.name)?.use { extra["${other.packageName}/${f.name}"] = it.readBytes() } }
         }

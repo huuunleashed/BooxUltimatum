@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Causes: what used the charge, what kept the tablet awake, radios and light. Counts use plurals. -->
-    <string name="bc_question">What used it?</string>
+    <string name="bc_question">What used the battery?</string>
     <string name="bc_read_window">Read at %1$s · window %2$s</string>
     <string name="bc_window_label">Time window</string>
     <plurals name="bc_window_hours">
@@ -18,16 +18,16 @@
 
     <string name="bc_plate_state">By state</string>
     <string name="bc_state_none">No unplugged time in this window yet.</string>
-    <string name="bc_state_detail">%1$s on average · %2$s of the charge used</string>
-    <string name="bc_display_on_fact">The display stayed on while the tablet was asleep for %1$s, using %2$s.</string>
+    <string name="bc_state_detail">%1$s on average · %2$s of the charge used while unplugged</string>
+    <string name="bc_display_on_fact">The display stayed on for %1$s while the tablet was asleep. That used %2$s.</string>
 
     <string name="bc_plate_apps">By app, in use</string>
-    <string name="bc_apps_explain">The charge drawn while each app was in front, most first.</string>
+    <string name="bc_apps_explain">The charge drawn while each app was in front, most first. This needs usage access, which tells BooxUltimatum which app is in front. Without it, the time shows as Not recorded.</string>
     <string name="bc_apps_none">No app was in front while the tablet was in use.</string>
 
     <string name="bc_plate_wakes">What kept it awake and woke it</string>
-    <string name="bc_wakes_explain">These figures are the changes between the tablet’s three-hourly snapshots, so they cover this window, not the time since boot.</string>
-    <string name="bc_wakes_none">No snapshots in this window yet.</string>
+    <string name="bc_wakes_explain">These figures cover this window, not the time since the last restart: they are the changes between snapshots taken about every three hours. A wake lock is an app asking the tablet to stay awake, and a wakeup is an alarm that woke it.</string>
+    <string name="bc_wakes_none">Nothing recorded in this window yet. Wake locks and wakeups are only recorded with adb grants or Shizuku.</string>
     <plurals name="bc_wake_locks">
         <item quantity="one">%d wake lock</item>
         <item quantity="other">%d wake locks</item>
@@ -36,7 +36,7 @@
         <item quantity="one">%d wakeup</item>
         <item quantity="other">%d wakeups</item>
     </plurals>
-    <string name="bc_cpu_time">CPU time %1$s</string>
+    <string name="bc_cpu_time">Processor time %1$s</string>
     <string name="bc_not_recorded">Not recorded</string>
     <string name="bc_android_itself">Android itself</string>
 

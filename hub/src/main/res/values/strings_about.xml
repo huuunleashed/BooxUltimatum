@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copy for the app plate, in-app updates and feedback reports. -->
 <resources>
-    <string name="about_plate_this_app">This app</string>
+    <string name="about_plate_this_app">BooxUltimatum</string>
     <string name="about_app_version">Installed version</string>
     <string name="about_app_build">Build</string>
     <string name="about_build_release">Release</string>
@@ -12,12 +12,12 @@
     <string name="about_hide_pre_releases">Hide pre-releases</string>
     <string name="about_download_install">Download and install</string>
     <string name="about_release_page">Release page</string>
-    <string name="about_unknown_sources">Install settings</string>
-    <string name="about_unknown_sources_note">Android needs you to allow this app to install packages before the update can start.</string>
+    <string name="about_unknown_sources">Open install settings</string>
+    <string name="about_unknown_sources_note">Android needs you to allow BooxUltimatum to install apps before the update can start. Tap Open install settings to allow it.</string>
 
     <string name="feedback_entry">Report a problem or idea</string>
     <string name="feedback_title">Report a problem or idea</string>
-    <string name="feedback_subtitle">Nothing is sent until you choose GitHub, copy or share.</string>
+    <string name="feedback_subtitle">Nothing is sent until you tap Open on GitHub or Share.</string>
     <string name="feedback_close">Close</string>
     <string name="feedback_type">Type</string>
     <string name="feedback_type_bug">Bug</string>
@@ -38,13 +38,13 @@
     <string name="feedback_include_title">What to include</string>
     <string name="feedback_privacy_line">The report never includes network names, account names, notification contents, other apps’ names, book titles or note titles. Each part below shows exactly what it adds.</string>
     <string name="feedback_github_note">Open on GitHub needs a GitHub account.</string>
-    <string name="feedback_no_send_note">No server, no tokens, and nothing is sent without pressing a key.</string>
+    <string name="feedback_no_send_note">BooxUltimatum runs no server and stores no login. Nothing is sent unless you tap a button below.</string>
     <string name="feedback_open_github">Open on GitHub</string>
     <string name="feedback_copy">Copy report</string>
     <string name="feedback_share">Share</string>
     <string name="feedback_copied">Copied to the clipboard.</string>
     <string name="feedback_opened_github">Opened GitHub with the report fields filled in.</string>
-    <string name="feedback_copied_too_long">The full report was too long for the GitHub link, so it was copied for pasting.</string>
+    <string name="feedback_copied_too_long">The full report was too long for the GitHub link, so BooxUltimatum copied it. Paste it into the form before you submit.</string>
     <string name="feedback_included">Included</string>
     <string name="feedback_not_included">Not included</string>
     <string name="feedback_include">Include</string>

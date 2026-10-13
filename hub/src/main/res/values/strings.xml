@@ -21,7 +21,7 @@
     <string name="action_hide">Hide</string>
     <string name="action_copy_commands">Copy commands</string>
     <string name="action_request_shizuku">Ask Shizuku for permission</string>
-    <string name="share_title">Share device report</string>
+    <string name="share_title">Share tablet report</string>
 
     <!-- States -->
     <string name="state_not_built">Not built yet</string>
@@ -30,16 +30,16 @@
     <!-- Overview -->
     <string name="overview_subtitle">%1$s · firmware %2$s · Android %3$s</string>
     <string name="overview_subtitle_nofw">%1$s · Android %2$s</string>
-    <string name="status_stored">About %1$s stored, of roughly %2$s when full.</string>
-    <string name="status_asleep">Asleep %1$s of the time since the last restart, %2$s ago.</string>
-    <string name="status_asleep_usb">Plugged in, the tablet charges and often stays awake, so this figure means most on battery.</string>
+    <string name="status_stored">The battery has about %1$s of charge, out of roughly %2$s when full.</string>
+    <string name="status_asleep">The tablet has been asleep %1$s of the time since it restarted %2$s ago.</string>
+    <string name="status_asleep_usb">While plugged in, the tablet often stays awake, so this figure means most when it runs on battery.</string>
     <string name="plate_drain">Drain</string>
     <string name="drain_not_measured">Not measured on this tablet yet.</string>
     <string name="drain_explain">Drain is measured over hours, unplugged. Start a measurement from Battery, and every tweak can then be judged against it.</string>
     <string name="drain_reference" formatted="false">For comparison only: eWritable measured about 2 % per hour idle and 10 % per hour writing on the same 4.3 firmware.</string>
     <string name="plate_access">Access</string>
     <string name="plate_planned">Planned</string>
-    <string name="pillar_profiles">E-Ink Profiles</string>
+    <string name="pillar_profiles">E-ink profiles</string>
     <string name="pillar_profiles_purpose">Back up, share and tune refresh settings per app.</string>
 
     <!-- Charge lines -->
@@ -59,7 +59,7 @@
     <string name="spec_source">Power source</string>
     <string name="spec_stored">Charge stored</string>
     <string name="spec_full">Full capacity</string>
-    <string name="spec_full_note">Estimated from the charge counter and level</string>
+    <string name="spec_full_note">Estimated from the battery’s reported charge and its percentage</string>
     <string name="spec_voltage">Voltage</string>
     <string name="spec_temperature">Temperature</string>
     <string name="spec_health">Health</string>
@@ -101,7 +101,7 @@
     <string name="spec_verified_boot">Verified boot</string>
     <string name="spec_slot">Active slot</string>
     <string name="spec_build_type">Build type</string>
-    <string name="spec_resolution">Panel</string>
+    <string name="spec_resolution">Screen</string>
     <string name="spec_window">Window</string>
     <string name="spec_font_scale">Font scale</string>
     <string name="value_android">%1$s · API %2$d</string>
@@ -120,14 +120,14 @@
     </plurals>
 
     <!-- Apps -->
-    <string name="apps_subtitle">What’s installed, and what Android never puts to sleep</string>
+    <string name="apps_subtitle">What’s installed, and which apps Android never puts to sleep</string>
     <string name="filter_boox">Boox · %1$d</string>
     <string name="filter_doze">Never sleeps · %1$d</string>
     <string name="filter_all">All · %1$d</string>
-    <string name="filter_boox_explain">Apps made by Onyx for this tablet. Descriptions come from the project’s knowledge base.</string>
-    <string name="filter_doze_explain">Apps exempt from Doze, Android’s deep-sleep mode. They may wake the tablet at any time, which is the first place to look for standby drain.</string>
-    <string name="filter_all_explain">Everything installed, including Android itself.</string>
-    <string name="apps_empty">Nothing matches this filter.</string>
+    <string name="filter_boox_explain">Apps made by Onyx, the company behind Boox. Descriptions come from a list that ships with BooxUltimatum.</string>
+    <string name="filter_doze_explain">Apps exempt from Doze, Android’s deep-sleep mode. They can wake the tablet at any time, so check them first when the battery drains during standby.</string>
+    <string name="filter_all_explain">Every installed app, including system apps.</string>
+    <string name="apps_empty">No apps match this filter.</string>
     <string name="apps_boox_summary">%1$d of these %2$d never sleep.</string>
     <string name="tag_doze_exempt">Never sleeps</string>
     <string name="tag_disabled">Disabled</string>
@@ -145,10 +145,10 @@
     <string name="tier_app">App</string>
     <string name="tier_app_short">Readings any app can take</string>
     <string name="tier_app_state">Installed</string>
-    <string name="tier_app_explain">Battery, device and app readings that need no special permission.</string>
+    <string name="tier_app_explain">Battery, tablet and app readings that need no special permission.</string>
     <string name="tier_adb">adb grants</string>
     <string name="tier_adb_count">%1$d of %2$d granted from a computer</string>
-    <string name="tier_adb_explain">Permissions granted once from a computer over USB. They survive restarts.</string>
+    <string name="tier_adb_explain">Permissions you grant once from a computer with adb, Android’s debugging tool, over USB. They stay in place after a restart.</string>
     <string name="grant_secure_settings">Change system settings</string>
     <string name="grant_secure_settings_why">Needed to apply and undo settings tweaks.</string>
     <string name="grant_dump">Read system diagnostics</string>
@@ -157,9 +157,9 @@
     <string name="grant_logs_why">Needed to trace wakeups back to their cause.</string>
     <string name="grant_usage">Usage access</string>
     <string name="grant_usage_why">Needed to know which apps you actually use.</string>
-    <string name="grant_how">Grant them from a computer with adb:</string>
+    <string name="grant_how">Grant them by running these adb commands on a computer connected to the tablet:</string>
     <string name="tier_shizuku">Shizuku</string>
-    <string name="tier_shizuku_explain">Lets the app act with the same rights as adb, without a computer. Shizuku stops when the tablet restarts and must be started again.</string>
+    <string name="tier_shizuku_explain">Shizuku is a separate app. Once it runs, it lets BooxUltimatum act with the same rights as adb, without a computer. It stops when the tablet restarts, and starting it again needs a computer.</string>
     <string name="shizuku_server">Shizuku service</string>
     <string name="shizuku_server_on">Running</string>
     <string name="shizuku_server_off">Not running. Start it from a computer with tools\\host\\start-shizuku.ps1.</string>
@@ -169,9 +169,9 @@
     <string name="shizuku_not_running">Not running since the last restart</string>
     <string name="shizuku_not_allowed">Running, permission not given</string>
     <string name="shizuku_ready">Running and allowed</string>
-    <string name="shizuku_unreachable">Shizuku isn’t reachable. Start it from a computer, then reopen BooxUltimatum.</string>
+    <string name="shizuku_unreachable">BooxUltimatum can’t reach Shizuku. Start Shizuku from a computer, then reopen BooxUltimatum.</string>
     <string name="tier_root">Root</string>
-    <string name="tier_root_short">Out of scope, bootloader locked</string>
+    <string name="tier_root_short">Not needed, BooxUltimatum works without it</string>
     <string name="tier_root_state">Not used</string>
-    <string name="tier_root_explain">This tablet’s bootloader is locked, so BooxUltimatum is built to work without root.</string>
+    <string name="tier_root_explain">BooxUltimatum is built to work without root and doesn’t need or ask for it. The Note Air6 C it was developed on has a locked bootloader.</string>
 </resources>

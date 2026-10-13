@@ -58,7 +58,7 @@ object Launchers {
             val opened = runCatching {
                 context.startActivity(Intent(android.provider.Settings.ACTION_HOME_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
             }.isSuccess
-            return if (opened) ShellResult(0, "", "") else ShellResult(-1, "", "Android's home settings could not be opened")
+            return if (opened) ShellResult(0, "", "") else ShellResult(-1, "", "Android’s home settings couldn’t be opened")
         }
         val r = Privileged.sh("cmd package set-home-activity --user 0 $flat")
         Journal.log(context, "launcher", target.packageName, if (r.ok) "" else r.message, r.ok)
@@ -68,7 +68,7 @@ object Launchers {
     /** Back to the launcher that was default before BooxUltimatum first changed it (normally the Boox home). */
     suspend fun restore(context: Context): ShellResult {
         val saved = Journal.original(context, JOURNAL_ID)?.optString("component")?.let { ComponentName.unflattenFromString(it) }
-        val target = saved ?: list(context).firstOrNull { it.isBoox }?.component ?: return ShellResult(-1, "", "No Boox launcher found")
+        val target = saved ?: list(context).firstOrNull { it.isBoox }?.component ?: return ShellResult(-1, "", "No Boox home app found")
         val r = setDefault(context, target)
         if (r.ok) Journal.forget(context, JOURNAL_ID)
         return r

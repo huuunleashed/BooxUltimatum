@@ -27,12 +27,12 @@
     <!-- Folders -->
     <string name="l_rename">Rename</string>
     <string name="l_save">Save</string>
-    <string name="l_folder_hint">Long-press an app in the folder to take it out or move it.</string>
+    <string name="l_folder_hint">Touch and hold an app in the folder to take it out or move it.</string>
     <string name="l_delete_folder">Delete folder</string>
     <string name="l_add_to_folder">Add to folder</string>
     <string name="l_out_of_folder">Take out of folder</string>
     <string name="l_add_to_folder_title">Put %1$s in a folder</string>
-    <string name="l_new_folder">New folder</string>
+    <string name="l_new_folder">Create folder</string>
     <string name="l_new_folder_hint">New folder name</string>
     <string name="l_folder_default">Folder</string>
 
@@ -50,12 +50,12 @@
     <string name="l_wall_choose">Choose another picture</string>
     <string name="l_wall_remove">Remove picture</string>
     <string name="l_veil">Paper veil (%)</string>
-    <string name="l_wall_note">Plain paper refreshes fastest and costs nothing. Pictures are stored at half resolution to stay light on memory.</string>
+    <string name="l_wall_note">Plain paper loads no picture, so it uses the least memory. A picture is stored at half its resolution to save memory.</string>
     <string name="l_screen">Screen</string>
     <string name="l_status_bar">System status bar</string>
     <string name="l_status_show">Always show</string>
     <string name="l_status_hide">Hide, swipe down to see it</string>
-    <string name="l_status_note">This firmware blanks the status bar’s icons over apps that Boox didn’t make, this one included, so the header above shows the time, connections and battery itself.</string>
+    <string name="l_status_note">On a Note Air6 C, Boox firmware draws the status bar’s icons white over apps Boox didn’t make, BooxUltimatum included. White icons can’t be seen on a white bar. The header of BooxUltimatum home shows the time, connections and battery itself.</string>
     <string name="l_indicators">Header indicators</string>
     <string name="l_ind_glyphs">Symbols</string>
     <string name="l_ind_both">Symbols and words</string>
@@ -78,39 +78,39 @@
     <string name="l_view_list">List</string>
     <string name="l_recent_never">Not used lately</string>
     <string name="l_recent_ago">Used %1$s ago</string>
-    <string name="l_more_in_app">Icons, wallpaper, header, typeface and the system status bar are set in BooxUltimatum › Appearance.</string>
+    <string name="l_more_in_app">Change the icons, background, header, font and system status bar in BooxUltimatum › Appearance.</string>
     <string name="l_open_appearance">Appearance</string>
 
     <!-- Appearance screen -->
     <string name="dest_appearance">Appearance</string>
-    <string name="ap_subtitle">The system status bar everywhere, and how BooxUltimatum home looks</string>
+    <string name="ap_subtitle">The status bar across the tablet, and how BooxUltimatum home looks</string>
     <string name="ap_statusbar">System status bar</string>
-    <string name="ap_statusbar_explain">Choose which icons the status bar shows. This applies across the whole tablet, the Boox home included, through Android’s own status bar setting. The icon designs you pick below are drawn in BooxUltimatum home’s header; the system’s own icon artwork can only be replaced with root.</string>
-    <string name="ap_statusbar_note">Icons appear only while their feature is active, so a shown icon may still be absent. The icons’ design belongs to the firmware and can’t be changed without root.</string>
+    <string name="ap_statusbar_explain">Choose which icons the status bar shows, on the whole tablet and in the Boox home too. This needs Shizuku or the adb grants, and without them BooxUltimatum shows an error. The icon designs you choose below only change the header of BooxUltimatum home.</string>
+    <string name="ap_statusbar_note">An icon appears only while its feature is active, so a shown icon can still be missing. The firmware draws the designs, and changing them needs root, so BooxUltimatum can only show or hide icons.</string>
     <string name="ap_restore_boox">Restore Boox defaults</string>
     <string name="ap_show">Show</string>
     <string name="ap_hide">Hide</string>
     <string name="ap_battery_pct">Battery percentage</string>
-    <string name="ap_battery_pct_with_icon">Hidden with the battery icon: Android draws the figure inside it, so the figure can’t show on its own.</string>
+    <string name="ap_battery_pct_with_icon">Hidden with the battery icon. Android draws the percentage inside the icon, so it can’t show without it.</string>
     <plurals name="ap_all_icons">
         <item quantity="one">Show the one icon</item>
         <item quantity="other">Show all %d icons</item>
     </plurals>
     <string name="ap_text">Text</string>
-    <string name="ap_text_explain">E-ink thins every stroke, so BooxUltimatum and its home set text one weight heavier than designed. Choose how heavy.</string>
+    <string name="ap_text_explain">E-ink can make text look thin, so by default text in BooxUltimatum and BooxUltimatum home is one weight heavier than designed. Choose how heavy it is.</string>
     <string name="ap_text_weight">Weight</string>
     <string name="ap_weight_designed">As designed</string>
     <string name="ap_weight_heavier">Heavier</string>
     <string name="ap_weight_heaviest">Heaviest</string>
-    <string name="ap_text_note">Home follows the tablet font at every weight, even variable fonts whose lightest cut Android would otherwise pick. To change the font of the whole tablet, open a family in Fonts and choose Use on the whole tablet.</string>
+    <string name="ap_text_note">BooxUltimatum home follows the tablet font at every weight. Some fonts are one variable file, and Android would otherwise pick their lightest weight. To change the font of the whole tablet, open a font in Fonts and choose Use on the whole tablet.</string>
     <string name="ap_fewer_icons">Show common icons only</string>
     <string name="ap_home">BooxUltimatum home</string>
-    <string name="ap_home_explain">Changes apply the next time home appears. Arranging the grid, widgets and folders stays in home’s Edit.</string>
+    <string name="ap_home_explain">Changes apply the next time home appears. To arrange the grid, widgets and folders, tap Arrange home, the pencil button in home’s header.</string>
     <string name="ap_wall_failed">That picture couldn’t be read.</string>
-    <string name="ap_more_fonts">Download more typefaces for home and this app in Fonts.</string>
+    <string name="ap_more_fonts">Download more fonts for BooxUltimatum and its home in Fonts.</string>
     <string name="ap_wifi_symbol">Wi-Fi symbol</string>
     <string name="ap_battery_symbol">Battery symbol</string>
-    <string name="ap_symbols_note">Each design is shown strong, weak and off (Wi-Fi) or charging, half and low (battery). They draw BooxUltimatum home’s header; the system status bar keeps the firmware’s own icons.</string>
+    <string name="ap_symbols_note">Each Wi-Fi design is shown strong, weak and off, and each battery design charging, half full and low. They appear only in the header of BooxUltimatum home. The system status bar keeps the firmware’s own icons.</string>
     <string name="gw_arcs">Arcs</string>
     <string name="gw_bars">Bars</string>
     <string name="gw_fan">Fan</string>
@@ -159,8 +159,8 @@
     <string name="l_hdr_wifi_name">Network name</string>
     <string name="l_hdr_bt">Bluetooth</string>
     <string name="l_hdr_batt_pct">Battery percentage</string>
-    <string name="l_header_note">Black keys are shown. Airplane mode and Do not disturb appear only while they are on. The network name is read through Shizuku, because Android hides it from apps without location access.</string>
-    <string name="l_font_source">Typeface</string>
+    <string name="l_header_note">Black buttons are shown in the header. Airplane mode and Do not disturb appear only while they are on. The network name needs Shizuku, because Android hides it from apps without location access. Without Shizuku the header doesn’t show it.</string>
+    <string name="l_font_source">Font</string>
     <string name="l_font_app">Same as BooxUltimatum (%1$s)</string>
     <plurals name="l_widget_count">
         <item quantity="one">%1$d widget</item>
@@ -173,7 +173,7 @@
     </plurals>
     <string name="l_close">Close</string>
     <string name="l_search">Search apps</string>
-    <string name="l_empty_home">Nothing pinned yet. Open All apps, long-press an app and choose Pin to home.</string>
+    <string name="l_empty_home">Nothing pinned yet. Open All apps, touch and hold an app and choose Pin to home.</string>
     <string name="l_pin">Pin to home</string>
     <string name="l_unpin">Remove from home</string>
     <string name="l_earlier">Move earlier</string>
@@ -190,15 +190,15 @@
     <string name="l_grid">App grid</string>
     <string name="l_columns">Columns</string>
     <string name="l_rows">Rows</string>
-    <string name="l_rows_note">Rows are a maximum: widgets take their space first, and the grid never scrolls.</string>
+    <string name="l_rows_note">This is the most rows the grid shows. Widgets take their space first, and the grid turns pages instead of scrolling.</string>
     <string name="l_labels">Labels</string>
     <string name="l_on">On</string>
     <string name="l_off">Off</string>
     <string name="l_icons">Icons</string>
     <string name="l_icon_original">Original</string>
     <string name="l_icon_mono">Monochrome</string>
-    <string name="l_icon_gray">Grayscale</string>
-    <string name="l_side_buttons">Side buttons turn pages</string>
+    <string name="l_icon_gray">Greyscale</string>
+    <string name="l_side_buttons">Volume buttons turn pages</string>
     <string name="l_font_system">System font</string>
     <string name="l_widgets">Widgets</string>
     <string name="l_add_widget">Add widget</string>
@@ -223,22 +223,22 @@
         <item quantity="other">%d widgets off screen</item>
     </plurals>
     <plurals name="l_widgets_offscreen">
-        <item quantity="one">%d widget does not fit on home in this orientation. Make widgets shorter, half width, or remove one.</item>
-        <item quantity="other">%d widgets do not fit on home in this orientation. Make widgets shorter, half width, or remove some.</item>
+        <item quantity="one">%d widget does not fit on home in this orientation. Make a widget shorter or half width, or remove one.</item>
+        <item quantity="other">%d widgets do not fit on home in this orientation. Make widgets shorter or half width, or remove some.</item>
     </plurals>
     <string name="l_remove">Remove</string>
     <string name="l_weather_units">Temperature</string>
     <string name="l_hidden">Hidden apps</string>
-    <string name="l_hidden_none">No hidden apps. Long-press any app to hide it from home and All apps.</string>
+    <string name="l_hidden_none">No hidden apps. Touch and hold any app to hide it from home and All apps.</string>
     <string name="l_frozen">Frozen by Boox</string>
-    <string name="l_frozen_explain">Boox froze this app, so Android will not start it. Boox’s own home unfreezes an app when you open it there; from here that needs Shizuku (Device, Access). Or switch it on in Boox’s App Freeze page, then open it again.</string>
-    <string name="l_frozen_explain_shizuku">Boox froze this app. Opening it here unfreezes it first, as Boox’s own home does, and the hub freezes it again about a minute after you are back on this home screen, or when the tablet locks.</string>
-    <string name="l_frozen_page">App Freeze page</string>
-    <string name="l_about_home">About this home screen</string>
-    <string name="l_about_home_text">Recents, gestures, NaviBall and EInkWise stay with Boox, so they work the same under this home. The Boox home can be restored from BooxUltimatum › Suite › Home screen in one tap.</string>
+    <string name="l_frozen_explain">Boox froze this app, so Android won’t start it. Boox’s own home unfreezes an app when you open it there. BooxUltimatum can do the same when Shizuku is running, which you can set up under Device › Access. You can also turn the app on in Boox’s App Freeze page, then open it again.</string>
+    <string name="l_frozen_explain_shizuku">Boox froze this app. Opening it here unfreezes it first, as Boox’s own home does. BooxUltimatum freezes it again about a minute after you return to this home screen, or when the tablet locks.</string>
+    <string name="l_frozen_page">Open App Freeze</string>
+    <string name="l_about_home">About BooxUltimatum home</string>
+    <string name="l_about_home_text">The recent apps screen, Boox gestures, the NaviBall and EInkWise stay with Boox, so they work the same under BooxUltimatum home. You can restore the Boox home from BooxUltimatum › Suite › Home screen, in one tap with Shizuku.</string>
     <string name="l_open_app">Open BooxUltimatum</string>
     <string name="l_add">Add</string>
-    <string name="l_builtin_widgets">Made for this tablet</string>
+    <string name="l_builtin_widgets">Built into BooxUltimatum</string>
     <string name="l_app_widgets">From your apps · %1$d</string>
 
     <!-- Widgets -->
@@ -250,16 +250,16 @@
     <string name="w_alarm">Next alarm</string>
     <string name="w_note">Note</string>
     <string name="w_boox">Boox</string>
-    <string name="wb_boox">Library, Notes and Storage from the Boox home, one tap away under this home screen.</string>
+    <string name="wb_boox">Buttons for the Boox Library, Notes, Storage and Boox settings, one tap away on BooxUltimatum home.</string>
     <string name="w_boox_library">Library</string>
     <string name="w_boox_notes">Notes</string>
     <string name="w_boox_storage">Storage</string>
     <string name="w_system">App widget</string>
-    <string name="wb_clock">A quiet dial with the time and date. Moves once a minute, never every second.</string>
-    <string name="wb_calendar">This month at a glance, today marked, days with events dotted.</string>
-    <string name="wb_agenda">Your next events for the coming week, from the calendars on this tablet.</string>
-    <string name="wb_weather">Now and the next days for a city you choose. No location access.</string>
-    <string name="wb_battery">The charge on the instrument scale, and whether it is charging.</string>
+    <string name="wb_clock">An analog dial with the time, and the date when there is room. It changes once a minute, never every second.</string>
+    <string name="wb_calendar">This month at a glance, with today marked. Days with events get a dot if you allow calendar access.</string>
+    <string name="wb_agenda">Your next events over the coming seven days, from the calendars on the tablet. It needs calendar access.</string>
+    <string name="wb_weather">The weather now and for the next days in a city you choose, from Open-Meteo. It never reads your location.</string>
+    <string name="wb_battery">The battery level on a scale, and whether the tablet is charging.</string>
     <string name="wb_alarm">When your next alarm rings.</string>
     <string name="wb_note">A few lines to keep in sight. Saved on the tablet only.</string>
     <string name="w_agenda_permission">Allow calendar access to see your upcoming events here.</string>
@@ -273,14 +273,14 @@
     <string name="w_weather_pick">Choose a city</string>
     <string name="w_weather_search">City name</string>
     <string name="w_weather_update">Update</string>
-    <string name="w_weather_loading">Reading the weather…</string>
-    <string name="w_weather_offline">Couldn’t reach the weather service. Showing the last reading.</string>
-    <string name="w_weather_today">Today %1$d° / %2$d° · read %3$s · Open-Meteo</string>
+    <string name="w_weather_loading">Loading the weather…</string>
+    <string name="w_weather_offline">Couldn’t reach the weather service. Showing the last forecast, if there is one.</string>
+    <string name="w_weather_today">Today %1$d° / %2$d° · updated %3$s · Open-Meteo</string>
     <string name="w_weather_searching">Searching…</string>
-    <string name="w_weather_empty">No city chosen yet. The forecast is read only while home is on screen, at most once an hour.</string>
+    <string name="w_weather_empty">No city chosen yet. The forecast updates by itself only while home is on screen, at most once an hour.</string>
     <string name="w_weather_change">Change city</string>
-    <string name="w_weather_privacy">Type at least two letters. Only the city name is sent, to Open-Meteo; your location is never read.</string>
-    <string name="w_note_private">Kept on this tablet only. Nothing is synced.</string>
+    <string name="w_weather_privacy">Type at least two letters. Open-Meteo receives the name you type, then the chosen city’s coordinates for the forecast. Your own location is never read.</string>
+    <string name="w_note_private">Kept on the tablet only. Nothing is synced.</string>
     <string name="w_weather_search_failed">Couldn’t reach the city search. Check Wi‑Fi and try again.</string>
     <string name="w_weather_no_city">No city called “%1$s”.</string>
     <string name="sky_clear">Clear</string>
@@ -293,6 +293,6 @@
     <string name="sky_storm">Thunderstorm</string>
 
     <string name="tw_serif_title">Serif system font</string>
-    <string name="tw_serif_summary">Switches Android’s own interface font to Noto Serif through the system font overlay built into this firmware.</string>
-    <string name="tw_note_serif">Affects Android settings and apps that use the device font. Boox apps keep their own fonts.</string>
+    <string name="tw_serif_summary">Changes the font Android uses for its own screens to Noto Serif, through a font option included in the firmware. Needs Shizuku, and is unavailable if the firmware lacks that option.</string>
+    <string name="tw_note_serif">Affects Android settings and apps that use the system font. Boox apps keep their own fonts.</string>
 </resources>
