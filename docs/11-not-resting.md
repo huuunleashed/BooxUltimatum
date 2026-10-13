@@ -77,12 +77,12 @@ Read on the tablet on 2026-10-13, read-only, as the shell (the hub reads `dumpsy
 | `/sys/class/wakeup/*`, `/sys/kernel/wakeup_reasons/*`, `/sys/power/wake_lock`, `/sys/power/wakeup_count` | **Permission denied** even for the shell. A kernel-level answer needs root (T3), which is out of scope |
 | `dumpsys suspend_control`, `suspend_control_internal` | Listed by `service list` but "Can't find service" for `dumpsys` |
 | `dumpsys power` | **Available.** Wake locks, `mWakefulness`, `mHoldingDisplaySuspendBlocker`, `mHoldingWakeLockSuspendBlocker`, `mDozeScreenStateOverrideFromDreamManager`, and a `Suspend Blockers:` block with a count for `WakeLocks`, `Display`, `Broadcasts`, `Booting` and `WirelessChargerDetector` |
-| `dumpsys display` | **Available.** `mState` and `mCommittedState`, and the display power request with `policy=` and `dozeScreenState=` (UNKNOWN while awake; in sleep it reads DOZE or DOZE_SUSPEND, which is the value the lead below turns on) |
+| `dumpsys display` | **Available.** `mState` and `mCommittedState`, and the display power request with `policy=` and `dozeScreenState=` (UNKNOWN while awake; the first healthy sleep read `mState=DOZE` with `dozeScreenState=UNKNOWN`, see the lead below) |
 | `dumpsys deviceidle`, dropbox crash text | Available (the crash text is already read for the timestamp; its stack names system code) |
 
 The onset snapshot added in 0.10.1 is taken two minutes into a stuck display, and lacks the `Suspend Blockers:` block. The restless state begins hours earlier, so the snapshot is taken at the wrong time.
 
-A lead, not a finding *[verify]*: in Android the display holds a suspend blocker while it is ON or DOZE and lets go for DOZE_SUSPEND or OFF. If, after the restart, Boox's dream leaves the display in DOZE, the processor cannot suspend, which would fit the symptom. The capture in C1 is designed to confirm or refute that.
+A lead, not a finding *[verify]*: in Android the display holds a suspend blocker while it is ON or DOZE and lets go for DOZE_SUSPEND or OFF. If, after the restart, Boox's dream leaves the display in DOZE, the processor cannot suspend, which would fit the symptom. The capture in C1 is designed to confirm or refute that. **Weakened on 2026-10-13:** the first healthy reference (`processor_ref`, from a nap on the 0.10.2 build) already reads DOZE, with `mHoldingDisplaySuspendBlocker=false` and the `Display` suspend blocker at 0, while the processor was awake 1.6 % of the time. DOZE alone is therefore not the difference; the restless snapshot is compared with it on the `Display` blocker, `mWakeLockSummary`, `mWakefulness` and a `WakeLocks` count above 1 (it includes the hub
 
 ## 4. The plan
 

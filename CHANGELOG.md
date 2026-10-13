@@ -4,6 +4,10 @@ All notable changes to BooxUltimatum. Newest first. The project follows [Semanti
 
 ## [Unreleased]
 
+### Research
+
+- **The first nap on 0.10.2 worked as designed, and weakened the lead.** The tablet was unplugged and closed at 10:14:49; the 30-minute alarm fired at 10:44:51 while it slept, judged the sleep healthy (the processor awake 1.6 % of the time) and saved the first reference snapshot (`processor_ref`). No `processor_awake` row was written, as expected on a healthy tablet. The reference shows the display in DOZE with no display suspend blocker held, the same word the research suspected in the restless state, so DOZE alone does not explain it. What a restless snapshot will be compared on is in `docs/10-battery.md` 4.12. Not yet seen in the restless state.
+
 ## [0.10.2] (2026-10-13)
 
 BooxUltimatum 0.10.2 follows the research after 0.10.1 (`docs/11-not-resting.md`). The state that follows Android restarting by itself, in which the processor never goes to sleep, was already half-detected but mislabelled, and nothing said so until morning. This release corrects the label, says it within about 30 minutes of a sleep starting, and keeps the evidence for the cause. Checked by unit tests (one of them on the owner's own log of the night) and lint; the note and the snapshots are not yet seen on a tablet in that state.
