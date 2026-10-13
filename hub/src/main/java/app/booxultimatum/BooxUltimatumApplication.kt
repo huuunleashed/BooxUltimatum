@@ -4,6 +4,7 @@ import android.app.Application
 import app.booxultimatum.core.BatteryLog
 import app.booxultimatum.core.battery.DisplayWatch
 import app.booxultimatum.core.battery.RestartAdvice
+import app.booxultimatum.core.battery.SleepKeepAlive
 import app.booxultimatum.core.ink.InstantInk
 import app.booxultimatum.core.sleep.SleepScheduler
 import app.booxultimatum.core.suite.Module
@@ -27,6 +28,7 @@ class BooxUltimatumApplication : Application() {
             Logbook.logger("app").i("start", "version" to BuildConfig.VERSION_NAME, "code" to BuildConfig.VERSION_CODE)
             BatteryLog.watch(this)
             DisplayWatch.start(this)
+            SleepKeepAlive.sync(this)
             RestartAdvice.check(this)
             app.booxultimatum.core.Refreeze.watch(this)
             if (Modules.added(this, Module.Sleep)) SleepScheduler.watch(this)

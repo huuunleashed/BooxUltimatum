@@ -15,6 +15,8 @@
     <string name="ba_guard_last">Last time: %1$s, %2$s</string>
     <string name="ba_guard_healed_by">healed: %1$s</string>
     <string name="ba_guard_not_healed_by">didn’t heal it</string>
+    <string name="ba_keepalive_title">Sleep keep-alive</string>
+    <string name="ba_keepalive_body">On this tablet the display has stayed on, draining the battery overnight, exactly 90 minutes after the sleep screen last refreshed, each time after Android had restarted by itself. While the tablet sleeps, the keep-alive asks the sleep screen to refresh every 30 minutes if nothing else has, which costs well under 1 mAh a night. It is a precaution against that pattern, not a proven cure.</string>
     <string name="ba_when">%1$s %2$s</string>
     <string name="ba_state_on">On</string>
     <string name="ba_state_off">Off</string>
@@ -32,7 +34,8 @@
     <string name="ba_guard_healed">Sleep guard (experimental): %1$s, and the display went to sleep.</string>
     <string name="ba_guard_tried">Sleep guard (experimental) tried, and the display stayed on.</string>
     <string name="ba_restart_title">Android restarted by itself</string>
-    <string name="ba_restart_text">After a restart like this one, the tablet’s sleep got stuck twice, with the display on all night and the battery emptying. Restart the tablet (hold the power button, then Restart) before you leave it asleep.</string>
+    <string name="ba_restart_text">Android restarted by itself and the tablet hasn’t been restarted since. Until it is, the tablet can’t sleep deeply and may use several times as much asleep, and after the last two restarts like this the display stayed on all night and the battery emptied. Restart the tablet (hold the power button, then Restart) before you leave it asleep.</string>
+    <string name="ba_restart_channel">Restart advice</string>
     <string name="ba_step_refresh">it asked the sleep screen to refresh</string>
     <string name="ba_step_lock">it locked the screen</string>
     <string name="ba_step_key">it pressed the wake and sleep keys</string>

@@ -26,7 +26,7 @@ object BatteryReport {
     private const val WINDOW_MS = 72L * 3_600_000
     private const val PREFIX = "battery-report-"
     private const val HEADER_START = "epoch,"
-    private val APP_KEYS = listOf("alarmWakeups", "wakelockAcquisitions", "uidDelta", "wakelocks", "foregroundSec")
+    private val APP_KEYS = listOf("alarmWakeups", "wakelockAcquisitions", "uidDelta", "wakelocks", "foregroundSec", "onset")
 
     /**
      * Writes the report into the folder the Logs export shares from, replacing earlier reports, and returns it. Blocking:
@@ -106,7 +106,7 @@ object BatteryReport {
     }
 
     private fun keepsNote(reason: String, includeApps: Boolean): Boolean = when (reason) {
-        "display_on", "display_stuck" -> true
+        "display_on", "display_stuck", "guard", "keepalive" -> true
         "mark" -> includeApps
         else -> false
     }

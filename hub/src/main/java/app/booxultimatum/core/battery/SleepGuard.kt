@@ -128,7 +128,11 @@ object SleepGuard {
      */
     fun onStuck(context: Context, sinceMs: Long, round: Int = 0) {
         val app = context.applicationContext
-        if (!BatteryAlerts.guardEnabled(app)) return
+        if (!BatteryAlerts.guardEnabled(app)) {
+            // A silent skip hid on 2026-10-13 that the guard was off during a stuck night: say so in the log.
+            BatteryLog.record(app, "guard", note = "r$round off")
+            return
+        }
         if (!running.compareAndSet(false, true)) return
         Thread({
             try {
@@ -185,6 +189,7 @@ object SleepGuard {
     private fun attempt(app: Context, step: GuardStep): Boolean = when (step) {
         GuardStep.Refresh -> {
             app.sendBroadcast(Intent(DREAM_REFRESH))
+            SleepKeepAlive.noteRefresh(app)
             true
         }
         GuardStep.Nudge -> {

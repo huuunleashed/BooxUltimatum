@@ -18,6 +18,7 @@ import android.view.View
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import androidx.core.content.ContextCompat
+import app.booxultimatum.core.battery.SleepKeepAlive
 import app.booxultimatum.kit.ink.epd.Epd
 import app.booxultimatum.kit.log.Logbook
 
@@ -150,6 +151,8 @@ class LiveSleepService : AccessibilityService() {
                 if (r.renderMs > HOLD_MS - 1_000) log.w("live render slow", "ms" to r.renderMs)
                 waitingForDisplay = true
                 sendBroadcast(Intent(ONYX_REFRESH))
+                // A refresh restarts the sleep screen's 90-minute clock, so the keep-alive has nothing to do for a while.
+                SleepKeepAlive.noteRefresh(this)
                 // If Onyx never answers (another firmware), don't hold the frame forever: show it and let the next wake push it.
                 main.postDelayed({ if (waitingForDisplay) showPending() }, 3_000)
             }

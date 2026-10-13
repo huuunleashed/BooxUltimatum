@@ -22,6 +22,8 @@ import app.booxultimatum.core.battery.BatteryEvents
 import app.booxultimatum.core.battery.DisplayWatch
 import app.booxultimatum.core.battery.RestartAdvice
 import app.booxultimatum.core.battery.SleepGuard
+import app.booxultimatum.core.battery.SleepKeepAlive
+import app.booxultimatum.core.exec.Diagnostics
 import app.booxultimatum.core.exec.Privileged
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -194,12 +196,22 @@ object BatteryLog {
                         // The guard's own wake-and-lock must not move the start of the sleep it is trying to save.
                         if (!SleepGuard.causedWake()) prefs(app).edit().putLong("last_screen_off", System.currentTimeMillis()).apply()
                         DisplayWatch.recheck(app)
+                        // The sleep screen's 90-minute clock starts here: see SleepKeepAlive.
+                        runCatching { SleepKeepAlive.onSleep(app) }
                     }
-                    Intent.ACTION_SCREEN_ON -> DisplayWatch.recheck(app)
+                    Intent.ACTION_SCREEN_ON -> {
+                        DisplayWatch.recheck(app)
+                        // The owner has just picked the tablet up: the moment a pending restart is worth saying again.
+                        RestartAdvice.check(app)
+                    }
                 }
                 val pending = goAsync()
                 record(c, reason) {
-                    if (i.action == Intent.ACTION_SCREEN_ON) woke(app)
+                    if (i.action == Intent.ACTION_SCREEN_ON) {
+                        woke(app)
+                        // After the screen_on row, so the keep-alive's summary row follows it.
+                        runCatching { SleepKeepAlive.onWake(app) }
+                    }
                     pending.finish()
                 }
             }
@@ -234,7 +246,7 @@ object BatteryLog {
                 runCatching { writeSample(app, reason, note); prefs(app).edit().putLong("last_sample", System.currentTimeMillis()).apply() }
                 runCatching {
                     val last = prefs(app).getLong("last_deep", 0)
-                    if (System.currentTimeMillis() - last > DEEP_EVERY || reason == "boot") {
+                    if (System.currentTimeMillis() - last > DEEP_EVERY || reason == "boot" || reason == "display_on") {
                         prefs(app).edit().putLong("last_deep", System.currentTimeMillis()).commit()
                         writeDeep(app, reason, last)
                     }
@@ -408,7 +420,25 @@ object BatteryLog {
         o.put("frontlight", fl ?: if (Privileged.ready()) Privileged.sh("cat $FRONTLIGHT $FRONTLIGHT_CT").out.trim().replace('\n', '/') else "")
         o.put("shizuku", Privileged.ready())
         o.put("powerSave", c.getSystemService(android.os.PowerManager::class.java).isPowerSaveMode)
+        // A display on while asleep is the one thing whose cause isn't known, and the logcat of the night is gone by morning.
+        if (reason == "display_on") runCatching { o.put("onset", onsetDetail()) }
         File(dir(c), "deep-${day(System.currentTimeMillis())}.jsonl").appendText(o.toString() + "\n")
+    }
+
+    /**
+     * What the power and dream services say two minutes into a display left on while asleep: the wakefulness, the dream's
+     * state, and the newest wake lock log lines (the `REL dream:doze` and `ACQ` around the onset), which is what would show
+     * what ended the doze. Only power-state lines, no app names beyond the system's own.
+     */
+    private suspend fun onsetDetail(): JSONObject = JSONObject().apply {
+        val power = Diagnostics.dumpsys("power", preferApp = true).out.lines()
+        put(
+            "power",
+            JSONArray(power.map { it.trim() }.filter { Regex("""^(mWakefulness|mDreamsActivelyDozing|mDozeStartInProgress|mDisplayReady|mHoldingDisplaySuspendBlocker|mHoldingWakeLockSuspendBlocker)=""").containsMatchIn(it) }),
+        )
+        put("wakeLockLog", JSONArray(power.map { it.trim() }.filter { Regex("""^\d\d-\d\d \d\d:\d\d:\d\d\.\d{3} - """).containsMatchIn(it) }.takeLast(14)))
+        val dreams = Diagnostics.dumpsys("dreams", preferApp = true).out.lines()
+        put("dreams", JSONArray(dreams.map { it.trim() }.filter { Regex("""^(mCurrentDream|mSentStartBroadcast|mWhenToDream|getDozeComponent|mIsDocked|mIsCharging)""").containsMatchIn(it) }))
     }
 
     /** The newest framework restart after [since] (a dropbox `system_server_crash` or `SYSTEM_RESTART`), or null. */

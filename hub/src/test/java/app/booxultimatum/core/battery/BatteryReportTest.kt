@@ -50,6 +50,18 @@ class BatteryReportTest {
         assertEquals("", field(without[3], noteAt))
     }
 
+    @Test fun theGuardAndKeepAliveNotesAreKeptBecauseTheyNameNoApps() {
+        val lines = listOf(header, row(since, "guard", note = "r0 off"), row(since + 1, "keepalive", note = "sent=3 min=98")).asSequence()
+        val without = BatteryReport.filterRows(lines, since, includeApps = false)
+        assertEquals("r0 off", field(without[1], noteAt))
+        assertEquals("sent=3 min=98", field(without[2], noteAt))
+    }
+
+    @Test fun theOnsetDetailOfADisplayLeftOnIsAppDataBecauseItsWakeLockLogNamesApps() {
+        val line = """{"epoch":1000005,"reason":"display_on","onset":{"power":["mWakefulness=Dozing"],"wakeLockLog":["01:41:14.289 - 10162 (app.example) - ACQ x"]},"display":"on"}"""
+        assertFalse(JSONObject(BatteryReport.redactDeep(line, includeApps = false)!!).has("onset"))
+        assertTrue(JSONObject(BatteryReport.redactDeep(line, includeApps = true)!!).has("onset"))
+    }
     @Test fun badRowsAndRowsBeforeAnyHeaderAreDropped() {
         val lines = listOf(row(since + 1, "tick"), header, "", "x,tick", "${since + 2}", row(since + 3, "tick")).asSequence()
         assertEquals(listOf(header, row(since + 3, "tick")), BatteryReport.filterRows(lines, since, includeApps = true))

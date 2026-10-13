@@ -26,10 +26,11 @@ object BatteryAlerts {
     fun setReportEnabled(context: Context, on: Boolean) = prefs(context).edit { putBoolean(REPORT_ON, on) }
 
     /**
-     * Off until the owner turns it on: the guard is Experimental, and the owner decided on 2026-10-09 that it is
-     * opt-in. Whether it should default to on after the night of 2026-10-12 is the owner's call, not made here.
+     * On unless the owner turned it off. It was opt-in from 2026-10-09, and stayed off through the stuck night of
+     * 2026-10-13 because nobody had turned it on; the owner then asked for it to be on by default (0.10.1). A choice made
+     * before then is kept: only a tablet that never set it gets the new default.
      */
-    fun guardEnabled(context: Context): Boolean = prefs(context).getBoolean(GUARD_ON, false)
+    fun guardEnabled(context: Context): Boolean = prefs(context).getBoolean(GUARD_ON, true)
 
     fun setGuardEnabled(context: Context, on: Boolean) = prefs(context).edit { putBoolean(GUARD_ON, on) }
 

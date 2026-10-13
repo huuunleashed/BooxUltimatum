@@ -124,6 +124,7 @@
 
         <!-- Live sleep screen: the wake-up alarm while asleep, and the overlay over Boox's sleep screen. -->
         <receiver android:name=".core.sleep.LiveSleepReceiver" android:exported="false" />
+        <receiver android:name=".core.battery.KeepAliveReceiver" android:exported="false" />
         <service
             android:name=".core.sleep.LiveSleepService"
             android:exported="true"

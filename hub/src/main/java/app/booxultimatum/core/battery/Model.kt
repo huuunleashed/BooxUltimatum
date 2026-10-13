@@ -26,8 +26,9 @@ enum class DisplayState {
 /**
  * One row of `battery-YYYY-MM.csv`, whatever layout it was written in. Columns a layout lacks are null, 0 or empty.
  * [reason] is one of: tick, screen_on, screen_off, plug, unplug, level, doze_deep, doze_light, saver, open, manual, boot,
- * unstop, update, display_on, display_stuck, mark, guard. [note] is reason-specific: for display_on and display_stuck the epoch
- * (ms) at which the display went on, for mark the label.
+ * unstop, update, display_on, display_stuck, mark, guard, keepalive. [note] is reason-specific: for display_on and display_stuck the
+ * epoch (ms) at which the display went on, for mark the label, for guard "r<round> step<id> <result>" (or "r<round> off"), for
+ * keepalive "sent=<n> min=<m>" or "missed min=<m>", written once at the wake that ends a sleep.
  */
 data class BatteryRow(
     val epoch: Long,

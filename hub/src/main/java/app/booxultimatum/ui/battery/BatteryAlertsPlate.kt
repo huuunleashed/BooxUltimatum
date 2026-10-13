@@ -29,6 +29,7 @@ import app.booxultimatum.core.battery.BatteryAlerts
 import app.booxultimatum.core.battery.GuardRecord
 import app.booxultimatum.core.battery.GuardStep
 import app.booxultimatum.core.battery.MorningReport
+import app.booxultimatum.core.battery.SleepKeepAlive
 import app.booxultimatum.kit.ui.Format
 import app.booxultimatum.kit.ui.Key
 import app.booxultimatum.kit.ui.Lamp
@@ -48,13 +49,14 @@ private enum class PreviewResult(val text: Int) {
     Failed(R.string.ba_preview_failed),
 }
 
-/** The alerts at the foot of Today: the morning report's switch, and the sleep guard's (Experimental, off until turned on). */
+/** The alerts at the foot of Today: the morning report's switch, the sleep keep-alive's, and the sleep guard's (Experimental, on until turned off). */
 @Composable
 fun BatteryAlertsPlate(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var reportOn by remember { mutableStateOf(BatteryAlerts.reportEnabled(context)) }
     var guardOn by remember { mutableStateOf(BatteryAlerts.guardEnabled(context)) }
+    var keepAliveOn by remember { mutableStateOf(SleepKeepAlive.enabled(context)) }
     var notifyKey by remember { mutableIntStateOf(0) }
     val notifications = remember(notifyKey) { MorningReport.notificationsAllowed(context) }
     val askNotifications = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { notifyKey++ }
@@ -103,6 +105,28 @@ fun BatteryAlertsPlate(modifier: Modifier = Modifier) {
                         reportOn = !reportOn
                         BatteryAlerts.setReportEnabled(context, reportOn)
                         if (reportOn && !notifications) askNotifications.launch(MorningReport.POST_NOTIFICATIONS)
+                    },
+                )
+            }
+        }
+        HorizontalDivider(thickness = Lines.hairline, color = Ink.Rule)
+        Row(Modifier.fillMaxWidth().padding(vertical = Space.m), verticalAlignment = Alignment.Top) {
+            Lamp(keepAliveOn, Modifier.padding(top = 5.dp))
+            Spacer(Modifier.size(Space.m))
+            Column(Modifier.weight(1f).padding(end = Space.m)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(stringResource(R.string.ba_keepalive_title), style = MaterialTheme.typography.titleMedium)
+                    Spacer(Modifier.size(Space.s))
+                    Tag(stringResource(if (keepAliveOn) R.string.ba_state_on else R.string.ba_state_off))
+                }
+                Paragraph(stringResource(R.string.ba_keepalive_body), color = Ink.Legend)
+            }
+            Column(horizontalAlignment = Alignment.End) {
+                Key(
+                    stringResource(if (keepAliveOn) R.string.ba_turn_off else R.string.ba_turn_on),
+                    onClick = {
+                        keepAliveOn = !keepAliveOn
+                        SleepKeepAlive.setEnabled(context, keepAliveOn)
                     },
                 )
             }
