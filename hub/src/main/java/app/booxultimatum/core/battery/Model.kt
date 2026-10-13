@@ -26,9 +26,10 @@ enum class DisplayState {
 /**
  * One row of `battery-YYYY-MM.csv`, whatever layout it was written in. Columns a layout lacks are null, 0 or empty.
  * [reason] is one of: tick, screen_on, screen_off, plug, unplug, level, doze_deep, doze_light, saver, open, manual, boot,
- * unstop, update, display_on, display_stuck, mark, guard, keepalive. [note] is reason-specific: for display_on and display_stuck the
+ * unstop, update, display_on, display_stuck, mark, guard, keepalive, processor_awake. [note] is reason-specific: for display_on and display_stuck the
  * epoch (ms) at which the display went on, for mark the label, for guard "r<round> step<id> <result>" (or "r<round> off"), for
- * keepalive "sent=<n> min=<m>" or "missed min=<m>", written once at the wake that ends a sleep.
+ * keepalive "sent=<n> min=<m>" or "missed min=<m>", written once at the wake that ends a sleep, for processor_awake
+ * "awake=<pct>% min=<m> by=system|app", written at most once per sleep (the stretch measured is the 30 minutes before the alarm).
  */
 data class BatteryRow(
     val epoch: Long,
@@ -92,6 +93,16 @@ data class Segment(
     val avgMa: Double? get() = mah?.let { if (hours > 0) it / hours else null }
 }
 
+/**
+ * A sleep in which the tablet's processor never went to sleep (it slept at most this share of the time). Seen after Android
+ * restarted by itself and before the tablet was restarted (docs/11-not-resting.md): the clean sleeps of the log had the
+ * processor awake 0.2 to 28.6 % of the time, and every sleep in that state 100 %, so this threshold has a wide margin.
+ */
+const val PROCESSOR_AWAKE_MAX_SLEPT = 0.10
+
+/** The shortest Asleep episode that counts as one in which the processor stayed awake: shorter ones are too noisy to judge. */
+const val PROCESSOR_AWAKE_MIN_HOURS = 0.25
+
 data class Episode(
     val kind: EpisodeKind,
     val startMs: Long,
@@ -106,6 +117,10 @@ data class Episode(
 ) {
     val hours: Double get() = (endMs - startMs) / 3_600_000.0
     val avgMa: Double? get() = mah?.let { if (hours > 0) it / hours else null }
+
+    /** Asleep, but the processor stayed awake: kept out of what counts as a normal sleep (baselines, before-and-after, time left). */
+    val processorStayedAwake: Boolean
+        get() = kind == EpisodeKind.Asleep && hours >= PROCESSOR_AWAKE_MIN_HOURS && sleptShare <= PROCESSOR_AWAKE_MAX_SLEPT
 }
 
 /** A span of the foreground app from UsageStats, used to apportion in-use charge to apps. */

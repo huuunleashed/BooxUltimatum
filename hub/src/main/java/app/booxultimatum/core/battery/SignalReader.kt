@@ -53,6 +53,20 @@ object SignalReader {
             dropBox.getNextEntry(tag, afterMs)?.let { entry -> try { entry.timeMillis } finally { entry.close() } }
         }
     }.onFailure { noteDropboxFailure(it) }.getOrNull()
+    /** The dropbox entry of a restart at exactly [atMs] as (tag, its first 6 000 characters), or null. Blocking. */
+    @android.annotation.SuppressLint("MissingPermission")
+    internal fun restartEntry(context: Context, atMs: Long): Pair<String, String>? = runCatching {
+        val dropBox = context.getSystemService(DropBoxManager::class.java)
+        for (tag in RESTART_TAGS) {
+            val entry = dropBox.getNextEntry(tag, atMs - 1) ?: continue
+            try {
+                if (entry.timeMillis == atMs) return@runCatching tag to (entry.getText(6_000) ?: "")
+            } finally {
+                entry.close()
+            }
+        }
+        null
+    }.getOrNull()
 }
 
 /**

@@ -123,6 +123,26 @@ class FindingsTest {
     }
 
     @Test
+    fun aSleepInWhichTheProcessorStayedAwakeIsOneFindingWhateverItDrewBelowAHundredMilliamps() {
+        // 35 mA used to be "standby drain" and 25 mA "the processor didn't sleep": one state, one finding.
+        val v = verdict(
+            episode(EpisodeKind.Asleep, 0, 120, 35.0, slept = 0.0),
+            episode(EpisodeKind.Asleep, 200, 260, 25.0, slept = 0.0),
+            episode(EpisodeKind.Asleep, 300, 400, 99.0, slept = 0.0),
+        )
+        assertEquals(listOf(FindingKind.NotSleeping), v.findings.map { it.kind }.distinct())
+        assertEquals(3, v.findings.size)
+        assertTrue(v.findings.all { it.severity == Severity.Watch })
+    }
+
+    @Test
+    fun aHundredMilliampsIsStillStandbyDrainEvenWithTheProcessorAwake() {
+        val f = verdict(episode(EpisodeKind.Asleep, 0, 120, 100.0, slept = 0.0)).findings.single()
+        assertEquals(FindingKind.StandbyHigh, f.kind)
+        assertEquals(Severity.Problem, f.severity)
+    }
+
+    @Test
     fun wakeLockWatchesHoldsOfAnHourOrMore() {
         val signals = SIGNALS.copy(
             heldLocks = listOf(HeldLock("com.a", "AlarmManager", 1.5), HeldLock("com.b", "short", 0.5), HeldLock("", "TICK", 2.0)),

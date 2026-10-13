@@ -199,6 +199,7 @@ object BatteryLog {
                         // The sleep screen's 90-minute clock starts here: see SleepKeepAlive.
                         runCatching { SleepKeepAlive.onSleep(app) }
                     }
+                    Intent.ACTION_POWER_CONNECTED, Intent.ACTION_POWER_DISCONNECTED -> runCatching { SleepKeepAlive.onPowerChanged(app) }
                     Intent.ACTION_SCREEN_ON -> {
                         DisplayWatch.recheck(app)
                         // The owner has just picked the tablet up: the moment a pending restart is worth saying again.
@@ -258,6 +259,20 @@ object BatteryLog {
     }
 
     private val lock = kotlinx.coroutines.sync.Mutex()
+
+    /**
+     * Appends one diagnostic record to today's deep file. The caller builds [o] with its own `epoch` and `reason`: the processor
+     * watch's snapshots and the context of a restart of Android are written this way, apart from the three-hourly snapshot.
+     */
+    fun appendDeep(c: Context, o: JSONObject) {
+        if (!enabled(c)) return
+        val app = c.applicationContext
+        scope.launch {
+            lock.withLock {
+                runCatching { File(dir(app), "deep-${day(System.currentTimeMillis())}.jsonl").appendText(o.toString() + "\n") }
+            }
+        }
+    }
 
     /** A labelled moment in the log, such as a tweak applied or a note from the owner. */
     fun mark(c: Context, label: String) = record(c, "mark", note = label)
@@ -592,6 +607,8 @@ object BatteryLog {
                     appendLine("  force-stop, which Android 15+ reports as BOOT_COMPLETED), update, display_on (the display was on while the tablet was not")
                     appendLine("  interactive for 2 minutes), display_stuck (the same for 10 minutes), mark (a labelled moment; the note is the label).")
                     appendLine("  For display_on and display_stuck the note is the time the display went on, in epoch ms.")
+                    appendLine("  keepalive (one per wake, sent=<n> min=<m>, or missed), processor_awake (the tablet slept and the processor stayed awake: awake=<pct>% min=<m> by=system or app).")
+                    appendLine("  deep-*.jsonl also holds processor_awake and processor_ref (power state, suspend blockers, display state), restart_context (the crash and the hub's own actions before it) and onset.")
                     appendLine("  1 - Δuptime/Δelapsed is the share of time the SoC slept; on Boox it also sleeps with the screen on.")
                     appendLine("  A line starting with epoch, is a header; a file holds one for each layout it has had.")
                     appendLine("  battery-YYYY-MM.v1.csv files hold rows from earlier builds, written before the columns were extended.")

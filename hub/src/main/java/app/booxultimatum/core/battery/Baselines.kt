@@ -23,10 +23,13 @@ object Baselines {
     fun of(t: Timeline, nowMs: Long): Baseline {
         val recent = t.episodes.filter { it.startMs >= nowMs - WINDOW_MS && it.kind in UNPLUGGED }
         val asleep = recent.filter { it.kind == EpisodeKind.Asleep }
+        // What a normal sleep costs leaves out the sleeps in which the processor stayed awake: after Android restarts by itself
+        // they cost several times as much until the tablet is restarted, and would raise "normal" and with it the alarm.
+        val resting = asleep.filter { !it.processorStayedAwake }
         val asleepHours = asleep.sumOf { it.hours }
         val unpluggedHours = recent.sumOf { it.hours }
-        val quiet = asleep.filter { it.hours >= MEDIAN_MIN_HOURS }.mapNotNull { e -> e.avgMa?.let { it to e.hours } }
-        val days = dailyRates(asleep, Long.MIN_VALUE, Long.MAX_VALUE, DAY_MIN_HOURS).sorted()
+        val quiet = resting.filter { it.hours >= MEDIAN_MIN_HOURS }.mapNotNull { e -> e.avgMa?.let { it to e.hours } }
+        val days = dailyRates(resting, Long.MIN_VALUE, Long.MAX_VALUE, DAY_MIN_HOURS).sorted()
         return Baseline(
             quietAsleepMa = if (quiet.sumOf { it.second } < QUIET_MIN_HOURS) null else weightedMedian(quiet),
             dayToDaySpreadMa = if (days.size < SPREAD_MIN_DAYS) null else quantile(days, 0.75) - quantile(days, 0.25),

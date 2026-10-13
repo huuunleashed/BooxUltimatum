@@ -11,6 +11,7 @@ import androidx.core.content.edit
 import app.booxultimatum.MainActivity
 import app.booxultimatum.R
 import app.booxultimatum.kit.log.Logbook
+import app.booxultimatum.ui.battery.BatteryText
 import java.util.concurrent.Executors
 
 /**
@@ -29,6 +30,9 @@ object RestartAdvice {
     private const val CHANNEL = "battery_restart"
     private const val NOTIFICATION_ID = 63
     private const val OPEN_REQUEST = 64
+    private const val APP_NOTIFICATION_ID = 65
+    private const val AWAKE_NOTED_AT = "awake_noted_at"
+    private const val AWAKE_NOTED_BOOT = "awake_noted_boot"
     private const val REMIND_EVERY_MS = 12 * 3600_000L
     private const val CHECK_EVERY_MS = 10 * 60_000L
     @Volatile private var lastCheckMs = 0L
@@ -66,6 +70,32 @@ object RestartAdvice {
         if (advice == Advice.None) return
         prefs.edit { putLong(ADVISED_AT, restartAt ?: 0L).putLong(REMINDED_AT, now) }
         log.w(if (advice == Advice.First) "android restarted by itself, tablet not restarted since" else "restart still pending, reminding", "at" to restartAt)
+        // What the crash was and what the hub itself did just before it: whether anything we do precedes a restart is only
+        // testable from this record (two restarts on a tablet that runs the hub are not a control group).
+        if (advice == Advice.First && restartAt != null) runCatching { RestartContext.capture(app, restartAt) }
+        post(app, NOTIFICATION_ID, app.getString(R.string.ba_restart_title), app.getString(R.string.ba_restart_text), ongoing = true)
+    }
+
+    /**
+     * The processor stayed awake through a stretch of sleep and no app is to blame (docs/11-not-resting.md): say so, once per
+     * boot and again every 12 hours while it is still pending. It takes the restart note's place, ongoing, so it can't be swiped away.
+     */
+    fun noteProcessorAwake(context: Context, stretchMs: Long, boot: Int) {
+        val app = context.applicationContext
+        val prefs = app.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val now = System.currentTimeMillis()
+        if (!ProcessorPolicy.shouldPostSystemNote(prefs.getLong(AWAKE_NOTED_AT, 0L), prefs.getInt(AWAKE_NOTED_BOOT, Int.MIN_VALUE), boot, now)) return
+        prefs.edit { putLong(AWAKE_NOTED_AT, now).putInt(AWAKE_NOTED_BOOT, boot) }
+        post(app, NOTIFICATION_ID, app.getString(R.string.ba_awake_title), app.getString(R.string.ba_awake_text, BatteryText.duration(app, stretchMs)), ongoing = true)
+    }
+
+    /** An app held the processor awake: a different cause, so no advice to restart, and no app named in a notification. */
+    fun noteAppAwake(context: Context, stretchMs: Long) {
+        val app = context.applicationContext
+        post(app, APP_NOTIFICATION_ID, app.getString(R.string.ba_awake_app_title), app.getString(R.string.ba_awake_app_text, BatteryText.duration(app, stretchMs)), ongoing = false)
+    }
+
+    private fun post(app: Context, id: Int, title: String, text: String, ongoing: Boolean) {
         if (!MorningReport.notificationsAllowed(app)) return
         val nm = app.getSystemService(NotificationManager::class.java)
         // A channel of its own: the report's is low importance and silent, and a channel's importance can't be raised once made.
@@ -81,16 +111,16 @@ object RestartAdvice {
             Intent(app, MainActivity::class.java).putExtra(MainActivity.EXTRA_DESTINATION, "Battery").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
-        val text = app.getString(R.string.ba_restart_text)
         nm.notify(
-            NOTIFICATION_ID,
+            id,
             Notification.Builder(app, CHANNEL)
                 .setSmallIcon(R.drawable.ic_tile_ink)
-                .setContentTitle(app.getString(R.string.ba_restart_title))
+                .setContentTitle(title)
                 .setContentText(text)
                 .setStyle(Notification.BigTextStyle().bigText(text))
                 .setContentIntent(open)
-                .setOngoing(true)
+                .setOngoing(ongoing)
+                .setAutoCancel(!ongoing)
                 .setOnlyAlertOnce(true)
                 .build(),
         )

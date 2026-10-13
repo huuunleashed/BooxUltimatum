@@ -50,7 +50,8 @@ object Marks {
         var mah = 0.0
         for (e in episodes) {
             val charge = e.mah ?: continue
-            if (e.kind != EpisodeKind.Asleep) continue
+            // A sleep in which the processor stayed awake says nothing about a tweak: it would read as "Higher".
+            if (e.kind != EpisodeKind.Asleep || e.processorStayedAwake) continue
             val inside = Baselines.overlapHours(e, fromMs, toMs)
             if (inside <= 0.0) continue
             hours += inside

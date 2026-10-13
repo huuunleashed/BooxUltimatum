@@ -131,17 +131,45 @@ class TimelinesTest {
         assertEquals(EpisodeKind.DisplayOn, t.segments.single().kind)
     }
 
-    @Test fun aDisplayColumnOfOnMakesDisplayOnThatIsNotInferred() {
+    @Test fun aDisplayColumnOfOnWithAStuckDisplaysDrainIsDisplayOnThatIsNotInferred() {
         val t = Timelines.build(
             listOf(
                 row(0, 80, 3000.0, display = DisplayState.On),
-                row(60, 79, 2960.0, display = DisplayState.On),
+                row(60, 74, 2670.0, display = DisplayState.On),
             ),
             nowMs = start,
         )
         val segment = t.segments.single()
         assertEquals(EpisodeKind.DisplayOn, segment.kind)
         assertFalse(segment.inferred)
+    }
+
+    @Test fun aSampleInTheRefreshOfAProcessorThatStayedAwakeIsNotADisplayOn() {
+        // 2026-10-12 15:25 to 16:25, after Android restarted by itself: the processor never slept, so a tick that fell in the live
+        // screen's 1.3 s refresh found the display ON with the processor awake. 24 mA is not a stuck display (289 to 396 mA).
+        val t = Timelines.build(
+            listOf(
+                row(0, 90, 3379.0, reason = "screen_off", uptimeMin = 0.0),
+                row(30, 89, 3367.0, uptimeMin = 30.0, reason = "tick", display = DisplayState.On),
+                row(60, 88, 3355.0, uptimeMin = 60.0, reason = "tick", display = DisplayState.On),
+            ),
+            nowMs = start,
+        )
+        assertTrue(t.segments.all { it.kind == EpisodeKind.Asleep })
+        assertTrue(t.episodes.single().processorStayedAwake)
+    }
+
+    @Test fun aShortBareSampleStillContinuesAStuckDisplaysRunWhenTheCounterStandsStill() {
+        val t = Timelines.build(
+            listOf(
+                row(0, 90, 3000.0, reason = "screen_off", uptimeMin = 0.0),
+                row(60, 85, 2650.0, uptimeMin = 60.0, display = DisplayState.On),
+                row(63, 85, 2650.0, uptimeMin = 63.0, display = DisplayState.On),
+                row(66, 84, 2640.0, uptimeMin = 66.0, display = DisplayState.On),
+            ),
+            nowMs = start,
+        )
+        assertEquals(listOf(EpisodeKind.DisplayOn), t.episodes.map { it.kind })
     }
 
     @Test fun chargingAddsTheCounterRiseOrTheLevelStepAtTheDefaultCapacity() {

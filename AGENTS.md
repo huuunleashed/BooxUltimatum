@@ -119,6 +119,7 @@ Retake them when a screen changes noticeably, and never edit one to show a featu
 
 - **Look:** pure black on white, with one green lamp as the accent. No ripples or animations, and large touch targets (48 dp or more).
 - **Refresh:** no background polling; data refreshes only on user action, system broadcasts, or inexact non-wakeup alarms. Prefer pages to long scrolling lists where practical.
+- **Names:** a name says what the thing does, in plain words, even when that makes it longer: *Refresh the sleep screen while asleep*, not *keep-alive*; *The processor stayed awake while the tablet slept*, not *not resting*. Don't shorten a name until it needs explaining, and don't coin one for a feature. A technical term that has to stay (Shizuku) is explained in the line under it. One feature has one name, the same in the app, the README, the changelog and the release notes.
 - **Text:** text entry on the home screen goes in a panel at the top, where the keyboard can't cover it. Strings that carry a count use `plurals`. Typographic apostrophes (’) go in string resources.
 
 ## Toolchain pins

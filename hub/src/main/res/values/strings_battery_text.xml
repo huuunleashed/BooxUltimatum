@@ -20,7 +20,7 @@
     <string name="bt_kind_off">Off</string>
     <string name="bt_finding_display_on">Display on while asleep</string>
     <string name="bt_finding_standby_high">Standby drain above normal</string>
-    <string name="bt_finding_not_sleeping">The processor didn’t sleep</string>
+    <string name="bt_finding_not_sleeping">The processor stayed awake while the tablet slept</string>
     <string name="bt_finding_wake_lock">Something kept the tablet awake</string>
     <string name="bt_finding_restart">Android restarted</string>
     <string name="bt_finding_hub_restricted">BooxUltimatum can’t record in the background</string>
@@ -32,7 +32,7 @@
     <string name="bt_s_display_on">The display stayed on while the tablet slept, %1$s (%2$s).</string>
     <string name="bt_s_display_on_levels">The battery went from %1$s.</string>
     <string name="bt_s_standby_high">The tablet used more battery than usual while it slept, %1$s (%2$s).</string>
-    <string name="bt_s_not_sleeping">The processor stayed awake while the tablet slept, %1$s (%2$s).</string>
+    <string name="bt_s_not_sleeping">The tablet’s processor stayed awake while it slept, %1$s (%2$s), so it used more battery than a normal sleep. Restarting the tablet has cleared this each time it has been seen.</string>
     <string name="bt_s_wake_lock">%1$s kept the tablet awake for %2$s.</string>
     <string name="bt_s_something_wake_lock">Something kept the tablet awake for %1$s.</string>
     <string name="bt_s_restart">Android restarted on %1$s.</string>

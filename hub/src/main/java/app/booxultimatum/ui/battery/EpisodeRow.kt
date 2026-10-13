@@ -48,7 +48,8 @@ fun EpisodeRow(episode: Episode, modifier: Modifier = Modifier, expanded: Boolea
     val problem = episode.kind == EpisodeKind.DisplayOn
     val problemTag = stringResource(R.string.ep_tag_problem)
     val inferredTag = stringResource(R.string.ep_tag_inferred)
-    val flags = listOfNotNull(problemTag.takeIf { problem }, inferredTag.takeIf { episode.inferred })
+    val awakeTag = stringResource(R.string.ep_tag_processor_awake)
+    val flags = listOfNotNull(problemTag.takeIf { problem }, awakeTag.takeIf { episode.processorStayedAwake }, inferredTag.takeIf { episode.inferred })
     val appPackage = episode.topApp.takeIf { episode.kind == EpisodeKind.InUse }
     val appName = remember(appPackage) { appPackage?.let { appLabel(context, it) } }
     val app = appName?.let { stringResource(R.string.ep_top_app, it) }
@@ -89,6 +90,7 @@ fun EpisodeRow(episode: Episode, modifier: Modifier = Modifier, expanded: Boolea
                 if (flags.isNotEmpty()) {
                     Row(Modifier.padding(top = Space.xs), horizontalArrangement = Arrangement.spacedBy(Space.xs)) {
                         if (problem) Tag(problemTag, strong = true)
+                        if (episode.processorStayedAwake) Tag(awakeTag)
                         if (episode.inferred) Tag(inferredTag)
                     }
                 }

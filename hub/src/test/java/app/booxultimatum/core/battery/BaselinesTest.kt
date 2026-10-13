@@ -31,6 +31,13 @@ class BaselinesTest {
     }
 
     @Test
+    fun sleepsInWhichTheProcessorStayedAwakeAreLeftOutOfTheQuietRate() {
+        val awake = Episode(EpisodeKind.Asleep, at(600), at(1_200), 80, 79, 33.0 * 10, 0.0, null)
+        val b = baseline(asleep(0, 360, 9.0), awake, asleep(1_200, 1_400, 9.0))
+        assertNear(9.0, b.quietAsleepMa)
+    }
+
+    @Test
     fun quietAsleepNeedsSixHoursAsleep() {
         assertNull(baseline(asleep(0, 330, 9.0)).quietAsleepMa)
         assertNear(9.0, baseline(asleep(0, 360, 9.0)).quietAsleepMa)

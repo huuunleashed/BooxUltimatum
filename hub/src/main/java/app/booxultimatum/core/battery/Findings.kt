@@ -13,7 +13,6 @@ object Findings {
     private const val STANDBY_FLOOR_MA = 30.0
     private const val STANDBY_PROBLEM_MA = 100.0
     private const val NOT_SLEEPING_MIN_HOURS = 0.5
-    private const val NOT_SLEEPING_MAX_SLEPT = 0.10
     private const val WAKE_LOCK_MIN_HOURS = 1.0
     private const val RESTART_WINDOW_MS = DAY_MS
     private const val DIED_MAX_LEVEL = 3
@@ -29,12 +28,18 @@ object Findings {
 
         val standbyLimit = baseline.quietAsleepMa?.let { max(STANDBY_RATIO * it, STANDBY_FLOOR_MA) } ?: STANDBY_FLOOR_MA
         val asleep = t.episodes.filter { it.kind == EpisodeKind.Asleep }
-        val standbyEpisodes = asleep.filter { it.hours >= STANDBY_MIN_HOURS && (it.avgMa ?: 0.0) > standbyLimit }
+        // A sleep in which the processor stayed awake has one finding of its own, whatever it drew, so the same state is not
+        // called "standby drain" at 35 mA and "the processor stayed awake" at 25. At 100 mA or more the processor alone does
+        // not explain the draw, and that stays standby drain, a Problem.
+        val standbyEpisodes = asleep.filter {
+            it.hours >= STANDBY_MIN_HOURS && (it.avgMa ?: 0.0) > standbyLimit &&
+                (!it.processorStayedAwake || (it.avgMa ?: 0.0) >= STANDBY_PROBLEM_MA)
+        }
         val standby = standbyEpisodes.map { e ->
             e.finding(FindingKind.StandbyHigh, if ((e.avgMa ?: 0.0) >= STANDBY_PROBLEM_MA) Severity.Problem else Severity.Watch)
         }
         val notSleeping = asleep.filter { e ->
-            e.hours >= NOT_SLEEPING_MIN_HOURS && e.sleptShare <= NOT_SLEEPING_MAX_SLEPT && e !in standbyEpisodes &&
+            e.hours >= NOT_SLEEPING_MIN_HOURS && e.processorStayedAwake && e !in standbyEpisodes &&
                 displayOn.none { it.startMs < e.endMs && e.startMs < it.endMs }
         }.map { it.finding(FindingKind.NotSleeping, Severity.Watch) }
 

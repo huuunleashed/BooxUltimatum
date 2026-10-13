@@ -8,6 +8,7 @@
     <string name="ds_previous">Previous episode</string>
     <string name="ds_next">Next episode</string>
     <string name="ep_tag_problem">Problem</string>
+    <string name="ep_tag_processor_awake">Processor stayed awake</string>
     <string name="ep_tag_inferred">inferred</string>
     <string name="ep_levels">%1$d %% to %2$d %%</string>
     <string name="ep_slept">The processor slept %1$d %% of this time</string>

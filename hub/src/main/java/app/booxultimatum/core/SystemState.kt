@@ -12,10 +12,16 @@ data class DozeState(
 
 data class WakeupSource(val pkg: String, val uid: String, val wakeups: Int, val alarms: Int, val tags: Map<String, Int> = emptyMap())
 
-data class HeldWakelock(val type: String, val tag: String, val owner: String)
+data class HeldWakelock(val type: String, val tag: String, val owner: String, val ageMs: Long? = null)
 
 /** One `dumpsys power` read: wakelocks held now, the Onyx power-manager line, and acquisitions by owner and tag since a time. */
-data class PowerDump(val held: List<HeldWakelock>, val onyxPm: String?, val acquisitions: Map<String, Int>)
+data class PowerDump(
+    val held: List<HeldWakelock>,
+    val onyxPm: String?,
+    val acquisitions: Map<String, Int>,
+    /** The power manager's flags and suspend blockers (no app names), for the processor watch. */
+    val facts: app.booxultimatum.core.battery.PowerFacts = app.booxultimatum.core.battery.PowerFacts(),
+)
 
 /** Since-charge totals for one uid from `dumpsys batterystats -c`. */
 data class UidStat(val cpuMs: Long, val wifiRxBytes: Long)
@@ -195,7 +201,7 @@ object SystemState {
         val start = lines.indexOfFirst { it.trim().startsWith("Wake Locks: size=") }
         val entry = Regex("""^\s+(\w+_WAKE_LOCK)\s+'([^']*)'.*\(uid=(\d+)""")
         val held = if (start < 0) emptyList() else lines.drop(start + 1).takeWhile { it.isNotBlank() }.mapNotNull { l ->
-            entry.find(l)?.let { HeldWakelock(it.groupValues[1], it.groupValues[2], it.groupValues[3]) }
+            entry.find(l)?.let { HeldWakelock(it.groupValues[1], it.groupValues[2], it.groupValues[3], app.booxultimatum.core.battery.PowerFactsParser.ageMs(l)) }
         }
         val since = java.text.SimpleDateFormat("MM-dd HH:mm:ss", java.util.Locale.US).format(java.util.Date(sinceMillis))
         val acq = Regex("""^\s+(\d\d-\d\d \d\d:\d\d:\d\d)\.\d+ - \d+ \((.*?)\) - ACQ (\S+)""")
@@ -207,6 +213,7 @@ object SystemState {
             held = held,
             onyxPm = lines.firstOrNull { it.startsWith("Onyx pm") }?.trim(),
             acquisitions = counts.entries.sortedByDescending { it.value }.take(10).associate { it.key to it.value },
+            facts = app.booxultimatum.core.battery.PowerFactsParser.power(r.out),
         )
     }
 

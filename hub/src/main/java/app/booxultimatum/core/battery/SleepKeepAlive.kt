@@ -49,7 +49,9 @@ object SleepKeepAlivePolicy {
  * next time Android restarts by itself, and the log says what it did (`keepalive` row at each wake, Logbook line at each refresh).
  *
  * It runs on its own alarm, armed at each screen-off by the battery log's receiver, so it works whether or not live
- * updates, quiet hours or the accessibility service are on.
+ * updates, quiet hours or the accessibility service are on. The same alarm also measures, at each wake, how much of the
+ * time since the last the processor was awake, and hands that to [ProcessorWatch] (docs/11-not-resting.md): the measuring
+ * runs whether or not the refresh switch is on, since it adds no wakeup of its own.
  */
 object SleepKeepAlive {
     const val ACTION = "app.booxultimatum.action.KEEP_ALIVE"
@@ -58,6 +60,10 @@ object SleepKeepAlive {
     private const val SLEPT = "slept_at"
     private const val LAST = "last_refresh"
     private const val SENT = "sent"
+    private const val S_ELAPSED = "s_elapsed"
+    private const val S_UPTIME = "s_uptime"
+    private const val S_AT = "s_at"
+    private const val PLUG_AT = "plug_at"
     private const val REFRESH = "onyx_dream_refresh"
     private const val REQUEST = 42
     private const val HOLD_MS = 4_000L
@@ -68,10 +74,9 @@ object SleepKeepAlive {
     /** On by default: it only acts while the tablet sleeps, and costs well under 1 mAh a night. */
     fun enabled(context: Context): Boolean = prefs(context).getBoolean(ON, true)
 
+    /** The refresh only: the alarm itself keeps running, because measuring the processor needs it and costs nothing more. */
     fun setEnabled(context: Context, on: Boolean) {
-        val app = context.applicationContext
-        prefs(app).edit { putBoolean(ON, on) }
-        if (!on) cancel(app) else if (!interactive(app)) onSleep(app)
+        prefs(context.applicationContext).edit { putBoolean(ON, on) }
     }
 
     private fun interactive(app: Context) = app.getSystemService(PowerManager::class.java)?.isInteractive != false
@@ -79,10 +84,20 @@ object SleepKeepAlive {
     /** The screen went off: the sleep screen has just gone to doze, which is when its clock starts. */
     fun onSleep(context: Context, nowMs: Long = System.currentTimeMillis()) {
         val app = context.applicationContext
-        if (!enabled(app)) return
-        prefs(app).edit { putLong(SLEPT, nowMs).putLong(LAST, nowMs).putInt(SENT, 0) }
+        prefs(app).edit {
+            putLong(SLEPT, nowMs).putLong(LAST, nowMs).putInt(SENT, 0)
+                .putLong(S_ELAPSED, SystemClock.elapsedRealtime()).putLong(S_UPTIME, SystemClock.uptimeMillis()).putLong(S_AT, nowMs)
+        }
         arm(app, SleepKeepAlivePolicy.nextAtMs(nowMs, nowMs))
     }
+
+    /** The charger was plugged or unplugged: a stretch that spans it says nothing about the processor, so it is not judged. */
+    fun onPowerChanged(context: Context, nowMs: Long = System.currentTimeMillis()) {
+        prefs(context.applicationContext).edit { putLong(PLUG_AT, nowMs) }
+    }
+
+    private fun plugged(app: Context): Boolean =
+        (app.registerReceiver(null, android.content.IntentFilter(Intent.ACTION_BATTERY_CHANGED))?.getIntExtra(android.os.BatteryManager.EXTRA_PLUGGED, 0) ?: 0) != 0
 
     /** The screen came on: ends the chain, and writes one `keepalive` row when it sent a refresh or never ran. */
     fun onWake(context: Context, nowMs: Long = System.currentTimeMillis()) {
@@ -90,11 +105,12 @@ object SleepKeepAlive {
         cancel(app)
         val p = prefs(app)
         val slept = p.getLong(SLEPT, 0)
-        if (slept <= 0 || !enabled(app)) return
+        if (slept <= 0) return
         val sent = p.getInt(SENT, 0)
         val minutes = (nowMs - slept) / 60_000L
         val missed = SleepKeepAlivePolicy.missed(slept, nowMs, p.getLong(LAST, 0))
         p.edit { remove(SLEPT).putInt(SENT, 0) }
+        if (!enabled(app)) return
         if (missed) {
             log.w("keep-alive never ran in a long sleep", "min" to minutes)
             BatteryLog.record(app, "keepalive", note = "missed min=$minutes")
@@ -106,7 +122,7 @@ object SleepKeepAlive {
     /** Process start: a sleep that began while no receiver was listening is treated as having just begun. */
     fun sync(context: Context) {
         val app = context.applicationContext
-        if (enabled(app) && !interactive(app) && prefs(app).getLong(SLEPT, 0) == 0L) onSleep(app)
+        if (!interactive(app) && prefs(app).getLong(SLEPT, 0) == 0L) onSleep(app)
     }
 
     /** Something else refreshed the sleep screen (a live update, the guard), which restarts its clock too. */
@@ -118,13 +134,28 @@ object SleepKeepAlive {
     internal fun onAlarm(context: Context, done: () -> Unit) {
         val app = context.applicationContext
         val p = prefs(app)
-        if (!enabled(app) || interactive(app)) {
+        if (interactive(app)) {
             p.edit { remove(SLEPT) }
             done()
             return
         }
         val now = System.currentTimeMillis()
-        if (SleepKeepAlivePolicy.due(p.getLong(LAST, 0), now)) {
+        // How much of the time since the last alarm (or since the sleep began) the processor was awake. Read before anything
+        // below runs, so this alarm's own work is not counted in it.
+        val nowElapsed = SystemClock.elapsedRealtime()
+        val nowUptime = SystemClock.uptimeMillis()
+        val sampledFrom = p.getLong(S_AT, now)
+        val sleptAt = p.getLong(SLEPT, now)
+        val verdict = ProcessorPolicy.judge(
+            elapsedMs = nowElapsed - p.getLong(S_ELAPSED, nowElapsed),
+            uptimeMs = nowUptime - p.getLong(S_UPTIME, nowUptime),
+            pluggedDuring = plugged(app) || p.getLong(PLUG_AT, 0) >= sampledFrom,
+        )
+        val elapsed = nowElapsed - p.getLong(S_ELAPSED, nowElapsed)
+        val uptime = nowUptime - p.getLong(S_UPTIME, nowUptime)
+        p.edit { putLong(S_ELAPSED, nowElapsed).putLong(S_UPTIME, nowUptime).putLong(S_AT, now) }
+        ProcessorWatch.onSample(app, verdict, elapsed, uptime, sleptAt)
+        if (enabled(app) && SleepKeepAlivePolicy.due(p.getLong(LAST, 0), now)) {
             refresh(app)
             p.edit { putLong(LAST, now).putInt(SENT, p.getInt(SENT, 0) + 1) }
             log.i("keep-alive refresh", "sent" to p.getInt(SENT, 0))

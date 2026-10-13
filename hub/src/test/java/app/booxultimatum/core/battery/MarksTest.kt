@@ -85,6 +85,14 @@ class MarksTest {
     }
 
     @Test
+    fun aSleepInWhichTheProcessorStayedAwakeIsNotAResultOfTheTweak() {
+        val awake = Episode(EpisodeKind.Asleep, at(MARK), at(MARK + 1_200), 80, 79, 33.0 * 20, 0.0, null)
+        val r = around(asleep(MARK - 1_200, MARK, 9.0), awake, asleep(MARK + 1_200, MARK + 2_400, 9.0))
+        assertNear(9.0, r.afterMa)
+        assertEquals(BeforeAfterVerdict.WithinNormal, r.verdict)
+    }
+
+    @Test
     fun beforeAndAfterNeedTwelveHoursAsleepOnEachSide() {
         val short = around(asleep(MARK - 660, MARK, 9.0), asleep(MARK, MARK + 1_200, 9.0))
         assertEquals(BeforeAfterVerdict.NotEnoughData, short.verdict)

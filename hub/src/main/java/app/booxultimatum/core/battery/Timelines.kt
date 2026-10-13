@@ -56,13 +56,18 @@ object Timelines {
         if (interactive(a)) return Segment(a, b, EpisodeKind.InUse, drawn, sleptShare)
         // A sample that finds the display ON proves little: Boox's live refresh turns it ON for 1.3 s and the 30-minute tick can
         // land in that window, which made 6:50 to 7:20 PM on 2026-10-11 a "display on while asleep" Problem at 6 mA with the
-        // processor asleep 98 % of the time. The hub's own confirmed rows count by themselves; a bare sample counts only if the
-        // processor could not sleep through the segment either, which is what a display stuck ON looks like.
+        // processor asleep 98 % of the time. The hub's own confirmed rows count by themselves. A bare sample counts only if the
+        // processor could not sleep through the segment AND the drain is a stuck display's: with the processor never sleeping
+        // (the state after Android restarts by itself, docs/11-not-resting.md) the first condition always holds, and that made
+        // seven stretches of 28 to 39 mA on 2026-10-12 "display on while asleep" Problems. A stuck display drew 289 to 396 mA.
+        // A short segment may still continue a display-on run, whose charge counter can stand still between two close rows.
+        val rate = if (hours > 0) drawn / hours else 0.0
         val confirmed = a.reason == "display_on" || a.reason == "display_stuck"
-        if (confirmed || (a.display == DisplayState.On && sleptShare <= QUIET_SLEPT_MAX)) {
+        val bareOn = a.display == DisplayState.On && sleptShare <= QUIET_SLEPT_MAX &&
+            (rate >= STUCK_MA || (hours < RUN_START_HOURS && previous == EpisodeKind.DisplayOn))
+        if (confirmed || bareOn) {
             return Segment(a, b, EpisodeKind.DisplayOn, drawn, sleptShare)
         }
-        val rate = if (hours > 0) drawn / hours else 0.0
         // A segment under six minutes is too short to start a run on its own, but it continues the display-on run before it.
         val stuck = rate >= STUCK_MA && sleptShare <= QUIET_SLEPT_MAX && (hours >= RUN_START_HOURS || previous == EpisodeKind.DisplayOn)
         return if (stuck) {
