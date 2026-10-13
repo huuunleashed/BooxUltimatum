@@ -119,8 +119,33 @@ Retake them when a screen changes noticeably, and never edit one to show a featu
 
 - **Look:** pure black on white, with one green lamp as the accent. No ripples or animations, and large touch targets (48 dp or more).
 - **Refresh:** no background polling; data refreshes only on user action, system broadcasts, or inexact non-wakeup alarms. Prefer pages to long scrolling lists where practical.
-- **Names:** a name says what the thing does, in plain words, even when that makes it longer: *Refresh the sleep screen while asleep*, not *keep-alive*; *The processor stayed awake while the tablet slept*, not *not resting*. Don't shorten a name until it needs explaining, and don't coin one for a feature. A technical term that has to stay (Shizuku) is explained in the line under it. One feature has one name, the same in the app, the README, the changelog and the release notes.
+- **Words:** every word the suite shows follows *Words* below.
 - **Text:** text entry on the home screen goes in a panel at the top, where the keyboard can't cover it. Strings that carry a count use `plurals`. Typographic apostrophes (’) go in string resources.
+
+## Words
+
+Every word the suite shows follows this section: the apps, the README, the site, the release notes, and the docs that describe features. The history (old changelog entries, `knowledge/experiments.md`, the research docs 00, 02 and 04) is a record and keeps its original words.
+
+- **Who it is for:** anyone who owns a Boox tablet, not a developer and not the maintainer. The maintainer's tablet (a Note Air6 C on firmware 4.3) is one tablet among many: what was measured on it is a measurement, never "how this tablet behaves".
+- **Voice:** plain, calm, present tense. Say *you* for what the reader does and name the app for what it does (*BooxUltimatum refreshes…*), never *we* or *I*. One idea per sentence, about 25 words at most, and no chains of semicolons: split them. A description is one to three sentences. Say what is verified and what isn't, and never promise a saving that wasn't measured.
+- **Describing a feature** (a setting, tweak, alert or module), in this order: what it does for you, in one sentence; what it needs (Shizuku, a permission) and what happens without it; what it costs or can't do, only if that matters. A title says what the thing is, in sentence case with no final period; a description ends with one. A number from the maintainer's tablet stays in the docs and `knowledge/`; if the app must show one, it says where it was measured (*measured on a Note Air6 C*).
+- **Names:** a name says what the thing does, in plain words, even when that makes it longer: *Refresh the sleep screen while asleep*, not *keep-alive*; *The processor stayed awake while the tablet slept*, not *not resting*. Don't shorten a name until it needs explaining, and don't coin one for a feature. A technical term that has to stay (Shizuku) is explained in the line under it. One feature has one name, the same in the app, the README, the site, the changelog and the release notes.
+- **Typography:** sentence case for titles and buttons (*Show all*, not *Show All*). Typographic apostrophes (’) and ellipses (…) in resources, and a middle dot (·) between parts of a line. Digits for numbers, a space before %, and `plurals` for any count.
+
+One term for each thing, the same everywhere:
+
+| Say | Not | Notes |
+| --- | --- | --- |
+| **BooxUltimatum**, **Nib** | ~~the hub~~, ~~this app~~ | Always the name, because *this app* is ambiguous in a suite. *An app* for any other app. |
+| **the tablet** | ~~the device~~ | *This tablet* only for the reader's own tablet's state (*Already set on this tablet*), never for what happened to the maintainer's. |
+| **the screen** | ~~the panel~~ | *The display* only where the screen's own electronics do the work (Instant ink, refresh). *Panel* only as hardware in docs. |
+| **Boox**, **e-ink** | ~~BOOX~~, ~~E-Ink~~ | *Onyx* only for the company or a firmware package name. |
+| **sleep screen** | ~~screensaver~~, ~~lock screen~~ | The picture shown while the tablet sleeps. *Screensaver* only when naming Boox's own settings. |
+| **face**, **plate**, **sticker** |  | A face is a sleep screen design. A plate is the small paper card drawn over the picture in Over Transparent. A sticker is Boox's lockscreen sticker, only when speaking of Boox's setting. |
+| **Tap**, **Open**, **Choose** | ~~click~~, ~~press~~, ~~pick~~, ~~select~~ | Tap a control, open a page or an app, choose from a list. *Press* only for a hardware button. |
+| **Turn on**, **Turn off** | ~~enable~~, ~~disable~~, ~~toggle~~ | The control itself is a *switch*. |
+| **button** | ~~key~~ |  |
+| **Undo**, **Restore**, **Remove**, **Delete**, **Clear** | ~~Roll back~~, ~~Put back~~, ~~Revert~~, ~~Reset~~ | Undo takes back a change. Restore puts something back the way Boox had it. Remove takes away what the app added. Delete destroys the reader's own content. Clear empties a list or a log. |
 
 ## Toolchain pins
 
