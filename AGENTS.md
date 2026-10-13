@@ -136,14 +136,16 @@ One term for each thing, the same everywhere:
 
 | Say | Not | Notes |
 | --- | --- | --- |
-| **BooxUltimatum**, **Nib** | ~~the hub~~, ~~this app~~ | Always the name, because *this app* is ambiguous in a suite. *An app* for any other app. |
+| **BooxUltimatum**, **Nib** | ~~the hub~~, ~~this app~~ | Always the name, because *this app* is ambiguous in a suite. *This app* only for the other app whose page is open (a frozen app, an app in a list). *An app* for any other app. |
+| **home app** | ~~launcher~~ | The app that draws the home screen, as Android's own settings call it. *Home screen* for what you see. |
+| **font** | ~~typeface~~ | |
 | **the tablet** | ~~the device~~ | *This tablet* only for the reader's own tablet's state (*Already set on this tablet*), never for what happened to the maintainer's. |
 | **the screen** | ~~the panel~~ | *The display* only where the screen's own electronics do the work (Instant ink, refresh). *Panel* only as hardware in docs. |
 | **Boox**, **e-ink** | ~~BOOX~~, ~~E-Ink~~ | *Onyx* only for the company or a firmware package name. |
-| **sleep screen** | ~~screensaver~~, ~~lock screen~~ | The picture shown while the tablet sleeps. *Screensaver* only when naming Boox's own settings. |
+| **sleep screen** | ~~screensaver~~, ~~lock screen~~ | The picture shown while the tablet sleeps. *Screensaver* only when naming Boox's own settings. *Lock screen* only for Android's PIN screen. |
 | **face**, **plate**, **sticker** |  | A face is a sleep screen design. A plate is the small paper card drawn over the picture in Over Transparent. A sticker is Boox's lockscreen sticker, only when speaking of Boox's setting. |
-| **Tap**, **Open**, **Choose** | ~~click~~, ~~press~~, ~~pick~~, ~~select~~ | Tap a control, open a page or an app, choose from a list. *Press* only for a hardware button. |
-| **Turn on**, **Turn off** | ~~enable~~, ~~disable~~, ~~toggle~~ | The control itself is a *switch*. |
+| **Tap**, **Open**, **Choose**, **Touch and hold** | ~~click~~, ~~press~~, ~~pick~~, ~~select~~, ~~long-press~~ | Tap a control, open a page or an app, choose from a list. *Press* only for a hardware button. |
+| **Turn on**, **Turn off** | ~~enable~~, ~~disable~~, ~~toggle~~ | The control itself is a *switch*. *Enable* and *Disable* stay for an app's own state, the words Android uses for it. |
 | **button** | ~~key~~ |  |
 | **Undo**, **Restore**, **Remove**, **Delete**, **Clear** | ~~Roll back~~, ~~Put back~~, ~~Revert~~, ~~Reset~~ | Undo takes back a change. Restore puts something back the way Boox had it. Remove takes away what the app added. Delete destroys the reader's own content. Clear empties a list or a log. |
 

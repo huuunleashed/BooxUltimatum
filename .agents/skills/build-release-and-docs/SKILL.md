@@ -46,6 +46,8 @@ One checkout can't take parallel Gradle builds, so the Battery revision used one
 - Typographic apostrophes (’) inside single-quoted PowerShell strings break parsing; edit those files with an editing tool.
 - Write files as UTF-8 without a BOM: `[IO.File]::WriteAllText($p, $text, (New-Object Text.UTF8Encoding $false))`.
 - Don't pipe a long Gradle run into `Select-Object -First N`: it stops the pipeline and with it the build, so reports go missing. Redirect to a file (`*> build.log`) and read that instead.
+- **A `.ps1` file is read as ANSI unless it has a BOM**, so a `…`, `›` or `’` typed inside a script and written into a document comes out as `â€¦`, `â€º` or `â€™`. It happened to the 0.10.1 and 0.10.2 notes (found and repaired on 2026-10-13). Write helper scripts in Python (UTF-8 source), or build the character with `[char]0x2026`. `python` can scan the tracked files for the pattern (a UTF-8 byte pair read as cp1252: `[Âãâ]` followed by a character from `\x80` to `¿` or a typographic mark).
+- **.NET file methods resolve a relative path against the process's directory, not PowerShell's `Set-Location`**: `[IO.File]::WriteAllText('x.py', …)` after `Set-Location $temp` wrote the file into the repository root. Use full paths with them.
 - The first test build of the hub reaches a 0.5.x tablet only by hand (download the `test-BooxUltimatum-…apk` from its release page), since 0.5.x updaters can't see test builds. From then on, *Offer test builds* lets the hub find the next ones.
 
 ## Releases
@@ -105,6 +107,19 @@ Android refuses a release-signed APK over a debug-signed install, and uninstalli
 3. `adb uninstall app.booxultimatum`, then install a restore helper: `assembleDebug` signed with the release key through `-Pandroid.injected.signing.store.file=… -Pandroid.injected.signing.store.password=… -Pandroid.injected.signing.key.alias=… -Pandroid.injected.signing.key.password=…` (read from `signing.properties`, never printed). `android.injected.version.code` is ignored by AGP 8.13, so to match an older release set `versionCode` in `hub/build.gradle.kts` for that one build and revert it at once.
 4. `run-as … tar -xf /data/local/tmp/bu.tar` in the data folder, delete the tar, then `adb install -r` the published APK of the same versionCode over the helper: same key, data kept, no longer debuggable.
 5. Re-apply the grants: `pm grant` (DUMP, READ_LOGS, READ_DROPBOX_DATA, WRITE_SECURE_SETTINGS, READ_CALENDAR), `appops set … GET_USAGE_STATS allow`, `RUN_ANY_IN_BACKGROUND` `ignore` then `allow` (Boox's full-access list), and the accessibility string as it was. The shell can't enable the home alias of a non-debuggable app (`Shell cannot change component state`), so the owner makes it the home screen again from the Hub. Hosted widgets must be added again, and Shizuku asks once more.
+
+## Rewriting the suite's words (0.11.0, 2026-10-13)
+
+The guide is the section *Words* of `AGENTS.md`. `tools/dev/check_words.py` fails on a banned term in any string resource (this app, the hub, BOOX, launcher, typeface, long-press, the device, click, roll back and put back, a straight apostrophe, three dots), and `tools/dev/test_check_words.py` runs it with the other unit tests on every push. A term that is right in one place (*this app* for the other app whose page is open) goes into `ALLOWED` by the string's name.
+
+The method that rewrote 2 373 strings in an afternoon, and where it went wrong:
+
+- **Extract, draft in parallel, validate, apply, review.** Cut the strings into chunks of about 100 to 170 entries (the ids, where each is used, the decoded text), give every drafter the same brief and one chunk, and take back only the strings they changed. Check each mechanically (placeholders in count and kind, characters that are safe in XML, banned terms, a label that grew past twice its size), and hold back what the drafter flagged. Apply by replacing only the changed element's text in the XML (never re-serialise the file), then give the before-and-after pairs to a model of another family and read what it sends back: it found 27 problems in 473.
+- **The drafters' flags are the valuable part.** Reading the code, they found strings that were wrong (the weather widget said only a city name was sent, a notification claimed nothing else is ever notified, a hint named the wrong pen). Take a flagged change only when the drafter checked it against the code.
+- **They rename despite the brief** (*Stipple* became *Dots*), add a claim from a doc rather than the code (*Instant ink needs Shizuku*), lengthen a button label until it won't fit, and each invent their own wording for the same idea (*quiet-asleep draw*). Sweep the merged text afterwards for terms no drafter owned.
+- **A string can quote another** (a button's name in quotation marks): check every quoted name exists as a string.
+- **Documents follow the same way** (one drafter per document, with a fact-preservation script that lists numbers, code spans, links and headings missing from the new version), and they, too, got a review by another model. The drafters corrected several documents against the code, and found an issue form that was invalid YAML.
+- The `.agents` skills are not rewritten by this: they are working notes.
 
 ## Documentation after every meaningful change
 
