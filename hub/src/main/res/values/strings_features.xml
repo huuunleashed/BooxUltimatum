@@ -35,7 +35,6 @@
     <string name="action_undo">Undo</string>
     <string name="action_open">Open</string>
     <string name="action_get_access">Get access</string>
-    <string name="action_measure">Measure</string>
     <string name="action_open_tweaks">All tweaks</string>
     <string name="state_working">Working…</string>
     <string name="tweak_failed">Didn’t work: %1$s</string>
@@ -46,9 +45,6 @@
     <string name="plate_tweaks_summary">Tweaks</string>
     <string name="tweaks_on_count">%1$d of %2$d tweaks on</string>
     <string name="tweaks_summary_explain">Reversible changes to sleep, power, radios, the interface and privacy. Each change BooxUltimatum makes can be undone in one tap.</string>
-    <string name="drain_latest">%1$s %% per hour</string>
-    <string name="drain_latest_detail">Last measured over %1$s, unplugged, asleep %2$s of the time.</string>
-    <string name="drain_open">A measurement has been running since %1$s.</string>
     <string name="pillar_firewall">Firewall</string>
     <string name="pillar_firewall_purpose">Block apps you choose from the network, using a VPN that runs on the tablet. It needs no root.</string>
     <string name="pillar_scheduler">Scheduled profiles</string>
@@ -138,42 +134,10 @@
     <string name="tw_factory_summary">Turns off a production-line test tool that has no use after the tablet leaves the factory. Nothing is uninstalled.</string>
 
     <!-- Battery screen -->
-    <string name="plate_measure">Measure drain</string>
-    <string name="measure_explain">Start a measurement, unplug the tablet, then use it or leave it as usual. Come back after an hour or overnight and finish the measurement. The rate comes from the battery’s charge counter at the start and at the end. Nothing runs in between.</string>
-    <string name="measure_unplug_first">Unplug the tablet before you start, because charging hides the drain.</string>
-    <string name="action_start_measuring">Start measuring</string>
-    <string name="measure_started">Started</string>
-    <string name="measure_started_value">%1$s, %2$s ago</string>
-    <string name="measure_level">Level</string>
-    <string name="measure_level_value">%1$d %% → %2$d %%</string>
-    <string name="measure_used">Used</string>
-    <string name="measure_rate">Rate</string>
-    <string name="measure_too_short">Needs at least 10 minutes</string>
-    <string name="measure_asleep">Asleep</string>
-    <string name="measure_charged">The tablet was plugged in during this measurement, so the rate doesn’t show the true drain.</string>
-    <string name="measure_restarted">The tablet restarted during this measurement, so it can’t be finished. Discard it and start again.</string>
-    <string name="action_finish">Finish and save</string>
-    <string name="action_discard">Discard</string>
-    <string name="plate_history">Past measurements</string>
     <string name="history_detail">%1$s · asleep %2$s</string>
     <string name="tag_charged">Plugged in</string>
     <string name="rate_value">%1$s %%/h · %2$s mA</string>
     <string name="rate_value_pct">%1$s %%/h</string>
-    <string name="estimate_line">About %1$s left at your last measured rate of %2$s %% per hour.</string>
-    <string name="plate_wakes">What wakes the tablet</string>
-    <string name="wakes_explain">Read from Android’s own diagnostics since the last restart. Frequent wakeups keep the tablet from resting.</string>
-    <string name="wakes_no_access">Needs system diagnostics access. Grant it on the Access page.</string>
-    <string name="wakes_doze">Deep sleep (Doze)</string>
-    <string name="doze_on">On</string>
-    <string name="doze_off_firmware">Turned off</string>
-    <string name="doze_off_note">The firmware turns Doze off. To turn it on, see Turn on Doze in Tweaks.</string>
-    <string name="doze_state">Deep: %1$s · light: %2$s</string>
-    <string name="wakes_locks">Held right now</string>
-    <string name="wakes_locks_none">Nothing is keeping the tablet awake</string>
-    <string name="wakes_alarms_title">Alarm wakeups by app</string>
-    <string name="wakes_alarms_none">No app has woken the tablet with an alarm since the last restart.</string>
-    <string name="wakes_count">%1$d×</string>
-    <string name="plate_tools">Tools</string>
     <string name="action_battery_usage">Android battery usage</string>
     <string name="action_force_idle">Force deep sleep now</string>
     <string name="action_unforce_idle">Stop forcing deep sleep</string>
@@ -181,26 +145,11 @@
     <string name="spec_current_note">Positive while charging, as this tablet reports it</string>
 
     <!-- Battery log -->
-    <string name="plate_log">Battery log</string>
     <string name="log_explain">BooxUltimatum records a sample only while the tablet is awake anyway, so the log never wakes it. Turning the screen on or off, plugging in and unplugging each add a row, so standby and use stay separate. This needs nothing from you.</string>
     <string name="log_status">Recording</string>
-    <string name="log_on">On, about every 30 minutes while the tablet is awake</string>
     <string name="log_off">Paused</string>
     <string name="log_pause">Pause</string>
     <string name="log_resume">Resume</string>
-    <string name="log_samples">Samples, last 7 days</string>
-    <string name="log_samples_value">%1$d over %2$s</string>
-    <string name="log_asleep_rate">Drain with the screen off</string>
-    <string name="log_awake_rate">Drain with the screen on</string>
-    <string name="log_screen_on_sleep">Processor asleep while the screen is on</string>
-    <string name="log_screen_on_sleep_value">%1$d %%</string>
-    <string name="log_screen_on_sleep_note">Boox lets the processor sleep between page turns. Music, downloads and busy apps keep it awake.</string>
-    <string name="log_not_enough">Not enough unplugged time yet</string>
-    <string name="log_over">Measured over %1$s while unplugged</string>
-    <string name="log_chart">Battery level in recent samples. Green bands show when the tablet was plugged in.</string>
-    <string name="log_sample_now">Record a sample now</string>
-    <string name="log_share">Share logs</string>
-    <string name="log_path">Files: Android/data/app.booxultimatum/files/logs. The CSV file has every sample. Every few hours, the detailed files add the Doze state, which apps woke the tablet with alarms and which apps kept it awake.</string>
 
     <!-- Apps -->
     <string name="apps_search">Search by name or package name</string>

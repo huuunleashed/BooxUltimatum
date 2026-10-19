@@ -4,6 +4,14 @@ All notable changes to BooxUltimatum. Newest first. The project follows [Semanti
 
 ## [Unreleased]
 
+### Fixed
+
+- **Two documents that had drifted from the code.** `docs/06-sleep-screen.md` called Over Transparent a T1 mode; its permissions are asked for in the app, not granted from a computer, so the mode is T2 with a T0 route without Shizuku. `docs/08-nib.md` still said the pencil's grain was resampled at zooms between the tiles' √2 steps; the levels are 1/4096ths now and a settled view snaps onto one, which the maintainer checked on the tablet through 0.4.1's test builds.
+
+### Changed
+
+- **Sixty-three strings no code used are gone** from the hub. They were left over from the *Measure drain* screen and the old Battery log page, and a translator had to translate them for nothing.
+
 ## [0.11.0] (2026-10-13)
 
 BooxUltimatum 0.11.0 is a checkpoint for the words of the suite. Every description in the hub, in Nib and in the kit they share, and every document that describes them, was rewritten under one guide, the section *Words* of `AGENTS.md`: one voice, one name for each thing, and nothing written for one person or one tablet. Nib 0.4.2 ships with it. Nothing about how the apps behave changed. Checked by unit tests, lint and a release build, and by reading the Overview, Tweaks, Device and Nib pages on the Android 36 emulator; not yet seen on the Note Air6 C.

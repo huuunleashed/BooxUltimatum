@@ -33,10 +33,6 @@
     <string name="status_stored">The battery has about %1$s of charge, out of roughly %2$s when full.</string>
     <string name="status_asleep">The tablet has been asleep %1$s of the time since it restarted %2$s ago.</string>
     <string name="status_asleep_usb">While plugged in, the tablet often stays awake, so this figure means most when it runs on battery.</string>
-    <string name="plate_drain">Drain</string>
-    <string name="drain_not_measured">Not measured on this tablet yet.</string>
-    <string name="drain_explain">Drain is measured over hours, unplugged. Start a measurement from Battery, and every tweak can then be judged against it.</string>
-    <string name="drain_reference" formatted="false">For comparison only: eWritable measured about 2 % per hour idle and 10 % per hour writing on the same 4.3 firmware.</string>
     <string name="plate_access">Access</string>
     <string name="plate_planned">Planned</string>
     <string name="pillar_profiles">E-ink profiles</string>
@@ -53,22 +49,14 @@
     <string name="charge_unknown">Charge state unknown</string>
 
     <!-- Battery -->
-    <string name="battery_subtitle">Read at %1$s from Android’s battery service</string>
-    <string name="plate_readings">Readings</string>
-    <string name="spec_status">Status</string>
     <string name="spec_source">Power source</string>
-    <string name="spec_stored">Charge stored</string>
     <string name="spec_full">Full capacity</string>
     <string name="spec_full_note">Estimated from the battery’s reported charge and its percentage</string>
     <string name="spec_voltage">Voltage</string>
     <string name="spec_temperature">Temperature</string>
     <string name="spec_health">Health</string>
     <string name="spec_cycles">Charge cycles</string>
-    <string name="spec_technology">Chemistry</string>
     <string name="spec_current">Current right now</string>
-    <string name="spec_since_boot">Since last restart</string>
-    <string name="spec_asleep">Time asleep</string>
-    <string name="spec_asleep_note">Share of time since restart spent in deep sleep</string>
     <string name="value_not_reported">Not reported by this firmware</string>
     <string name="source_ac">Wall charger</string>
     <string name="source_usb">USB</string>

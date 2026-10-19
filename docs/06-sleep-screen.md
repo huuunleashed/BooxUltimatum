@@ -30,7 +30,7 @@ The tier says what a mode needs. T0 needs only BooxUltimatum. T1 needs an adb gr
 | Mode | Tier | Mechanism | Revert |
 |---|---|---|---|
 | Sleep image | T0 (T2 repeats the broadcast) | BooxUltimatum's picture in `Pictures/booxultimatum-sleep.png` through MediaStore (Android's shared database of pictures), then the type 16 broadcast from BooxUltimatum and, with Shizuku, from the shell | Type 16 with `/system/media/standby-1.png`, BooxUltimatum's pictures deleted, refreshes stopped |
-| Over Transparent | T2, or T1 with the photo permission and a granted write | The plate staged in BooxUltimatum's external files, then written over the sticker Boox saved — through Shizuku, or by BooxUltimatum itself with the system's write consent | Every sticker BooxUltimatum touched is copied back from its own backup, then refreshes stopped |
+| Over Transparent | T2 (T0 for the route without Shizuku) | The plate staged in BooxUltimatum's external files, then written over the sticker Boox saved — through Shizuku, or by BooxUltimatum itself with the system's write consent | Every sticker BooxUltimatum touched is copied back from its own backup, then refreshes stopped |
 
 Without Shizuku, BooxUltimatum asks for the photo permission and the write consent on the Sleep page itself.
 
