@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Navigation: five sections, some with several pages. -->
+    <string name="section_overview">Tổng quan</string>
+    <string name="section_suite">Bộ ứng dụng</string>
+    <string name="section_battery">Pin</string>
+    <string name="section_system">Hệ thống</string>
+    <string name="section_device">Thiết bị</string>
+    <string name="dest_suite">Ứng dụng và mô-đun</string>
+    <string name="dest_home">Màn hình chính</string>
+    <string name="dest_logs">Nhật ký</string>
+
+    <!-- The Suite page. -->
+    <string name="suite_title">Bộ ứng dụng BooxUltimatum</string>
+    <string name="suite_subtitle">Các ứng dụng bạn cài, và những mô-đun tích hợp trong BooxUltimatum</string>
+    <string name="suite_apps">Ứng dụng</string>
+    <string name="suite_apps_explain">Các ứng dụng riêng biệt xây dựng trên BooxUltimatum. Mỗi ứng dụng tự cài, tự cập nhật và tự gỡ, và vẫn chạy khi không có BooxUltimatum. BooxUltimatum tải chúng từ GitHub Releases và kiểm tra trước khi cài.</string>
+    <string name="suite_modules">Tích hợp trong BooxUltimatum</string>
+    <string name="suite_modules_explain">Gỡ bỏ một mô-đun sẽ dừng nó, hoàn tác những gì nó đã đổi trên máy tính bảng và bỏ các trang của nó khỏi menu. Bạn có thể thêm lại bất cứ lúc nào.</string>
+    <string name="suite_installed">Đã cài: %1$s</string>
+    <string name="suite_not_installed">Chưa cài</string>
+    <string name="suite_install">Cài đặt</string>
+    <string name="suite_update">Cập nhật</string>
+    <string name="suite_open">Mở</string>
+    <string name="suite_uninstall">Gỡ cài đặt</string>
+    <string name="suite_uninstall_confirm">Gỡ cài đặt</string>
+    <string name="suite_add">Thêm</string>
+    <string name="suite_remove">Gỡ bỏ</string>
+    <string name="suite_remove_confirm">Gỡ bỏ</string>
+    <string name="suite_running">Đang chạy</string>
+    <string name="suite_idle">Đã thêm, chưa chạy</string>
+    <string name="suite_removed">Đã gỡ bỏ</string>
+    <string name="suite_go_to">Cài đặt</string>
+    <string name="suite_nib_summary">Một ứng dụng vẽ dùng bản xem trước bút tức thì của Boox, với nhiều bút vẽ, độ rộng rất mảnh và số lớp không giới hạn.</string>
+
+    <string name="module_home">Màn hình chính</string>
+    <string name="module_home_summary">Màn hình chính của BooxUltimatum và các tiện ích của nó. Gỡ bỏ mô-đun này sẽ đưa máy tính bảng về màn hình chính trước đó, thường là của Boox.</string>
+    <string name="module_home_blocked">Hãy đặt Boox làm ứng dụng màn hình chính trước. BooxUltimatum chỉ tự đổi được khi có Shizuku. Nếu không, hãy đổi trong Cài đặt ứng dụng màn hình chính của Android.</string>
+    <string name="module_sleep">Màn hình ngủ</string>
+    <string name="module_sleep_summary">Màn hình ngủ và màn hình lúc tắt nguồn của bạn. Gỡ bỏ mô-đun này trả cả hai về cho Boox và ngừng làm mới màn hình ngủ khi máy tính bảng đang ngủ.</string>
+    <string name="module_ink">Mực tức thì</string>
+    <string name="module_ink_summary">Bản xem trước bút tức thì của Boox trong các ứng dụng vẽ khác. Gỡ bỏ mô-đun này sẽ tắt nó và gỡ các ô trong Cài đặt nhanh.</string>
+    <string name="module_battery_log">Nhật ký pin</string>
+    <string name="module_battery_log_summary">Ghi lại các thay đổi của màn hình, sạc và mức pin mà không đánh thức máy tính bảng. Gỡ bỏ mô-đun này sẽ ngừng ghi và giữ lại các nhật ký trước.</string>
+    <string name="module_journal_added">Đã thêm %1$s</string>
+    <string name="module_journal_removed">Đã gỡ bỏ %1$s</string>
+
+    <!-- Updates for every suite app. -->
+    <string name="updates_title">Cập nhật</string>
+    <string name="updates_channel">Kênh</string>
+    <string name="updates_channel_previews">Bản phát hành và bản phát hành trước</string>
+    <string name="updates_channel_stable">Chỉ bản phát hành</string>
+    <string name="updates_tests">Bản dựng thử</string>
+    <string name="updates_tests_on">Được cung cấp</string>
+    <string name="updates_tests_off">Không được cung cấp</string>
+    <string name="updates_tests_explain">Bản dựng thử là công việc chưa hoàn tất, được phát hành để kiểm tra trên máy tính bảng thật. Chúng có thể chưa chạy ổn, nên chỉ bật khi bạn được nhờ kiểm tra.</string>
+    <string name="updates_tests_enable">Cung cấp bản dựng thử</string>
+    <string name="updates_tests_disable">Ngừng cung cấp bản dựng thử</string>
+    <string name="updates_last_check">Kiểm tra lần cuối %1$s</string>
+    <string name="updates_never_checked">Chưa kiểm tra</string>
+
+    <!-- The Logs page. -->
+    <string name="logs_title">Nhật ký</string>
+    <string name="logs_subtitle">Những gì mọi ứng dụng trong bộ đã ghi lại, lưu trên máy tính bảng này</string>
+    <string name="logs_explain">Mỗi ứng dụng trong bộ giữ một nhật ký về những gì nó đã làm và điều gì hỏng, gồm cả các lần sập, trong khoảng hai tuần. Nhật ký không chứa hình vẽ, văn bản đã gõ, tên tài khoản hay tên mạng. Không có gì rời khỏi máy tính bảng trừ khi bạn tự chia sẻ.</string>
+    <string name="logs_detailed">Ghi nhật ký chi tiết</string>
+    <string name="logs_detailed_state">Hiện tại</string>
+    <string name="logs_detailed_off">Tắt</string>
+    <string name="logs_detailed_until">Bật đến %1$s</string>
+    <string name="logs_detailed_on">Bật trong 24 giờ</string>
+    <string name="logs_detailed_stop">Tắt</string>
+    <string name="logs_detailed_explain">Ghi lại chi tiết hơn để giúp tìm ra nguyên nhân của một sự cố. Sau 24 giờ, nó tự tắt.</string>
+    <string name="logs_share">Chia sẻ nhật ký</string>
+    <string name="logs_sharing">Đang thu thập nhật ký…</string>
+    <string name="logs_share_failed">Không thể thu thập nhật ký: %1$s</string>
+    <string name="logs_recent">Mục gần đây</string>
+    <string name="logs_filter_all">Tất cả</string>
+    <string name="logs_filter_problems">Sự cố</string>
+    <string name="logs_empty">Chưa ghi gì.</string>
+    <plurals name="logs_files">
+        <item quantity="other">%1$d tệp, %2$s</item>
+    </plurals>
+    <string name="logs_crashes">Sập và dừng</string>
+    <string name="logs_no_crashes">Chưa ghi nhận gì</string>
+
+    <!-- The Storage page. -->
+    <string name="dest_storage">Dung lượng</string>
+    <string name="storage_title">Dung lượng</string>
+    <string name="storage_subtitle">%1$s do các ứng dụng trong bộ chiếm</string>
+    <string name="storage_explain">Mỗi ứng dụng tự dọn phần thừa của mình. Tệp bộ nhớ đệm biến mất sau ba ngày, bản cập nhật đã tải sau một ngày và tệp đã xuất sau một tuần. Nhật ký được giữ dưới 8 MB và hai tuần. Hình vẽ, ảnh màn hình ngủ, phông chữ, nhật ký pin và cài đặt là của bạn, nên chúng được tính ở đây nhưng không bao giờ bị dọn.</string>
+    <string name="storage_freed">Đã giải phóng %1$s.</string>
+    <string name="storage_unreachable">Ứng dụng không phản hồi. Nó có thể được ký bằng khóa khác với BooxUltimatum, hoặc có thể chưa được mở kể từ khi cài.</string>
+    <plurals name="storage_files">
+        <item quantity="other">%1$d tệp</item>
+    </plurals>
+    <string name="storage_clearable">có thể dọn</string>
+    <string name="storage_kept">được giữ</string>
+    <string name="storage_clear_temporary">Dọn tệp tạm</string>
+    <string name="storage_clear_logs">Dọn nhật ký và báo cáo</string>
+    <string name="storage_clear_logs_confirm">Dọn chúng</string>
+    <string name="storage_area_logs">Nhật ký</string>
+    <string name="storage_area_reports">Báo cáo sập và dừng</string>
+    <string name="storage_area_cache">Bộ nhớ đệm</string>
+    <string name="storage_area_downloads">Bản cập nhật đã tải</string>
+    <string name="storage_area_exports">Tệp đã chia sẻ và tệp đã xuất</string>
+    <string name="storage_area_data">Cài đặt và dữ liệu khác</string>
+    <string name="storage_area_drawings">Hình vẽ</string>
+    <string name="storage_area_battery_log">Nhật ký pin</string>
+    <string name="storage_area_sleep">Ảnh màn hình ngủ</string>
+    <string name="storage_area_fonts">Phông chữ đã cài</string>
+</resources>

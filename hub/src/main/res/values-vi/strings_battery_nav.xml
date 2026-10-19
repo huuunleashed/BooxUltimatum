@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dest_battery_today">Hôm nay</string>
+    <string name="dest_battery_history">Lịch sử</string>
+    <string name="dest_battery_causes">Nguyên nhân</string>
+    <string name="dest_battery_health">Tình trạng</string>
+</resources>

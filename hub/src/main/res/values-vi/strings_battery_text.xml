@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- BatteryText: units are abbreviations, so they carry no plural forms. -->
+    <string name="bt_duration_under_minute">dưới một phút</string>
+    <string name="bt_duration_dh">%1$d ngày %2$d giờ</string>
+    <string name="bt_duration_hm">%1$d giờ %2$d phút</string>
+    <string name="bt_duration_m">%1$d phút</string>
+    <string name="bt_mah">%1$s mAh</string>
+    <string name="bt_ma">%1$s mA</string>
+    <string name="bt_pct_per_hour">%1$s %%/giờ</string>
+    <string name="bt_percent">%1$d %%</string>
+    <string name="bt_level_range">%1$s đến %2$s</string>
+    <string name="bt_unknown">Chưa biết</string>
+    <string name="bt_time_range">%1$s đến %2$s</string>
+    <string name="bt_day_time">%1$s %2$s</string>
+    <string name="bt_kind_in_use">Đang dùng</string>
+    <string name="bt_kind_asleep">Đang ngủ</string>
+    <string name="bt_kind_display_on">Màn hình sáng khi đang ngủ</string>
+    <string name="bt_kind_charging">Đang sạc</string>
+    <string name="bt_kind_off">Tắt</string>
+    <string name="bt_finding_display_on">Màn hình sáng khi đang ngủ</string>
+    <string name="bt_finding_standby_high">Mức hao hụ khi chờ cao hơn bình thường</string>
+    <string name="bt_finding_not_sleeping">Bộ xử lý vẫn thức khi máy tính bảng đang ngủ</string>
+    <string name="bt_finding_wake_lock">Có thứ gì đó giữ máy tính bảng thức</string>
+    <string name="bt_finding_restart">Android đã khởi động lại</string>
+    <string name="bt_finding_hub_restricted">BooxUltimatum không thể ghi ở chế độ chạy nền</string>
+    <string name="bt_finding_recording_paused">Đang tạm dừng ghi</string>
+    <string name="bt_finding_app_heavy">Một ứng dụng đã dùng lượng pin cao hơn bình thường nhiều</string>
+    <string name="bt_finding_died">Pin đã cạn</string>
+    <string name="bt_held_for">được giữ trong %1$s</string>
+    <!-- A finding in one plain sentence, for the verdict and the lists; the figures stay in the episode's details. -->
+    <string name="bt_s_display_on">Màn hình vẫn sáng khi máy tính bảng đang ngủ, %1$s (%2$s).</string>
+    <string name="bt_s_display_on_levels">Pin đã đi từ %1$s.</string>
+    <string name="bt_s_standby_high">Máy tính bảng đã dùng nhiều pin hơn bình thường khi ngủ, %1$s (%2$s).</string>
+    <string name="bt_s_not_sleeping">Bộ xử lý của máy tính bảng vẫn thức khi nó đang ngủ, %1$s (%2$s), nên nó dùng nhiều pin hơn một lần ngủ bình thường. Trên Note Air6 C, khởi động lại máy tính bảng đã xử lý được mỗi khi gặp tình trạng này.</string>
+    <string name="bt_s_wake_lock">%1$s đã giữ máy tính bảng thức trong %2$s.</string>
+    <string name="bt_s_something_wake_lock">Có thứ gì đó đã giữ máy tính bảng thức trong %1$s.</string>
+    <string name="bt_s_restart">Android đã khởi động lại lúc %1$s.</string>
+    <string name="bt_s_restart_watch">Android đã tự khởi động lại lúc %1$s, và máy tính bảng chưa khởi động lại từ đó. Trên Note Air6 C, sự kiện này đã hai lần kéo theo một đêm màn hình kẹt sáng và pin cạn dần. Khởi động lại máy tính bảng đã xử lý được.</string>
+    <string name="bt_s_app_heavy">%1$s đã dùng lượng pin cao hơn bình thường nhiều, khoảng %2$s.</string>
+    <string name="bt_s_app_heavy_unnamed">Một ứng dụng đã dùng lượng pin cao hơn bình thường nhiều.</string>
+    <string name="bt_s_died">Pin đã cạn lúc %1$s.</string>
+    <string name="bt_slept_never">bộ xử lý chưa bao giờ ngủ</string>
+    <string name="bt_slept_share">bộ xử lý ngủ %1$s</string>
+    <string name="bt_inferred">suy ra từ mức hao hụ</string>
+    <string name="bt_evidence_sep">" · "</string>
+    <string name="bt_severity_info">Thông tin</string>
+    <string name="bt_severity_watch">Theo dõi</string>
+    <string name="bt_severity_problem">Sự cố</string>
+    <string name="bt_verdict_normal">Bình thường</string>
+    <string name="bt_verdict_watch">Theo dõi</string>
+    <string name="bt_verdict_problem">Sự cố</string>
+    <string name="bt_verdict_no_data">Chưa đủ dữ liệu</string>
+    <string name="bt_sum_last_24h">24 giờ gần nhất</string>
+    <string name="bt_sum_from_to">Từ %1$s đến %2$s</string>
+    <string name="bt_sum_fell">%1$s: pin tụt từ %2$s.</string>
+    <string name="bt_sum_rose">%1$s: pin tăng từ %2$s.</string>
+    <string name="bt_sum_stayed">%1$s: pin giữ nguyên ở %2$s.</string>
+    <string name="bt_sum_display_on">Màn hình vẫn sáng khi ngủ từ %1$s.</string>
+    <string name="bt_sum_display_on_inferred">Có vẻ màn hình vẫn sáng khi ngủ từ %1$s.</string>
+    <string name="bt_sum_in_use">Máy tính bảng được dùng trong %1$s.</string>
+    <string name="bt_sum_nothing">Không ghi gì trong khoảng thời gian này.</string>
+
+    <!-- VerdictBlock and FindingRow -->
+    <string name="vb_normal_line">Không có gì bất thường trong những gì được ghi</string>
+    <string name="vb_no_data_line">Cần ít nhất một giờ ghi lại trước khi có thể đánh giá pin</string>
+    <string name="vb_see_what_happened">Xem điều đã xảy ra</string>
+    <string name="fr_sentence">%1$s: %2$s. %3$s</string>
+</resources>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copy for the app plate, in-app updates and feedback reports. -->
+<resources>
+    <string name="about_plate_this_app">BooxUltimatum</string>
+    <string name="about_app_version">Phiên bản đã cài</string>
+    <string name="about_app_build">Bản build</string>
+    <string name="about_build_release">Bản phát hành</string>
+    <string name="about_build_development">Bản phát triển</string>
+    <string name="about_release_notes">Ghi chú phát hành</string>
+    <string name="about_check_updates">Kiểm tra cập nhật</string>
+    <string name="about_include_pre_releases">Bao gồm bản phát hành trước</string>
+    <string name="about_hide_pre_releases">Ẩn bản phát hành trước</string>
+    <string name="about_download_install">Tải và cài đặt</string>
+    <string name="about_release_page">Trang phát hành</string>
+    <string name="about_unknown_sources">Mở cài đặt cho phép cài ứng dụng</string>
+    <string name="about_unknown_sources_note">Android cần bạn cho phép BooxUltimatum cài ứng dụng trước khi bản cập nhật bắt đầu. Hãy chạm Mở cài đặt cho phép cài ứng dụng.</string>
+
+    <string name="lang_title">Ngôn ngữ</string>
+    <string name="lang_system">Giống ngôn ngữ máy tính bảng</string>
+    <string name="lang_explain">Các chữ trong BooxUltimatum theo ngôn ngữ của máy tính bảng cho đến khi bạn chọn ngôn ngữ khác tại đây.</string>
+
+    <string name="feedback_entry">Báo lỗi hoặc ý tưởng</string>
+    <string name="feedback_title">Báo lỗi hoặc ý tưởng</string>
+    <string name="feedback_subtitle">Chưa có gì được gửi cho đến khi bạn chạm Mở trên GitHub hoặc Chia sẻ.</string>
+    <string name="feedback_close">Đóng</string>
+    <string name="feedback_type">Loại</string>
+    <string name="feedback_type_bug">Lỗi</string>
+    <string name="feedback_type_device">Báo cáo thiết bị</string>
+    <string name="feedback_type_idea">Ý tưởng</string>
+    <string name="feedback_area">Mảng</string>
+    <string name="feedback_area_home">Màn hình chính</string>
+    <string name="feedback_area_sleep">Màn hình ngủ</string>
+    <string name="feedback_area_ink">Mực tức thì</string>
+    <string name="feedback_area_battery">Pin</string>
+    <string name="feedback_area_tweaks">Tinh chỉnh</string>
+    <string name="feedback_area_appearance">Giao diện hoặc phông chữ</string>
+    <string name="feedback_area_nib">Nib (vẽ)</string>
+    <string name="feedback_area_suite">Bộ ứng dụng, cập nhật hoặc nhật ký</string>
+    <string name="feedback_area_other">Nội dung khác</string>
+    <string name="feedback_field_title">Tiêu đề</string>
+    <string name="feedback_field_description">Mô tả</string>
+    <string name="feedback_include_title">Phần nào đưa vào</string>
+    <string name="feedback_privacy_line">Báo cáo không bao giờ chứa tên mạng, tên tài khoản, nội dung thông báo, tên ứng dụng khác, tên sách hay tên ghi chú. Mỗi phần bên dưới cho biết chính xác phần đó thêm vào gì.</string>
+    <string name="feedback_github_note">Mở trên GitHub cần có tài khoản GitHub.</string>
+    <string name="feedback_no_send_note">BooxUltimatum không chạy máy chủ nào và không lưu thông tin đăng nhập. Không có gì được gửi trừ khi bạn chạm một nút bên dưới.</string>
+    <string name="feedback_open_github">Mở trên GitHub</string>
+    <string name="feedback_copy">Sao chép báo cáo</string>
+    <string name="feedback_share">Chia sẻ</string>
+    <string name="feedback_copied">Đã sao chép vào bảng nhớ tạm.</string>
+    <string name="feedback_opened_github">Đã mở GitHub với các trường báo cáo được điền sẵn.</string>
+    <string name="feedback_copied_too_long">Báo cáo đầy đủ quá dài cho liên kết GitHub, nên BooxUltimatum đã sao chép nó. Hãy dán vào biểu mẫu trước khi gửi.</string>
+    <string name="feedback_included">Đã đưa vào</string>
+    <string name="feedback_not_included">Không đưa vào</string>
+    <string name="feedback_include">Đưa vào</string>
+    <string name="feedback_remove">Gỡ bỏ</string>
+    <string name="feedback_preview_show">Xem trước</string>
+    <string name="feedback_preview_hide">Ẩn bản xem trước</string>
+    <string name="feedback_inc_device">Thiết bị và firmware</string>
+    <string name="feedback_inc_app">Ứng dụng</string>
+    <string name="feedback_inc_features">Trạng thái tính năng</string>
+    <string name="feedback_inc_inputs">Thiết bị nhập</string>
+    <string name="feedback_inc_battery">Số liệu pin</string>
+    <string name="feedback_inc_log">Nhật ký ứng dụng gần đây</string>
+    <string name="feedback_share_title">Chia sẻ báo cáo</string>
+</resources>

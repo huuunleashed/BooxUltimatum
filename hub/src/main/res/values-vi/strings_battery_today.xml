@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Today page and the Overview battery plate. Units are abbreviations, so they carry no plural forms. -->
+    <string name="bd_read_at_recorded">Đọc lúc %1$s · %2$s trong %3$s gần nhất đã ghi</string>
+    <string name="bd_read_at_empty">Đọc lúc %1$s · chưa ghi nhận gì</string>
+    <plurals name="bd_days">
+        <item quantity="other">%d ngày</item>
+    </plurals>
+    <string name="bd_hours">%1$d giờ</string>
+    <string name="bd_plate_now">Pin hiện tại</string>
+    <string name="bd_estimate_about">Còn khoảng %1$s nếu bạn dùng máy tính bảng như bình thường</string>
+    <plurals name="bd_estimate_range">
+        <item quantity="other">khoảng %1$s đến %2$s · dựa trên %3$d ngày dùng không cắm sạc</item>
+    </plurals>
+    <string name="bd_needs_day">Cần khoảng một ngày dùng không cắm sạc thì mới ước tính được thời gian còn lại</string>
+    <string name="bd_rate_unknown">Máy tính bảng hiện không báo tốc độ sạc</string>
+    <string name="bd_charging_at">Đang sạc ở %1$s</string>
+    <string name="bd_plate_last_24h">24 giờ qua</string>
+    <string name="bd_plate_happened">Điều gì đã xảy ra</string>
+    <plurals name="bd_more_findings">
+        <item quantity="other">%d phát hiện nữa trong nhật ký</item>
+    </plurals>
+    <string name="bd_background_restricted">BooxUltimatum không thể ghi nhận ở chế độ chạy nền vì việc chạy nền của nó bị hạn chế. Muốn cho phép thì cần Shizuku đang chạy.</string>
+    <string name="bd_allow_background">Cho phép chạy nền</string>
+    <string name="bd_recording_paused">Việc ghi đang tạm dừng. Mở Lịch sử để tiếp tục.</string>
+</resources>

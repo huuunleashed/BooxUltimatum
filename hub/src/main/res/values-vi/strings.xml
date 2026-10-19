@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  All user-facing copy lives here so it can be translated. Voice: honest and precise.
+  State what was measured and where it came from; never promise savings we have not measured.
+-->
+<resources>
+
+    <!-- Destinations -->
+    <string name="dest_overview">Tổng quan</string>
+    <string name="dest_battery">Pin</string>
+    <string name="dest_device">Thiết bị</string>
+    <string name="dest_apps">Ứng dụng</string>
+    <string name="dest_access">Truy cập</string>
+
+    <!-- Actions -->
+    <string name="action_read_again">Đọc lại</string>
+    <string name="action_share">Chia sẻ báo cáo</string>
+    <string name="action_details">Chi tiết</string>
+    <string name="action_show_all">Hiện tất cả</string>
+    <string name="action_hide">Ẩn</string>
+    <string name="action_copy_commands">Sao chép lệnh</string>
+    <string name="action_request_shizuku">Yêu cầu quyền từ Shizuku</string>
+    <string name="share_title">Chia sẻ báo cáo máy tính bảng</string>
+
+    <!-- States -->
+    <string name="state_not_built">Chưa tạo</string>
+    <string name="state_copied">Đã sao chép</string>
+
+    <!-- Overview -->
+    <string name="overview_subtitle">%1$s · firmware %2$s · Android %3$s</string>
+    <string name="overview_subtitle_nofw">%1$s · Android %2$s</string>
+    <string name="status_stored">Pin còn khoảng %1$s, so với khoảng %2$s khi đầy.</string>
+    <string name="status_asleep">Máy tính bảng đã ngủ %1$s thời gian kể từ lần khởi động lại cách đây %2$s.</string>
+    <string name="status_asleep_usb">Khi cắm sạc, máy tính bảng thường vẫn tỉnh, nên con số này có ý nghĩa nhất khi máy chạy bằng pin.</string>
+    <string name="plate_access">Truy cập</string>
+    <string name="plate_planned">Đang lên kế hoạch</string>
+    <string name="pillar_profiles">Cấu hình mực điện tử</string>
+    <string name="pillar_profiles_purpose">Sao lưu, chia sẻ và tinh chỉnh cài đặt làm mới cho từng ứng dụng.</string>
+
+    <!-- Charge lines -->
+    <string name="charge_charging">Đang sạc</string>
+    <string name="charge_charging_ac">Đang sạc từ ổ cắm</string>
+    <string name="charge_charging_usb">Đang sạc qua USB</string>
+    <string name="charge_charging_wireless">Đang sạc không dây</string>
+    <string name="charge_full">Đầy</string>
+    <string name="charge_not_charging">Đã cắm sạc, nhưng không sạc</string>
+    <string name="charge_on_battery">Chạy bằng pin</string>
+    <string name="charge_unknown">Không rõ trạng thái sạc</string>
+
+    <!-- Battery -->
+    <string name="spec_source">Nguồn điện</string>
+    <string name="spec_full">Dung lượng tối đa</string>
+    <string name="spec_full_note">Ước tính từ mức sạc và phần trăm do pin báo</string>
+    <string name="spec_voltage">Điện áp</string>
+    <string name="spec_temperature">Nhiệt độ</string>
+    <string name="spec_health">Tình trạng</string>
+    <string name="spec_cycles">Số chu kỳ sạc</string>
+    <string name="spec_current">Dòng điện hiện tại</string>
+    <string name="value_not_reported">Firmware này không báo</string>
+    <string name="source_ac">Bộ sạc ổ cắm</string>
+    <string name="source_usb">USB</string>
+    <string name="source_wireless">Không dây</string>
+    <string name="source_dock">Đế sạc</string>
+    <string name="source_none">Không có, chạy bằng pin</string>
+    <string name="health_good">Tốt</string>
+    <string name="health_overheat">Quá nóng</string>
+    <string name="health_dead">Hỏng</string>
+    <string name="health_over_voltage">Quá áp</string>
+    <string name="health_cold">Quá lạnh</string>
+    <string name="health_failure">Báo lỗi</string>
+    <string name="health_unknown">Không có thông tin</string>
+
+    <!-- Device -->
+    <string name="group_identity">Danh tính</string>
+    <string name="group_silicon">Vi mạch</string>
+    <string name="group_boot">Bảo mật khởi động</string>
+    <string name="group_display">Màn hình</string>
+    <string name="spec_model">Mẫu</string>
+    <string name="spec_firmware">Bản firmware</string>
+    <string name="spec_android">Android</string>
+    <string name="spec_security_patch">Bản vá bảo mật</string>
+    <string name="spec_soc">Chip</string>
+    <string name="spec_platform">Tên mã nền tảng</string>
+    <string name="spec_cpu">Lõi</string>
+    <string name="spec_governor">Bộ điều khiển CPU</string>
+    <string name="spec_kernel">Kernel</string>
+    <string name="spec_bootloader">Bootloader</string>
+    <string name="spec_verified_boot">Khởi động đã xác minh</string>
+    <string name="spec_slot">Slot đang hoạt động</string>
+    <string name="spec_build_type">Loại bản build</string>
+    <string name="spec_resolution">Màn hình</string>
+    <string name="spec_window">Cửa sổ</string>
+    <string name="spec_font_scale">Tỉ lệ phông chữ</string>
+    <string name="value_android">%1$s · API %2$d</string>
+    <plurals name="value_cores">
+        <item quantity="other">%1$d lõi</item>
+    </plurals>
+    <string name="value_locked">Đã khóa</string>
+    <string name="value_unlocked">Đã mở khóa</string>
+    <string name="value_resolution">%1$d × %2$d px ở %3$d dpi</string>
+    <string name="value_window">%1$d × %2$d dp</string>
+    <string name="plate_properties">Thuộc tính hệ thống</string>
+    <plurals name="properties_explain">
+        <item quantity="other">%1$d thuộc tính thô mà firmware đưa cho ứng dụng. Hữu ích khi báo lỗi.</item>
+    </plurals>
+
+    <!-- Apps -->
+    <string name="apps_subtitle">Những gì đã cài, và ứng dụng nào Android không bao giờ cho ngủ</string>
+    <string name="filter_boox">Boox · %1$d</string>
+    <string name="filter_doze">Không bao giờ ngủ · %1$d</string>
+    <string name="filter_all">Tất cả · %1$d</string>
+    <string name="filter_boox_explain">Ứng dụng do Onyx, công ty đứng sau Boox, làm ra. Mô tả lấy từ một danh sách đi kèm BooxUltimatum.</string>
+    <string name="filter_doze_explain">Ứng dụng được miễn trừ khỏi Doze, chế độ ngủ sâu của Android. Chúng có thể đánh thức máy tính bảng bất cứ lúc nào, nên hãy kiểm tra chúng trước khi pin tụt trong lúc chờ.</string>
+    <string name="filter_all_explain">Mọi ứng dụng đã cài, kể cả ứng dụng hệ thống.</string>
+    <string name="apps_empty">Không có ứng dụng nào khớp bộ lọc này.</string>
+    <string name="apps_boox_summary">%1$d trong số %2$d ứng dụng này không bao giờ ngủ.</string>
+    <string name="tag_doze_exempt">Không bao giờ ngủ</string>
+    <string name="tag_disabled">Đã vô hiệu hóa</string>
+    <string name="tag_user">Do bạn cài đặt</string>
+    <string name="kb_line">%1$s · %2$s</string>
+    <string name="kb_unanalysed">Chưa phân tích</string>
+    <string name="risk_safe">Có thể tắt an toàn</string>
+    <string name="risk_caution">Mất một tính năng</string>
+    <string name="risk_expert">Có thể làm hỏng hệ thống</string>
+    <string name="risk_never">Lõi hệ thống, nên để nguyên</string>
+    <string name="risk_unknown">Chưa đánh giá rủi ro</string>
+
+    <!-- Access -->
+    <string name="access_subtitle">Những gì BooxUltimatum được phép làm trên máy tính bảng này. Mỗi cấp mở thêm nhiều tinh chỉnh.</string>
+    <string name="tier_app">Ứng dụng</string>
+    <string name="tier_app_short">Các chỉ số mọi ứng dụng đều đọc được</string>
+    <string name="tier_app_state">Đã cài đặt</string>
+    <string name="tier_app_explain">Các chỉ số về pin, máy tính bảng và ứng dụng không cần quyền đặc biệt nào.</string>
+    <string name="tier_adb">quyền adb</string>
+    <string name="tier_adb_count">%1$d trong số %2$d đã được cấp từ máy tính</string>
+    <string name="tier_adb_explain">Các quyền bạn cấp một lần từ máy tính có adb, công cụ gỡ lỗi của Android, qua USB. Chúng vẫn giữ nguyên sau khi khởi động lại.</string>
+    <string name="grant_secure_settings">Đổi cài đặt hệ thống</string>
+    <string name="grant_secure_settings_why">Cần để áp dụng và hoàn tác các tinh chỉnh cài đặt.</string>
+    <string name="grant_dump">Đọc chẩn đoán hệ thống</string>
+    <string name="grant_dump_why">Cần để biết ứng dụng nào đánh thức máy tính bảng.</string>
+    <string name="grant_logs">Đọc nhật ký hệ thống</string>
+    <string name="grant_logs_why">Cần để truy ngược lần đánh thức về nguyên nhân.</string>
+    <string name="grant_usage">Quyền truy cập dữ liệu sử dụng</string>
+    <string name="grant_usage_why">Cần để biết ứng dụng nào bạn thực sự dùng.</string>
+    <string name="grant_how">Cấp các quyền này bằng cách chạy những lệnh adb sau trên máy tính đã kết nối với máy tính bảng:</string>
+    <string name="tier_shizuku">Shizuku</string>
+    <string name="tier_shizuku_explain">Shizuku là một ứng dụng riêng. Khi nó chạy, nó cho BooxUltimatum quyền như adb mà không cần máy tính. Nó dừng khi máy tính bảng khởi động lại, và cần máy tính để chạy lại.</string>
+    <string name="shizuku_server">Dịch vụ Shizuku</string>
+    <string name="shizuku_server_on">Đang chạy</string>
+    <string name="shizuku_server_off">Chưa chạy. Hãy chạy nó từ máy tính bằng tools\\host\\start-shizuku.ps1.</string>
+    <string name="shizuku_permission">Quyền cho BooxUltimatum</string>
+    <string name="shizuku_permission_on">Đã cho phép</string>
+    <string name="shizuku_permission_off">Chưa cho phép</string>
+    <string name="shizuku_not_running">Chưa chạy kể từ lần khởi động lại gần nhất</string>
+    <string name="shizuku_not_allowed">Đang chạy, chưa cấp quyền</string>
+    <string name="shizuku_ready">Đang chạy và đã được cho phép</string>
+    <string name="shizuku_unreachable">BooxUltimatum không kết nối được tới Shizuku. Hãy chạy Shizuku từ máy tính, rồi mở lại BooxUltimatum.</string>
+    <string name="tier_root">Root</string>
+    <string name="tier_root_short">Không cần, BooxUltimatum vẫn chạy được khi không có nó</string>
+    <string name="tier_root_state">Không dùng</string>
+    <string name="tier_root_explain">BooxUltimatum được xây dựng để chạy mà không cần root, và nó không cần cũng không xin quyền đó. Máy tính bảng Note Air6 C dùng để phát triển ứng dụng có bootloader đã khóa.</string>
+</resources>

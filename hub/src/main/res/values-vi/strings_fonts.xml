@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fonts: manage what BooxUltimatum installed, and browse, preview and use Google Fonts. -->
+<resources>
+    <string name="dest_fonts">Phông chữ</string>
+    <plurals name="fonts_subtitle">
+        <item quantity="other">%1$d họ phông chữ từ Google Fonts, miễn phí và mở nguồn</item>
+    </plurals>
+    <string name="fonts_refresh">Làm mới danh sách</string>
+    <string name="fonts_search">Tìm họ phông chữ</string>
+    <string name="fonts_sample_hint">Nhập văn bản xem trước của bạn</string>
+    <string name="fonts_sample_short">Đọc sách trên giấy phát sáng</string>
+    <string name="fonts_sample_vi_short">Đọc sách trên giấy điện tử</string>
+    <string name="fonts_sample">The quick brown fox jumps over the lazy dog. Đọc sách trên giấy phát sáng, từng trang yên tĩnh một.</string>
+    <string name="fonts_sample_vi">Đọc sách trên màn hình giấy điện tử thật dễ chịu. The quick brown fox jumps over the lazy dog.</string>
+    <string name="fonts_charset">ABCDEFGHIJKLMNOPQRSTUVWXYZ\nabcdefghijklmnopqrstuvwxyz\n0123456789 .,;:!?&amp;@()[]“”‘’—–</string>
+    <string name="fonts_charset_vi">ABCDEFGHIJKLMNOPQRSTUVWXYZ\nabcdefghijklmnopqrstuvwxyz\n0123456789 .,;:!?&amp;@()“”—\nĂÂĐÊÔƠƯ ăâđêôơư ạảãáà ặẳẵắằ ộổỗốồ ợởỡớờ</string>
+    <string name="fonts_f_picks">Chọn cho mực điện tử</string>
+    <string name="fonts_f_all">Tất cả</string>
+    <string name="fonts_serif">Có chân</string>
+    <string name="fonts_sans">Không chân</string>
+    <string name="fonts_f_display">Trang trí</string>
+    <string name="fonts_f_hand">Chữ viết tay</string>
+    <string name="fonts_f_mono">Đơn cách</string>
+    <string name="fonts_vietnamese">Tiếng Việt</string>
+    <string name="fonts_sort_popular">Phổ biến nhất</string>
+    <string name="fonts_sort_name">A–Z</string>
+    <plurals name="fonts_count">
+        <item quantity="other">%1$d họ phông chữ</item>
+    </plurals>
+    <string name="fonts_none">Không có họ phông chữ nào khớp với “%1$s”.</string>
+    <string name="fonts_catalog_failed">Không thể tải danh sách Google Fonts: %1$s</string>
+    <plurals name="fonts_styles">
+        <item quantity="other">%1$d kiểu chữ</item>
+    </plurals>
+    <string name="fonts_back">Tất cả phông chữ</string>
+    <string name="fonts_specimen">Mẫu chữ</string>
+    <string name="fonts_size">%1$d sp</string>
+    <string name="fonts_styles_title">Kiểu chữ · %1$d</string>
+    <string name="fonts_style">Độ đậm %1$d</string>
+    <string name="fonts_style_italic">Độ đậm %1$d nghiêng</string>
+    <string name="fonts_style_sample">Handgloves 0123 Ăâđêôơư</string>
+    <string name="fonts_apply_reader">NeoReader và trình đọc của Boox</string>
+    <string name="fonts_apply_reader_s">Chép các kiểu chữ thường, nghiêng và đậm vào thư mục phông chữ của Boox, nơi NeoReader tìm phông chữ. Sau đó chọn phông chữ trong cài đặt phông chữ của NeoReader. Cần Shizuku.</string>
+    <string name="fonts_apply_home">Màn hình chính BooxUltimatum</string>
+    <string name="fonts_apply_home_s">Đặt phông chữ cho màn hình chính của BooxUltimatum. Nếu không, nó theo phông chữ của máy tính bảng.</string>
+    <string name="fonts_apply_app">BooxUltimatum</string>
+    <string name="fonts_apply_app_s">Thay Archivo, phông chữ đi kèm với BooxUltimatum, trên các màn hình của chính BooxUltimatum.</string>
+    <string name="fonts_apply_system">Toàn bộ máy tính bảng</string>
+    <string name="fonts_apply_system_s">Dùng phông chữ này trong mọi ứng dụng và trên màn hình chính của Boox, qua cùng công tắc như Cài đặt Boox › Hiển thị › Kiểu phông chữ. Nó có hiệu lực trong vài giây, không cần khởi động lại và không cần Shizuku. Nếu nét mảnh trông quá nhạt trên mực điện tử, hãy chọn độ đậm lớn hơn.</string>
+    <string name="fonts_sys_now">Hiện tại: %1$s</string>
+    <string name="fonts_sys_default">mặc định của Boox</string>
+    <string name="fonts_sys_use">Dùng trên toàn bộ máy tính bảng</string>
+    <string name="fonts_sys_in_use">Đang dùng trên máy tính bảng</string>
+    <string name="fonts_sys_restore">Khôi phục phông chữ trước</string>
+    <string name="fonts_sys_boox">Mở Cài đặt Boox</string>
+    <string name="fonts_sys_done">%1$s giờ là phông chữ của máy tính bảng.</string>
+    <string name="fonts_sys_restored">Phông chữ của máy tính bảng trước đó đã trở lại.</string>
+    <string name="fonts_apply_serif">Phông chữ có chân của Android</string>
+    <string name="fonts_apply_serif_s">Các màn hình của Android có thể dùng Noto Serif qua lớp phủ phông chữ có sẵn trong phần mềm cứng, đã thấy trên Note Air6 C. Bật nó trong Tinh chỉnh › Giao diện, mục này cần Shizuku. Nó thay đổi cài đặt của Android và các ứng dụng khác dùng phông chữ mặc định của Android, không thay đổi ứng dụng của Boox.</string>
+    <string name="fonts_open_serif_tweak">Phông chữ hệ thống có chân</string>
+    <string name="fonts_install">Cài đặt</string>
+    <string name="fonts_remove">Gỡ bỏ</string>
+    <string name="fonts_use">Dùng</string>
+    <string name="fonts_use_system">Dùng phông chữ của máy tính bảng</string>
+    <string name="fonts_use_archivo">Dùng lại Archivo</string>
+    <plurals name="fonts_installed">
+        <item quantity="other">%1$s đã cài (%2$d tệp). Chọn nó trong cài đặt phông chữ của NeoReader.</item>
+    </plurals>
+    <string name="fonts_removed">Đã gỡ bỏ %1$s khỏi thư mục phông chữ của Boox.</string>
+    <string name="fonts_home_set">Màn hình chính BooxUltimatum giờ dùng %1$s.</string>
+    <string name="fonts_home_reset">Màn hình chính BooxUltimatum lại theo phông chữ của máy tính bảng.</string>
+    <string name="fonts_needs_shizuku">Cài vào thư mục phông chữ của Boox cần Shizuku. Hãy khởi động Shizuku rồi thử lại.</string>
+
+    <!-- The font manager: what the app installed, where it sits, and what uses it. -->
+    <string name="fonts_tab_installed">Đã cài · %1$d</string>
+    <string name="fonts_tab_browse">Google Fonts</string>
+    <plurals name="fonts_installed_subtitle">
+        <item quantity="other">%1$d phông chữ do BooxUltimatum cài, %2$s</item>
+    </plurals>
+    <string name="fonts_installed_subtitle_none">BooxUltimatum chưa cài gì</string>
+    <string name="fonts_check_again">Kiểm tra lại</string>
+    <string name="fonts_scan_failed">Không thể đọc các phông chữ đã cài: %1$s</string>
+    <string name="fonts_lib_title">Trên máy tính bảng này</string>
+    <string name="fonts_lib_count">Phông chữ đã cài</string>
+    <string name="fonts_lib_on_off">%1$d bật, %2$d tắt</string>
+    <string name="fonts_lib_size">Dung lượng đã dùng</string>
+    <string name="fonts_lib_size_note">Mọi bản sao BooxUltimatum đã tạo: trong dung lượng ứng dụng, thư mục phông chữ của Boox và Documents</string>
+    <string name="fonts_lib_in_use">Đang dùng</string>
+    <plurals name="fonts_n_fonts">
+        <item quantity="other">%1$d phông chữ</item>
+    </plurals>
+    <plurals name="fonts_delete_unused">
+        <item quantity="other">Xóa %1$d phông chữ không dùng</item>
+    </plurals>
+    <string name="fonts_delete_unused_none">Không có phông chữ nào không dùng</string>
+    <plurals name="fonts_delete_unused_confirm">
+        <item quantity="other">Chạm lần nữa để xóa %1$d phông chữ</item>
+    </plurals>
+    <string name="fonts_turn_all_off">Tắt tất cả</string>
+    <plurals name="fonts_turn_all_off_confirm">
+        <item quantity="other">Chạm lần nữa để tắt %1$d phông chữ</item>
+    </plurals>
+    <string name="fonts_turn_all_on">Bật tất cả</string>
+    <string name="fonts_bulk_note">Một phông chữ không dùng là phông chữ đang bật nhưng không được dùng ở đâu: không phải phông chữ của máy tính bảng, không nằm trong thư mục phông chữ của Boox, và không được chọn cho màn hình chính, các màn hình của chính BooxUltimatum hay màn hình ngủ. Những phông chữ bạn đã tắt không tính, nên chúng được giữ lại. Tắt một phông chữ trước sẽ đưa mỗi nơi dùng nó về mặc định.</string>
+    <plurals name="fonts_bulk_deleted">
+        <item quantity="other">Đã xóa %1$d phông chữ và giải phóng %2$s.</item>
+    </plurals>
+    <plurals name="fonts_bulk_off">
+        <item quantity="other">Đã tắt %1$d phông chữ.</item>
+    </plurals>
+    <plurals name="fonts_bulk_on">
+        <item quantity="other">Đã bật %1$d phông chữ.</item>
+    </plurals>
+    <string name="fonts_bulk_failed">Không thành công với %1$s: %2$s</string>
+    <string name="fonts_sort_size">Lớn nhất</string>
+    <string name="fonts_sort_recent">Mới nhất</string>
+    <string name="fonts_show_in_use">Đang dùng</string>
+    <string name="fonts_show_unused">Không dùng</string>
+    <string name="fonts_show_off">Tắt</string>
+    <string name="fonts_lib_empty">Chưa cài phông chữ nào. Hãy tìm một phông chữ trong Google Fonts và dùng nó cho máy tính bảng, NeoReader, màn hình chính, các màn hình của chính BooxUltimatum hay màn hình ngủ. Sau đó nó sẽ được liệt kê ở đây.</string>
+    <string name="fonts_lib_empty_filter">Không có phông chữ đã cài nào khớp.</string>
+    <string name="fonts_browse">Duyệt Google Fonts</string>
+    <string name="fonts_row_on_unused">Bật · không dùng</string>
+    <string name="fonts_row_on_uses">Bật · đang dùng cho: %1$s</string>
+    <string name="fonts_meta_in_use">Đang dùng cho: %1$s</string>
+    <string name="fonts_row_off">Tắt · các tệp được giữ trong dung lượng ứng dụng</string>
+    <string name="fonts_row_partial">Tắt một phần · mở để hoàn tất</string>
+    <string name="fonts_use_tablet">phông chữ máy tính bảng</string>
+    <string name="fonts_use_reader">NeoReader</string>
+    <string name="fonts_use_home">màn hình chính</string>
+    <string name="fonts_use_app">BooxUltimatum</string>
+    <string name="fonts_use_sleep">màn hình ngủ</string>
+    <string name="fonts_style_italic_short">%1$d nghiêng</string>
+    <string name="fonts_tag_installed">Đã cài</string>
+    <string name="fonts_tag_off">Đã cài, đang tắt</string>
+    <string name="fonts_manage_title">Đã cài</string>
+    <string name="fonts_state_on">Bật</string>
+    <string name="fonts_state_off">Tắt</string>
+    <string name="fonts_state_partial">Tắt một phần</string>
+    <string name="fonts_state_on_s">Màn hình chính, BooxUltimatum và màn hình ngủ có thể chọn nó. NeoReader sẽ liệt kê nó khi nó nằm trong thư mục phông chữ của Boox.</string>
+    <string name="fonts_state_off_s">Các tệp vẫn nằm trên máy tính bảng, trong dung lượng ứng dụng. Không nơi nào đưa ra hay dùng phông chữ này cho đến khi bạn bật nó.</string>
+    <string name="fonts_state_partial_s">Một số tệp vẫn đang tắt, có thể do bị gián đoạn. Bật hoặc tắt phông chữ này thêm lần nữa để hoàn tất.</string>
+    <string name="fonts_spec_styles">Kiểu chữ đã lưu</string>
+    <string name="fonts_spec_size">Cỡ chữ</string>
+    <plurals name="fonts_files">
+        <item quantity="other">%1$d tệp</item>
+    </plurals>
+    <string name="fonts_spec_where">Ở đâu</string>
+    <string name="fonts_spec_in_use">Đang dùng</string>
+    <string name="fonts_spec_installed">Đã cài</string>
+    <string name="fonts_nowhere">Không nơi nào</string>
+    <string name="fonts_place_app">Dung lượng ứng dụng</string>
+    <string name="fonts_place_reader">Thư mục phông chữ của Boox</string>
+    <string name="fonts_place_documents">Documents/BooxUltimatum</string>
+    <string name="fonts_place_off">Bản sao đã tắt trong dung lượng ứng dụng</string>
+    <string name="fonts_place_unchecked">%1$s (chưa kiểm tra nếu không có Shizuku)</string>
+    <string name="fonts_turn_off">Tắt</string>
+    <string name="fonts_turn_on">Bật</string>
+    <string name="fonts_delete">Xóa</string>
+    <string name="fonts_delete_confirm">Chạm lần nữa để xóa</string>
+    <string name="fonts_manage_note">Tắt một phông chữ trước sẽ đưa mỗi nơi dùng nó về mặc định. Máy tính bảng trở lại phông chữ nó có trước khi BooxUltimatum đổi, hoặc về phông chữ mặc định của Boox. Màn hình chính theo phông chữ của máy tính bảng, BooxUltimatum trở lại Archivo, và màn hình ngủ dùng phông chữ của máy tính bảng. Các tệp sau đó chuyển sang dung lượng ứng dụng và rời khỏi thư mục phông chữ của Boox cùng Documents, nên không nơi nào đưa ra phông chữ đó. Bật lại sẽ đưa các tệp về chỗ cũ và phục hồi những nơi dùng đó, trừ khi bạn đã chọn thứ khác. Xóa sẽ phục hồi cùng những nơi dùng đó, rồi gỡ bỏ mọi bản sao BooxUltimatum đã tạo.</string>
+    <string name="fonts_turned_off">%1$s đang tắt. Các tệp của nó được giữ trong dung lượng ứng dụng.</string>
+    <string name="fonts_turned_off_released">%1$s đang tắt, và không còn được dùng cho: %2$s.</string>
+    <string name="fonts_turned_on">%1$s đã bật lại.</string>
+    <string name="fonts_turned_on_restored">%1$s đã bật lại và được dùng lại cho: %2$s.</string>
+    <string name="fonts_deleted">Đã xóa %1$s và giải phóng %2$s.</string>
+    <string name="fonts_needs_shizuku_manage">Phông chữ này có bản sao trong thư mục phông chữ của Boox, chỉ Shizuku mới thay đổi được. Hãy khởi động Shizuku rồi thử lại.</string>
+    <string name="fonts_is_off">%1$s đang tắt. Hãy bật nó để dùng.</string>
+    <string name="fonts_not_found">Phông chữ đó không còn được cài.</string>
+    <string name="fonts_no_upright">Phông chữ này không có kiểu chữ thẳng (không nghiêng) trên máy tính bảng.</string>
+    <string name="fonts_journal_off">Đã tắt phông chữ: %1$s</string>
+    <string name="fonts_journal_on">Đã bật phông chữ: %1$s</string>
+    <string name="fonts_journal_delete">Đã xóa phông chữ: %1$s</string>
+    <string name="fonts_foreign_title">Không do BooxUltimatum cài</string>
+    <string name="fonts_foreign_note">Những phông chữ khác trong thư mục phông chữ của Boox. BooxUltimatum chỉ liệt kê, không bao giờ di chuyển hay xóa.</string>
+    <string name="fonts_reader_unchecked">Hãy khởi động Shizuku để xem trong thư mục phông chữ của Boox có gì. Cho đến lúc đó, BooxUltimatum hiện các bản sao của chính nó ở đó theo như lần cuối nó nhìn thấy.</string>
+    <string name="fonts_use_for">Dùng cho…</string>
+    <string name="fonts_off_use_note">Đang tắt. Hãy bật nó để dùng ở bất cứ đâu.</string>
+    <string name="fonts_apply_reader_disk">Chép các kiểu chữ đã cài của phông chữ này vào thư mục phông chữ của Boox, nơi NeoReader tìm phông chữ. Sau đó chọn phông chữ trong cài đặt phông chữ của NeoReader. Cần Shizuku.</string>
+    <string name="fonts_apply_sleep">Màn hình ngủ</string>
+    <string name="fonts_apply_sleep_s">Đặt phông chữ dùng cho các mặt của màn hình ngủ. Nếu không, chúng theo phông chữ của máy tính bảng.</string>
+    <string name="fonts_use_tablet_font">Dùng phông chữ của máy tính bảng</string>
+    <string name="fonts_sleep_set">Màn hình ngủ giờ dùng %1$s.</string>
+    <string name="fonts_sleep_reset">Màn hình ngủ lại dùng phông chữ của máy tính bảng.</string>
+    <string name="fonts_app_set">BooxUltimatum giờ dùng %1$s.</string>
+    <string name="fonts_app_reset">BooxUltimatum lại dùng Archivo.</string>
+    <string name="fonts_sys_stop">Ngừng dùng</string>
+    <string name="fonts_sys_back">Phông chữ của máy tính bảng đã trở lại %1$s.</string>
+</resources>

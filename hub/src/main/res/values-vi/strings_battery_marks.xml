@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- MarksPlate: a mark is a labelled moment. Results are built from BatteryText's mA and the hours here. -->
+    <string name="bm_title">Mốc</string>
+    <string name="bm_hint">Gắn nhãn cho khoảnh khắc này, ví dụ “đã tắt Wi-Fi”</string>
+    <string name="bm_add">Thêm mốc</string>
+    <string name="bm_paused">Việc ghi đang tạm dừng, nên mốc sẽ không được giữ lại.</string>
+    <string name="bm_legend">Một mốc là khoảnh khắc được gắn nhãn trong nhật ký, và các tinh chỉnh bạn áp dụng hoặc hoàn tác được ghi dấu tự động. Với mỗi mốc, BooxUltimatum so sánh mức dùng pin khi ngủ trước và sau đó, bỏ qua những lần ngủ mà bộ xử lý vẫn tỉnh. Nếu chênh lệch không lớn hơn mức thay đổi bình thường từ ngày này sang ngày khác, ứng dụng sẽ nói rõ điều đó.</string>
+    <string name="bm_none">Chưa có mốc nào.</string>
+    <string name="bm_tag_tweak">Tinh chỉnh</string>
+    <string name="bm_row">%1$s, %2$s. %3$s</string>
+    <string name="bm_not_enough">Chưa đủ dữ liệu. Cần ít nhất 12 giờ ngủ ở mỗi phía của mốc.</string>
+    <string name="bm_hours_before_after">(%1$s h trước, %2$s h sau)</string>
+    <string name="bm_within">Trong mức thay đổi bình thường từ ngày này sang ngày khác: mức dùng pin khi ngủ là %1$s trước và %2$s sau.</string>
+    <string name="bm_lower">Mức dùng pin khi ngủ giảm từ %1$s xuống %2$s.</string>
+    <string name="bm_higher">Mức dùng pin khi ngủ tăng từ %1$s lên %2$s.</string>
+    <string name="bm_spread">Từ ngày này sang ngày khác, mức dùng pin khi ngủ thay đổi khoảng %1$s.</string>
+</resources>

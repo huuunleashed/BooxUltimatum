@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ds_level">Mức</string>
+    <string name="ds_screen">Màn hình</string>
+    <string name="ds_power">Nguồn</string>
+    <string name="ds_step_through">Xem lại từng bước điều gì đã xảy ra</string>
+    <string name="ds_none">Chưa ghi nhận gì trong khoảng thời gian này</string>
+    <string name="ds_previous">Khoảng trước</string>
+    <string name="ds_next">Khoảng sau</string>
+    <string name="ep_tag_problem">Vấn đề</string>
+    <string name="ep_tag_processor_awake">Bộ xử lý vẫn tỉnh</string>
+    <string name="ep_tag_inferred">Suy ra</string>
+    <string name="ep_levels">Pin từ %1$d %% xuống %2$d %%</string>
+    <string name="ep_slept">Bộ xử lý ngủ %1$d %% thời gian này</string>
+    <string name="ep_top_app">Chủ yếu ở trên màn hình: %1$s</string>
+    <string name="ep_expanded">Đã mở rộng</string>
+    <string name="ep_collapsed">Đã thu gọn</string>
+</resources>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Causes: what used the charge, what kept the tablet awake, radios and light. Counts use plurals. -->
+    <string name="bc_question">Điều gì đã dùng pin?</string>
+    <string name="bc_read_window">Đọc lúc %1$s · cửa sổ %2$s</string>
+    <string name="bc_window_label">Khoảng thời gian</string>
+    <plurals name="bc_window_hours">
+        <item quantity="other">%d giờ</item>
+    </plurals>
+    <plurals name="bc_window_days">
+        <item quantity="other">%d ngày</item>
+    </plurals>
+    <string name="bc_nothing_yet">Chưa ghi nhận gì trong khoảng thời gian này.</string>
+    <string name="bc_value_pair">%1$s · %2$s</string>
+    <string name="bc_no_value">—</string>
+
+    <string name="bc_plate_state">Theo trạng thái</string>
+    <string name="bc_state_none">Chưa có thời gian không cắm sạc trong khoảng thời gian này.</string>
+    <string name="bc_state_detail">%1$s trung bình · %2$s lượng pin đã dùng khi không cắm sạc</string>
+    <string name="bc_display_on_fact">Màn hình vẫn sáng trong %1$s khi máy tính bảng đang ngủ. Lượng đó dùng %2$s.</string>
+
+    <string name="bc_plate_apps">Theo ứng dụng, khi đang dùng</string>
+    <string name="bc_apps_explain">Lượng pin rút ra khi từng ứng dụng nằm trên màn hình, nhiều trước. Việc này cần quyền truy cập dữ liệu sử dụng, quyền cho BooxUltimatum biết ứng dụng nào đang ở trên màn hình. Không có quyền thì thời gian hiện là Chưa ghi nhận.</string>
+    <string name="bc_apps_none">Không có ứng dụng nào ở trên màn hình khi máy tính bảng đang được dùng.</string>
+
+    <string name="bc_plate_wakes">Điều gì giữ nó tỉnh và đánh thức nó</string>
+    <string name="bc_wakes_explain">Các số liệu này tính trong khoảng thời gian này, không phải kể từ lần khởi động lại gần nhất: chúng là những thay đổi giữa các mốc dữ liệu lấy khoảng ba giờ một lần. Khóa đánh thức là khi một ứng dụng yêu cầu máy tính bảng giữ nguyên trạng thái tỉnh, và lần đánh thức là một báo thức đã đánh thức máy.</string>
+    <string name="bc_wakes_none">Chưa ghi nhận gì trong khoảng thời gian này. Khóa đánh thức và lần đánh thức chỉ được ghi nhận khi có quyền adb hoặc Shizuku.</string>
+    <plurals name="bc_wake_locks">
+        <item quantity="other">%d khóa đánh thức</item>
+    </plurals>
+    <plurals name="bc_wakeups">
+        <item quantity="other">%d lần đánh thức</item>
+    </plurals>
+    <string name="bc_cpu_time">Thời gian bộ xử lý %1$s</string>
+    <string name="bc_not_recorded">Chưa ghi nhận</string>
+    <string name="bc_android_itself">Bản thân Android</string>
+
+    <string name="bc_plate_radios">Sóng vô tuyến và ánh sáng</string>
+    <string name="bc_wifi_connected">Đã kết nối Wi-Fi</string>
+    <string name="bc_wifi_note">Tỉ lệ trong thời gian không cắm sạc</string>
+    <string name="bc_front_light">Đèn trước trung bình</string>
+    <string name="bc_front_light_note">Trung bình trong thời gian không cắm sạc</string>
+
+    <string name="bc_plate_more">Thêm</string>
+    <string name="bc_more_explain">Mức dùng pin do Android tự tính được đếm riêng, nên số liệu của nó có thể khác với số liệu ở đây.</string>
+    <string name="bc_open_apps">Mở Ứng dụng</string>
+</resources>

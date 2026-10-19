@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_test_shizuku">Kiểm tra Shizuku</string>
+    <string name="shizuku_testing">Đang kiểm tra…</string>
+    <string name="action_copy_result">Sao chép kết quả</string>
+    <string name="plate_dev_test">Kiểm tra dành cho nhà phát triển</string>
+    <string name="shizuku_test_hint">Kiểm tra từng bước giữa BooxUltimatum và Shizuku, gồm cả dịch vụ trợ giúp mà BooxUltimatum chạy qua đó, và cho biết chỗ nào bị dừng. Việc này có thể mất tới nửa phút. Nếu dịch vụ trợ giúp không khởi động, kết quả còn liệt kê các tiến trình của BooxUltimatum và những dòng nhật ký hệ thống về Shizuku và dịch vụ trợ giúp. Tên các ứng dụng khác được bỏ qua. Nếu một bước thất bại, hãy dán kết quả vào báo lỗi.</string>
+</resources>

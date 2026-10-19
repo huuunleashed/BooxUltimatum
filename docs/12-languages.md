@@ -54,8 +54,135 @@ The bundled Archivo is a Latin face: it has every Vietnamese letter, Đ included
 
 The fallback is Compose's own: a font family with no glyph for a character falls back to the system font. The face a language is drawn in is therefore the tablet's, not Archivo's, unless the reader has chosen a font in the app.
 
-## 6. What is not settled
+## 6. The glossaries
+
+A language that says a thing in two ways is as hard to read as an English string that uses two names for it, so each language keeps a glossary, and the terms are the same in every string.
+
+**Chinese.** The glossary came with the translation, in the note the translator wrote beside it, and the same words are used in Nib's Chinese.
+
+| English | Chinese |
+|---|---|
+| Instant ink | 即时墨迹 |
+| Sleep screen | 睡眠屏 |
+| Sleep image | 睡眠图像 |
+| Over Transparent | 透明叠加 |
+| sticker | 贴纸 |
+| face, plate | 面板 |
+| home screen | 主屏幕 |
+| home app | 主屏幕应用 |
+| tweak | 调整项 |
+| journal, log | 日志 |
+| Undo | 撤销 |
+| Restore | 恢复 |
+| Remove | 移除 |
+| Delete | 删除 |
+| Clear | 清除 |
+| Tap | 轻触 |
+| Open | 打开 |
+| Choose | 选择 |
+| Touch and hold | 长按 |
+| Turn on | 开启 |
+| Turn off | 关闭 |
+| font | 字体 |
+| preview | 预览 |
+| stroke | 笔画 |
+| layer | 图层 |
+| widget | 小部件 |
+| folder | 文件夹 |
+| library | 书库 |
+| appearance | 外观 |
+| diagnostics | 诊断 |
+| storage | 存储 |
+| background | 后台 |
+| refresh | 刷新 |
+| e-ink | 墨水屏 |
+| usage access | 使用情况访问 |
+| adb grant | adb 授权 |
+| Today | 今天 |
+| History | 历史 |
+| Causes | 原因 |
+| Health | 健康度 |
+
+**Vietnamese.** The glossary is the one below, and it is the vocabulary the translation was written from.
+
+| English | Vietnamese | Note |
+|---|---|---|
+| the tablet | máy tính bảng | never *thiết bị* for the reader's own tablet |
+| the screen | màn hình | |
+| sleep screen | màn hình ngủ | the picture the tablet shows while it sleeps |
+| power-off screen | màn hình lúc tắt nguồn | |
+| home screen | màn hình chính | |
+| home app | ứng dụng màn hình chính | the app that draws the home screen |
+| font | phông chữ | |
+| tweak | tinh chỉnh | a reversible change |
+| journal, log | nhật ký | the record of what was changed, and the log files |
+| Undo | Hoàn tác | |
+| Restore | Khôi phục | |
+| Remove | Gỡ bỏ | takes away what the app added |
+| Delete | Xóa | destroys the reader's own content |
+| Clear | Dọn | empties a list or a log |
+| Tap | Chạm | |
+| Open | Mở | |
+| Choose | Chọn | |
+| Touch and hold | Chạm và giữ | |
+| Turn on | Bật | |
+| Turn off | Tắt | |
+| button | nút | |
+| Apply | Áp dụng | |
+| face | mặt | a sleep screen design |
+| plate | thẻ | the small card drawn over the picture |
+| sticker | miếng dán | Boox's own see-through picture |
+| Instant ink | Mực tức thì | the feature's name, in every language |
+| ink | mực | |
+| pen | bút | |
+| stylus | bút cảm ứng | |
+| brush | bút vẽ | |
+| nib | đầu bút | the tip |
+| eraser | tẩy | |
+| preview | bản xem trước | |
+| stroke | nét vẽ | |
+| layer | lớp | |
+| e-ink | mực điện tử | |
+| ghosting | bóng ma | |
+| refresh | làm mới | |
+| wake lock | khóa đánh thức | |
+| usage access | quyền truy cập dữ liệu sử dụng | Android's own term |
+| overlay | lớp phủ | |
+| Doze | Doze | unchanged |
+| freeze (an app) | đóng băng | |
+| background | chạy nền | |
+| battery | pin | |
+| widget | tiện ích | |
+| tile | ô | a Quick Settings tile |
+| suite | bộ ứng dụng | |
+| profile | cấu hình | |
+| device | thiết bị | the page's own name |
+| storage | dung lượng | |
+| library | thư viện | |
+| folder | thư mục | |
+| appearance | giao diện | |
+| diagnostics | chẩn đoán | |
+| drawing | hình vẽ | |
+| notification | thông báo | |
+| permission | quyền | |
+| adb grant | quyền adb | |
+| accessibility | trợ năng | |
+| Overview | Tổng quan | a page's name |
+| Suite | Bộ ứng dụng | a page's name |
+| Battery | Pin | a page's name |
+| System | Hệ thống | a page's name |
+| Apps | Ứng dụng | a page's name |
+| Access | Truy cập | a page's name |
+| Tweaks | Tinh chỉnh | a page's name |
+| Logs | Nhật ký | a page's name |
+| Storage | Dung lượng | a page's name |
+| Today | Hôm nay | |
+| History | Lịch sử | |
+| Causes | Nguyên nhân | |
+| Health | Tình trạng | |
+
+## 7. What is not settled
 
 - **The suite in step.** Each app keeps its own language, because Android keeps a per-app language per package. The hub's Suite page can show which language each app is in, and making one follow the other needs a store the two apps share, which is a bigger change than this one.
 - **Traditional Chinese.** There is no translation for it. A reader who wants Chinese today is offered Simplified, by name, and a Traditional translation would be a folder of its own.
-- **Nib.** Nib's own 533 strings are not translated yet, so Nib offers only the tablet's language. The Chinese translation of Nib has been asked for in issue #6, and the Vietnamese one is the maintainer's own.
+- **The Vietnamese has not been read by a speaker of the language.** It was written with an assistant and checked against the English side by script, which holds the structure, the values and the plural forms right, but says nothing about how the words read. A reader who writes Vietnamese is welcome to correct it.

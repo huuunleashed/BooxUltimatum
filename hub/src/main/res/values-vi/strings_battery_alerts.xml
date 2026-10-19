@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- BatteryAlertsPlate, at the foot of Today -->
+    <string name="ba_plate_title">Cảnh báo và biện pháp bảo vệ</string>
+    <string name="ba_report_title">Báo cáo buổi sáng</string>
+    <string name="ba_report_body">Sau khi máy tính bảng ngủ từ 4 giờ trở lên khi chạy bằng pin, BooxUltimatum gửi một thông báo ngắn về lượng pin đã dùng và mọi điều bất thường. Thông báo cũng nói khi nào pin cạn. Việc này cần quyền hiện thông báo, và không có quyền thì không hiện gì cả.</string>
+    <string name="ba_notify_blocked">Thông báo đang bị chặn cho BooxUltimatum, nên báo cáo không thể hiện. Hãy cho phép trong cài đặt của Android.</string>
+    <string name="ba_preview">Xem báo cáo đêm qua</string>
+    <string name="ba_preview_sent">Đã gửi tới thông báo của bạn.</string>
+    <string name="ba_preview_none">Không có lần ngủ nào từ 4 giờ trở lên trong 48 giờ qua.</string>
+    <string name="ba_preview_failed">Không đọc được nhật ký lúc này.</string>
+    <string name="ba_guard_title">Tắt màn hình luôn sáng</string>
+    <string name="ba_experimental">Thử nghiệm</string>
+    <string name="ba_guard_body">Nếu màn hình vẫn sáng khi máy tính bảng đang ngủ, việc đó có thể làm cạn pin qua đêm, BooxUltimatum sẽ thử tắt màn hình. Nó bắt đầu sau 2 phút, thử lại sau 5, 10, 20 và 40 phút, rồi thử mỗi giờ cho tới khi màn hình tắt.\nMỗi lần thử gồm năm bước và dừng ở bước đầu tiên có tác dụng. Nó yêu cầu màn hình ngủ của Boox làm mới, báo cho màn hình biết màn hình đang sáng, khóa màn hình, đánh thức máy tính bảng rồi khóa lại, và nhấn nút thức cùng nút ngủ. Hai bước khóa màn hình cần dịch vụ trợ năng của BooxUltimatum, và bước cuối cần Shizuku. Không có chúng thì những bước đó bị bỏ qua. Nhật ký ghi lại kết quả của từng bước. Trên một máy Note Air6 C, chưa bước nào được thấy là có tác dụng.</string>
+    <string name="ba_guard_last">Lần gần nhất: %1$s, %2$s</string>
+    <string name="ba_guard_healed_by">đã tắt: %1$s</string>
+    <string name="ba_guard_not_healed_by">màn hình vẫn sáng</string>
+    <string name="ba_keepalive_title">Làm mới màn hình ngủ khi đang ngủ</string>
+    <string name="ba_keepalive_body">Khi máy tính bảng đang ngủ, BooxUltimatum yêu cầu màn hình ngủ làm mới mỗi 30 phút nếu chưa có gì khác làm mới. Trên một máy Note Air6 C, sau khi Android tự khởi động lại, màn hình vẫn sáng suốt đêm và làm cạn pin mỗi khi trôi qua 90 phút mà không có lần làm mới nào. Một lần làm mới tốn chưa tới 1 mAh mỗi đêm. Đây là cách phòng ngừa cho kiểu tình huống đó, chưa phải cách chữa đã được chứng minh.</string>
+    <string name="ba_when">%1$s %2$s</string>
+    <string name="ba_state_on">Bật</string>
+    <string name="ba_state_off">Tắt</string>
+    <string name="ba_turn_on">Bật</string>
+    <string name="ba_turn_off">Tắt</string>
+
+    <!-- MorningReport's notification -->
+    <string name="ba_channel">Báo cáo pin</string>
+    <string name="ba_normal_title">Ngủ %1$s, dùng %2$d %%</string>
+    <string name="ba_normal_text">Pin từ %1$d %% xuống %2$d %%. Không có gì bất thường.</string>
+    <string name="ba_normal_text_guard">Pin từ %1$d %% xuống %2$d %%. %3$s</string>
+    <string name="ba_finding_text">%1$s. %2$s</string>
+    <string name="ba_died_text">Cạn lúc %1$s ngày %2$s.</string>
+    <string name="ba_before_text">%1$s: %2$s.</string>
+    <string name="ba_guard_healed">Tắt màn hình luôn sáng (thử nghiệm): %1$s, và màn hình đã tắt.</string>
+    <string name="ba_guard_tried">Lần thử tắt màn hình thất bại (thử nghiệm): màn hình vẫn sáng.</string>
+    <string name="ba_restart_title">Android tự khởi động lại</string>
+    <string name="ba_restart_text">Android tự khởi động lại, và máy tính bảng chưa được khởi động lại kể từ đó. Trên một máy Note Air6 C, bộ xử lý sau đó vẫn tỉnh trong lúc ngủ và dùng nhiều pin gấp nhiều lần. Hai lần, màn hình cũng sáng suốt đêm và làm cạn pin. Một lần khởi động lại đã xử lý cả hai. Hãy khởi động lại máy tính bảng trước khi để nó ngủ: giữ nút nguồn, rồi chạm Khởi động lại.</string>
+    <string name="ba_restart_channel">Lời khuyên khởi động lại</string>
+    <string name="ba_awake_title">Bộ xử lý vẫn tỉnh khi máy tính bảng ngủ</string>
+    <string name="ba_awake_text">Bộ xử lý của máy tính bảng vẫn tỉnh suốt lần ngủ dài %1$s, và điều đó dùng nhiều pin gấp nhiều lần so với một lần ngủ bình thường. Trên một máy Note Air6 C, trạng thái này có thể để màn hình sáng suốt đêm, và khởi động lại máy tính bảng đã xử lý nó mỗi lần. Hãy giữ nút nguồn, rồi chạm Khởi động lại.</string>
+    <string name="ba_awake_app_title">Một ứng dụng giữ máy tính bảng tỉnh trong lúc ngủ</string>
+    <string name="ba_awake_app_text">Bộ xử lý của máy tính bảng vẫn tỉnh suốt lần ngủ dài %1$s vì có một ứng dụng giữ nó tỉnh. Mở Pin › Nguyên nhân để xem ứng dụng nào.</string>
+    <string name="ba_step_refresh">BooxUltimatum đã yêu cầu màn hình ngủ làm mới</string>
+    <string name="ba_step_lock">BooxUltimatum đã khóa màn hình</string>
+    <string name="ba_step_key">BooxUltimatum đã nhấn nút thức và nút ngủ</string>
+    <string name="ba_step_nudge">BooxUltimatum đã báo màn hình ngủ rằng màn hình đang sáng</string>
+    <string name="ba_step_cycle">BooxUltimatum đã đánh thức máy tính bảng và khóa lại</string>
+</resources>

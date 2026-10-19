@@ -4,12 +4,17 @@ All notable changes to BooxUltimatum. Newest first. The project follows [Semanti
 
 ## [Unreleased]
 
+## [0.12.0] (2026-10-19)
+
+BooxUltimatum 0.12.0 gives the suite its own language. The app follows the tablet's language until the reader chooses another one, and the choice is kept for each app, so the hub and Nib can be in different languages. The hub, Nib, the shared kit and the updater read in Simplified Chinese and Vietnamese, and each app has a Language row of its own. A check and a convention make the next language a folder and a line. Nothing about how the apps work has changed. Checked by unit tests, lint and a release build, and by reading the pages in both languages on the Android 36 emulator; not yet seen on a tablet.
+
 ### Added
 
 - **The app's own language.** BooxUltimatum and Nib follow the tablet's language, and each app now has a Language row: Device › Language in BooxUltimatum, and About › Language in Nib. The choice is kept for that app alone, so choosing Chinese in one does not change the other. On Android 13 and later the app's languages also appear in Android's own App languages screen, and the app and that screen write to the same place, so they cannot disagree. On Android 11 and 12 the app keeps the choice itself and starts the screen again in the new language. Checked on the Android 36 emulator: the Language row, the app in Simplified Chinese and back, the system's own App language screen, and Nib staying in English. Not yet seen on a tablet, and the Android 11 and 12 route is not yet checked.
-- **A Simplified Chinese translation** of BooxUltimatum and the shared kit, from the reader who raised issue #6: every string and plural in the hub and in the kit, 1 720 of them. Nib's own 546 are not translated yet, so Nib offers just the tablet's language; the few strings the two apps share, the updater's words, follow the tablet in both. There is no Traditional Chinese translation: a reader who wants Chinese today is offered Simplified, by name, and Traditional would be a folder of its own.
-- **A check that keeps a translation honest.** `tools/dev/check_translations.py` reads every language folder against the English one and reports a string that is missing or one that should not be there, a value that changed, a doubled percent sign, a plural form the language does not have, and a language an app offers that it has no words for. It runs on every push, and `--report` says what each language covers.
-- **The convention a translator works to**, in `docs/12-languages.md`: one folder per language, the same file names, the values in a string left as they are, the brand names and units left in English, and the plural forms the language really has.
+- **A Simplified Chinese translation** of BooxUltimatum and the shared kit, from the reader who raised issue #6: every string and plural in the hub and in the kit, 1 720 of them. There is no Traditional Chinese translation: a reader who wants Chinese today is offered Simplified, by name, and Traditional would be a folder of its own.
+- **A Vietnamese translation** of the hub, Nib, the shared kit and the updater: every string and plural, 2 266 of them, in `values-vi`. It was written with an assistant and checked against the English side by script, which holds the words, the values and the plural forms right, but says nothing about how it reads. A reader who writes Vietnamese is welcome to correct it.
+- **A check that keeps a translation honest.** `tools/dev/check_translations.py` reads every language folder against the English one and reports a string that is missing or one that should not be there, a value that changed, a doubled percent sign, a plural form the language does not have, a key in a different order, and a language an app offers that it has no words for. It runs on every push, and `--report` says what each language covers.
+- **The convention a translator works to**, in `docs/12-languages.md`: one folder per language, the same file names, the values in a string left as they are, the brand names and units left in English, the plural forms the language really has, and a glossary for each language.
 
 ### Fixed
 
@@ -18,6 +23,16 @@ All notable changes to BooxUltimatum. Newest first. The project follows [Semanti
 ### Changed
 
 - **Sixty-three strings no code used are gone** from the hub. They were left over from the *Measure drain* screen and the old Battery log page, and a translator had to translate them for nothing.
+
+## [Nib 0.5.0] (2026-10-19)
+
+Nib 0.5.0 reads in Simplified Chinese and Vietnamese, and has a Language row of its own on the About page, so it can be in a different language from BooxUltimatum. Nothing about drawing changed. Checked by unit tests, lint and a release build, and by reading the pages in all three languages on the Android 36 emulator; not yet seen on a tablet.
+
+### Added
+
+- **A Language row on the About page.** Nib follows the tablet's language until the reader chooses another one, and the choice is kept for Nib alone, so it does not change BooxUltimatum. On Android 13 and later Nib's languages also appear in Android's own App languages screen, and the two write to the same place, so they cannot disagree.
+- **A Simplified Chinese translation of Nib**, its 546 strings and plurals, so the whole suite reads in one language. It was written with the same glossary as the rest of the Chinese translation, and the Chinese of the hub was written by a speaker of the language, so the two agree on the words.
+- **A Vietnamese translation of Nib**, its 546 strings and plurals, with the rest of the suite.
 
 ## [0.11.0] (2026-10-13)
 

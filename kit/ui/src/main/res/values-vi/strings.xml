@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_next">Tiếp</string>
+    <string name="action_previous">Trước</string>
+    <string name="pager_position">Trang %1$d trên %2$d</string>
+    <string name="state_reading">Đang đọc máy tính bảng…</string>
+    <string name="scale_description">Mức pin %1$d phần trăm</string>
+    <string name="lamp_on">Bật</string>
+    <string name="lamp_off">Tắt</string>
+    <string name="duration_dh">%1$d ngày %2$d giờ</string>
+    <string name="duration_hm">%1$d giờ %2$d phút</string>
+    <string name="duration_m">%1$d phút</string>
+    <string name="unit_mah">%1$s mAh</string>
+    <string name="unit_percent">%1$s %%</string>
+    <string name="action_clear">Dọn</string>
+</resources>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- RecordingPlate and EarlierMeasurementsPlate. They also use log_explain, log_pause, log_resume, log_status, log_off, history_detail, rate_value, rate_value_pct and tag_charged from strings_features.xml. -->
+    <string name="brc_recording_title">Ghi nhận</string>
+    <string name="brc_under_a_day">Chưa đủ một ngày</string>
+    <plurals name="brc_covered_days">
+        <item quantity="other">%d ngày đã ghi</item>
+    </plurals>
+    <string name="brc_nothing_recorded">Chưa ghi nhận gì</string>
+    <string name="brc_detail">%1$s · %2$s trên máy tính bảng</string>
+    <string name="brc_size_kb">%1$d KB</string>
+    <string name="brc_size_mb">%1$s MB</string>
+    <string name="brc_folder">Thư mục</string>
+    <string name="brc_folder_path">Android/data/app.booxultimatum/files/logs/</string>
+    <string name="brc_export">Xuất nhật ký</string>
+    <string name="brc_export_empty">Chưa có nhật ký nào để xuất.</string>
+    <string name="brc_report_title">Báo cáo pin</string>
+    <string name="brc_report_explain">Một tệp zip chứa 72 giờ nhật ký gần nhất, các phát hiện kèm bằng chứng và một tóm tắt dễ hiểu. Bạn chọn nơi gửi.</string>
+    <string name="brc_include_apps">Đưa vào tên ứng dụng</string>
+    <string name="brc_apps_in">Đã đưa vào</string>
+    <string name="brc_apps_out">Đã bỏ qua</string>
+    <string name="brc_apps_explain">Việc dùng ứng dụng nói lên rất nhiều về cách bạn dùng máy tính bảng. Báo cáo bỏ qua tên ứng dụng và nhãn của các mốc, trừ khi bạn bật Đưa vào tên ứng dụng.</string>
+    <string name="brc_share_report">Chia sẻ báo cáo pin</string>
+    <string name="brc_preparing">Đang chuẩn bị tệp…</string>
+    <string name="brc_failed">Không chuẩn bị được tệp: %1$s</string>
+    <string name="brc_earlier_title">Các phép đo trước đây</string>
+    <string name="brc_earlier_explain">Kết quả của bài kiểm tra Measure drain cũ, mà BooxUltimatum không còn nữa. Chúng được giữ lại để bạn vẫn đọc được.</string>
+</resources>

@@ -73,6 +73,7 @@
         <li><a href="#font"><span>The tablet font</span></a></li>
         <li><a href="#tweaks"><span>Reversible tweaks and the journal</span></a></li>
         <li><a href="#nib"><span>Nib, the drawing app</span></a></li>
+        <li><a href="#languages"><span>The app's own language</span></a></li>
         <li><a href="#clean-room"><span>Clean-room interoperability</span></a></li>
       </ol>
     </nav>
@@ -401,6 +402,23 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
       </section>
 
 <!-- 9 ============================================================== -->
+      <section class="topic" id="languages" aria-labelledby="languages-h">
+        <div class="engraved"><h2 id="languages-h">The app's own language</h2><span class="tag">New</span></div>
+        <p>Boox tablets are sold with Chinese firmware all over the world, so the language a reader speaks is often not the one their tablet is set to. A translation that can only be reached by changing the tablet's language therefore reaches almost nobody, so the app's language is a setting of its own, kept for each app: BooxUltimatum and Nib are separate programs, and each remembers what you chose.</p>
+        <p>Three things make the choice. The tablet's language is the default, so nothing has to be chosen for the common case. Each app has a Language row: Device › Language in BooxUltimatum, About › Language in Nib. On Android 13 and later the app's languages also appear in Android's own App languages screen, and the app and that screen write to the same place, so they never disagree. On Android 11 and 12 the app keeps the choice itself and applies it to the activity's base context.</p>
+        <p>The suite reads in Simplified Chinese and Vietnamese. A language is a folder beside the English one, with the same file names and the same keys, and a check runs on every push to hold a translation to that: a string that is missing, a value that changed, a plural form the language does not have, or a language offered without words behind it. A new language is a folder and a line.</p>
+        <p>The bundled face is a Latin one: it has every Vietnamese letter, Đ included, and no Chinese character at all, so Chinese text falls back to the tablet's own system font and is drawn in it.</p>
+        <div class="sources">
+          <h3>In the repository</h3>
+          <ul class="links">
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/docs/12-languages.md"><strong>docs/12-languages.md</strong><span>The convention a translator works to, and the glossaries.</span></a></li>
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/kit/core/src/main/java/app/booxultimatum/kit/core/Language.kt"><strong>kit/…/core/Language.kt</strong><span>The languages the suite knows, and how the app picks one.</span></a></li>
+            <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/tools/dev/check_translations.py"><strong>tools/dev/check_translations.py</strong><span>The check a translation has to pass.</span></a></li>
+          </ul>
+        </div>
+      </section>
+
+<!-- 10 ============================================================= -->
       <section class="topic" id="clean-room" aria-labelledby="clean-h">
         <div class="engraved"><h2 id="clean-h">Clean-room interoperability</h2></div>
         <p>BooxUltimatum contains no Onyx or Boox code, SDKs or assets. It learned the Boox interfaces it uses from Onyx's public SDK documentation, by observing the tablet, and by reading how Boox's own apps call the firmware:</p>

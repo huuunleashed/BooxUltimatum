@@ -1,0 +1,424 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sleep screen studio: faces for the Boox sleep screen, kept current while the tablet is awake. -->
+<resources>
+    <string name="dest_sleep">Ngủ</string>
+    <string name="sl_title">Màn hình ngủ</string>
+    <string name="sl_subtitle">Tự thiết kế mặt cho màn hình ngủ của Boox. BooxUltimatum vẽ mặt đó vừa khít màn hình và giữ nó luôn cập nhật trong khi bạn dùng máy tính bảng.</string>
+
+    <!-- Mode -->
+    <string name="sl_mode">Chế độ</string>
+    <string name="sl_mode_image">Ảnh ngủ</string>
+    <string name="sl_mode_image_detail">Một mặt lấp đầy màn hình. Boox hiện nó làm ảnh màn hình ngủ và đọc lại mỗi khi máy tính bảng chuyển sang ngủ.</string>
+    <string name="sl_mode_overlay">Đè lên kiểu trong suốt</string>
+    <string name="sl_mode_overlay_detail">Một tấm thẻ giấy nhỏ đặt lên màn hình đúng lúc máy tính bảng chuyển sang ngủ, dùng kiểu Transparent của Boox. Boox đặt một miếng dán, tức ảnh xuyên thấu, lên màn hình đó, và BooxUltimatum vẽ thẻ lên trên. BooxUltimatum cần Shizuku, hoặc quyền của bạn để đổi miếng dán, để vẽ thẻ.</string>
+
+    <!-- Faces -->
+    <string name="sl_face">Mặt</string>
+    <string name="sl_plate">Thẻ</string>
+    <string name="sl_face_almanac">Lịch vạn niên</string>
+    <string name="sl_face_instrument">Đồng hồ đo</string>
+    <string name="sl_face_poster">Áp phích</string>
+    <string name="sl_face_under_clock">Dưới đồng hồ</string>
+    <string name="sl_face_photo">Ảnh</string>
+    <string name="sl_face_note">Ghi chú</string>
+    <string name="sl_face_return">Thẻ trả lại</string>
+    <string name="sl_face_minimal">Tối giản</string>
+    <string name="sl_ov_bottom">Dải dưới</string>
+    <string name="sl_ov_top">Dải trên</string>
+    <string name="sl_ov_corner">Thẻ ở góc</string>
+    <string name="sl_ov_centre">Thẻ ở giữa</string>
+    <string name="sl_note_almanac">Thứ trong tuần, ngày trong tháng hiện lớn, tháng có đánh dấu hôm nay, và những gì sắp tới.</string>
+    <string name="sl_note_instrument">Pin nằm trên thang chỉnh sóng kiểu Braun, bên dưới là ngày và các chỉ số có vạch kẻ.</string>
+    <string name="sl_note_poster">Thứ trong tuần đặt lớn tới mức màn hình cho phép, bên dưới là câu trích dẫn trong ngày hoặc câu của bạn.</string>
+    <string name="sl_note_under_clock">Chừa phần trên cùng của màn hình cho đồng hồ của Boox, mà Boox vẽ lại mỗi 5 phút khi máy tính bảng đang ngủ (đã thấy trên Note Air6 C). Với mặt này, hãy đặt Kiểu đồng hồ thành Digital trong cài đặt bảo vệ màn hình của Boox.</string>
+    <string name="sl_note_photo">Ảnh của bạn, lấp đầy màn hình hoặc hiện trọn vẹn, với phần chú thích tùy chọn ở dưới.</string>
+    <string name="sl_note_note">Ghi chú của bạn, đặt lớn tới mức vừa khít.</string>
+    <string name="sl_note_return">Trả máy tính bảng cho ai nếu bị nhặt. Hợp nhất với máy hay mang ra khỏi nhà.</string>
+    <string name="sl_note_minimal">Chỉ ngày và một đèn nhỏ màu nhấn.</string>
+    <string name="sl_note_overlay">Mỗi thẻ được vẽ trên một tờ trong suốt có mép giấy mềm, nên vẫn đọc được trên mọi thứ đang hiện trên màn hình.</string>
+
+    <!-- Elements -->
+    <string name="sl_shows">Nội dung hiển thị</string>
+    <string name="sl_el_date">Ngày</string>
+    <string name="sl_el_battery">Pin</string>
+    <string name="sl_el_put_down">Thời điểm đặt xuống</string>
+    <string name="sl_el_put_down_detail">Thời điểm bạn dùng máy tính bảng lần cuối, làm tròn xuống theo bước làm mới. Nó chính xác khi bạn bắt đầu ngủ bằng Ngủ ngay.</string>
+    <string name="sl_el_agenda">Sự kiện sắp tới</string>
+    <string name="sl_el_agenda_detail">Sự kiện trong lịch của bạn trong bảy ngày tới.</string>
+    <string name="sl_el_note">Ghi chú</string>
+    <string name="sl_el_owner">Chủ sở hữu</string>
+    <string name="sl_el_quote">Trích dẫn</string>
+    <string name="sl_calendar_off">Quyền truy cập lịch đang tắt, nên sự kiện vẫn ẩn cho tới khi bạn cho phép.</string>
+    <string name="sl_allow_calendar">Cho phép truy cập lịch</string>
+    <string name="sl_edit">Sửa</string>
+    <string name="sl_note_none">Chưa có ghi chú</string>
+    <string name="sl_owner_none">Chưa có tên hoặc thông tin liên hệ</string>
+    <string name="sl_quote_source">Trích dẫn</string>
+    <string name="sl_quote_daily">Trích dẫn trong ngày</string>
+    <string name="sl_quote_own">Của bạn</string>
+    <string name="sl_quote_daily_detail">Một câu ngắn thuộc phạm vi công cộng, mỗi ngày một câu mới.</string>
+    <string name="sl_clock_room">Chừa chỗ cho đồng hồ của Boox</string>
+    <string name="sl_clock_room_detail">Giữ phần trên cùng của màn hình trống cho chiếc đồng hồ mà Boox vẽ đè lên màn hình ngủ. Bạn chọn chiếc đồng hồ đó trong cài đặt bảo vệ màn hình của Boox.</string>
+
+    <!-- Photo -->
+    <string name="sl_photo_choose">Chọn ảnh</string>
+    <string name="sl_photo_remove">Gỡ bỏ ảnh</string>
+    <string name="sl_photo_failed">Không đọc được ảnh đó.</string>
+    <string name="sl_caption_edit">Chú thích</string>
+    <string name="sl_photo_fit">Cách đóng khung</string>
+    <string name="sl_fit_fill">Lấp đầy màn hình</string>
+    <string name="sl_fit_fit">Hiện trọn ảnh</string>
+    <string name="sl_dither">Dither</string>
+    <string name="sl_dither_off">Để Boox tự làm</string>
+    <string name="sl_dither_on">Dither trước</string>
+    <string name="sl_dither_note">Boox tự dither từng ảnh, biến các sắc độ thành hoạ tiết chấm mà mực điện tử hiển thị được. Dither trước làm việc này trước, với 16 mức cho mỗi màu, nên có thể trông mịn hơn trên màn hình Kaleido. Dither trước không dither chữ.</string>
+
+    <!-- Type and ink -->
+    <string name="sl_type">Kiểu chữ</string>
+    <string name="sl_font">Phông chữ</string>
+    <string name="sl_font_system">Phông chữ máy tính bảng</string>
+    <string name="sl_font_archivo">Archivo</string>
+    <string name="sl_display_weight">Chữ lớn</string>
+    <string name="sl_body_weight">Chữ nhỏ</string>
+    <string name="sl_w_regular">Thường</string>
+    <string name="sl_w_medium">Trung bình</string>
+    <string name="sl_w_semibold">Nửa đậm</string>
+    <string name="sl_w_bold">Đậm</string>
+    <string name="sl_w_heavy">Rất đậm</string>
+    <string name="sl_w_black">Đen</string>
+    <string name="sl_type_note">Mỗi mặt dùng đúng các nét chữ của phông chữ bạn chọn, gồm cả từng nét của một phông chữ biến thiên. Những phông chữ bạn giữ ở trang Phông chữ sẽ xuất hiện trong danh sách này.</string>
+    <string name="sl_ink">Mực</string>
+    <string name="sl_ink_label">Trang</string>
+    <string name="sl_ink_paper">Đen trên nền giấy</string>
+    <string name="sl_ink_inverted">Trắng trên nền đen</string>
+    <string name="sl_accent">Màu nhấn</string>
+    <string name="sl_ac_green">Xanh lá</string>
+    <string name="sl_ac_red">Đỏ</string>
+    <string name="sl_ac_blue">Xanh dương</string>
+    <string name="sl_ac_orange">Cam</string>
+    <string name="sl_ac_yellow">Vàng</string>
+    <string name="sl_ac_ink">Mực</string>
+    <string name="sl_accent_note">Màu nhấn tô đầy các hình như đèn, ngày hôm nay và kim đồng hồ. Kaleido hiển thị tốt nhất các vùng màu đặc, nên chữ luôn giữ màu đen hoặc trắng.</string>
+
+    <!-- Refresh -->
+    <string name="sl_refresh">Làm mới</string>
+    <string name="sl_refresh_label">Trong khi máy tính bảng còn thức, vẽ lại mỗi</string>
+    <plurals name="sl_minutes">
+        <item quantity="other">%d phút</item>
+    </plurals>
+    <string name="sl_refresh_explain">Boox đọc ảnh một lần, khi máy tính bảng chuyển sang ngủ, nên nếu không có gì khác thì không có gì trên ảnh thay đổi trong lúc máy tính bảng ngủ. Mục Khi ngủ bên dưới thay đổi điều đó.\nBooxUltimatum cũng vẽ lại mặt khi pin, ngày, lịch, hướng xoay hay cài đặt của bạn thay đổi. Nó bỏ qua lần vẽ lại khi không có gì trên mặt thay đổi.</string>
+    <string name="sl_live">Khi ngủ</string>
+    <string name="sl_live_used">%1$d %% đã dùng khi ngủ</string>
+    <string name="sl_live_used_charging">Đang sạc</string>
+    <string name="sl_live_used_rate">%1$d %% đã dùng · %2$s %% mỗi giờ</string>
+    <string name="sl_live_used_short">%1$d %%</string>
+    <string name="sl_live_used_short_rate">%1$d %% · %2$s %% mỗi giờ</string>
+    <string name="sl_live_countdown">%1$s trong %2$s</string>
+    <string name="sl_live_updated">Cập nhật %1$s · mỗi %2$d phút</string>
+    <string name="sl_live_put_down">Đặt xuống quanh %1$s</string>
+    <string name="sl_dur_min">%1$d phút</string>
+    <string name="sl_dur_h">%1$d giờ</string>
+    <string name="sl_dur_h_min">%1$d giờ %2$d phút</string>
+    <string name="sl_lab_asleep">Đang ngủ</string>
+    <string name="sl_lab_asleep_since">Đang ngủ từ %1$s</string>
+    <string name="sl_lab_just_now">Vừa đặt xuống</string>
+    <string name="sl_lab_used">Đã dùng khi ngủ</string>
+    <string name="sl_lab_alarm">Báo thức</string>
+    <string name="sl_lab_nothing_used">Chưa có gì</string>
+    <string name="sl_lab_now">Bây giờ</string>
+    <string name="sl_face_dial">Mặt đồng hồ</string>
+    <string name="sl_face_clock">Đồng hồ</string>
+    <string name="sl_face_monitor">Bảng theo dõi</string>
+    <string name="sl_note_dial">Một chiếc đồng hồ treo tường theo phong cách Braun, có ngày, pin và thời gian máy tính bảng đã ngủ. Khi có cập nhật khi ngủ, nó hiện giờ chính xác. Không có, kim đồng hồ chỉ cho thời điểm máy tính bảng được đặt xuống.</string>
+    <string name="sl_note_clock">Giờ hiển thị lớn tới mức màn hình cho phép, ngày ở bên dưới, cùng pin, thời gian ngủ và sự kiện sắp tới dọc theo mép dưới. Không có cập nhật khi ngủ, nó chỉ cho thời điểm máy tính bảng được đặt xuống.</string>
+    <string name="sl_note_monitor">Bảng số đo chính lần ngủ: máy tính bảng đã ngủ bao lâu, và pin trên thang chỉnh cùng mức dùng và tốc độ dùng. Nó cũng đếm ngược tới sự kiện sắp tới và hiện báo thức kế tiếp. Nó cần cập nhật khi ngủ để thay đổi.</string>
+    <string name="sl_element_asleep">Thời gian ngủ</string>
+    <string name="sl_element_asleep_detail">Máy tính bảng đã ngủ bao lâu và đã dùng bao nhiêu pin. Hiện khi bật cập nhật khi ngủ.</string>
+    <string name="sl_live_badge">Trực tiếp</string>
+    <string name="sl_preview_legend_live">Được vẽ giống hệt màn hình ngủ, như nó sẽ hiện sau 1 giờ 25 phút ngủ khi bật cập nhật khi ngủ. Chạm vào để xem ở kích thước đầy đủ.</string>
+    <plurals name="sl_state_live">
+        <item quantity="other">Cập nhật khi ngủ mỗi %d phút</item>
+    </plurals>
+    <string name="sl_live_suggest">Mặt này được làm cho cập nhật khi ngủ. Bật chúng ở bên dưới để mặt luôn cập nhật trong lúc máy tính bảng ngủ.</string>
+    <string name="sl_live_explain">Cập nhật trực tiếp vẽ lại mặt trong lúc máy tính bảng ngủ, nên ngày, pin và lịch luôn mới. Chúng cũng che thanh trạng thái mà Boox vẽ khi đang sạc, và che cả chiếc đồng hồ của Boox nếu bạn hiện một chiếc. Thời điểm bạn đặt máy tính bảng xuống giữ nguyên như cũ.\nMỗi lần cập nhật đánh thức màn hình khoảng một giây rưỡi. Đo trên Note Air6 C, bước một phút tốn khoảng 1.6 mAh mỗi giờ, và bước năm phút đánh thức màn hình ít hơn một phần năm. Vì vậy bước một phút chỉ chạy khi đang sạc.</string>
+    <string name="sl_live_turn_on">Bật</string>
+    <string name="sl_live_turn_off">Tắt</string>
+    <string name="sl_live_step">Cập nhật mỗi</string>
+    <string name="sl_live_step_battery">Bước một phút chỉ chạy khi đang sạc. Khi dùng pin, bước ngắn nhất là %1$d phút, nên màn hình không bật 60 lần mỗi giờ.</string>
+    <string name="sl_live_charging">Chỉ khi đang sạc</string>
+    <string name="sl_live_charging_detail">Không cập nhật khi dùng pin, nên không có gì đánh thức màn hình.</string>
+    <string name="sl_live_quiet">Không vào ban đêm</string>
+    <string name="sl_live_quiet_detail">Không cập nhật từ %1$s đến %2$s</string>
+    <string name="sl_live_quiet_note">Trong lúc cập nhật tạm dừng, màn hình ngủ giữ ảnh cuối cùng và ghi “Tạm dừng đến” ở mép trên, kèm theo giờ bạn đặt.</string>
+    <string name="sl_live_quiet_from">Tạm dừng từ</string>
+    <string name="sl_live_quiet_to">Tiếp tục lúc</string>
+    <string name="sl_paused_until">Tạm dừng đến %1$s</string>
+    <string name="sl_live_on">Bật</string>
+    <string name="sl_live_off">Tắt</string>
+    <string name="sl_live_setup">Điều cập nhật trực tiếp cần</string>
+    <string name="sl_live_a11y">Dịch vụ trợ năng</string>
+    <string name="sl_live_a11y_detail">Android ẩn cửa sổ ứng dụng khi máy tính bảng đang khóa, trừ lớp phủ từ một dịch vụ trợ năng, nên BooxUltimatum giữ ảnh trong đó. Nó không đọc được màn hình hay thứ bạn gõ, và không hiện gì khi màn hình đang sáng.</string>
+    <string name="sl_live_a11y_open">Mở cài đặt</string>
+    <string name="sl_live_a11y_direct">Bật giúp tôi</string>
+    <string name="sl_live_a11y_off">Tắt nó</string>
+    <string name="sl_live_bg">Chạy nền</string>
+    <string name="sl_live_bg_detail">Boox gỡ bỏ báo thức đánh thức của các ứng dụng mà nó hạn chế, nên cập nhật dừng lại. Hãy cho phép chạy nền cho BooxUltimatum ở trang pin của Android, và nếu cập nhật vẫn không tới, hãy tắt rồi bật lại một lần. Với Shizuku, chạm Đăng ký với Boox để làm thay bạn.</string>
+    <string name="sl_live_bg_open">Mở trang pin</string>
+    <string name="sl_live_bg_register">Đăng ký với Boox</string>
+    <string name="sl_live_exact">Báo thức chính xác</string>
+    <string name="sl_live_exact_detail">Cho phép cập nhật chạy đúng phút. Không có, chúng có thể tới muộn.</string>
+    <string name="sl_live_exact_open">Cho phép</string>
+    <string name="sl_live_allowed">Đã cho phép</string>
+    <string name="sl_live_waiting">Dịch vụ trợ năng đã bật, nhưng Android chưa khởi động nó. Hãy rời trang này rồi quay lại. Thường là sẽ khởi động.</string>
+    <string name="sl_live_needs_image">Cập nhật trực tiếp vẽ lại một ảnh lấp đầy màn hình, nên chỉ hoạt động ở chế độ Ảnh ngủ. Thẻ không thể cập nhật theo cách này, vì Boox chỉ đọc miếng dán khi máy tính bảng chuyển sang ngủ.</string>
+    <string name="sl_live_needs_apply">Hãy áp dụng một mặt trước. Cập nhật trực tiếp vẽ lại mặt bạn đã áp dụng.</string>
+    <string name="sl_live_none">Máy tính bảng chưa ngủ lần nào khi bật cập nhật trực tiếp.</string>
+    <plurals name="sl_live_last">
+        <item quantity="other">Lần ngủ gần nhất: %1$d lần cập nhật, lần cuối lúc %2$s.</item>
+    </plurals>
+    <string name="sl_live_last_none">Lần ngủ gần nhất: không có lần cập nhật nào tới hạn.</string>
+    <string name="sl_live_missed">Lần ngủ gần nhất không có lần cập nhật nào. Quản lý năng lượng của Boox nhiều khả năng đã gỡ bỏ báo thức đánh thức. Hãy tắt rồi bật lại Cho phép chạy nền ở trang pin, hoặc với Shizuku, chạm Đăng ký với Boox, rồi thử ngủ lại.</string>
+    <string name="sl_live_registered">Đã đăng ký với quản lý năng lượng của Boox</string>
+    <string name="live_service_label">Màn hình ngủ trực tiếp của BooxUltimatum</string>
+    <string name="live_service_summary">Giữ màn hình ngủ luôn mới trong lúc máy tính bảng ngủ</string>
+    <string name="live_service_description">Cho phép BooxUltimatum vẽ lại màn hình ngủ theo khoảng thời gian bạn chọn trong lúc máy tính bảng ngủ. Android ẩn cửa sổ ứng dụng thường khi máy tính bảng bị khóa, nhưng không ẩn lớp phủ từ một dịch vụ trợ năng, nên dịch vụ này chỉ tồn tại để giữ ảnh đó. Nó không đọc được màn hình, không thấy thứ bạn gõ và không thực hiện hành động nào. Nó không hiện gì khi màn hình đang sáng.</string>
+
+    <!-- Keys and state -->
+    <string name="sl_apply">Áp dụng</string>
+    <string name="sl_apply_again">Áp dụng lại</string>
+    <string name="sl_applied">Mặt này giờ là màn hình ngủ.</string>
+    <string name="sl_applied_overlay">Thẻ đã được ghi vào miếng dán của Boox. BooxUltimatum không thấy Boox đang dùng kiểu màn hình ngủ nào. Trừ khi Boox được đặt thành Transparent và bật miếng dán, bạn vẫn thấy ảnh Boox hiện trước đó.</string>
+    <string name="sl_sleep_now">Ngủ ngay</string>
+    <string name="sl_restore">Khôi phục mặc định của Boox</string>
+    <string name="sl_restore_confirm">Chạm lần nữa để khôi phục</string>
+    <string name="sl_restored">Ảnh mặc định của Boox đã trở lại. Muốn dùng lại kiểu trước đó, hãy chọn nó trong cài đặt bảo vệ màn hình của Boox.</string>
+    <string name="sl_open_boox">Mở cài đặt bảo vệ màn hình của Boox</string>
+    <string name="sl_shell_note">Ngủ ngay cần Shizuku. Chế độ Đè lên kiểu trong suốt có thể chạy mà không cần, nếu bạn cho phép BooxUltimatum ghi vào miếng dán của Boox, như mô tả bên dưới.</string>
+    <string name="sl_mode_changed">Đã đổi chế độ. Chạm Áp dụng để chuyển chế độ mới cho Boox. Cho tới lúc đó, ảnh cuối cùng vẫn giữ nguyên và BooxUltimatum không vẽ lại mặt đó nữa.</string>
+    <string name="sl_state_on">%1$s, vẽ lại mỗi %2$s khi còn thức</string>
+    <string name="sl_state_off">Chưa áp dụng</string>
+    <string name="sl_status">Đã phát hành %1$s · vẽ trong %2$d ms, nén trong %3$d ms · %4$s · %5$s</string>
+    <string name="sl_status_skipped">Đã kiểm tra %1$s · không có gì trên mặt thay đổi, nên tệp được giữ nguyên</string>
+    <string name="sl_status_error">Thất bại %1$s · %2$s</string>
+    <string name="sl_preview_ms">Bản xem trước vẽ trong %1$d ms</string>
+    <string name="sl_preview_legend">Được vẽ giống hệt ảnh đã phát hành. Các nét gạch đánh dấu nơi Boox vẽ đồng hồ khi bạn chừa chỗ cho nó. Chạm vào bản xem trước để xem ở kích thước đầy đủ.</string>
+    <string name="sl_preview_description">Bản xem trước của màn hình ngủ</string>
+    <string name="sl_zoom_open">Xem ở kích thước đầy đủ</string>
+    <string name="sl_zoom_close">Đóng</string>
+    <string name="sl_full_ms">Bản đầy đủ vẽ trong %1$d ms</string>
+
+    <!-- Boox guidance -->
+    <string name="sl_boox">Cài đặt Boox</string>
+    <string name="sl_boox_image">Muốn một mặt gọn gàng, hãy mở cài đặt bảo vệ màn hình của Boox. Đặt Kiểu đồng hồ và Hiển thị chữ thành None, và tắt Thanh trạng thái dưới. Thanh đó thêm pin và “Nhấn nút nguồn để đánh thức”, và Boox hiện nó khi máy tính bảng đang sạc, bất kể cài đặt. Muốn giữ giờ sống, hãy để Kiểu đồng hồ ở Digital và bật Chừa chỗ cho đồng hồ của Boox, hoặc chọn Dưới đồng hồ.</string>
+    <string name="sl_boox_overlay_intro">Miếng dán là một ảnh xuyên thấu mà Boox đặt lên màn hình đã giữ khi máy tính bảng chuyển sang ngủ. Boox cần bạn chọn nó một lần. Sau đó BooxUltimatum giữ nó luôn cập nhật.</string>
+    <string name="sl_boox_overlay_style">BooxUltimatum không thấy Boox đang được đặt theo kiểu nào. Cho tới khi bạn đặt Boox thành Transparent và bật miếng dán, Boox vẫn hiện ảnh ngủ cuối cùng mà nó được đưa. Sau khi chuyển từ Ảnh ngủ, ảnh cũ hơn đó chính là thứ máy tính bảng hiện khi ngủ.</string>
+    <string name="sl_boox_leftover">Nếu một ảnh BooxUltimatum cũ vẫn còn trong Thư viện, BooxUltimatum không thể gỡ bỏ nó. Android không cho phép một ứng dụng đổi ảnh mà nó không còn sở hữu, nên bản sao mới nhất được ghi bên cạnh. Bạn có thể xóa ảnh cũ trong Tệp.</string>
+    <string name="sl_step_1">Chạm Đưa vào album Miếng dán bên dưới. Thẻ hiện tại sẽ xuất hiện trong album Miếng dán của thư viện.</string>
+    <string name="sl_step_2">Mở cài đặt bảo vệ màn hình của Boox, chọn Transparent và bật Hiện miếng dán màn hình khóa. Sau đó chạm Chọn miếng dán, ô +, album Miếng dán và ảnh BooxUltimatum, rồi xác nhận vùng cắt bằng OK.</string>
+    <string name="sl_step_3">Áp dụng Transparent trong Boox.</string>
+    <string name="sl_step_4">Quay lại đây và chạm Áp dụng. BooxUltimatum tìm miếng dán Boox đã lưu và vẽ lại nó cho bạn.</string>
+    <string name="sl_prepare">Đưa vào album Miếng dán</string>
+    <string name="sl_prepared">Thẻ đã nằm trong album Miếng dán.</string>
+    <string name="sl_boox_overlay_settings">Boox vẽ đồng hồ, khẩu hiệu và thanh trạng thái dưới lên mọi kiểu. Bạn có thể tắt từng thứ trong cài đặt bảo vệ màn hình của Boox. Khôi phục không đọc được kiểu bạn đã dùng trước đó, nên nó đặt ảnh mặc định của Boox. Sau đó hãy chọn lại kiểu cũ trong Boox.</string>
+    <string name="sl_limits">Khi có mã PIN, máy tính bảng được đặt sang ngủ từ màn hình khóa sẽ hiện màn hình riêng tư màu đen thay thế (đã thấy trên Note Air6 C). Boox quyết định điều này, và BooxUltimatum không thể đổi.</string>
+
+    <!-- Writing Boox's sticker without Shizuku -->
+    <string name="sl_write_title">Ghi miếng dán của Boox</string>
+    <string name="sl_write_shell">Shizuku đang chạy, nên thẻ được ghi qua đó. Không cần gì thêm.</string>
+    <string name="sl_write_ask_pictures">BooxUltimatum tìm miếng dán Boox đã lưu bằng cách xem trong album Miếng dán. Cho phép nó đọc ảnh để làm việc đó. Nó không xem gì khác.</string>
+    <string name="sl_write_allow_pictures">Cho phép đọc ảnh</string>
+    <string name="sl_write_ask_consent">Android hỏi BooxUltimatum có được đổi ảnh miếng dán của Boox không. Nếu bạn cho phép, BooxUltimatum giữ thẻ luôn mới mà không cần Shizuku.</string>
+    <string name="sl_write_allow_consent">Nhờ Android cho phép</string>
+    <string name="sl_write_ready">BooxUltimatum có thể tự ghi miếng dán, nên thẻ không cần Shizuku.</string>
+    <string name="sl_write_no_row">BooxUltimatum không thấy miếng dán nào trong album Miếng dán của Boox. Nếu Android được đặt chỉ chia sẻ một phần ảnh với BooxUltimatum, hãy cho phép tất cả. Nếu không, hãy làm bốn bước ở trên trước.</string>
+    <string name="sl_write_denied">Android không cho phép BooxUltimatum đổi ảnh miếng dán, nên nó không thể tự giữ thẻ luôn mới. Hãy chạy Shizuku từ trang Truy cập thay thế.</string>
+    <string name="sl_write_file">Miếng dán: %1$s</string>
+    <string name="sl_write_scale">Boox thu nhỏ miếng dán cho vừa màn hình và chỉ giữ phần giữa. Thẻ nằm trong vùng giữa mà cả hai hướng đều giữ, nên một tệp dùng được cả dọc và ngang. Trong cài đặt bảo vệ màn hình của Boox, bạn cũng có thể đặt tỉ lệ thành vừa khít, hiện trọn tờ giấy.</string>
+
+    <!-- Editing -->
+    <string name="sl_edit_note">Ghi chú</string>
+    <string name="sl_edit_owner">Thẻ chủ sở hữu</string>
+    <string name="sl_edit_quote">Câu trích dẫn của bạn</string>
+    <string name="sl_edit_caption">Chú thích</string>
+    <string name="sl_caption">Chú thích dưới ảnh</string>
+    <string name="sl_quote_text">Trích dẫn</string>
+    <string name="sl_quote_author">Tác giả</string>
+    <string name="sl_owner_name">Tên</string>
+    <string name="sl_owner_contact">Điện thoại hoặc email</string>
+    <string name="sl_owner_reward">Dòng phần thưởng</string>
+    <string name="sl_cancel">Hủy</string>
+    <string name="sl_done">Xong</string>
+
+    <!-- Printed on the faces -->
+    <string name="sl_battery">Pin</string>
+    <string name="sl_put_down">Đặt xuống</string>
+    <string name="sl_put_down_at">Đặt xuống lúc %1$s</string>
+    <string name="sl_put_down_around">Đặt xuống quanh %1$s</string>
+    <string name="sl_put_down_lead_at">Đặt xuống lúc</string>
+    <string name="sl_put_down_lead_around">Đặt xuống quanh</string>
+    <string name="sl_next">Tiếp theo</string>
+    <string name="sl_charging">Đang sạc</string>
+    <string name="sl_on_battery">Đang dùng pin</string>
+    <string name="sl_battery_charging">%1$d %% · đang sạc</string>
+    <string name="sl_battery_on">%1$d %%</string>
+    <string name="sl_battery_unknown">Không có thông tin pin</string>
+    <string name="sl_return_heading">Nếu tìm thấy, xin trả về</string>
+    <string name="sl_reward">Phần thưởng</string>
+    <string name="sl_contact">Liên hệ</string>
+    <string name="sl_nothing_planned">Không có kế hoạch cho tuần này</string>
+    <string name="sl_note_empty">Viết ghi chú trong BooxUltimatum › Ngủ để hiện ở đây.</string>
+    <string name="sl_photo_empty">Chọn một ảnh trong BooxUltimatum › Ngủ.</string>
+    <string name="sl_owner_empty">Tên của bạn</string>
+    <string name="sl_today">Hôm nay</string>    <string name="sl_tomorrow">Ngày mai</string>
+
+    <!-- Errors and journal -->
+    <string name="sl_err_needs_shizuku">Việc này cần Shizuku. Hãy chạy nó từ trang Truy cập, rồi thử lại.</string>
+    <string name="sl_err_no_sticker">Chưa có miếng dán của Boox. Làm theo các bước trong mục Cài đặt Boox để chọn miếng dán BooxUltimatum một lần.</string>
+    <string name="sl_err_stage">BooxUltimatum không lưu được thẻ trong tệp của chính nó.</string>
+    <string name="sl_err_no_write">BooxUltimatum chưa được phép ghi miếng dán của Boox. Chạm Nhờ Android cho phép, hoặc chạy Shizuku từ trang Truy cập, rồi chạm Áp dụng lại.</string>
+    <string name="sl_err_backup">BooxUltimatum không sao lưu được miếng dán Boox đã tạo, nên nó giữ miếng dán như cũ.</string>
+    <string name="sl_err_write">BooxUltimatum không ghi được miếng dán. Kiểm tra xem miếng dán của Boox còn trong album Miếng dán, rồi chạm Áp dụng lại.</string>
+    <string name="sl_err_restore">BooxUltimatum không khôi phục được miếng dán gốc của Boox: %1$s. Bạn có thể chọn ảnh khác trong cài đặt bảo vệ màn hình của Boox.</string>
+    <string name="sl_journal_image">Đã đặt màn hình ngủ thành mặt %1$s ở chế độ Ảnh ngủ</string>
+    <string name="sl_journal_overlay">Đã đặt màn hình ngủ thành thẻ %1$s ở chế độ Đè lên kiểu trong suốt</string>
+    <string name="sl_journal_restore">Đã khôi phục màn hình ngủ về ảnh mặc định của Boox</string>
+    <string name="sl_journal_poweroff">Đã đặt màn hình lúc tắt nguồn thành mặt %1$s</string>
+    <string name="sl_journal_poweroff_restore">Đã khôi phục màn hình lúc tắt nguồn về ảnh mặc định của Boox</string>
+    <string name="sl_poweroff">Dùng làm màn hình lúc tắt nguồn</string>
+    <string name="sl_poweroff_again">Cập nhật màn hình lúc tắt nguồn</string>
+    <string name="sl_poweroff_restore">Khôi phục màn hình lúc tắt nguồn của Boox</string>
+    <string name="sl_poweroff_done">Đã đặt làm màn hình lúc tắt nguồn</string>
+    <string name="sl_poweroff_restored">Màn hình lúc tắt nguồn của Boox đã được khôi phục.</string>
+    <string name="sl_poweroff_note">Việc này đặt ảnh mà máy tính bảng hiện khi đã tắt, vẽ theo hướng dọc. Nó cần chế độ Ảnh ngủ. Pin và thời điểm đặt xuống bị bỏ qua, và một mặt trực tiếp bị thay bằng Lịch vạn niên, vì đồng hồ sẽ dừng. Boox giữ một bản sao, nên ảnh vẫn giữ nguyên như bạn đặt. Sau khi đổi mặt, hãy cập nhật lại.</string>
+
+    <!-- The second set of faces -->
+    <string name="sl_face_cube">Khối lập phương</string>
+    <string name="sl_face_flip">Bảng chia đôi</string>
+    <string name="sl_face_dashboard">Bảng điều khiển</string>
+    <string name="sl_face_words">Đồng hồ chữ</string>
+    <string name="sl_face_ring">Vòng ngày</string>
+    <string name="sl_face_timeline">Dòng thời gian</string>
+    <string name="sl_face_lcd">LCD</string>
+    <string name="sl_face_sky">Bầu trời</string>
+    <string name="sl_face_broadsheet">Nhật báo lớn</string>
+    <string name="sl_face_year">Năm</string>
+    <string name="sl_note_cube">Một chiếc đồng hồ khối lập phương vẽ theo phối cảnh thật. Giờ nằm ở mặt hướng về bạn, ngày ở mặt trong bóng, và một nút tròn màu nhấn ở trên xuống. Bóng đổ được tô bằng chấm hoặc nét. Không có cập nhật khi ngủ, nó chỉ cho thời điểm máy tính bảng được đặt xuống.</string>
+    <string name="sl_note_flip">Giờ và phút trên những thẻ chia đôi, với cánh trên nghiêng ra sau trên bản lề, và ngày trên các cánh nhỏ bên dưới. Không có cập nhật khi ngủ, nó chỉ cho thời điểm máy tính bảng được đặt xuống.</string>
+    <string name="sl_note_dashboard">Một lưới các ô. Giờ và ngày, kèm tuần, luôn hiện. Bạn chọn những mục còn lại bên dưới: pin và mức đã dùng, thời gian ngủ, báo thức, sự kiện sắp tới, bạn đã ở giữa ngày và giữa năm ra sao, mặt trăng, và thời tiết trên màn hình chính kèm giờ đọc được.</string>
+    <string name="sl_note_words">Giờ bằng chữ, sáng trong lưới chữ cái. Từ ngữ đổi mỗi năm phút, và các chấm màu nhấn đếm số phút xen kẽ. Chữ cái là tiếng Anh.</string>
+    <string name="sl_note_ring">Cả ngày trên một vòng 24 giờ. Sự kiện hôm nay là các cung, phần ngủ đã qua có màu nhấn, và một kim chỉ hiện giờ. Ban đêm được tô bóng khi màn hình chính đã có một thành phố thời tiết.</string>
+    <string name="sl_note_timeline">Hôm nay dọc theo một đường. Sự kiện là các khối, phần ngủ đã qua có màu nhấn, và một điểm đánh dấu hiện giờ. Giờ và các chỉ số nằm phía trên.</string>
+    <string name="sl_note_lcd">Một chiếc đồng hồ LCD kiểu Braun với chữ số bảy đoạn, các ô nhỏ cho ngày, thời gian ngủ, pin và báo thức, cùng một hàng nút và một nút màu nhấn.</string>
+    <string name="sl_note_sky">Mặt trời hôm nay và mặt trăng tối nay. Đường đi của mặt trời, mặt trời mọc và mặt trời lặn được tính trên máy tính bảng cho thành phố thời tiết của màn hình chính, nơi duy nhất BooxUltimatum biết. Không có thành phố thời tiết, mặt trời đi theo đồng hồ và mặt nói rõ điều đó. Pha mặt trăng không cần địa điểm.</string>
+    <string name="sl_note_broadsheet">Trang nhất của một tờ nhật báo. Tiêu đề là sự kiện sắp tới hoặc câu trích dẫn, tuỳ bạn chọn bên dưới. Thời tiết và pin nằm trong các ô nhỏ bên cạnh tên tờ, và các cột nói về giấc ngủ, những gì sắp tới và lịch vạn niên. Số hiệu là ngày thứ bao nhiêu trong năm.</string>
+    <string name="sl_note_year">Cả năm trong nháy mắt, với một chấm cho mỗi ngày. Những ngày đã qua được tô đầy, hôm nay có màu nhấn, và mặt cho thấy bạn đã ở giữa năm ra sao.</string>
+    <string name="sl_face_options">Tùy chọn %1$s</string>
+    <plurals name="sl_group_live">
+        <item quantity="other">%d mặt trực tiếp</item>
+    </plurals>
+    <plurals name="sl_group_still">
+        <item quantity="other">%d mặt tĩnh</item>
+    </plurals>
+    <string name="sl_group_selected">Mặt bạn đã chọn, %1$s, nằm ở thẻ kia.</string>
+
+    <!-- Options that belong to one face -->
+    <string name="so_on">Bật</string>
+    <string name="so_off">Tắt</string>
+    <string name="so_hours">Giờ</string>
+    <string name="so_hours_system">Như máy tính bảng</string>
+    <string name="so_hours_12">12 giờ</string>
+    <string name="so_hours_24">24 giờ</string>
+    <string name="so_dial_style">Kiểu</string>
+    <string name="so_dial_braun">Braun</string>
+    <string name="so_dial_railway">Đường sắt</string>
+    <string name="so_dial_numerals">Toàn số</string>
+    <string name="so_dial_24">24 giờ</string>
+    <string name="so_dial_note">Mặt đồng hồ 24 giờ xoay kim giờ một lần mỗi ngày, với nửa đêm ở trên cùng.</string>
+    <string name="so_cube_shade">Cách tô bóng</string>
+    <string name="so_shade_dots">Chấm</string>
+    <string name="so_shade_lines">Nét chéo</string>
+    <string name="so_dash_tiles">Các ô</string>
+    <string name="so_tile_battery">Pin</string>
+    <string name="so_tile_asleep">Thời gian ngủ</string>
+    <string name="so_tile_alarm">Báo thức</string>
+    <string name="so_tile_agenda">Sự kiện sắp tới</string>
+    <string name="so_tile_day">Ngày</string>
+    <string name="so_tile_moon">Mặt trăng</string>
+    <string name="so_tile_weather">Thời tiết</string>
+    <string name="so_tile_year">Năm</string>
+    <string name="so_dash_note">Giờ và ngày luôn hiện. Thời tiết chỉ hiện nếu màn hình chính đã tải trong ba ngày qua. Sự kiện sắp tới cần quyền truy cập lịch và vẫn ẩn nếu không có.</string>
+    <string name="so_word_style">Kiểu</string>
+    <string name="so_word_grid">Lưới chữ cái</string>
+    <string name="so_word_alone">Chỉ chữ</string>
+    <string name="so_word_dots">Chấm phút</string>
+    <string name="so_word_note">Từ ngữ đổi mỗi năm phút, và các chấm bù thêm số phút xen kẽ. Với bước cập nhật từ 5 phút trở lên, cập nhật khi ngủ rơi đúng vào mốc năm phút, nên các chấm vẫn tắt trong lúc máy tính bảng ngủ.</string>
+    <string name="so_ring_top">Ở trên cùng</string>
+    <string name="so_ring_noon">Trưa</string>
+    <string name="so_ring_midnight">Nửa đêm</string>
+    <string name="so_ring_night">Tô bóng ban đêm</string>
+    <string name="so_sun_note">Mặt trời mọc và mặt trời lặn cần một thành phố thời tiết trên màn hình chính. Đó là nơi duy nhất BooxUltimatum biết.</string>
+    <string name="so_line_span">Khoảng</string>
+    <string name="so_line_around">Quanh hiện tại</string>
+    <string name="so_line_waking">6:00 đến nửa đêm</string>
+    <string name="so_line_day">Cả ngày</string>
+    <string name="so_year_layout">Bố cục</string>
+    <string name="so_year_months">Theo tháng</string>
+    <string name="so_year_rows">Mỗi tháng một hàng</string>
+    <string name="so_year_weeks">Theo tuần</string>
+    <string name="so_lcd_slant">Chữ số</string>
+    <string name="so_lcd_slanted">Nghiêng</string>
+    <string name="so_lcd_upright">Thẳng đứng</string>
+    <string name="so_lcd_ghost">Đoạn chưa sáng</string>
+    <string name="so_paper_lead">Tiêu đề</string>
+    <string name="so_paper_agenda">Sự kiện sắp tới</string>
+    <string name="so_paper_quote">Trích dẫn</string>
+    <string name="so_paper_note">Không có quyền truy cập lịch hoặc không có sự kiện nào trong tuần này, câu trích dẫn trong ngày sẽ làm tiêu đề.</string>
+
+    <!-- Printed on the second set of faces -->
+    <string name="sw_week">Tuần %1$d</string>
+    <string name="sw_day_of_year">Ngày %1$d trong %2$d</string>
+    <plurals name="sw_days_left">
+        <item quantity="other">Còn %d ngày</item>
+    </plurals>
+    <string name="sw_sunrise">Mặt trời mọc</string>
+    <string name="sw_sunset">Mặt trời lặn</string>
+    <string name="sw_daylight">Ánh sáng ban ngày</string>
+    <string name="sw_moon">Mặt trăng</string>
+    <string name="sw_lit">%1$d %% được chiếu sáng</string>
+    <string name="sw_weather">Thời tiết</string>
+    <string name="sw_as_of">Tính đến %1$s</string>
+    <string name="sw_alarm_none">Không có trong vòng một ngày</string>
+    <string name="sw_date">Ngày</string>
+    <string name="sw_day">Ngày</string>
+    <string name="sw_since">Từ %1$s</string>
+    <string name="sw_polar_day">Mặt trời không lặn suốt ngày</string>
+    <string name="sw_polar_night">Mặt trời không mọc suốt ngày</string>
+    <string name="sw_masthead">The Daily Standby</string>
+    <string name="sw_issue">Số %1$d</string>
+    <string name="sw_edition">Ấn phẩm ngày %1$s</string>
+    <string name="sw_sleep_report">Báo cáo giấc ngủ</string>
+    <string name="sw_ahead">Sắp tới</string>
+    <string name="sw_almanac">Lịch vạn niên</string>
+    <string name="sw_thought">Suy nghĩ trong ngày</string>
+    <string name="sw_nothing_today">Hôm nay không còn gì nữa</string>
+    <string name="sw_left_today">Hôm nay còn %1$s</string>
+    <string name="sw_sun_clock">Mặt trời theo đồng hồ</string>
+    <string name="sw_full_today">Trăng tròn hôm nay</string>
+    <string name="sw_new_today">Trăng non hôm nay</string>
+    <string name="sw_full_tomorrow">Trăng tròn ngày mai</string>
+    <string name="sw_new_tomorrow">Trăng non ngày mai</string>
+    <plurals name="sw_full_in">
+        <item quantity="other">Trăng tròn sau %d ngày</item>
+    </plurals>
+    <plurals name="sw_new_in">
+        <item quantity="other">Trăng non sau %d ngày</item>
+    </plurals>
+    <string name="sl_moon_new">Trăng non</string>
+    <string name="sl_moon_wax_crescent">Trăng lưỡi liềm sáng dần</string>
+    <string name="sl_moon_first">Trăng bán nửa đầu</string>
+    <string name="sl_moon_wax_gibbous">Trăng khuyết sáng dần</string>
+    <string name="sl_moon_full">Trăng tròn</string>
+    <string name="sl_moon_wane_gibbous">Trăng khuyết tối dần</string>
+    <string name="sl_moon_last">Trăng bán nửa cuối</string>
+    <string name="sl_moon_wane_crescent">Trăng lưỡi liềm tối dần</string>
+</resources>

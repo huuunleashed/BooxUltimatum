@@ -35,30 +35,30 @@ PLURAL_CATEGORIES = {
     'zh': ('other',),
 }
 
-STRING = re.compile(r'(?s)<string\b([^>]*?)(?:/>|>(.*?)</string>)')
-PLURAL = re.compile(r'(?s)<plurals\b([^>]*?)>(.*?)</plurals>')
 ITEM = re.compile(r'(?s)<item\b([^>]*?)>(.*?)</item>')
+ELEMENT = re.compile(r'(?s)<(string|plurals)\b([^>]*?)(?:/>|>(.*?)</\1>)')
 NAME = re.compile(r'name="([^"]+)"')
 QUANTITY = re.compile(r'quantity="([^"]+)"')
 SPEC = re.compile(r'%(\d+\$)?([sd])')
 
 
 def parse(text):
-    """The entries of one resource file: name -> (kind, formatted, translatable, body).
+    """The entries of one resource file, in the order they are written: name -> (kind, plain, translatable, body).
 
-    A string's body is its text; a plural's body is a list of (quantity, text).
+    A string's body is its text; a plural's body is a list of (quantity, text). The second flag says the
+    string is not formatted (`formatted="false"`), the third that it is not translated.
     """
     entries = {}
-    for m in PLURAL.finditer(text):
-        attrs = m.group(1)
+    for m in ELEMENT.finditer(text):
+        kind, attrs, body = m.group(1), m.group(2), m.group(3) or ''
         name = NAME.search(attrs).group(1)
-        body = [(QUANTITY.search(i.group(1)).group(1), i.group(2)) for i in ITEM.finditer(m.group(2))]
-        entries[name] = ('plurals', 'formatted="false"' in attrs, 'translatable="false"' in attrs, body)
-    for m in STRING.finditer(text):
-        attrs = m.group(1)
-        name = NAME.search(attrs).group(1)
-        body = m.group(2) or ''
-        entries[name] = ('string', 'formatted="false"' in attrs, 'translatable="false"' in attrs, body)
+        plain = 'formatted="false"' in attrs
+        translatable = 'translatable="false"' in attrs
+        if kind == 'plurals':
+            items = [(QUANTITY.search(i.group(1)).group(1), i.group(2)) for i in ITEM.finditer(body)]
+            entries[name] = ('plurals', plain, translatable, items)
+        else:
+            entries[name] = ('string', plain, translatable, body)
     return entries
 
 
@@ -104,7 +104,7 @@ def check_pair(path, base, locale, tag, problems):
     """Compares one locale file with its English file. Adds to [problems]."""
     where = '%s (%s)' % (os.path.relpath(path, ROOT).replace(os.sep, '/'), tag)
     for name, entry in base.items():
-        kind, formatted, translatable, body = entry
+        kind, plain, translatable, body = entry
         if translatable:
             if name in locale:
                 problems.append('%s: %s is marked translatable="false" in English and must not be translated' % (where, name))
@@ -115,32 +115,43 @@ def check_pair(path, base, locale, tag, problems):
         if name not in base:
             problems.append('%s: %s is not in the English file' % (where, name))
 
-    required = None
+    # The keys are in the same order, so a translator reads the two files side by side.
+    expected = [name for name, entry in base.items() if not entry[2]]
+    actual = [name for name in locale]
+    if actual != expected:
+        for index, (want, got) in enumerate(zip(expected, actual)):
+            if want != got:
+                problems.append('%s: the keys are in a different order; %s should come where %s is' % (where, want, got))
+                break
+        else:
+            problems.append('%s: the keys are in a different order (%d keys here and %d in English)' % (
+                where, len(actual), len(expected)))
+
     categories = PLURAL_CATEGORIES.get(language_of(tag))
-    for name, (kind, formatted, translatable, body) in base.items():
+    for name, (kind, plain, translatable, body) in base.items():
         if translatable or name not in locale:
             continue
-        lkind, lformatted, ltranslatable, lbody = locale[name]
+        lkind, lplain, ltranslatable, lbody = locale[name]
         if kind != lkind:
             problems.append('%s: %s is a %s in English and a %s here' % (where, name, kind, lkind))
             continue
-        if formatted != lformatted:
+        if plain != lplain:
             problems.append('%s: %s must keep formatted="false" (or drop it) like the English one' % (where, name))
         if kind == 'string':
             if not lbody.strip() and body.strip():
                 problems.append('%s: %s is empty' % (where, name))
-            if specifiers(not formatted, body) != specifiers(not lformatted, lbody):
+            if specifiers(not plain, body) != specifiers(not lplain, lbody):
                 problems.append('%s: %s has different values from the English one (%s and %s)' % (
-                    where, name, ' '.join(specifiers(not formatted, body)) or 'none', ' '.join(specifiers(not lformatted, lbody)) or 'none'))
+                    where, name, ' '.join(specifiers(not plain, body)) or 'none', ' '.join(specifiers(not lplain, lbody)) or 'none'))
         else:
             quantities = [q for q, _ in lbody]
             if categories is not None:
-                expected = set(q for q, _ in body) & set(categories)
-                if not expected:
-                    expected = {'other'}
-                if set(quantities) != expected:
+                wanted = set(q for q, _ in body) & set(categories)
+                if not wanted:
+                    wanted = {'other'}
+                if set(quantities) != wanted:
                     problems.append('%s: %s needs the %s form only, and has %s' % (
-                        where, name, ' and '.join(sorted(expected)), ' and '.join(sorted(quantities)) or 'none'))
+                        where, name, ' and '.join(sorted(wanted)), ' and '.join(sorted(quantities)) or 'none'))
             elif set(quantities) != set(q for q, _ in body):
                 problems.append('%s: %s has the forms %s and the English one has %s' % (
                     where, name, ' and '.join(sorted(quantities)), ' and '.join(sorted(q for q, _ in body))))
@@ -148,7 +159,7 @@ def check_pair(path, base, locale, tag, problems):
                 english = dict(body).get(quantity)
                 if english is None:
                     continue
-                if specifiers(not formatted, english) != specifiers(not lformatted, text):
+                if specifiers(not plain, english) != specifiers(not lplain, text):
                     problems.append('%s: %s (%s) has different values from the English one' % (where, name, quantity))
 
 

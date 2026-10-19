@@ -28,6 +28,7 @@ import java.util.Locale
 enum class SuiteLanguage(val folder: String, val locale: String, val endonym: String) {
     English("en", "en", "English"),
     ChineseSimplified("zh-rCN", "zh-CN", "简体中文"),
+    Vietnamese("vi", "vi", "Tiếng Việt"),
     ;
 
     companion object {

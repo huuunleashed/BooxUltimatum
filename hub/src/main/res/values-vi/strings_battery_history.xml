@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- History: the window's totals, the standby trend, the days and the discharge sessions. Counts use plurals. -->
+    <string name="bhi_question">Thế nào rồi? Thay đổi có ích không?</string>
+    <string name="bhi_read_window">Đọc lúc %1$s · cửa sổ %2$s</string>
+    <string name="bhi_window_label">Khoảng thời gian</string>
+    <plurals name="bhi_window_hours">
+        <item quantity="other">%d giờ</item>
+    </plurals>
+    <plurals name="bhi_window_days">
+        <item quantity="other">%d ngày</item>
+    </plurals>
+    <string name="bhi_nothing_yet">Chưa ghi nhận gì trong khoảng thời gian này.</string>
+    <string name="bhi_value_pair">%1$s · %2$s</string>
+    <string name="bhi_none">không có</string>
+
+    <string name="bhi_plate_over">Trong khoảng thời gian này</string>
+    <string name="bhi_average_draw">Mức dùng trung bình</string>
+    <string name="bhi_average_note">%/h là tỉ lệ của toàn bộ dung lượng pin dùng trong một giờ.</string>
+
+    <string name="bhi_plate_standby">Xu hướng khi chờ</string>
+    <string name="bhi_standby_explain">Mỗi thanh cho biết lượng pin dùng mỗi giờ trong lúc máy tính bảng ngủ vào ngày đó. Thanh có gạch chéo nghĩa là màn hình đã sáng trong lần ngủ đó.</string>
+    <string name="bhi_standby_none">Chưa ghi nhận đủ thời gian ngủ. Một ngày được tính khi đã có ít nhất một giờ ngủ.</string>
+    <string name="bhi_standby_detail">%1$s ngủ</string>
+    <string name="bhi_standby_detail_display">%1$s ngủ, màn hình vẫn sáng</string>
+    <string name="bhi_median">Trung vị</string>
+    <string name="bhi_normal_spread">Biến động bình thường</string>
+    <string name="bhi_normal_spread_note">Mức dùng pin khi chờ của bạn thay đổi bao nhiêu từ ngày này sang ngày khác trong điều kiện bình thường. Một thay đổi nhỏ hơn mức đó có thể chỉ là biến động, không phải kết quả.</string>
+
+    <string name="bhi_plate_days">Các ngày</string>
+    <string name="bhi_days_explain">Từng ngày, ngày mới nhất trước. Mục đã dùng là lượng điện lấy từ pin khi máy tính bảng không cắm sạc.</string>
+    <string name="bhi_days_none">Chưa có ngày nào được ghi nhận trong khoảng thời gian này.</string>
+    <string name="bhi_used">đã dùng %1$s</string>
+    <string name="bhi_day_figures">đang dùng %1$s · ngủ %2$s · sạc %3$s</string>
+    <string name="bhi_display_on_tag">Màn hình sáng khi ngủ</string>
+
+    <string name="bhi_plate_sessions">Các phiên chạy bằng pin</string>
+    <string name="bhi_sessions_explain">Mỗi lần chạy bằng pin, từ lúc rút sạc đến lần cắm sạc kế tiếp. Những lần dưới 15 phút được bỏ qua.</string>
+    <string name="bhi_sessions_none">Chưa có lần chạy bằng pin nào từ 15 phút trở lên trong khoảng thời gian này.</string>
+    <string name="bhi_session_range">từ %1$s đến %2$s</string>
+    <string name="bhi_day_time">%1$s %2$s</string>
+    <string name="bhi_percent_range">%1$d %% đến %2$d %%</string>
+    <string name="bhi_session_figures">%1$s · đang dùng %2$s · ngủ %3$s</string>
+</resources>

@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Launcher, widgets and fonts. Same voice rules as strings.xml. -->
+<resources>
+    <string name="launcher_name">Màn hình chính BooxUltimatum</string>
+
+    <!-- Settings > Home screen: our launcher -->
+    <string name="home_ours">Màn hình chính BooxUltimatum</string>
+    <string name="home_ours_off">Đang tắt. Nó không được đề xuất làm ứng dụng màn hình chính cho đến khi bạn bật.</string>
+    <string name="home_ours_on">Đang bật. Chọn nó bên dưới để làm màn hình chính của bạn.</string>
+    <string name="home_ours_enable">Bật</string>
+    <string name="home_ours_disable">Tắt</string>
+    <string name="home_preview">Xem trước</string>
+
+    <!-- Launcher home -->
+    <string name="l_all_apps">Tất cả ứng dụng</string>
+    <string name="l_page_of">Trang %1$d trong %2$d</string>
+
+    <!-- Header indicators -->
+    <string name="ind_wifi_connected">Wi-Fi</string>
+    <string name="ind_wifi_on">Wi-Fi, chưa kết nối</string>
+    <string name="ind_wifi_off">Wi-Fi tắt</string>
+    <string name="ind_bt_on">Bluetooth</string>
+    <string name="ind_bt_off">Bluetooth tắt</string>
+    <string name="ind_airplane">Máy bay</string>
+    <string name="ind_dnd">Không làm phiền</string>
+
+    <!-- Folders -->
+    <string name="l_rename">Đổi tên</string>
+    <string name="l_save">Lưu</string>
+    <string name="l_folder_hint">Chạm và giữ một ứng dụng trong thư mục để lấy ra hoặc chuyển nó.</string>
+    <string name="l_delete_folder">Xóa thư mục</string>
+    <string name="l_add_to_folder">Thêm vào thư mục</string>
+    <string name="l_out_of_folder">Lấy ra khỏi thư mục</string>
+    <string name="l_add_to_folder_title">Cho %1$s vào một thư mục</string>
+    <string name="l_new_folder">Tạo thư mục</string>
+    <string name="l_new_folder_hint">Tên thư mục mới</string>
+    <string name="l_folder_default">Thư mục</string>
+
+    <!-- Edit: icons, wallpaper, screen, font -->
+    <string name="l_icon_shape">Hình dạng</string>
+    <string name="l_shape_original">Theo thiết kế</string>
+    <string name="l_shape_circle">Tròn</string>
+    <string name="l_shape_rounded">Bo góc</string>
+    <string name="l_shape_squircle">Vuông bo</string>
+    <string name="l_shape_square">Vuông</string>
+    <string name="l_background">Nền</string>
+    <string name="l_wall_paper">Giấy trơn</string>
+    <string name="l_wall_system">Hình nền hệ thống</string>
+    <string name="l_wall_image">Một hình ảnh</string>
+    <string name="l_wall_choose">Chọn hình ảnh khác</string>
+    <string name="l_wall_remove">Gỡ bỏ hình ảnh</string>
+    <string name="l_veil">Lớp phủ giấy (%)</string>
+    <string name="l_wall_note">Giấy trơn không tải hình ảnh nào, nên dùng ít bộ nhớ nhất. Hình ảnh được lưu ở một nửa độ phân giải để tiết kiệm bộ nhớ.</string>
+    <string name="l_screen">Màn hình</string>
+    <string name="l_status_bar">Thanh trạng thái hệ thống</string>
+    <string name="l_status_show">Luôn hiện</string>
+    <string name="l_status_hide">Ẩn, vuốt xuống để thấy</string>
+    <string name="l_status_note">Trên Note Air6 C, phần mềm máy Boox vẽ biểu tượng của thanh trạng thái màu trắng trên các ứng dụng Boox không tạo ra, BooxUltimatum cũng vậy. Biểu tượng màu trắng không thấy được trên một thanh màu trắng. Đầu màn hình của Màn hình chính BooxUltimatum tự hiện giờ, kết nối và pin.</string>
+    <string name="l_indicators">Chỉ báo ở đầu màn hình</string>
+    <string name="l_ind_glyphs">Ký hiệu</string>
+    <string name="l_ind_both">Ký hiệu và chữ</string>
+    <string name="l_ind_text">Chữ</string>
+    <string name="l_settings_boox">Cài đặt Boox</string>
+    <string name="l_open_hub">Cài đặt BooxUltimatum</string>
+    <string name="l_edit_home">Sắp xếp màn hình chính</string>
+    <string name="boox_fn_notes">Ghi chú</string>
+    <string name="boox_fn_library">Thư viện</string>
+    <string name="boox_fn_storage">Dung lượng</string>
+    <string name="boox_fn_shop">Cửa hàng</string>
+    <string name="boox_fn_settings">Cài đặt Boox</string>
+    <string name="label_android_settings">Cài đặt Android</string>
+    <string name="label_boox_home">Màn hình chính Boox</string>
+    <string name="l_sort">Sắp xếp</string>
+    <string name="l_sort_name">A–Z</string>
+    <string name="l_sort_colour">Màu</string>
+    <string name="l_sort_recent">Dùng gần đây</string>
+    <string name="l_view_grid">Lưới</string>
+    <string name="l_view_list">Danh sách</string>
+    <string name="l_recent_never">Không dùng gần đây</string>
+    <string name="l_recent_ago">Dùng cách đây %1$s</string>
+    <string name="l_more_in_app">Đổi biểu tượng, nền, đầu màn hình, phông chữ và thanh trạng thái hệ thống trong BooxUltimatum › Giao diện.</string>
+    <string name="l_open_appearance">Giao diện</string>
+
+    <!-- Appearance screen -->
+    <string name="dest_appearance">Giao diện</string>
+    <string name="ap_subtitle">Thanh trạng thái trên toàn máy tính bảng, và cách Màn hình chính BooxUltimatum hiển thị</string>
+    <string name="ap_statusbar">Thanh trạng thái hệ thống</string>
+    <string name="ap_statusbar_explain">Chọn những biểu tượng mà thanh trạng thái hiện, trên toàn máy tính bảng và cả trong màn hình chính Boox. Việc này cần Shizuku hoặc quyền adb, và không có chúng BooxUltimatum sẽ báo lỗi. Những thiết kế biểu tượng bạn chọn bên dưới chỉ đổi đầu màn hình của Màn hình chính BooxUltimatum.</string>
+    <string name="ap_statusbar_note">Một biểu tượng chỉ xuất hiện khi tính năng của nó đang hoạt động, nên một biểu tượng đã bật vẫn có thể không có. Phần mềm máy vẽ các thiết kế này, và đổi chúng cần root, nên BooxUltimatum chỉ có thể hiện hoặc ẩn biểu tượng.</string>
+    <string name="ap_restore_boox">Khôi phục mặc định của Boox</string>
+    <string name="ap_show">Hiện</string>
+    <string name="ap_hide">Ẩn</string>
+    <string name="ap_battery_pct">Phần trăm pin</string>
+    <string name="ap_battery_pct_with_icon">Ẩn cùng biểu tượng pin. Android vẽ phần trăm bên trong biểu tượng, nên không thể hiện khi không có biểu tượng.</string>
+    <plurals name="ap_all_icons">
+        <item quantity="other">Hiện cả %d biểu tượng</item>
+    </plurals>
+    <string name="ap_text">Chữ</string>
+    <string name="ap_text_explain">Mực điện tử có thể làm chữ trông mảnh, nên mặc định chữ trong BooxUltimatum và Màn hình chính BooxUltimatum đậm hơn thiết kế một bậc. Hãy chọn độ đậm.</string>
+    <string name="ap_text_weight">Độ đậm</string>
+    <string name="ap_weight_designed">Theo thiết kế</string>
+    <string name="ap_weight_heavier">Đậm hơn</string>
+    <string name="ap_weight_heaviest">Đậm nhất</string>
+    <string name="ap_text_note">Màn hình chính BooxUltimatum dùng phông chữ của máy tính bảng ở mọi độ đậm. Một số phông chữ chỉ là một tệp biến thiên, và nếu không có BooxUltimatum, Android sẽ chọn độ đậm nhẹ nhất. Để đổi phông chữ cho cả máy tính bảng, hãy mở một phông chữ trong Phông chữ và chọn Dùng cho toàn máy tính bảng.</string>
+    <string name="ap_fewer_icons">Chỉ hiện biểu tượng thông dụng</string>
+    <string name="ap_home">Màn hình chính BooxUltimatum</string>
+    <string name="ap_home_explain">Các thay đổi có hiệu lực lần sau khi màn hình chính xuất hiện. Để sắp xếp lưới, tiện ích và thư mục, hãy chạm vào Sắp xếp màn hình chính, nút bút chì ở đầu màn hình chính.</string>
+    <string name="ap_wall_failed">Không đọc được hình ảnh đó.</string>
+    <string name="ap_more_fonts">Tải thêm phông chữ cho BooxUltimatum và màn hình chính của nó trong Phông chữ.</string>
+    <string name="ap_wifi_symbol">Ký hiệu Wi-Fi</string>
+    <string name="ap_battery_symbol">Ký hiệu pin</string>
+    <string name="ap_symbols_note">Mỗi thiết kế Wi-Fi được hiện ở ba trạng thái mạnh, yếu và tắt, và mỗi thiết kế pin ở ba trạng thái đang sạc, còn một nửa và sắp hết. Chúng chỉ xuất hiện ở đầu Màn hình chính BooxUltimatum. Thanh trạng thái hệ thống vẫn giữ biểu tượng của riêng phần mềm máy.</string>
+    <string name="gw_arcs">Cung</string>
+    <string name="gw_bars">Cột</string>
+    <string name="gw_fan">Quạt</string>
+    <string name="gw_ripples">Sóng</string>
+    <string name="gw_meter">Đồng hồ</string>
+    <string name="gw_dots">Chấm</string>
+    <string name="gw_mast">Cột sóng</string>
+    <string name="gw_steps">Bậc</string>
+    <string name="gb_cell">Ô</string>
+    <string name="gb_upright">Dọc</string>
+    <string name="gb_ring">Vòng</string>
+    <string name="gb_segments">Đoạn</string>
+    <string name="gb_scale">Thang</string>
+    <string name="gb_gauge">Đồng hồ đo</string>
+    <string name="gb_capsule">Hình nhộn</string>
+    <string name="gb_line">Đường</string>
+    <string name="sb_clock">Đồng hồ</string>
+    <string name="sb_refresh_mode">Chế độ làm mới mực điện tử</string>
+    <string name="sb_touch_mode">Chế độ chạm và bút</string>
+    <string name="sb_media_mute">Đã tắt tiếng</string>
+    <string name="sb_alarm">Báo thức</string>
+    <string name="sb_zen">Không làm phiền</string>
+    <string name="sb_volume">Âm lượng</string>
+    <string name="sb_mute">Đã tắt tiếng</string>
+    <string name="sb_headset">Tai nghe</string>
+    <string name="sb_rotate">Xoay màn hình</string>
+    <string name="sb_location">Vị trí</string>
+    <string name="sb_camera">Đang dùng camera</string>
+    <string name="sb_microphone">Đang dùng micrô</string>
+    <string name="sb_screen_record">Đang ghi màn hình</string>
+    <string name="sb_cast">Đang truyền hình ảnh</string>
+    <string name="sb_display">Màn hình đã kết nối</string>
+    <string name="sb_vpn">VPN</string>
+    <string name="sb_hotspot">Điểm phát sóng</string>
+    <string name="sb_data_saver">Trình tiết kiệm dữ liệu</string>
+    <string name="sb_bluetooth">Bluetooth</string>
+    <string name="sb_wifi">Wi-Fi</string>
+    <string name="sb_airplane">Chế độ máy bay</string>
+    <string name="sb_battery">Pin</string>
+    <string name="sb_sensors">Cảm biến tắt</string>
+    <string name="sb_booxdrop">Chuyển tệp BOOXDrop</string>
+    <string name="l_header_items">Hiện ở đầu màn hình</string>
+    <string name="l_hdr_time">Giờ</string>
+    <string name="l_hdr_date">Ngày</string>
+    <string name="l_hdr_wifi">Wi-Fi</string>
+    <string name="l_hdr_wifi_name">Tên mạng</string>
+    <string name="l_hdr_bt">Bluetooth</string>
+    <string name="l_hdr_batt_pct">Phần trăm pin</string>
+    <string name="l_header_note">Các nút màu đen được hiện ở đầu màn hình. Chế độ máy bay và Không làm phiền chỉ xuất hiện khi chúng đang bật. Tên mạng cần Shizuku, vì Android giấu nó khỏi các ứng dụng không có quyền truy cập vị trí. Không có Shizuku thì đầu màn hình không hiện tên mạng.</string>
+    <string name="l_font_source">Phông chữ</string>
+    <string name="l_font_app">Giống BooxUltimatum (%1$s)</string>
+    <plurals name="l_widget_count">
+        <item quantity="other">%1$d tiện ích</item>
+    </plurals>
+    <string name="l_pinned">%1$d đã ghim</string>
+    <plurals name="l_count">
+        <item quantity="other">%1$d ứng dụng</item>
+    </plurals>
+    <string name="l_close">Đóng</string>
+    <string name="l_search">Tìm ứng dụng</string>
+    <string name="l_empty_home">Chưa có gì được ghim. Mở Tất cả ứng dụng, chạm và giữ một ứng dụng rồi chọn Ghim vào màn hình chính.</string>
+    <string name="l_pin">Ghim vào màn hình chính</string>
+    <string name="l_unpin">Gỡ khỏi màn hình chính</string>
+    <string name="l_earlier">Chuyển lên trước</string>
+    <string name="l_later">Chuyển xuống sau</string>
+    <string name="l_hide">Ẩn</string>
+    <string name="l_unhide">Hiện lại</string>
+    <string name="l_uninstall">Gỡ cài đặt</string>
+    <string name="l_shortcuts">Lối tắt</string>
+    <string name="l_shortcuts_default">Lối tắt ứng dụng xuất hiện ở đây khi Màn hình chính BooxUltimatum là ứng dụng màn hình chính của bạn.</string>
+
+    <!-- Launcher edit -->
+    <string name="l_edit_title">Sắp xếp màn hình chính</string>
+    <string name="l_done">Xong</string>
+    <string name="l_grid">Lưới ứng dụng</string>
+    <string name="l_columns">Cột</string>
+    <string name="l_rows">Hàng</string>
+    <string name="l_rows_note">Đây là số hàng nhiều nhất mà lưới hiện. Tiện ích chiếm chỗ trước, và lưới lật trang thay vì cuộn.</string>
+    <string name="l_labels">Nhãn</string>
+    <string name="l_on">Bật</string>
+    <string name="l_off">Tắt</string>
+    <string name="l_icons">Biểu tượng</string>
+    <string name="l_icon_original">Gốc</string>
+    <string name="l_icon_mono">Đơn sắc</string>
+    <string name="l_icon_gray">Thang xám</string>
+    <string name="l_side_buttons">Nút âm lượng lật trang</string>
+    <string name="l_font_system">Phông chữ hệ thống</string>
+    <string name="l_widgets">Tiện ích</string>
+    <string name="l_add_widget">Thêm tiện ích</string>
+    <string name="l_no_widgets">Chưa có tiện ích nào. Hãy thêm đồng hồ, lịch, thời tiết hoặc tiện ích của bất kỳ ứng dụng nào.</string>
+    <string name="l_wide">Toàn bộ chiều rộng</string>
+    <string name="l_half">Một nửa chiều rộng</string>
+    <string name="l_make_wide">Làm toàn bộ chiều rộng</string>
+    <string name="l_make_half">Làm một nửa chiều rộng</string>
+    <string name="l_shorter">Thấp hơn</string>
+    <string name="l_taller">Cao hơn</string>
+    <string name="l_height_standard">Chiều cao chuẩn</string>
+    <plurals name="l_height_taller">
+        <item quantity="other">cao hơn %d bậc</item>
+    </plurals>
+    <plurals name="l_height_shorter">
+        <item quantity="other">thấp hơn %d bậc</item>
+    </plurals>
+    <plurals name="l_widgets_hidden_short">
+        <item quantity="other">%d tiện ích ngoài màn hình</item>
+    </plurals>
+    <plurals name="l_widgets_offscreen">
+        <item quantity="other">%d tiện ích không vừa trên màn hình chính ở hướng này. Hãy làm tiện ích thấp hơn hoặc rộng một nửa, hoặc bỏ bớt.</item>
+    </plurals>
+    <string name="l_remove">Gỡ bỏ</string>
+    <string name="l_weather_units">Nhiệt độ</string>
+    <string name="l_hidden">Ứng dụng đã ẩn</string>
+    <string name="l_hidden_none">Chưa có ứng dụng nào bị ẩn. Chạm và giữ bất kỳ ứng dụng nào để ẩn nó khỏi màn hình chính và Tất cả ứng dụng.</string>
+    <string name="l_frozen">Bị Boox đóng băng</string>
+    <string name="l_frozen_explain">Boox đã đóng băng ứng dụng này, nên Android sẽ không khởi động nó. Màn hình chính của Boox bỏ đóng băng ứng dụng khi bạn mở nó ở đó. BooxUltimatum làm được điều tương tự khi Shizuku đang chạy, và bạn có thể thiết lập Shizuku trong Thiết bị › Truy cập. Bạn cũng có thể bật ứng dụng trong trang App Freeze của Boox, rồi mở lại nó.</string>
+    <string name="l_frozen_explain_shizuku">Boox đã đóng băng ứng dụng này. Mở nó ở đây sẽ bỏ đóng băng trước, giống như màn hình chính của Boox. BooxUltimatum đóng băng lại khoảng một phút sau khi bạn quay lại màn hình chính này, hoặc khi máy tính bảng khóa.</string>
+    <string name="l_frozen_page">Mở App Freeze</string>
+    <string name="l_about_home">Giới thiệu Màn hình chính BooxUltimatum</string>
+    <string name="l_about_home_text">Màn hình ứng dụng gần đây, cử chỉ của Boox, NaviBall và EInkWise vẫn thuộc về Boox, nên chúng hoạt động như nhau dưới Màn hình chính BooxUltimatum. Bạn có thể khôi phục màn hình chính Boox từ BooxUltimatum › Bộ ứng dụng › Màn hình chính, chỉ một lần chạm nếu có Shizuku.</string>
+    <string name="l_open_app">Mở BooxUltimatum</string>
+    <string name="l_add">Thêm</string>
+    <string name="l_builtin_widgets">Có sẵn trong BooxUltimatum</string>
+    <string name="l_app_widgets">Từ ứng dụng của bạn · %1$d</string>
+
+    <!-- Widgets -->
+    <string name="w_clock">Đồng hồ</string>
+    <string name="w_calendar">Tháng</string>
+    <string name="w_agenda">Lịch trình</string>
+    <string name="w_weather">Thời tiết</string>
+    <string name="w_battery">Pin</string>
+    <string name="w_alarm">Báo thức tiếp theo</string>
+    <string name="w_note">Ghi chú</string>
+    <string name="w_boox">Boox</string>
+    <string name="wb_boox">Các nút cho Thư viện, Ghi chú, Dung lượng và Cài đặt Boox, chỉ cách một lần chạm trên Màn hình chính BooxUltimatum.</string>
+    <string name="w_boox_library">Thư viện</string>
+    <string name="w_boox_notes">Ghi chú</string>
+    <string name="w_boox_storage">Dung lượng</string>
+    <string name="w_system">Tiện ích ứng dụng</string>
+    <string name="wb_clock">Mặt đồng hồ kim với giờ, và ngày khi còn chỗ trống. Nó đổi mỗi phút một lần, không bao giờ mỗi giây.</string>
+    <string name="wb_calendar">Tháng này nhìn trong một nháy, có đánh dấu hôm nay. Những ngày có sự kiện sẽ có chấm nếu bạn cho phép truy cập lịch.</string>
+    <string name="wb_agenda">Các sự kiện sắp tới trong bảy ngày tới, từ những lịch trên máy tính bảng. Nó cần quyền truy cập lịch.</string>
+    <string name="wb_weather">Thời tiết hiện tại và vài ngày tới ở thành phố bạn chọn, lấy từ Open-Meteo. Nó không bao giờ đọc vị trí của bạn.</string>
+    <string name="wb_battery">Mức pin trên một thang đo, và máy tính bảng có đang sạc hay không.</string>
+    <string name="wb_alarm">Khi nào báo thức tiếp theo của bạn reo.</string>
+    <string name="wb_note">Một vài dòng để luôn ở trong tầm mắt. Chỉ được lưu trên máy tính bảng.</string>
+    <string name="w_agenda_permission">Cho phép truy cập lịch để xem các sự kiện sắp tới ở đây.</string>
+    <string name="w_allow_calendar">Cho phép truy cập lịch</string>
+    <string name="w_agenda_empty">Không có gì được lên lịch trong bảy ngày tới.</string>
+    <string name="w_today">Hôm nay</string>
+    <string name="w_tomorrow">Ngày mai</string>
+    <string name="w_alarm_none">Chưa đặt báo thức</string>
+    <string name="w_note_hint">Chạm để viết</string>
+    <string name="w_system_missing">Tiện ích này không còn khả dụng</string>
+    <string name="w_weather_pick">Chọn một thành phố</string>
+    <string name="w_weather_search">Tên thành phố</string>
+    <string name="w_weather_update">Cập nhật</string>
+    <string name="w_weather_loading">Đang tải thời tiết…</string>
+    <string name="w_weather_offline">Không kết nối được dịch vụ thời tiết. Đang hiện dự báo gần nhất, nếu có.</string>
+    <string name="w_weather_today">Hôm nay %1$d° / %2$d° · cập nhật %3$s · Open-Meteo</string>
+    <string name="w_weather_searching">Đang tìm…</string>
+    <string name="w_weather_empty">Chưa chọn thành phố nào. Dự báo chỉ tự cập nhật khi màn hình chính đang hiện, nhiều nhất một lần mỗi giờ.</string>
+    <string name="w_weather_change">Đổi thành phố</string>
+    <string name="w_weather_privacy">Nhập ít nhất hai chữ cái. Open-Meteo nhận tên bạn gõ, rồi nhận toạ độ của thành phố đã chọn để lấy dự báo. Vị trí của bạn không bao giờ được đọc.</string>
+    <string name="w_note_private">Chỉ lưu trên máy tính bảng. Không có gì được đồng bộ.</string>
+    <string name="w_weather_search_failed">Không kết nối được tìm kiếm thành phố. Hãy kiểm tra Wi‑Fi và thử lại.</string>
+    <string name="w_weather_no_city">Không có thành phố nào tên “%1$s”.</string>
+    <string name="sky_clear">Quang đãng</string>
+    <string name="sky_part">Có mây</string>
+    <string name="sky_cloud">Nhiều mây</string>
+    <string name="sky_fog">Sương mù</string>
+    <string name="sky_drizzle">Mưa phùn</string>
+    <string name="sky_rain">Mưa</string>
+    <string name="sky_snow">Tuyết</string>
+    <string name="sky_storm">Dông</string>
+
+    <string name="tw_serif_title">Phông chữ hệ thống có chân serif</string>
+    <string name="tw_serif_summary">Đổi phông chữ Android dùng cho màn hình của riêng nó thành Noto Serif, qua một tuỳ chọn phông chữ có sẵn trong phần mềm máy. Cần Shizuku, và không dùng được nếu phần mềm máy thiếu tuỳ chọn đó.</string>
+    <string name="tw_note_serif">Ảnh hưởng đến cài đặt Android và các ứng dụng dùng phông chữ hệ thống. Ứng dụng Boox giữ phông chữ của riêng mình.</string>
+</resources>

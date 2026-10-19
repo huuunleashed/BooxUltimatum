@@ -4,7 +4,7 @@
 
 **A suite of apps for the Boox Note Air6 C that needs no root: BooxUltimatum, with a home screen, a sleep screen designer, a battery doctor and reversible tweaks, and Nib, a drawing app that uses Boox's instant pen preview.**
 
-![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue) ![Status: public preview 0.11.0](https://img.shields.io/badge/status-public%20preview%200.11.0-orange) ![Android 11+](https://img.shields.io/badge/Android-11%2B-3ddc84) ![Tested on a Note Air6 C, firmware 4.3](https://img.shields.io/badge/tested%20on-Note%20Air6%20C%20%C2%B7%20FW%204.3-black)
+![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue) ![Status: public preview 0.12.0](https://img.shields.io/badge/status-public%20preview%200.12.0-orange) ![Android 11+](https://img.shields.io/badge/Android-11%2B-3ddc84) ![Tested on a Note Air6 C, firmware 4.3](https://img.shields.io/badge/tested%20on-Note%20Air6%20C%20%C2%B7%20FW%204.3-black)
 
 [**Website and technical guide**](https://huuunleashed.github.io/BooxUltimatum/) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md) · [Report a bug or a finding](https://github.com/huuunleashed/BooxUltimatum/issues/new/choose)
 
@@ -18,7 +18,7 @@ The Note Air6 C is a good tablet with two common complaints. Independent reviews
 
 Nothing is flashed, and the bootloader stays locked. BooxUltimatum is one APK (an Android app file), and the apps that build on it, starting with Nib, install and uninstall on their own. Some features need more than the app alone. [How much access it needs](#how-much-access-it-needs) explains the levels: nothing at all, one-time permissions you grant from a computer with `adb` (Android's debugging tool), and Shizuku, a free helper app.
 
-> **Status: public preview (0.11.0).** BooxUltimatum runs daily on the maintainer's Note Air6 C (firmware 4.3, Android 16) and hasn't been tested on other tablets yet. Download it from [Releases](https://github.com/huuunleashed/BooxUltimatum/releases), and please report how it behaves on your tablet. From 0.5 on, BooxUltimatum can update itself and help you file a report from its Device page.
+> **Status: public preview (0.12.0).** BooxUltimatum runs daily on the maintainer's Note Air6 C (firmware 4.3, Android 16) and hasn't been tested on other tablets yet. Download it from [Releases](https://github.com/huuunleashed/BooxUltimatum/releases), and please report how it behaves on your tablet. From 0.5 on, BooxUltimatum can update itself and help you file a report from its Device page.
 
 ## What it does
 
@@ -176,7 +176,7 @@ Firmware 4.3 hides the Wireless debugging switch from Developer options, and the
 
 ## Install
 
-**From a release:** download `BooxUltimatum-0.11.0.apk` from this repository's [Releases](https://github.com/huuunleashed/BooxUltimatum/releases) page, allow your browser or file manager to install apps, and open it. The Access page shows what each level unlocks and the exact commands for it. Releases are signed with the project's own key, so later releases update it in place. BooxUltimatum's Suite page installs Nib for you. You can also download `Nib-0.4.2.apk` from the same page, where Nib's releases are tagged `nib-v…`.
+**From a release:** download `BooxUltimatum-0.12.0.apk` from this repository's [Releases](https://github.com/huuunleashed/BooxUltimatum/releases) page, allow your browser or file manager to install apps, and open it. The Access page shows what each level unlocks and the exact commands for it. Releases are signed with the project's own key, so later releases update it in place. BooxUltimatum's Suite page installs Nib for you. You can also download `Nib-0.4.2.apk` from the same page, where Nib's releases are tagged `nib-v…`.
 
 **Test builds:** unfinished builds of BooxUltimatum or Nib are sometimes published as `test-…` pre-releases, so they can be checked on a real tablet. BooxUltimatum offers them only when *Offer test builds* is turned on (Device page). A release always replaces its own test build.
 
@@ -210,14 +210,14 @@ The apps follow the tablet's language, so a Chinese tablet reads Chinese with no
 - **In the app:** Device › Language in BooxUltimatum, and About › Language in Nib.
 - **In Android's own settings, on Android 13 and later:** Settings › Apps › App languages. The app and Android's own screen write to the same place, so they never disagree.
 
-BooxUltimatum and the shared kit read in **Simplified Chinese** today, and a **Vietnamese** translation is being made. Nib's own 546 strings are not translated yet, so Nib offers just the tablet's language. The few strings the two apps share, the updater's words, follow the tablet in both.
+BooxUltimatum, Nib, the shared kit and the updater read in **Simplified Chinese** and in **Vietnamese**.
 
 Two things to know:
 
 - **Each app keeps its own language.** BooxUltimatum and Nib are separate programs, so choosing Chinese in one does not change the other.
 - **Chinese text is drawn in the tablet's own font.** The app's bundled face, Archivo, has no Chinese characters, so the words fall back to the tablet's system font. A tablet whose system font has no Chinese needs a font with Chinese coverage, which the Fonts page can install.
 
-A new language is a folder of translated strings and one line in the app's list; the convention is in [`docs/12-languages.md`](docs/12-languages.md) and the contributions are welcome.
+The Vietnamese was written with an assistant and checked against the English by script, which holds the words, the values and the plural forms right, but says nothing about how it reads. A reader who writes Vietnamese is welcome to correct it; a new language is a folder and a line, and the convention is in [`docs/12-languages.md`](docs/12-languages.md).
 
 ## Known limits
 
@@ -351,13 +351,16 @@ No dates are promised. This is a spare-time project, and each release ships when
   - Zooming shows the new page in one frame, drawn about as fast again, and the pencil is crisp at the zoom you stop on.
   - A pen's width and the pencil's grain are the page's, so a stroke is the same stroke at every zoom.
   - The stroke eraser keeps up however many strokes it crosses.
-- **Next: the suite in more languages.**
+- **0.12.0, the suite in more languages (released 2026-10-19)**
   - A Language row in BooxUltimatum and in Nib, the tablet's language by default and the app's own choice kept for each app, and the app's languages listed in Android's own App languages screen on Android 13 and later.
-  - A Simplified Chinese translation of BooxUltimatum and the shared kit, and a Vietnamese one being made. Nib's own strings are still to be translated.
+  - A Simplified Chinese and a Vietnamese translation of the whole suite: the hub, Nib, the shared kit and the updater.
   - A check that keeps a translation honest: every string present, the values in a string unchanged, and the plural forms the language has.
+- **Nib 0.5.0, Nib in more languages (released 2026-10-19)**
+  - Nib reads in Simplified Chinese and Vietnamese, and has a Language row of its own on the About page, so it can be in a different language from BooxUltimatum.
+  - Nothing about drawing changed.
 - **Next: System › Tweaks revised**, with the findings on the Battery pages opening the right tweak and showing its measured effect.
 - **Compare the Sleep page's sticker steps with a Note Air4 C**, once its owner has described the screensaver settings on it (issue #5).
-- **Nib 0.5 and on**
+- **Nib 0.6 and on**
   - The thinnest clean preview, and anything the Lab shows needs changing.
   - Image import, PDF and OpenRaster export, templates, and pages or an endless canvas.
 - **Home polish**

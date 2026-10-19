@@ -71,8 +71,9 @@ The convention is in [`docs/12-languages.md`](docs/12-languages.md), and the sho
 1. **Make the folder.** `hub/src/main/res/values-<tag>/`, with the same file names as the English folder beside it, and the same keys in the same order. The tag is specific: `vi`, `zh-rCN`, `zh-rTW`. Do not make a generic `values-zh`.
 2. **Translate the strings.** Every string the English side has, and no others. The values in a string stay as they are: `%1$s` stays `%1$s`. Leave the brand names, the units, the paths, the log tags and the font samples in English, and leave a string marked `translatable="false"` alone.
 3. **Give the plurals the forms the language has.** Chinese and Vietnamese have one, `other`; English and most European languages have two, `one` and `other`.
-4. **Tell the app about it.** Add the language to `SuiteLanguage` in `kit/core`, with the resource folder, the BCP 47 name Android uses (`zh-CN`) and the language in its own words, and add it to the app's `res/xml/locales_config.xml`. An app offers a language when it has the words for it, so Nib needs its own folder before it can offer it.
-5. **Check it.** `python tools/dev/check_translations.py` reports anything that does not line up, and `--report` says what each language covers. The same check runs on every push.
+4. **Keep the glossary.** The terms the language uses for the suite's own things are in `docs/12-languages.md`, one table per language. A language that says a thing in two ways is as hard to read as an English string that uses two names for it, so a new term goes in the table too.
+5. **Tell the app about it.** Add the language to `SuiteLanguage` in `kit/core`, with the resource folder, the BCP 47 name Android uses (`zh-CN`) and the language in its own words, and add it to the app's `res/xml/locales_config.xml`. An app offers a language when it has the words for it, so Nib needs its own folder before it can offer it.
+6. **Check it.** `python tools/dev/check_translations.py` reports anything that does not line up, and `--report` says what each language covers. The same check runs on every push.
 
 ## Conduct
 

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="update_idle">Sẵn sàng kiểm tra cập nhật.</string>
+    <string name="update_development">Đây là bản phát triển, nên nó không thể cài các bản phát hành đã công bố. Android sẽ từ chối vì chúng được ký bằng khóa khác, và gỡ cài đặt trước sẽ xóa dữ liệu của ứng dụng. Hãy cập nhật từ máy tính thay thế.</string>
+    <string name="update_checking">Đang kiểm tra GitHub Releases…</string>
+    <string name="update_up_to_date">Đã là bản mới nhất.</string>
+    <string name="update_not_published">Chưa cài đặt, và chưa có bản phát hành nào được công bố khớp với cài đặt cập nhật của bạn.</string>
+    <string name="update_available">Đã có phiên bản %1$s.</string>
+    <string name="update_available_test">Đã có bản thử %1$s.</string>
+    <string name="update_install_available">Có thể cài phiên bản %1$s.</string>
+    <string name="update_no_checksum">Phiên bản %1$s được công bố mà không có tổng kiểm SHA-256 dùng để kiểm tra tệp tải về, nên nó sẽ không được cài.</string>
+    <string name="update_downloading">Đang tải %1$d %%…</string>
+    <string name="update_verifying">Đang kiểm tra tệp tải về…</string>
+    <string name="update_need_sources">Trước tiên, hãy cho phép cài đặt từ ứng dụng này trong cài đặt của Android.</string>
+    <string name="update_installing">Đang chuyển tệp tải về cho trình cài đặt của Android…</string>
+    <string name="update_confirming">Android đang yêu cầu bạn xác nhận việc cài đặt.</string>
+    <string name="update_installed">Đã cài đặt.</string>
+    <string name="update_failed_check">Không kiểm tra được: %1$s</string>
+    <string name="update_failed_download">Tải về thất bại: %1$s</string>
+    <string name="update_failed_verify">Tệp tải về không vượt qua kiểm tra: %1$s</string>
+    <string name="update_failed_install">Cài đặt thất bại: %1$s</string>
+    <string name="update_android_refused">Android đã từ chối cài đặt.</string>
+</resources>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="bh_plate_capacity">Dung lượng</string>
+    <string name="bh_capacity_explain">Lượng điện mà pin chứa được, tính ra từ bộ đếm sạc và mức sạc ghi trong nhật ký của bạn. Cho tới khi nhật ký có số liệu dùng được, nó hiện là Chưa đủ nhật ký.</string>
+    <string name="bh_learned">Dung lượng đã học</string>
+    <string name="bh_not_enough_log">Chưa đủ nhật ký</string>
+    <string name="bh_unknown">Không rõ</string>
+    <string name="bh_plate_condition">Tình trạng</string>
+    <string name="bh_not_charging">Hiện không sạc.</string>
+    <string name="bh_time_to_full">Thời gian để sạc đầy</string>
+    <string name="bh_time_to_full_note">Ở tốc độ hiện tại</string>
+    <string name="bh_value_ma">%1$.0f mA</string>
+    <string name="bh_value_volts">%1$.2f V</string>
+    <string name="bh_value_celsius">%1$.1f °C</string>
+    <string name="bh_plate_protection">Bảo vệ khi sạc</string>
+    <string name="bh_protection" formatted="false">Bảo vệ khi sạc của Boox dừng sạc ở mức 80 %. Mức đó là cố định: các mức khác cần root, nên BooxUltimatum không thể đổi. Nó nằm trong cài đặt riêng của Boox, không ở đây.</string>
+</resources>
