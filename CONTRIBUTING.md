@@ -9,7 +9,7 @@ In rough order of value:
 1. **Findings from other Boox tablets and firmware.** Does the sleep screen work on your Note Air 5 C, Tab Ultra or Go 10.3? Does Instant ink start? What does `dumpsys oec_service` print? (`dumpsys` is an adb command that prints what an Android service reports.) Use the *Device finding* issue form.
 2. **Bug reports** with tablet, firmware, orientation and steps. Use the *Bug report* form.
 3. **Battery measurements:** an overnight run with BooxUltimatum's battery log and its exported zip, before and after a tweak.
-4. **Translations:** a Vietnamese translation is planned first. Strings live in `hub/src/main/res/values/strings*.xml` (and each `kit/*/src/main/res` for shared strings; Nib's are in `nib/src/main/res`).
+4. **Translations:** the hub and the shared kit read in Simplified Chinese, and the maintainer's own Vietnamese is on the way. A new language is a folder and a set of strings: the convention, and what stays in English, are in [`docs/12-languages.md`](docs/12-languages.md). Strings live in `hub/src/main/res/values/strings*.xml` (and each `kit/*/src/main/res` for shared strings; Nib's are in `nib/src/main/res`).
 5. **Code:** start with an issue labelled `good first issue`, or open an *Idea* issue first so you and the maintainer can agree on the approach before you spend time on it.
 
 ## Reporting a bug or a finding
@@ -63,6 +63,16 @@ adb install -r hub\build\outputs\apk\release\hub-release.apk
 1. **No hard-wrapped prose.** Write each paragraph, list item and blockquote as one logical line and let the editor wrap it. The exceptions are code comments and places where a line break is actually needed: code blocks, tables, output samples, and intentional Markdown line breaks. Check with `python tools/dev/prose_wrap.py`; fix with `--fix`.
 2. **Plain words.** Say what a change does before how it works. Prefer short sentences and concrete numbers with their source.
 3. **The Words section of `AGENTS.md`.** Anyone writing text that people read (the apps' strings, the README, the site, the release notes, or a doc that describes a feature) should read the *Words* section of [`AGENTS.md`](AGENTS.md) first. It says who the words are for, the voice, how to describe a feature and how to name things. Its table gives one term for each thing, for example *tablet* rather than *device*, *Turn on* rather than *enable*, and *home app* rather than *launcher*.
+
+## Adding a language
+
+The convention is in [`docs/12-languages.md`](docs/12-languages.md), and the short version is this.
+
+1. **Make the folder.** `hub/src/main/res/values-<tag>/`, with the same file names as the English folder beside it, and the same keys in the same order. The tag is specific: `vi`, `zh-rCN`, `zh-rTW`. Do not make a generic `values-zh`.
+2. **Translate the strings.** Every string the English side has, and no others. The values in a string stay as they are: `%1$s` stays `%1$s`. Leave the brand names, the units, the paths, the log tags and the font samples in English, and leave a string marked `translatable="false"` alone.
+3. **Give the plurals the forms the language has.** Chinese and Vietnamese have one, `other`; English and most European languages have two, `one` and `other`.
+4. **Tell the app about it.** Add the language to `SuiteLanguage` in `kit/core`, with the resource folder, the BCP 47 name Android uses (`zh-CN`) and the language in its own words, and add it to the app's `res/xml/locales_config.xml`. An app offers a language when it has the words for it, so Nib needs its own folder before it can offer it.
+5. **Check it.** `python tools/dev/check_translations.py` reports anything that does not line up, and `--report` says what each language covers. The same check runs on every push.
 
 ## Conduct
 

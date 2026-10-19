@@ -1,9 +1,11 @@
 package app.booxultimatum
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.mutableIntStateOf
+import app.booxultimatum.kit.core.AppLanguage
 import app.booxultimatum.kit.core.SuiteApp
 import app.booxultimatum.kit.ui.theme.InstrumentTheme
 import app.booxultimatum.kit.update.Updates
@@ -16,6 +18,12 @@ class MainActivity : ComponentActivity() {
     private val onBinder = Shizuku.OnBinderReceivedListener { app.booxultimatum.core.exec.Privileged.retryNow(); accessEvents.intValue++ }
     private val onBinderDead = Shizuku.OnBinderDeadListener { accessEvents.intValue++ }
     private val onPermission = Shizuku.OnRequestPermissionResultListener { _, _ -> accessEvents.intValue++ }
+
+    override fun attachBaseContext(newBase: Context) {
+        // The app's own language. Android 13 and later has already applied it; on Android 11 and 12 it is
+        // applied here, so the words in the app follow the language the reader chose.
+        super.attachBaseContext(AppLanguage.wrap(newBase))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

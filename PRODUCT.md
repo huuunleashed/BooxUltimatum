@@ -8,7 +8,7 @@ android
 
 ## Users
 
-The users are owners of a Boox tablet who read, take handwritten notes and run Android apps on it. They want the tablet to last longer on a charge, and they want to understand and control what it's doing. The best-tested tablet is the maintainer's Note Air6 C, but it isn't the only one: owners of a Go 10.3 and an Air 4C are already reporting issues. Many are technically curious members of the wider Boox community. They sideload the APK from GitHub, some comfortable with adb (Android's debugging tool) and many not. Every screen must make sense to someone who hasn't read the docs.
+The users are owners of a Boox tablet who read, take handwritten notes and run Android apps on it. They want the tablet to last longer on a charge, and they want to understand and control what it's doing. The best-tested tablet is the maintainer's Note Air6 C, but it isn't the only one: owners of a Go 10.3 and an Air 4C are already reporting issues. Many are technically curious members of the wider Boox community. They sideload the APK from GitHub, some comfortable with adb (Android's debugging tool) and many not. Every screen must make sense to someone who hasn't read the docs. Some of them read in a language their tablet is not set to, so the app's own language is a setting of its own.
 
 ## Product Purpose
 
@@ -57,4 +57,4 @@ BooxUltimatum is built around evidence from real Boox hardware. Every tweak is b
 
 ## Accessibility & Inclusion
 
-The e-ink screen is the primary accessibility constraint. Use high contrast (pure black on white at minimum), make meaning never depend on colour alone (colour renders muted and grainy at 150 ppi), use 48 dp minimum touch targets suited to stylus and finger, follow the tablet's font scale in sp, and avoid motion.
+The e-ink screen is the primary accessibility constraint. Use high contrast (pure black on white at minimum), make meaning never depend on colour alone (colour renders muted and grainy at 150 ppi), use 48 dp minimum touch targets suited to stylus and finger, follow the tablet's font scale in sp, and avoid motion. The app's words follow the tablet's language, and the reader can choose another one for the app alone; a letter the app's own face does not have is drawn in the tablet's system font.

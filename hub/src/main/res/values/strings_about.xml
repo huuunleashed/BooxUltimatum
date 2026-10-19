@@ -15,6 +15,10 @@
     <string name="about_unknown_sources">Open install settings</string>
     <string name="about_unknown_sources_note">Android needs you to allow BooxUltimatum to install apps before the update can start. Tap Open install settings to allow it.</string>
 
+    <string name="lang_title">Language</string>
+    <string name="lang_system">Same as the tablet</string>
+    <string name="lang_explain">The words in BooxUltimatum follow the tablet’s language until you choose another one here.</string>
+
     <string name="feedback_entry">Report a problem or idea</string>
     <string name="feedback_title">Report a problem or idea</string>
     <string name="feedback_subtitle">Nothing is sent until you tap Open on GitHub or Share.</string>

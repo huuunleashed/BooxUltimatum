@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_next">下一步</string>
+    <string name="action_previous">上一步</string>
+    <string name="pager_position">第 %1$d 页，共 %2$d 页</string>
+    <string name="state_reading">正在读取平板…</string>
+    <string name="scale_description">电池电量百分之 %1$d</string>
+    <string name="lamp_on">开</string>
+    <string name="lamp_off">关</string>
+    <string name="duration_dh">%1$d 天 %2$d 小时</string>
+    <string name="duration_hm">%1$d 小时 %2$d 分钟</string>
+    <string name="duration_m">%1$d 分钟</string>
+    <string name="unit_mah">%1$s mAh</string>
+    <string name="unit_percent">%1$s %%</string>
+    <string name="action_clear">清除</string>
+</resources>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ba_plate_title">提醒与保护措施</string>
+    <string name="ba_report_title">早间报告</string>
+    <string name="ba_report_body">平板使用电池睡眠 4 小时或更长时间后，BooxUltimatum 会发出一条简短通知，说明耗电量和任何异常情况。它还会说明电量何时耗尽。这需要通知权限，没有权限则不会显示任何内容。</string>
+    <string name="ba_notify_blocked">BooxUltimatum 的通知被阻止，因此报告无法显示。请在 Android 设置中允许通知。</string>
+    <string name="ba_preview">显示昨晚的报告</string>
+    <string name="ba_preview_sent">已发送到你的通知。</string>
+    <string name="ba_preview_none">过去 48 小时内没有 4 小时或更长的睡眠。</string>
+    <string name="ba_preview_failed">刚刚无法读取日志。</string>
+    <string name="ba_guard_title">关闭一直亮着的屏幕</string>
+    <string name="ba_experimental">实验性</string>
+    <string name="ba_guard_body">\"如果平板处于睡眠状态时屏幕一直亮着，可能整夜耗电，BooxUltimatum 会尝试将其关闭。它在 2 分钟后开始尝试，之后在 5、10、20 和 40 分钟时再试，然后每小时尝试一次，直到屏幕熄灭。
+每次尝试执行五个步骤，并在第一个生效的步骤处停止。它请求 Boox 睡眠屏刷新，告知它屏幕处于亮屏状态，锁定屏幕，唤醒平板并再次锁定，以及按下唤醒键和睡眠键。其中锁定屏幕的两个步骤需要 BooxUltimatum 的无障碍服务，最后一个步骤需要 Shizuku。缺少这些权限时，相应步骤会被跳过。日志会记录每一步的结果。在 Note Air6 C 上，目前尚未见到任何一步生效。\"</string>
+    <string name="ba_guard_last">上次：%1$s，%2$s</string>
+    <string name="ba_guard_healed_by">已解决：%1$s</string>
+    <string name="ba_guard_not_healed_by">屏幕一直亮着</string>
+    <string name="ba_keepalive_title">睡眠期间刷新睡眠屏</string>
+    <string name="ba_keepalive_body">平板睡眠期间，如果没有其他操作刷新，BooxUltimatum 每 30 分钟请求睡眠屏刷新一次。在 Note Air6 C 上，Android 自行重启后，每当 90 分钟没有刷新，屏幕就会整夜亮着并耗电。一次刷新的耗电量远低于每晚 1 mAh。这只是针对该现象的预防措施，并非已验证的解决办法。</string>
+    <string name="ba_when">%1$s %2$s</string>
+    <string name="ba_state_on">开</string>
+    <string name="ba_state_off">关</string>
+    <string name="ba_turn_on">开启</string>
+    <string name="ba_turn_off">关闭</string>
+    <string name="ba_channel">电池报告</string>
+    <string name="ba_normal_title">睡眠 %1$s，耗电 %2$d %%</string>
+    <string name="ba_normal_text">电量 %1$d %% 到 %2$d %%。没有异常。</string>
+    <string name="ba_normal_text_guard">电量 %1$d %% 到 %2$d %%。%3$s</string>
+    <string name="ba_finding_text">%1$s。%2$s</string>
+    <string name="ba_died_text">在 %1$s（%2$s）电量耗尽。</string>
+    <string name="ba_before_text">%1$s：%2$s。</string>
+    <string name="ba_guard_healed">关闭一直亮着的屏幕（实验性）：%1$s，屏幕已进入睡眠。</string>
+    <string name="ba_guard_tried">关闭屏幕的尝试失败（实验性）：屏幕一直亮着。</string>
+    <string name="ba_restart_title">Android 自行重启</string>
+    <string name="ba_restart_text">Android 自行重启了，此后平板尚未重启过。在 Note Air6 C 上，处理器随后在睡眠期间一直保持唤醒，耗电量达到数倍。有两次屏幕还整夜亮着，把电量耗尽。重启后这两种情况都消失了。在让平板睡眠前请先重启：长按电源键，然后点按“重启”。</string>
+    <string name="ba_restart_channel">重启建议</string>
+    <string name="ba_awake_title">平板休眠期间处理器保持唤醒</string>
+    <string name="ba_awake_text">平板处理器在 %1$s 的休眠期间一直保持唤醒，耗电量是正常休眠的数倍。在 Note Air6 C 上，这种状态可能让屏幕整夜亮着，而每次重启平板都能解决。请长按电源键，然后点按“重启”。</string>
+    <string name="ba_awake_app_title">有应用在休眠期间让平板保持唤醒</string>
+    <string name="ba_awake_app_text">由于某个应用持有唤醒锁，平板处理器在 %1$s 的休眠期间一直保持唤醒。打开“电池 › 原因”查看是哪个应用。</string>
+    <string name="ba_step_refresh">BooxUltimatum 请求睡眠屏刷新</string>
+    <string name="ba_step_lock">BooxUltimatum 锁定了屏幕</string>
+    <string name="ba_step_key">BooxUltimatum 按下了唤醒键和睡眠键</string>
+    <string name="ba_step_nudge">BooxUltimatum 告知睡眠屏屏幕处于亮屏状态</string>
+    <string name="ba_step_cycle">BooxUltimatum 唤醒平板并再次锁定</string>
+</resources>

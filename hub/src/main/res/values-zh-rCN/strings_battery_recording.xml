@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="brc_recording_title">记录</string>
+    <string name="brc_under_a_day">覆盖不足一天</string>
+    <plurals name="brc_covered_days"><item quantity="other">已覆盖 %d 天</item></plurals>
+    <string name="brc_nothing_recorded">尚未记录任何内容</string>
+    <string name="brc_detail">%1$s · 平板上 %2$s</string>
+    <string name="brc_size_kb">%1$d KB</string>
+    <string name="brc_size_mb">%1$s MB</string>
+    <string name="brc_folder">文件夹</string>
+    <string name="brc_folder_path">Android/data/app.booxultimatum/files/logs/</string>
+    <string name="brc_export">导出日志</string>
+    <string name="brc_export_empty">尚无可导出的日志。</string>
+    <string name="brc_report_title">电池报告</string>
+    <string name="brc_report_explain">一个 zip 压缩包，包含最近 72 小时的日志、带证据的发现以及一份简明摘要。发送到哪里由你决定。</string>
+    <string name="brc_include_apps">包含应用名称</string>
+    <string name="brc_apps_in">已包含</string>
+    <string name="brc_apps_out">已略去</string>
+    <string name="brc_apps_explain">应用使用情况能反映你如何使用平板。除非你开启“包含应用名称”，否则报告会略去应用名称以及你所加标记的标签。</string>
+    <string name="brc_share_report">分享电池报告</string>
+    <string name="brc_preparing">正在准备文件…</string>
+    <string name="brc_failed">无法准备文件：%1$s</string>
+    <string name="brc_earlier_title">更早的测量结果</string>
+    <string name="brc_earlier_explain">来自旧的“测量耗电”测试的结果，BooxUltimatum 已不再提供该测试。保留它们是为了让你仍能查看。</string>
+</resources>

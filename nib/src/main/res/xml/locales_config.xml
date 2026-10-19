@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The languages Nib has words for. Android reads this for the system's own App languages screen, and the app
+  reads it for its own picker, so the two can never offer different things.
+  tools/dev/check_translations.py keeps it in step with the resource folders.
+-->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="en" />
+</locale-config>

@@ -21,8 +21,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import app.booxultimatum.kit.core.AppLanguage
 import app.booxultimatum.kit.core.Suite
 import app.booxultimatum.kit.core.SuiteApp
+import app.booxultimatum.kit.ui.LanguageChoice
 import app.booxultimatum.kit.update.UpdatePhase
 import app.booxultimatum.kit.update.UpdateText
 import app.booxultimatum.kit.update.Updates
@@ -59,6 +61,17 @@ fun AboutScreen(onBack: () -> Unit) {
                 Text(stringResource(R.string.about_summary), style = StudioType.Body)
                 SpecLine(stringResource(R.string.about_version), "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
                 SpecLine(stringResource(R.string.about_build), stringResource(if (release) R.string.about_build_release else R.string.about_build_development))
+            }
+            StudioSection(stringResource(R.string.lang_title)) {
+                val languages = remember { AppLanguage.supported(context, R.xml.locales_config) }
+                val language = remember { AppLanguage.current(context) }
+                LanguageChoice(
+                    languages = languages,
+                    current = language,
+                    detail = stringResource(R.string.lang_explain),
+                    systemLabel = stringResource(R.string.lang_system),
+                    onChange = { AppLanguage.change(context, it) },
+                )
             }
             StudioSection(stringResource(R.string.about_updates)) {
                 if (hub != null) {

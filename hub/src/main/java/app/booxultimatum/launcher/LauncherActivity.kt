@@ -423,6 +423,15 @@ class LauncherActivity : ComponentActivity() {
     private val strayInkCheck = Runnable { app.booxultimatum.core.ink.StrayInk.check(this) }
     private var pendingProvider: AppWidgetProviderInfo? = null
 
+    /** The language home was last drawn in, so a change made in the app is noticed when home comes back. */
+    private var language: String? = null
+
+    override fun attachBaseContext(newBase: android.content.Context) {
+        // The app's own language. Android 13 and later has already applied it; on Android 11 and 12 it is
+        // applied here, so the words on home follow the language the reader chose.
+        super.attachBaseContext(app.booxultimatum.kit.core.AppLanguage.wrap(newBase))
+    }
+
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.action) {
@@ -513,6 +522,15 @@ class LauncherActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
+        // On Android 11 and 12 the app keeps its own language, and home is a screen of its own: it starts again
+        // when the language it was drawn in is not the one the app is in now. Android 13 and later change the
+        // configuration itself, and home handles that without being started again.
+        val now = app.booxultimatum.kit.core.AppLanguage.current(this)?.locale
+        if (language != null && language != now) {
+            recreate()
+            return
+        }
+        language = now
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_TIME_TICK)
             addAction(Intent.ACTION_TIME_CHANGED)

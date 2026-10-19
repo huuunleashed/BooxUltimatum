@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="bh_plate_capacity">容量</string>
+    <string name="bh_capacity_explain">电池能容纳多少电量，根据日志中记录的充电计数器和电量推算。在日志有可用读数之前，会显示“日志数据不足”。</string>
+    <string name="bh_learned">学习所得容量</string>
+    <string name="bh_not_enough_log">日志数据不足</string>
+    <string name="bh_unknown">未知</string>
+    <string name="bh_plate_condition">状况</string>
+    <string name="bh_not_charging">当前未充电。</string>
+    <string name="bh_time_to_full">充满所需时间</string>
+    <string name="bh_time_to_full_note">按当前速率</string>
+    <string name="bh_value_ma">%1$.0f mA</string>
+    <string name="bh_value_volts">%1$.2f V</string>
+    <string name="bh_value_celsius">%1$.1f °C</string>
+    <string name="bh_plate_protection">充电保护</string>
+    <string name="bh_protection" formatted="false">Boox 的充电保护会在 80 % 时停止充电。该值是固定的：其他数值需要 root，因此本中心无法更改。它在 Boox 自己的设置里，不在这里。</string>
+</resources>

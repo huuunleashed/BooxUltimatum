@@ -14,6 +14,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -24,9 +25,11 @@ import app.booxultimatum.BuildConfig
 import app.booxultimatum.R
 import app.booxultimatum.core.DeviceReader
 import app.booxultimatum.core.feedback.FeedbackType
+import app.booxultimatum.kit.core.AppLanguage
 import app.booxultimatum.kit.core.SuiteApp
 import app.booxultimatum.kit.ui.InstrumentPage
 import app.booxultimatum.kit.ui.Key
+import app.booxultimatum.kit.ui.LanguageChoice
 import app.booxultimatum.kit.ui.Pager
 import app.booxultimatum.kit.ui.Paragraph
 import app.booxultimatum.kit.ui.Plate
@@ -64,6 +67,20 @@ fun DeviceScreen(readKey: Int, compact: Boolean, onReadAgain: () -> Unit) {
         }
         item {
             ThisAppPlate(updates, onFeedback = { showFeedback = true })
+            Spacer(Modifier.height(Space.xl))
+        }
+        item {
+            val languages = remember { AppLanguage.supported(context, R.xml.locales_config) }
+            val language = remember { AppLanguage.current(context) }
+            Plate(stringResource(R.string.lang_title)) {
+                LanguageChoice(
+                    languages = languages,
+                    current = language,
+                    detail = stringResource(R.string.lang_explain),
+                    systemLabel = stringResource(R.string.lang_system),
+                    onChange = { AppLanguage.change(context, it) },
+                )
+            }
             Spacer(Modifier.height(Space.xl))
         }
         if (profile == null) {

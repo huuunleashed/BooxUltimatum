@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="bd_read_at_recorded">读取于 %1$s · %2$s（最近 %3$s 已记录）</string>
+    <string name="bd_read_at_empty">读取于 %1$s · 尚未记录任何内容</string>
+    <plurals name="bd_days"><item quantity="other">%d 天</item></plurals>
+    <string name="bd_hours">%1$d 小时</string>
+    <string name="bd_plate_now">当前电池</string>
+    <string name="bd_estimate_about">按平常方式使用，约剩余 %1$s</string>
+    <plurals name="bd_estimate_range"><item quantity="other">范围 %1$s 至 %2$s · 基于 %3$d 天的未插电使用</item></plurals>
+    <string name="bd_needs_day">需要约一天的未插电使用才能估算剩余时间</string>
+    <string name="bd_rate_unknown">平板当前未报告充电速率</string>
+    <string name="bd_charging_at">正在充电：%1$s</string>
+    <string name="bd_plate_last_24h">最近 24 小时</string>
+    <string name="bd_plate_happened">发生了什么</string>
+    <plurals name="bd_more_findings"><item quantity="other">日志中还有 %d 条发现</item></plurals>
+    <string name="bd_background_restricted">BooxUltimatum 的后台使用受到限制，因此无法在后台记录。要允许它，需要 Shizuku 正在运行。</string>
+    <string name="bd_allow_background">允许后台使用</string>
+    <string name="bd_recording_paused">记录已暂停。打开“历史记录”以恢复。</string>
+</resources>

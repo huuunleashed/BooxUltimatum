@@ -48,7 +48,7 @@ This file holds the rules; the skills hold the how-to. When they disagree, this 
     - `src/test/` and `src/androidTest/`: JVM tests, and the instrumented ones (the plate renders in `SleepOverlayTest`, which need a device or emulator: `.\gradlew.bat :hub:connectedDebugAndroidTest`).
   - `nib/`: Nib, the drawing app, package `app.booxultimatum.nib`. `nib-engine/`: its drawing model in pure Kotlin (strokes, brushes, layers, undo, files), tested on the JVM.
   - `kit/`: the libraries every suite app builds on. `core` (the tablet profile and the suite registry), `log` (the logbook), `ui` (the e-ink design system), `ink` (the SurfaceFlinger pen path and pen input) and `update` (releases and installs). The kit never depends on an app.
-- `docs/`: numbered design docs (`00` device research to `10` the Battery section plan) and `screenshots/` for the README.
+- `docs/`: numbered design docs (`00` device research to `12` the languages) and `screenshots/` for the README.
 - `knowledge/`: `experiments.md` (the evidence log) and `onyx-packages.json` (bundled into app assets via `sourceSets`).
 - `tools/host/`: PowerShell scripts over adb (`common.ps1` holds shared helpers, `ui.ps1` drives the app's UI for tests and screenshots). `tools/dev/`: repository hygiene, `publish.ps1`, which publishes a suite app's release or test build, and the release-notes templates with their checker.
 - `.agents/skills/`: the Agent Skills described above.
@@ -69,6 +69,8 @@ $env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.8.9-hotspot'   # JD
 .\gradlew.bat lintRelease          # lint (version-upgrade warnings are known and intentional)
 .\tools\dev\publish.ps1 -App hub|nib -Notes <file> [-Test] [-DryRun]   # publish a release or a test build (owner's say-so only)
 python tools\dev\prose_wrap.py     # prose rule check
+python tools\dev\check_words.py     # the string resources against the table of terms
+python tools\dev\check_translations.py [--report]   # a translation against the English side
 python tools\dev\check_release_notes.py [--test] [--preview] <file>   # release notes against the convention (publish.ps1 runs it)
 python -m unittest discover -s tools\dev -p "test_*.py"               # the checker's own tests
 .\tools\host\recon.ps1 -Label <name> [-Quick]
@@ -131,6 +133,7 @@ Every word the suite shows follows this section: the apps, the README, the site,
 - **Describing a feature** (a setting, tweak, alert or module), in this order: what it does for you, in one sentence; what it needs (Shizuku, a permission) and what happens without it; what it costs or can't do, only if that matters. A title says what the thing is, in sentence case with no final period; a description ends with one. A number from the maintainer's tablet stays in the docs and `knowledge/`; if the app must show one, it says where it was measured (*measured on a Note Air6 C*).
 - **Names:** a name says what the thing does, in plain words, even when that makes it longer: *Refresh the sleep screen while asleep*, not *keep-alive*; *The processor stayed awake while the tablet slept*, not *not resting*. Don't shorten a name until it needs explaining, and don't coin one for a feature. A technical term that has to stay (Shizuku) is explained in the line under it. One feature has one name, the same in the app, the README, the site, the changelog and the release notes.
 - **Typography:** sentence case for titles and buttons (*Show all*, not *Show All*). Typographic apostrophes (’) and ellipses (…) in resources, and a middle dot (·) between parts of a line. Digits for numbers, a space before %, and `plurals` for any count.
+- **Other languages:** the rules above are about English. A translation keeps the same structure (what it does, what it needs, what it costs) and the same values (`%1$s` stays `%1$s`), leaves the brand names, units, paths and log tags in English, and gives a plural only the forms its language has. Each language keeps its own glossary, so one thing has one word in it too. The convention is in `docs/12-languages.md`, and `tools/dev/check_translations.py` holds a translation to it.
 
 One term for each thing, the same everywhere:
 

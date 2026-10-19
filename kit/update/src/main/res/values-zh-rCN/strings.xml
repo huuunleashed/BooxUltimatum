@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="update_idle">可以检查更新了。</string>
+    <string name="update_development">这是开发版本，无法安装已发布的正式版本。Android 会拒绝它们，因为签名密钥不同，而先卸载又会清除应用数据。请改用电脑更新。</string>
+    <string name="update_checking">正在检查 GitHub Releases…</string>
+    <string name="update_up_to_date">已是最新版本。</string>
+    <string name="update_not_published">尚未安装，也还没有符合你更新设置的已发布版本。</string>
+    <string name="update_available">版本 %1$s 可用。</string>
+    <string name="update_available_test">测试版本 %1$s 可用。</string>
+    <string name="update_install_available">版本 %1$s 可以安装。</string>
+    <string name="update_no_checksum">版本 %1$s 发布时未提供用于校验下载的 SHA-256 校验和，因此不会安装。</string>
+    <string name="update_downloading">正在下载 %1$d %%…</string>
+    <string name="update_verifying">正在校验下载内容…</string>
+    <string name="update_need_sources">请先在 Android 设置中允许从此应用安装。</string>
+    <string name="update_installing">正在将下载内容交给 Android 安装程序…</string>
+    <string name="update_confirming">Android 正在请你确认安装。</string>
+    <string name="update_installed">已安装。</string>
+    <string name="update_failed_check">检查失败：%1$s</string>
+    <string name="update_failed_download">下载失败：%1$s</string>
+    <string name="update_failed_verify">下载未通过校验：%1$s</string>
+    <string name="update_failed_install">安装失败：%1$s</string>
+    <string name="update_android_refused">Android 拒绝了此次安装。</string>
+</resources>

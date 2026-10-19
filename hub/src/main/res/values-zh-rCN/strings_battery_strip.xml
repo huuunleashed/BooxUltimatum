@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ds_level">电量</string>
+    <string name="ds_screen">屏幕</string>
+    <string name="ds_power">功率</string>
+    <string name="ds_step_through">逐步查看发生了什么</string>
+    <string name="ds_none">此时间窗内没有记录</string>
+    <string name="ds_previous">上一时段</string>
+    <string name="ds_next">下一时段</string>
+    <string name="ep_tag_problem">问题</string>
+    <string name="ep_tag_processor_awake">处理器保持唤醒</string>
+    <string name="ep_tag_inferred">推测</string>
+    <string name="ep_levels">电量 %1$d %% 至 %2$d %%</string>
+    <string name="ep_slept">这段时间内处理器睡眠了 %1$d %%</string>
+    <string name="ep_top_app">主要在前台：%1$s</string>
+    <string name="ep_expanded">已展开</string>
+    <string name="ep_collapsed">已折叠</string>
+</resources>

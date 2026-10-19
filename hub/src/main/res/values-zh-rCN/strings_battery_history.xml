@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="bhi_question">情况如何？这次改动有帮助吗？</string>
+    <string name="bhi_read_window">读取于 %1$s · 窗口 %2$s</string>
+    <string name="bhi_window_label">时间窗口</string>
+    <plurals name="bhi_window_hours"><item quantity="other">%d 小时</item></plurals>
+    <plurals name="bhi_window_days"><item quantity="other">%d 天</item></plurals>
+    <string name="bhi_nothing_yet">此时间窗口内尚未记录任何内容。</string>
+    <string name="bhi_value_pair">%1$s · %2$s</string>
+    <string name="bhi_none">无</string>
+    <string name="bhi_plate_over">本时间窗口内</string>
+    <string name="bhi_average_draw">平均耗电</string>
+    <string name="bhi_average_note">%/h 表示一小时内消耗的满电电量占比。</string>
+    <string name="bhi_plate_standby">待机趋势</string>
+    <string name="bhi_standby_explain">每根柱形显示当天平板睡眠期间每小时的耗电量。带斜纹的柱形表示该次睡眠期间屏幕亮着。</string>
+    <string name="bhi_standby_none">已记录的睡眠还不足。睡眠满一小时才算作一天。</string>
+    <string name="bhi_standby_detail">睡眠 %1$s</string>
+    <string name="bhi_standby_detail_display">睡眠 %1$s，期间屏幕亮着</string>
+    <string name="bhi_median">中位数</string>
+    <string name="bhi_normal_spread">正常波动范围</string>
+    <string name="bhi_normal_spread_note">你的待机耗电平时逐日波动的幅度。小于该幅度的变化可能只是这种波动，而非实际效果。</string>
+    <string name="bhi_plate_days">天</string>
+    <string name="bhi_days_explain">按天排列，最新的在前。“已用”是平板未插电期间从电池消耗的电量。</string>
+    <string name="bhi_days_none">此时间窗口内尚未记录任何一天。</string>
+    <string name="bhi_used">已用 %1$s</string>
+    <string name="bhi_day_figures">使用中 %1$s · 睡眠 %2$s · 充电 %3$s</string>
+    <string name="bhi_display_on_tag">睡眠时屏幕亮着</string>
+    <string name="bhi_plate_sessions">放电时段</string>
+    <string name="bhi_sessions_explain">每次使用电池的过程，从拔下电源到下次插上电源。不足 15 分钟的过程不计入。</string>
+    <string name="bhi_sessions_none">此时间窗口内尚无 15 分钟或更长的电池使用过程。</string>
+    <string name="bhi_session_range">%1$s 至 %2$s</string>
+    <string name="bhi_day_time">%1$s %2$s</string>
+    <string name="bhi_percent_range">%1$d %% 到 %2$d %%</string>
+    <string name="bhi_session_figures">%1$s · 使用中 %2$s · 睡眠 %3$s</string>
+</resources>

@@ -1,5 +1,6 @@
 package app.booxultimatum.nib
 
+import android.content.Context
 import android.os.Bundle
 import android.view.MotionEvent
 import androidx.activity.ComponentActivity
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import app.booxultimatum.kit.core.AppLanguage
 import app.booxultimatum.kit.core.Suite
 import app.booxultimatum.kit.core.SuiteApp
 import app.booxultimatum.kit.ui.theme.InstrumentTheme
@@ -24,6 +26,12 @@ import app.booxultimatum.nib.ui.studio.Studio
  * Compose does ([PenRouter]), so the canvas knows when the pen is over a control and when a control is pressed.
  */
 class MainActivity : ComponentActivity() {
+    override fun attachBaseContext(newBase: Context) {
+        // The app's own language. Android 13 and later has already applied it; on Android 11 and 12 it is
+        // applied here, so the words in the app follow the language the reader chose.
+        super.attachBaseContext(AppLanguage.wrap(newBase))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Edge to edge with an ink strip under the status bar (see StatusStrip), as in the hub.

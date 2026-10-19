@@ -600,5 +600,10 @@
     <string name="about_share_logs">Share logs</string>
     <string name="about_licence_title">Licence</string>
     <string name="about_licence">Nib is part of BooxUltimatum, free software under the GNU General Public License, version 3 or later.</string>
+
+    <!-- Language -->
+    <string name="lang_title">Language</string>
+    <string name="lang_system">Same as the tablet</string>
+    <string name="lang_explain">The words in Nib follow the tablet’s language until you choose another one here.</string>
     <string name="about_disclaimer">Not affiliated with, endorsed by or connected to Onyx International or BOOX.</string>
 </resources>

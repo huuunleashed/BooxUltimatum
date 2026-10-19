@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="bc_question">什么消耗了电池？</string>
+    <string name="bc_read_window">读取于 %1$s · 窗口 %2$s</string>
+    <string name="bc_window_label">时间窗口</string>
+    <plurals name="bc_window_hours"><item quantity="other">%d 小时</item></plurals>
+    <plurals name="bc_window_days"><item quantity="other">%d 天</item></plurals>
+    <string name="bc_nothing_yet">此时间窗口内尚未记录任何内容。</string>
+    <string name="bc_value_pair">%1$s · %2$s</string>
+    <string name="bc_no_value">—</string>
+    <string name="bc_plate_state">按状态</string>
+    <string name="bc_state_none">此时间窗口内尚无未插电时间。</string>
+    <string name="bc_state_detail">平均 %1$s · 占未插电期间用电量的 %2$s</string>
+    <string name="bc_display_on_fact">平板睡眠期间屏幕亮了 %1$s。这消耗了 %2$s。</string>
+    <string name="bc_plate_apps">按应用，使用中</string>
+    <string name="bc_apps_explain">每个应用在前台时的耗电量，从多到少排列。这需要“使用情况访问”权限，它能让 BooxUltimatum 知道哪个应用在前台。没有该权限时，时间显示为“未记录”。</string>
+    <string name="bc_apps_none">平板使用期间没有应用处于前台。</string>
+    <string name="bc_plate_wakes">什么让它保持唤醒、什么把它唤醒</string>
+    <string name="bc_wakes_explain">这些数据涵盖此时间窗口，而非自上次重启以来的时间：它们是大约每三小时采集一次的快照之间的变化。唤醒锁是应用请求平板保持唤醒，唤醒则是把平板唤醒的闹钟。</string>
+    <string name="bc_wakes_none">此时间窗口内尚未记录任何内容。只有在获得 adb 授权或运行 Shizuku 时才会记录唤醒锁和唤醒。</string>
+    <plurals name="bc_wake_locks"><item quantity="other">%d 个唤醒锁</item></plurals>
+    <plurals name="bc_wakeups"><item quantity="other">%d 次唤醒</item></plurals>
+    <string name="bc_cpu_time">处理器时间 %1$s</string>
+    <string name="bc_not_recorded">未记录</string>
+    <string name="bc_android_itself">Android 自身</string>
+    <string name="bc_plate_radios">无线与灯光</string>
+    <string name="bc_wifi_connected">Wi-Fi 已连接</string>
+    <string name="bc_wifi_note">占未插电时间的比例</string>
+    <string name="bc_front_light">前置光平均值</string>
+    <string name="bc_front_light_note">未插电期间的平均值</string>
+    <string name="bc_plate_more">更多</string>
+    <string name="bc_more_explain">Android 自带的电池用量单独统计，因此其数据可能与此处不同。</string>
+    <string name="bc_open_apps">打开“应用”</string>
+</resources>

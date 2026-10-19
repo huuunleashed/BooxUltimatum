@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="bm_title">标记</string>
+    <string name="bm_hint">为这个时刻添加标签，例如“关闭了 Wi-Fi”</string>
+    <string name="bm_add">添加标记</string>
+    <string name="bm_paused">记录已暂停，因此不会保留标记。</string>
+    <string name="bm_legend">标记是日志中带标签的时刻，你应用或撤销的调整项会自动标记。对于每个标记，BooxUltimatum 会比较它前后睡眠时的耗电，并排除处理器保持唤醒的睡眠。如果差异不超过正常的逐日波动，它会如实说明。</string>
+    <string name="bm_none">尚无标记。</string>
+    <string name="bm_tag_tweak">调整项</string>
+    <string name="bm_row">%1$s，%2$s。%3$s</string>
+    <string name="bm_not_enough">数据还不足。标记前后各需至少 12 小时的睡眠。</string>
+    <string name="bm_hours_before_after">（此前 %1$s 小时，此后 %2$s 小时）</string>
+    <string name="bm_within">处于正常的逐日波动范围内：睡眠时的耗电此前为 %1$s，此后为 %2$s。</string>
+    <string name="bm_lower">睡眠时的耗电从 %1$s 下降到 %2$s。</string>
+    <string name="bm_higher">睡眠时的耗电从 %1$s 上升到 %2$s。</string>
+    <string name="bm_spread">逐日来看，睡眠时的耗电波动约为 %1$s。</string>
+</resources>

@@ -4,6 +4,13 @@ All notable changes to BooxUltimatum. Newest first. The project follows [Semanti
 
 ## [Unreleased]
 
+### Added
+
+- **The app's own language.** BooxUltimatum and Nib follow the tablet's language, and each app now has a Language row: Device › Language in BooxUltimatum, and About › Language in Nib. The choice is kept for that app alone, so choosing Chinese in one does not change the other. On Android 13 and later the app's languages also appear in Android's own App languages screen, and the app and that screen write to the same place, so they cannot disagree. On Android 11 and 12 the app keeps the choice itself and starts the screen again in the new language. Checked on the Android 36 emulator: the Language row, the app in Simplified Chinese and back, the system's own App language screen, and Nib staying in English. Not yet seen on a tablet, and the Android 11 and 12 route is not yet checked.
+- **A Simplified Chinese translation** of BooxUltimatum and the shared kit, from the reader who raised issue #6: every string and plural in the hub and in the kit, 1 720 of them. Nib's own 546 are not translated yet, so Nib offers just the tablet's language; the few strings the two apps share, the updater's words, follow the tablet in both. There is no Traditional Chinese translation: a reader who wants Chinese today is offered Simplified, by name, and Traditional would be a folder of its own.
+- **A check that keeps a translation honest.** `tools/dev/check_translations.py` reads every language folder against the English one and reports a string that is missing or one that should not be there, a value that changed, a doubled percent sign, a plural form the language does not have, and a language an app offers that it has no words for. It runs on every push, and `--report` says what each language covers.
+- **The convention a translator works to**, in `docs/12-languages.md`: one folder per language, the same file names, the values in a string left as they are, the brand names and units left in English, and the plural forms the language really has.
+
 ### Fixed
 
 - **Two documents that had drifted from the code.** `docs/06-sleep-screen.md` called Over Transparent a T1 mode; its permissions are asked for in the app, not granted from a computer, so the mode is T2 with a T0 route without Shizuku. `docs/08-nib.md` still said the pencil's grain was resampled at zooms between the tiles' √2 steps; the levels are 1/4096ths now and a settled view snaps onto one, which the maintainer checked on the tablet through 0.4.1's test builds.

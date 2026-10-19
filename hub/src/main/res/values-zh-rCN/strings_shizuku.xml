@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_test_shizuku">测试 Shizuku</string>
+    <string name="shizuku_testing">测试中…</string>
+    <string name="action_copy_result">复制结果</string>
+    <string name="plate_dev_test">开发者测试</string>
+    <string name="shizuku_test_hint">逐步检查 BooxUltimatum 与 Shizuku 之间的每个环节，包括 BooxUltimatum 通过它运行的辅助服务，并显示在哪里中断。可能需要半分钟。如果辅助服务没有启动，结果还会列出 BooxUltimatum 的进程，以及系统中与 Shizuku 和辅助服务相关的日志行。其他应用的名称不会包含在内。若有环节失败，请将结果粘贴到问题报告中。</string>
+</resources>

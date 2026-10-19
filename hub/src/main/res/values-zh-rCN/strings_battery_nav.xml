@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dest_battery_today">今天</string>
+    <string name="dest_battery_history">历史</string>
+    <string name="dest_battery_causes">原因</string>
+    <string name="dest_battery_health">健康度</string>
+</resources>

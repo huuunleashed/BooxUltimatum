@@ -203,6 +203,22 @@ Suite › Home screen › *Use this* makes BooxUltimatum home your home app. It 
 
 The recent apps screen, Boox gestures, NaviBall and EinkWise stay with Boox, so they work the same under either home.
 
+## Languages
+
+The apps follow the tablet's language, so a Chinese tablet reads Chinese with nothing to choose. You can choose another one, and the choice is kept for the app alone.
+
+- **In the app:** Device › Language in BooxUltimatum, and About › Language in Nib.
+- **In Android's own settings, on Android 13 and later:** Settings › Apps › App languages. The app and Android's own screen write to the same place, so they never disagree.
+
+BooxUltimatum and the shared kit read in **Simplified Chinese** today, and a **Vietnamese** translation is being made. Nib's own 546 strings are not translated yet, so Nib offers just the tablet's language. The few strings the two apps share, the updater's words, follow the tablet in both.
+
+Two things to know:
+
+- **Each app keeps its own language.** BooxUltimatum and Nib are separate programs, so choosing Chinese in one does not change the other.
+- **Chinese text is drawn in the tablet's own font.** The app's bundled face, Archivo, has no Chinese characters, so the words fall back to the tablet's system font. A tablet whose system font has no Chinese needs a font with Chinese coverage, which the Fonts page can install.
+
+A new language is a folder of translated strings and one line in the app's list; the convention is in [`docs/12-languages.md`](docs/12-languages.md) and the contributions are welcome.
+
 ## Known limits
 
 - **Nib is new:**
@@ -335,6 +351,10 @@ No dates are promised. This is a spare-time project, and each release ships when
   - Zooming shows the new page in one frame, drawn about as fast again, and the pencil is crisp at the zoom you stop on.
   - A pen's width and the pencil's grain are the page's, so a stroke is the same stroke at every zoom.
   - The stroke eraser keeps up however many strokes it crosses.
+- **Next: the suite in more languages.**
+  - A Language row in BooxUltimatum and in Nib, the tablet's language by default and the app's own choice kept for each app, and the app's languages listed in Android's own App languages screen on Android 13 and later.
+  - A Simplified Chinese translation of BooxUltimatum and the shared kit, and a Vietnamese one being made. Nib's own strings are still to be translated.
+  - A check that keeps a translation honest: every string present, the values in a string unchanged, and the plural forms the language has.
 - **Next: System › Tweaks revised**, with the findings on the Battery pages opening the right tweak and showing its measured effect.
 - **Compare the Sleep page's sticker steps with a Note Air4 C**, once its owner has described the screensaver settings on it (issue #5).
 - **Nib 0.5 and on**
@@ -346,7 +366,6 @@ No dates are promised. This is a spare-time project, and each release ships when
   - Backing up and restoring the layout.
 - **1.0**
   - Confirmed on at least one more Boox model.
-  - A Vietnamese translation.
   - Reproducible release builds.
 
 The full, dated history is in [`CHANGELOG.md`](CHANGELOG.md).
