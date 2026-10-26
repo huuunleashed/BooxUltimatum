@@ -25,6 +25,7 @@ This file holds the rules; the skills hold the how-to. When they disagree, this 
    - Add an entry under *[Unreleased]* in `CHANGELOG.md`, grouped as Added, Changed, Fixed or Research.
    - Update `README.md` when a feature, limit, requirement or the roadmap changes.
    - Update the design doc in `docs/` that covers the topic.
+   - Update `knowledge/devices.json` when a report or a test changes what is known on a tablet, then run `python tools/dev/device_matrix.py`, which rebuilds the table in `DEVICES.md` and on the site.
 3. **Tweaks are reversible and tiered.** Every tweak implements apply and revert, declares its tier (T0 app, T1 adb grant, T2 Shizuku, T3 root) and risk, and links its evidence in `knowledge/experiments.md` before it ships.
 4. **The device is shared and real.**
    - Never run write or flash commands on a connected tablet unless the owner explicitly asks in the current session. That includes `pm uninstall`, `pm disable-user`, `settings put`, `service call` that changes state, `fastboot flash`, `edl w` and `reboot edl/bootloader`.
@@ -49,15 +50,15 @@ This file holds the rules; the skills hold the how-to. When they disagree, this 
   - `nib/`: Nib, the drawing app, package `app.booxultimatum.nib`. `nib-engine/`: its drawing model in pure Kotlin (strokes, brushes, layers, undo, files), tested on the JVM.
   - `kit/`: the libraries every suite app builds on. `core` (the tablet profile and the suite registry), `log` (the logbook), `ui` (the e-ink design system), `ink` (the SurfaceFlinger pen path and pen input) and `update` (releases and installs). The kit never depends on an app.
 - `docs/`: numbered design docs (`00` device research to `12` the languages) and `screenshots/` for the README.
-- `knowledge/`: `experiments.md` (the evidence log) and `onyx-packages.json` (bundled into app assets via `sourceSets`).
-- `tools/host/`: PowerShell scripts over adb (`common.ps1` holds shared helpers, `ui.ps1` drives the app's UI for tests and screenshots). `tools/dev/`: repository hygiene, `publish.ps1`, which publishes a suite app's release or test build, and the release-notes templates with their checker.
+- `knowledge/`: `experiments.md` (the evidence log), `onyx-packages.json` (bundled into app assets via `sourceSets`) and `devices.json` (what is known on each tablet, the source of the table in `DEVICES.md` and on the site).
+- `tools/host/`: PowerShell scripts over adb (`common.ps1` holds shared helpers, `ui.ps1` drives the app's UI for tests and screenshots). `tools/dev/`: repository hygiene and checks, `device_matrix.py`, which builds the table of tablets, `publish.ps1`, which publishes a suite app's release or test build, and the release-notes templates with their checker.
 - `.agents/skills/`: the Agent Skills described above.
 - **The GitHub side:**
   - Contribution rules are in `CONTRIBUTING.md` and the forms in `.github/ISSUE_TEMPLATE/`.
   - CI (`.github/workflows/build.yml`) runs the unit tests, builds and lints every app and checks prose on every push and pull request.
   - The landing page in `site/` deploys to GitHub Pages through `.github/workflows/pages.yml`, together with `docs/screenshots/` and `docs/brand/`.
   - Keep the landing page's claims in step with the README.
-- `README.md` (the front page), `CHANGELOG.md` (the history), `CONTRIBUTING.md`, `SECURITY.md`, `THIRD_PARTY.md`, `PRODUCT.md` and `DESIGN.md` (design context and the design system).
+- `README.md` (the front page), `CHANGELOG.md` (the history), `DEVICES.md` (what works on which tablet), `CONTRIBUTING.md`, `SECURITY.md`, `THIRD_PARTY.md`, `PRODUCT.md` and `DESIGN.md` (design context and the design system).
 
 ## Commands
 
@@ -72,6 +73,7 @@ python tools\dev\prose_wrap.py     # prose rule check
 python tools\dev\check_words.py     # the string resources against the table of terms
 python tools\dev\check_translations.py [--report]   # a translation against the English side
 python tools\dev\check_release_notes.py [--test] [--preview] <file>   # release notes against the convention (publish.ps1 runs it)
+python tools\dev\device_matrix.py [--check]   # rebuild the table of tablets in DEVICES.md and site/index.html from knowledge/devices.json
 python -m unittest discover -s tools\dev -p "test_*.py"               # the checker's own tests
 .\tools\host\recon.ps1 -Label <name> [-Quick]
 .\tools\host\start-shizuku.ps1     # after every tablet reboot (Shizuku doesn't survive reboots)

@@ -38,6 +38,7 @@
   <nav aria-label="Main">
     <ul class="nav">
       <li><a href="docs.html" aria-current="page">How it works</a></li>
+      <li><a href="./#tablets">Tablets</a></li>
       <li class="opt"><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/knowledge/experiments.md">Evidence</a></li>
       <li class="opt"><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/CHANGELOG.md">Changelog</a></li>
       <li><a class="key small" href="https://github.com/huuunleashed/BooxUltimatum">GitHub</a></li>
@@ -56,7 +57,7 @@
       <dl class="readings" aria-label="Where these facts come from">
         <div><dt>Tablet</dt><dd>Boox Note Air6 C<span>One unit, the maintainer's</span></dd></div>
         <div><dt>Firmware</dt><dd>4.3, Android 16<span><code>2026-08-17_12-29_4.3-rel_0817_fd4f8e9fe</code></span></dd></div>
-        <div><dt>Status</dt><dd>Verified on one tablet, partly confirmed on others<span>Instant ink on a Go 10.3 Lumi and a Note Air 2 Plus. BooxUltimatum home also runs on a Bigme B7. Boox's interfaces are unofficial, so an update can change them.</span></dd></div>
+        <div><dt>Status</dt><dd>Verified on one tablet, reported on others<span>Owners report Instant ink on a Go 10.3 Lumi, a Note Air 2 Plus and a NoteX3 Pro, and Shizuku tweaks on a Go 10.3 and a Note Air4 C. <a href="./#tablets">The table of tablets</a> has the rest. Boox's interfaces are unofficial, so an update can change them.</span></dd></div>
       </dl>
     </div>
   </div>
@@ -178,14 +179,14 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
           <li><span class="when">Asleep</span><span class="what">Nothing is read. The alarm never fires, and a missed one is delivered on waking. Live updates, described next, change this.</span></li>
         </ol>
 
-        <h3>Live updates while asleep <span class="tag">New</span></h3>
+        <h3>Live updates while asleep</h3>
         <p>Live updates are optional, off by default, and work only in Sleep image mode. The sleep screen, <code>com.onyx/.common.dream.OnyxDaydreamService</code>, is fixed by <code>config_dozeComponent</code>, a firmware setting that no app can change. It never re-reads the picture, but it registers an exported receiver for <code>onyx_dream_refresh</code>. Any app can send that broadcast, and the dream then wakes the display for about 1.2&nbsp;s (<code>onyx.action.DISPLAY_CHANGED_STATE</code>, state 2, then 3). Frames drawn while it dozes are held until then. The lock screen hides every app window except an accessibility overlay, so an accessibility service that reads nothing on screen holds the face.</p>
         <ol class="sequence">
           <li><span class="when">Going to sleep</span><span class="what">4&nbsp;s after Onyx has drawn and dozed, the first live face goes up, covering the charging bar too.</span></li>
           <li><span class="when">Every step</span><span class="what">An exact alarm that wakes the tablet (<code>RTC_WAKEUP</code>) fires on the round minute, at the step you choose: 1, 5, 10, 15, 30 or 60 minutes. Each time, BooxUltimatum renders the face, sends the refresh and shows the face once Onyx reports the display on. The tablet is awake for about 1.4&nbsp;s, and a full repaint runs every sixth update.</span></li>
           <li><span class="when">Waking</span><span class="what">The overlay is removed at once, so the lock screen and PIN pad are never covered.</span></li>
         </ol>
-        <p>Boox's power manager (<code>android.onyx.pm.OnyxAlarmHelper</code>) clears wake-up alarms at sleep unless BooxUltimatum is on its full-access list, which it joins when its background use is changed to allowed. This was verified on battery on a Note Air6 C with firmware 4.3. An earlier whole-tablet measurement reported about 1% of battery per one to two hours of sleep. A longer measurement on 2026-10-04, over 32 hours on battery and using Android's own per-app accounting, billed the one-minute step about 1.6&nbsp;mAh an hour. A longer measurement on 2026-10-04, over 32 hours on battery and using Android's own per-app accounting, billed the step about 1.6 mAh an hour, and the 5-minute step wakes the screen a fifth as often. So on battery nothing shorter than 5 minutes runs, and the 1-minute step runs only while charging.</p>
+        <p>Boox's power manager (<code>android.onyx.pm.OnyxAlarmHelper</code>) clears wake-up alarms at sleep unless BooxUltimatum is on its full-access list, which it joins when its background use is changed to allowed. This was verified on battery on a Note Air6 C with firmware 4.3. An earlier whole-tablet measurement reported about 1% of battery per one to two hours of sleep. A longer measurement on 2026-10-04, over 32 hours on battery and using Android's own per-app accounting, billed the one-minute step about 1.6&nbsp;mAh an hour, and the 5-minute step wakes the screen a fifth as often. So on battery nothing shorter than 5 minutes runs, and the 1-minute step runs only while charging.</p>
 
         <h3>Both orientations, prepared</h3>
         <p>Boox centre-crops the picture to the rotation it sleeps in: 1860&nbsp;×&nbsp;2480 in portrait, 2480&nbsp;×&nbsp;1860 at rotation 90 or 270. A face drawn only after a turn left a few seconds in which a sleep showed the old shape cropped. So every refresh also encodes the other orientation into <code>noBackupFilesDir/sleep-cache</code>. A rotation is seen through a display listener, Android's callback for screen changes, before the configuration reaches the process. BooxUltimatum then swaps that file in at once, with a fresh render 1.5&nbsp;s later. Tested on a Note Air6 C by rotating and sleeping within 0.2&nbsp;s in both directions: the picture was written 100&nbsp;ms after Boox's going-to-sleep broadcast and 260&nbsp;ms before the dream decoded it.</p>
@@ -194,7 +195,7 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
         <p>Boox draws a status bar (battery, “Press power button to wake up”) along the bottom of any sleep screen unless Screensaver › <em>Bottom Status Bar</em> is off, and always while the tablet charges. In <code>com.onyx</code> the check is <code>isShowBottomStatusBar() || isBatteryCharging()</code>, and it reads the real charger, so <code>dumpsys battery unplug</code> doesn't hide it. Faces don't reserve the strip. The Sleep page asks you to turn the bar off and says why it still shows while charging. Live updates cover it.</p>
 
         <div class="note">
-          <h4><span class="lamp off" aria-hidden="true"></span>Over Transparent is T2, or T1 with one consent</h4>
+          <h4><span class="lamp off" aria-hidden="true"></span>Over Transparent is T2, or T0 with one consent</h4>
           <p>Boox's Transparent style snapshots the screen and can lay a sticker PNG, a see-through picture, over it. Boox saves the sticker as <code>Pictures/Sticker/sticker_&lt;timestamp&gt;.png</code>. It reads the sticker from one stored path, at every sleep and never during one. It decodes the sticker at the screen's size in the rotation the tablet sleeps in, and keeps only a centred square 0.75 of the short side wide (1395&nbsp;px). So BooxUltimatum draws the plates inside the band that survives either way, and one file is right both ways up.</p>
           <p>The shell user can write that picture and BooxUltimatum can't on its own, so the mode uses Shizuku when it runs. Otherwise BooxUltimatum asks Android once for permission to write that one picture (<code>MediaStore.createWriteRequest</code>, Android's call for write access to a shared picture), after reading the album with the picture permission. Either way, BooxUltimatum backs up Boox's own sticker first and journals every sticker it touches. A newer sticker means you picked again in Boox: BooxUltimatum follows it and puts the old file back. No broadcast can switch Boox to the Transparent style, so that choice and the one-time pick stay yours.</p>
         </div>
@@ -254,7 +255,7 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
         <div class="note">
           <h4><span class="lamp off" aria-hidden="true"></span>What isn't done yet</h4>
           <ul>
-            <li>Checked with a real pen by the maintainer in Sketchbook on a Note Air6 C, and by testers on a Go 10.3 Lumi and a Note Air 2 Plus since 0.5. Before 0.5, Instant ink never worked on those tablets, because it needed usage access without asking for it and always listened to the maintainer's own pen device.</li>
+            <li>Checked with a real pen by the maintainer in Sketchbook on a Note Air6 C. Owners report it working on a Go 10.3 Lumi and a Note Air 2 Plus since 0.5, and on a NoteX3 Pro through the direct route. Before 0.5, Instant ink never worked on those tablets, because it needed usage access without asking for it and always listened to the maintainer's own pen device.</li>
             <li>The preview is Boox's black pen, so a coloured brush or the eraser shows only once the app's own stroke takes over.</li>
             <li>Pen strokes can't be simulated: <code>input</code>, the adb command that injects touches, goes through InputDispatcher, which SurfaceFlinger's pen reader doesn't read. Every test needs someone drawing.</li>
           </ul>
@@ -291,7 +292,10 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
           <table>
             <thead><tr><th scope="col">Finding</th><th scope="col">How it was read</th></tr></thead>
             <tbody>
-              <tr><td>Standby is already near the floor: 0 to 12&nbsp;mA. Boox's own sleep turns Wi-Fi off within 0.5&nbsp;s and suspends the processor within 30&nbsp;s.</td><td><code>batterystats</code> history, two unplugged sleeps</td></tr>
+              <tr><td>Standby drew 0 to 12&nbsp;mA in the first two unplugged sleeps. Boox's own sleep turns Wi-Fi off within 0.5&nbsp;s and suspends the processor within 30&nbsp;s.</td><td><code>batterystats</code> history, two unplugged sleeps</td></tr>
+              <tr><td>Over 28 days, the usual standby draw is 15&nbsp;mA, and 9&nbsp;mA on the quietest nights, as long as the display goes to sleep.</td><td>BooxUltimatum's battery log, the hours-weighted median of the sleeps</td></tr>
+              <tr><td>Four times, the display stayed on while the tablet slept and drew 300 to 360&nbsp;mA. Each began exactly 90 minutes after the sleep screen last refreshed, after Android had restarted by itself.</td><td>The battery log, <code>batterystats</code> history and the dropbox (<code>docs/10-battery.md</code>)</td></tr>
+              <tr><td>After Android restarts by itself, the processor stays awake through every sleep until the tablet is restarted: 10 to 46&nbsp;mA asleep instead of about 7.</td><td>Uptime against elapsed time in the battery log (<code>docs/11-not-resting.md</code>)</td></tr>
               <tr><td>Screen-on use drew 430 to 640&nbsp;mA (12 to 17&nbsp;%/h), with the processor awake 93&nbsp;% of the screen-on time.</td><td><code>dumpsys batterystats</code> since unplug</td></tr>
               <tr><td>On firmware 4.3, <code>TIME_TICK</code> is a wakeup alarm, and <code>sys.onyx.idledelay=2500</code> lets the processor sleep between page turns when nothing else keeps it up.</td><td><code>dumpsys alarm</code>, <code>getprop</code></td></tr>
               <tr><td>Doze, Android's deep sleep, starts disabled at every boot (<code>config_enableAutoPowerModes=false</code>). Turning it on changed little: no Doze transition was seen in two unplugged sleeps.</td><td><code>aapt2 dump resources</code>, <code>dumpsys deviceidle</code></td></tr>
@@ -299,7 +303,7 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
             </tbody>
           </table>
         </div>
-        <p>Every finding above was read on the maintainer's Note Air6 C with firmware 4.3. No before-and-after battery runs are recorded yet, and the first overnight unplugged run is still to do. Until they are, BooxUltimatum shows no savings. For live updates while asleep, two measurements exist on that tablet: an earlier whole-tablet measurement of about 1% of battery per one to two hours, and about 1.6&nbsp;mAh an hour for the one-minute step over 32 hours on battery (see the live updates above). For comparison only, eWritable measured about 2&nbsp;%/h idle and 10&nbsp;%/h writing on the same 4.3 firmware.</p>
+        <p>Every finding above was read on the maintainer's Note Air6 C with firmware 4.3. No before-and-after battery runs are recorded yet, so BooxUltimatum shows no savings. For live updates while asleep, two measurements exist on that tablet: an earlier whole-tablet measurement of about 1% of battery per one to two hours, and about 1.6&nbsp;mAh an hour for the one-minute step over 32 hours on battery (see the live updates above). For comparison only, eWritable measured about 2&nbsp;%/h idle and 10&nbsp;%/h writing on the same 4.3 firmware.</p>
         <div class="sources">
           <h3>In the repository</h3>
           <ul class="links">
@@ -444,6 +448,7 @@ adb shell appops set app.booxultimatum GET_USAGE_STATS allow</code></pre>
         <div class="engraved"><h2 id="next-h">Help and history</h2></div>
         <ul class="links">
           <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/CONTRIBUTING.md"><strong>Contributing</strong><span>Evidence from other Boox models is the most valuable help: model, firmware, and what you measured.</span></a></li>
+          <li><a href="./#tablets"><strong>Tablets</strong><span>What works on which tablet, feature by feature, and where each report came from.</span></a></li>
           <li><a href="https://github.com/huuunleashed/BooxUltimatum/issues"><strong>Issues</strong><span>Bug reports and findings.</span></a></li>
           <li><a href="https://github.com/huuunleashed/BooxUltimatum/releases"><strong>Releases</strong><span>Release-signed APKs, from 0.4 on. BooxUltimatum has updated itself from here since 0.5.</span></a></li>
           <li><a href="https://github.com/huuunleashed/BooxUltimatum/blob/main/CHANGELOG.md"><strong>Changelog</strong><span>The dated history, newest first.</span></a></li>

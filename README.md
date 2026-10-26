@@ -6,7 +6,7 @@
 
 ![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue) ![Status: public preview 0.12.0](https://img.shields.io/badge/status-public%20preview%200.12.0-orange) ![Android 11+](https://img.shields.io/badge/Android-11%2B-3ddc84) ![Tested on a Note Air6 C, firmware 4.3](https://img.shields.io/badge/tested%20on-Note%20Air6%20C%20%C2%B7%20FW%204.3-black)
 
-[**Website and technical guide**](https://huuunleashed.github.io/BooxUltimatum/) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md) · [Report a bug or a finding](https://github.com/huuunleashed/BooxUltimatum/issues/new/choose)
+[**Website and technical guide**](https://huuunleashed.github.io/BooxUltimatum/) · [Tablets](DEVICES.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md) · [Report a bug or a finding](https://github.com/huuunleashed/BooxUltimatum/issues/new/choose)
 
 <p align="center">
   <img src="docs/screenshots/home.png" width="300" alt="BooxUltimatum home screen in portrait: clock, Library and Boox shelf widgets, and a grid of apps">
@@ -18,7 +18,7 @@ The Note Air6 C is a good tablet with two common complaints. Independent reviews
 
 Nothing is flashed, and the bootloader stays locked. BooxUltimatum is one APK (an Android app file), and the apps that build on it, starting with Nib, install and uninstall on their own. Some features need more than the app alone. [How much access it needs](#how-much-access-it-needs) explains the levels: nothing at all, one-time permissions you grant from a computer with `adb` (Android's debugging tool), and Shizuku, a free helper app.
 
-> **Status: public preview (0.12.0).** BooxUltimatum runs daily on the maintainer's Note Air6 C (firmware 4.3, Android 16) and hasn't been tested on other tablets yet. Download it from [Releases](https://github.com/huuunleashed/BooxUltimatum/releases), and please report how it behaves on your tablet. From 0.5 on, BooxUltimatum can update itself and help you file a report from its Device page.
+> **Status: public preview (0.12.0).** BooxUltimatum runs daily on the maintainer's Note Air6 C (firmware 4.3, Android 16). Owners of five other Boox tablets have reported parts of it working, and [`DEVICES.md`](DEVICES.md) says what works on which tablet. Download it from [Releases](https://github.com/huuunleashed/BooxUltimatum/releases), and please report how it behaves on your tablet. From 0.5 on, BooxUltimatum can update itself and help you file a report from its Device page.
 
 ## What it does
 
@@ -176,7 +176,7 @@ Firmware 4.3 hides the Wireless debugging switch from Developer options, and the
 
 ## Install
 
-**From a release:** download `BooxUltimatum-0.12.0.apk` from this repository's [Releases](https://github.com/huuunleashed/BooxUltimatum/releases) page, allow your browser or file manager to install apps, and open it. The Access page shows what each level unlocks and the exact commands for it. Releases are signed with the project's own key, so later releases update it in place. BooxUltimatum's Suite page installs Nib for you. You can also download `Nib-0.4.2.apk` from the same page, where Nib's releases are tagged `nib-v…`.
+**From a release:** download `BooxUltimatum-0.12.0.apk` from this repository's [Releases](https://github.com/huuunleashed/BooxUltimatum/releases) page, allow your browser or file manager to install apps, and open it. The Access page shows what each level unlocks and the exact commands for it. Releases are signed with the project's own key, so later releases update it in place. BooxUltimatum's Suite page installs Nib for you. You can also download `Nib-0.5.0.apk` from the same page, where Nib's releases are tagged `nib-v…`.
 
 **Test builds:** unfinished builds of BooxUltimatum or Nib are sometimes published as `test-…` pre-releases, so they can be checked on a real tablet. BooxUltimatum offers them only when *Offer test builds* is turned on (Device page). A release always replaces its own test build.
 
@@ -230,7 +230,7 @@ The Vietnamese was written with an assistant and checked against the English by 
   - Marker and highlighter previews are in solid colour, covering what's under the stroke until you lift the pen, because the display drops translucent colours. Blue looks grey in the preview on a Note Air6 C. Settings › Display offers a see-through grey instead.
   - Nib's Diagnostics page asks what the display shows and records your answers in Nib's log. Sending them from another tablet helps most.
 - **One signing key for the whole suite.** Every suite app declares the same signature permission, which only apps signed with the same key can hold. So a development build, signed differently, can't be installed next to a release of another suite app. Install both from Releases, or both from the same build.
-- **One tablet, one firmware.** Everything is verified on a Note Air6 C with firmware 4.3. The Note Air4 C and Air5 C run very similar Boox software, so much of it may work there, but nothing is tested on them yet. Results from those tablets, and from other Boox models, are the most welcome contribution. Use the *Device finding* issue form.
+- **One tablet checked, a few reported.** Everything is verified on a Note Air6 C with firmware 4.3. Owners have reported parts of it working on a Note Air4 C, a Go 10.3, a Go 10.3 Gen II Lumi, a Note Air 2 Plus and a NoteX3 Pro, and [`DEVICES.md`](DEVICES.md) lists what each report covers. Results from other Boox models, and on features nobody has tried yet, are the most welcome contribution. Use the *Device finding* issue form.
 - **Unofficial interfaces.** BooxUltimatum relies on parts of the Boox firmware that Boox hasn't promised to keep. The sleep screen and power-off screen broadcast and the pen path appear in Onyx's own SDK, and the tablet font switch is used by Boox's own apps. None of them is a stable, documented public API (a published interface for app developers). Instant ink also uses the pen path in a way the SDK doesn't offer, on behalf of another app, through the firmware's display calls. A firmware update can change any of these without notice. When something stops working, BooxUltimatum says so rather than guessing.
 - **Instant ink is experimental:**
   - The preview is Boox's own black pen, so a coloured brush or the eraser shows only once the app's stroke takes over. The firmware holds the app's own drawing while the pen touches, so the two can't be shown together.
@@ -244,7 +244,7 @@ The Vietnamese was written with an assistant and checked against the English by 
 
   BooxUltimatum notices it: the log records the display's state, Today flags it as a Problem, and the morning report says so. The safeguard that switches off a display that stays on (on by default since 0.10.1) keeps trying to undo it. A refresh of the sleep screen every 30 minutes means the 90 minutes never run out. After a restart of Android by itself, BooxUltimatum keeps a note in the notifications until the tablet is restarted. Since 0.10.2 it also says so within about 30 minutes of a sleep in which the processor stayed awake, with or without a crash in Android's log. That state also stops the tablet sleeping deeply. The processor never suspended in the sleeps after the last restart, which used 10 to 46 mA asleep instead of about 7. Only a restart clears it. This is a pattern from four episodes, not a known cause, and neither the refresh nor any step of the safeguard has been seen working. Restart the tablet after any unexpected restart of Android.
 - **Charge limit:** Boox's *Charging protection* stops charging at 80 %. Other levels would need root, because the files that set the limit are closed even to Shizuku.
-- **Other Boox models and other tablets:** BooxUltimatum recognises Boox tablets and, on other tablets, hides what needs Boox firmware (the sleep screen and Instant ink). Instant ink had no effect on a Note Air 2 Plus or a Go 10.3 Gen II Lumi. The Ink page now shows why, and those reports are still open.
+- **Other Boox models and other tablets:** BooxUltimatum recognises Boox tablets and, on other tablets, hides what needs Boox firmware (the sleep screen and Instant ink). Instant ink had no effect on a Note Air 2 Plus or a Go 10.3 Gen II Lumi on 0.4.1. Their owner reported it working after 0.5, once BooxUltimatum found the pen by how it behaves and checked usage access. On a Note Air4 C, Boox's settings have no sticker album, so *Over Transparent* can't work there.
 - **Shizuku stops on every restart**, and on firmware 4.3 starting it again needs a computer (see [How much access it needs](#how-much-access-it-needs)). Everything in the T0 row works without it.
 
 ### Updates and reports
@@ -384,11 +384,11 @@ The maintainer, who owns a Note Air6 C, writes it with an AI pair programmer (Gi
 | `hub/` | The BooxUltimatum app. `core/` holds system readers, tweaks, the battery log, `sleep/`, `ink/`, `suite/` and `feedback/`. `launcher/` is the home screen and `ui/` the screens |
 | `nib/`, `nib-engine/` | Nib, the drawing app, and its drawing model in pure Kotlin |
 | `kit/` | The libraries every suite app builds on: `core`, `log`, `ui`, `ink` and `update` ([`docs/07-suite.md`](docs/07-suite.md)) |
-| `docs/` | Numbered design docs, from `00` device research to `10` the Battery section plan and `11` the processor that stays awake while the tablet sleeps, plus the screenshots |
-| `knowledge/` | The evidence log (`experiments.md`) and the Onyx package knowledge base bundled with the app |
+| `docs/` | Numbered design docs, from `00` device research to `11` the processor that stays awake while the tablet sleeps and `12` the languages, plus the screenshots |
+| `knowledge/` | The evidence log (`experiments.md`), the Onyx package knowledge base bundled with the app, and what is known on each tablet (`devices.json`, which `DEVICES.md` and the site's table are built from) |
 | `site/` | The landing page and the technical guide, published to GitHub Pages by `.github/workflows/pages.yml` |
 | `tools/host/` | PowerShell scripts run from a computer over `adb` (recon, battery logger, Shizuku start) |
-| `tools/dev/` | Repository hygiene (`prose_wrap.py`) and publishing (`publish.ps1`) |
+| `tools/dev/` | Repository hygiene and checks (`prose_wrap.py`, `check_words.py`, `check_translations.py`), the table of tablets (`device_matrix.py`) and publishing (`publish.ps1`) |
 | `AGENTS.md` | The rules for anyone, human or AI, working in this repo |
 
 ## Contributing

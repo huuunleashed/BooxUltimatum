@@ -550,6 +550,219 @@ pre .c { color: var(--legend); }
 .foot .sign { display: flex; gap: 12px; align-items: center; color: var(--ink); font-weight: 650; margin-bottom: 14px; }
 .foot .sign img { width: 28px; height: 28px; image-rendering: pixelated; }
 
+/* Tablets: the matrix ------------------------------------------------ */
+/* Evidence is drawn as the access scale's dither ramp: solid ink for checked, then half and quarter ink, then an
+   empty cell. The lamp marks the reference tablet only, beside its name. */
+
+.vh {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.matrix-head {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: 12px clamp(32px, 5vw, 80px);
+  align-items: end;
+  margin-bottom: 26px;
+}
+.matrix-head p { margin: 0; }
+.matrix-lead {
+  font-size: clamp(1.125rem, 1rem + 0.4vw, 1.3125rem);
+  line-height: 1.45;
+  font-weight: 500;
+  max-width: 46ch;
+}
+.matrix-ask { color: var(--legend); font-size: 1rem; max-width: 42ch; }
+
+.ev {
+  display: inline-block;
+  box-sizing: border-box;
+  width: 18px;
+  height: 18px;
+  border: var(--rim) solid var(--ink);
+  border-radius: 3px;
+  background: var(--paper);
+  vertical-align: middle;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  forced-color-adjust: none;
+}
+.ev-v { background: var(--ink); }
+.ev-r { background: repeating-conic-gradient(var(--ink) 0 25%, var(--paper) 0 50%) 0 0 / 6px 6px; }
+.ev-p { background: conic-gradient(var(--ink) 0 25%, var(--paper) 0) 0 0 / 6px 6px; }
+.ev-x {
+  background:
+    linear-gradient(45deg, transparent calc(50% - 1px), var(--ink) 0 calc(50% + 1px), transparent 0),
+    linear-gradient(-45deg, transparent calc(50% - 1px), var(--ink) 0 calc(50% + 1px), transparent 0),
+    var(--paper);
+}
+.ev-n { width: 14px; height: 2px; border: 0; border-radius: 0; background: var(--legend); }
+.ev-0 { width: 5px; height: 5px; border: 0; border-radius: 50%; background: var(--rule); }
+
+.legend {
+  list-style: none;
+  margin: 0 0 28px;
+  padding: 16px 0 0;
+  border-top: 1px solid var(--ink);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+  gap: 14px 28px;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--legend);
+}
+.legend li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; align-items: start; }
+.legend .ev { justify-self: center; margin-top: 1px; }
+.legend .ev-n { margin-top: 9px; }
+.legend .ev-0 { margin-top: 7px; }
+.legend b { display: block; color: var(--ink); font-weight: 650; }
+
+.matrix-wrap {
+  position: relative;
+  overflow-x: auto;
+  border-top: var(--engraved) solid var(--ink);
+}
+.matrix-wrap:focus-visible { outline-offset: 6px; }
+
+.matrix {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  min-width: 62rem;
+  font-size: 0.9375rem;
+  line-height: 1.35;
+}
+.matrix th, .matrix td { padding: 0; vertical-align: middle; }
+
+.matrix thead th {
+  vertical-align: bottom;
+  text-align: center;
+  padding: 18px 6px 12px;
+  border-bottom: var(--engraved) solid var(--ink);
+  font-weight: 400;
+  white-space: normal;
+  width: 10%;
+}
+.matrix thead th.feat,
+.matrix thead th.acc {
+  text-align: left;
+  width: auto;
+  padding-left: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--legend);
+}
+.matrix thead th.acc { width: 4.5rem; }
+.matrix .dev { display: block; font-weight: 650; font-size: 0.9375rem; line-height: 1.2; letter-spacing: -0.005em; }
+.matrix .fw { display: block; margin-top: 4px; font-size: 0.75rem; line-height: 1.3; color: var(--legend); }
+.matrix .src {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 2px 6px;
+  margin-top: 6px;
+  font-size: 0.75rem;
+  line-height: 1.3;
+  color: var(--legend);
+}
+.matrix .src .lamp { align-self: center; }
+
+/* The reference tablet's column, framed like the instrument's lit channel */
+.matrix .ref { box-shadow: inset var(--rim) 0 var(--ink), inset calc(-1 * var(--rim)) 0 var(--ink); }
+.matrix thead th.ref { box-shadow: inset var(--rim) var(--rim) var(--ink), inset calc(-1 * var(--rim)) 0 var(--ink); border-radius: 8px 8px 0 0; }
+.matrix tfoot .ref { box-shadow: inset var(--rim) calc(-1 * var(--rim)) var(--ink), inset calc(-1 * var(--rim)) 0 var(--ink); border-radius: 0 0 8px 8px; }
+
+.matrix tbody th[scope="row"],
+.matrix tbody td {
+  padding: 8px 4px;
+  border-bottom: 1px dotted var(--rule);
+}
+.matrix tbody tr:last-child th,
+.matrix tbody tr:last-child td { border-bottom: 0; }
+.matrix tbody th[scope="row"] {
+  text-align: left;
+  font-weight: 500;
+  padding: 8px 16px 8px 0;
+}
+.matrix tbody td { position: relative; text-align: center; white-space: nowrap; }
+.matrix td.acc {
+  text-align: left;
+  padding-left: 0;
+  font-size: 0.8125rem;
+  font-weight: 650;
+  font-stretch: 88%;
+  color: var(--legend);
+}
+
+.matrix tr.group th,
+.matrix tr.group td {
+  text-align: left;
+  padding: 22px 0 8px;
+  border-bottom: var(--rim) solid var(--ink);
+}
+.matrix tbody:first-of-type tr.group th,
+.matrix tbody:first-of-type tr.group td { padding-top: 14px; }
+.matrix .g { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 12px; font-size: 1rem; font-weight: 700; letter-spacing: -0.008em; }
+.matrix .g span { font-size: 0.8125rem; font-weight: 500; color: var(--legend); }
+
+/* Out of the flow, so a cell's mark stays centred in its column with or without a note */
+.matrix sup.fn { position: absolute; font-size: 0.6875rem; line-height: 1; margin: -4px 0 0 4px; }
+.matrix sup.fn a { color: var(--legend); font-weight: 650; text-decoration: none; }
+.matrix sup.fn a:hover { color: var(--ink); text-decoration: underline; }
+
+.matrix tfoot th,
+.matrix tfoot td {
+  padding: 12px 4px 14px;
+  border-top: var(--engraved) solid var(--ink);
+  font-size: 0.8125rem;
+  color: var(--legend);
+  text-align: center;
+  white-space: nowrap;
+}
+.matrix tfoot th { text-align: left; padding-left: 0; font-weight: 600; color: var(--ink); }
+.tally {
+  display: block;
+  width: 64px;
+  height: 6px;
+  margin: 0 auto 6px;
+  border: 1px solid var(--ink);
+  border-radius: 1px;
+}
+.tally span { display: block; height: 100%; background: var(--ink); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+/* The feature names stay in view while the table scrolls sideways on a narrow screen */
+.matrix thead th.feat,
+.matrix tbody th[scope],
+.matrix tfoot th {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--paper);
+}
+
+.matrix-notes {
+  margin: 22px 0 0;
+  padding: 16px 0 0 1.6em;
+  border-top: 1px solid var(--ink);
+  columns: 2 26rem;
+  column-gap: 48px;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--legend);
+}
+.matrix-notes li { break-inside: avoid; margin-bottom: 8px; scroll-margin-top: 24px; }
+.matrix-notes li::marker { color: var(--ink); font-weight: 650; }
+.matrix-notes li:target { color: var(--ink); outline: var(--rim) solid var(--ink); outline-offset: 4px; border-radius: 2px; }
+
 /* The technical page ------------------------------------------------- */
 
 .doc-head {
@@ -698,7 +911,7 @@ td.num, th.num { text-align: right; white-space: nowrap; padding-right: 20px; }
 }
 
 @media (max-width: 960px) {
-  .hero, .why, .feature, .install, .foot, .doc-head { grid-template-columns: minmax(0, 1fr); }
+  .hero, .why, .feature, .install, .foot, .doc-head, .matrix-head { grid-template-columns: minmax(0, 1fr); }
   .hero .lead { max-width: 34ch; }
   .figures, .figures.one { justify-content: start; }
   .tiers { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 28px; }
@@ -725,6 +938,9 @@ td.num, th.num { text-align: right; white-space: nowrap; padding-right: 20px; }
   .sequence { grid-template-columns: minmax(0, 1fr); }
   pre { font-size: 0.78rem; padding: 14px; }
   table.wide { min-width: 34rem; }
+  .matrix { min-width: 54rem; font-size: 0.875rem; }
+  .matrix tbody th[scope="row"] { min-width: 9.5rem; max-width: 9.5rem; padding-right: 10px; }
+  .matrix-notes { columns: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -736,6 +952,8 @@ td.num, th.num { text-align: right; white-space: nowrap; padding-right: 20px; }
   .block, .foot { margin-top: 40px; }
   a { text-decoration: none; }
   .panel { break-inside: avoid; }
+  .matrix-wrap { overflow: visible; }
+  .matrix { min-width: 0; }
 }
 
 .after-scale { margin: 22px 0 0; }

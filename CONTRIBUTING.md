@@ -6,10 +6,10 @@ Thanks for looking. BooxUltimatum is a one-person spare-time project. It is best
 
 In rough order of value:
 
-1. **Findings from other Boox tablets and firmware.** Does the sleep screen work on your Note Air 5 C, Tab Ultra or Go 10.3? Does Instant ink start? What does `dumpsys oec_service` print? (`dumpsys` is an adb command that prints what an Android service reports.) Use the *Device finding* issue form.
+1. **Findings from other Boox tablets and firmware.** [`DEVICES.md`](DEVICES.md) shows what is known on each tablet, and every blank cell there is a question. Does the sleep screen work on your Note Air5 C, Tab Ultra or Go 10.3? Does Instant ink start? What does `dumpsys oec_service` print? (`dumpsys` is an adb command that prints what an Android service reports.) Use the *Device finding* issue form.
 2. **Bug reports** with tablet, firmware, orientation and steps. Use the *Bug report* form.
 3. **Battery measurements:** an overnight run with BooxUltimatum's battery log and its exported zip, before and after a tweak.
-4. **Translations:** the hub and the shared kit read in Simplified Chinese, and the maintainer's own Vietnamese is on the way. A new language is a folder and a set of strings: the convention, and what stays in English, are in [`docs/12-languages.md`](docs/12-languages.md). Strings live in `hub/src/main/res/values/strings*.xml` (and each `kit/*/src/main/res` for shared strings; Nib's are in `nib/src/main/res`).
+4. **Translations:** the suite reads in Simplified Chinese and Vietnamese, and a reader who writes either is welcome to correct it. A new language is a folder and a set of strings: the convention, and what stays in English, are in [`docs/12-languages.md`](docs/12-languages.md). Strings live in `hub/src/main/res/values/strings*.xml` (and each `kit/*/src/main/res` for shared strings; Nib's are in `nib/src/main/res`).
 5. **Code:** start with an issue labelled `good first issue`, or open an *Idea* issue first so you and the maintainer can agree on the approach before you spend time on it.
 
 ## Reporting a bug or a finding

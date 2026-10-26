@@ -1,0 +1,262 @@
+{
+  "about": "What is known about the suite on each tablet, feature by feature. tools/dev/device_matrix.py turns it into the table in DEVICES.md and on the site (site/index.html, #tablets). A status is one of: v checked by the maintainer, r reported working by the tablet's owner, p partly checked, b built but not yet seen working, x doesn't work, n not offered on that tablet; a feature a tablet has no report for is left out of its cells. A cell with a note is [status, note]. A note's text is the same wherever it is used, and is numbered once.",
+  "devices": [
+    {
+      "id": "na6c",
+      "name": "Note Air6 C",
+      "detail": "Firmware 4.3 · Android 16",
+      "reference": true,
+      "source": "The maintainer's tablet",
+      "links": [["Evidence log", "https://github.com/huuunleashed/BooxUltimatum/blob/main/knowledge/experiments.md"]],
+      "about": "The maintainer's tablet, on firmware `4.3-rel_0817` (Android 16). Every check is recorded in [`knowledge/experiments.md`](knowledge/experiments.md)."
+    },
+    {
+      "id": "na4c",
+      "name": "Note Air4 C",
+      "detail": "Firmware 4.2 · Android 13",
+      "source": "Its owner",
+      "links": [["#4", "https://github.com/huuunleashed/BooxUltimatum/issues/4"], ["#5", "https://github.com/huuunleashed/BooxUltimatum/issues/5"]],
+      "about": "Its owner's reports in [issue #4](https://github.com/huuunleashed/BooxUltimatum/issues/4) (Shizuku tweaks, on 0.11.0) and [issue #5](https://github.com/huuunleashed/BooxUltimatum/issues/5) (the sleep screen)."
+    },
+    {
+      "id": "go103",
+      "name": "Go 10.3",
+      "detail": "Firmware 4.2 · Android 12",
+      "source": "Its owner",
+      "links": [["#4", "https://github.com/huuunleashed/BooxUltimatum/issues/4"]],
+      "about": "Its owner's reports in [issue #4](https://github.com/huuunleashed/BooxUltimatum/issues/4) (Shizuku tweaks, on 0.9.1), with *Test Shizuku* results from two Shizuku builds."
+    },
+    {
+      "id": "lumi",
+      "name": "Go 10.3 Gen II Lumi",
+      "detail": "Firmware 4.2",
+      "source": "Its owner",
+      "links": [["#2", "https://github.com/huuunleashed/BooxUltimatum/issues/2"], ["#3", "https://github.com/huuunleashed/BooxUltimatum/issues/3"]],
+      "about": "Its owner's reports in [issue #2](https://github.com/huuunleashed/BooxUltimatum/issues/2) (Instant ink) and [issue #3](https://github.com/huuunleashed/BooxUltimatum/issues/3) (the home screen), and in the [r/Onyx_Boox thread](https://www.reddit.com/r/Onyx_Boox/comments/1wqqsfz/) linked from them."
+    },
+    {
+      "id": "na2p",
+      "name": "Note Air 2 Plus",
+      "detail": "2022 firmware",
+      "source": "Its owner",
+      "links": [["#1", "https://github.com/huuunleashed/BooxUltimatum/issues/1"]],
+      "about": "Its owner's report in [issue #1](https://github.com/huuunleashed/BooxUltimatum/issues/1) (Instant ink, on 0.6). The same owner has the Lumi."
+    },
+    {
+      "id": "nx3p",
+      "name": "NoteX3 Pro",
+      "detail": "Firmware 4.2 · Android 12",
+      "source": "Its owner",
+      "links": [["#6", "https://github.com/huuunleashed/BooxUltimatum/issues/6"]],
+      "about": "Its owner's report in [issue #6](https://github.com/huuunleashed/BooxUltimatum/issues/6), which brought the Simplified Chinese translation."
+    },
+    {
+      "id": "other",
+      "name": "Not a Boox tablet",
+      "detail": "Android 11 or later",
+      "source": "Emulator, Bigme B7",
+      "links": [],
+      "about": "The maintainer's Android 16 emulator, shaped like a Note Air6 C but without Boox firmware, and an owner's report of BooxUltimatum home on a Bigme B7 in the [r/Onyx_Boox thread](https://www.reddit.com/r/Onyx_Boox/comments/1wqqsfz/). BooxUltimatum hides what needs Boox firmware on such a tablet."
+    }
+  ],
+  "groups": [
+    {
+      "name": "The suite",
+      "features": [
+        {
+          "name": "Installs and opens",
+          "tier": "T0",
+          "cells": {"na6c": "v", "na4c": "r", "go103": "r", "lumi": "r", "na2p": "r", "nx3p": "r", "other": "v"}
+        },
+        {
+          "name": "Updates itself from GitHub",
+          "tier": "T0",
+          "cells": {"na6c": "v"}
+        },
+        {
+          "name": "The app's own language",
+          "tier": "T0",
+          "cells": {
+            "na6c": ["v", "Simplified Chinese seen on the tablet, drawn in its own system font, which has Chinese (issue #6)."],
+            "nx3p": ["r", "Every page read in Chinese on a tablet set to Chinese, with the translation added to 0.11.0, before the Language row existed. The Language row's route for Android 11 and 12 isn't checked yet."],
+            "other": ["v", "The Language row and Android's own App languages screen, in Simplified Chinese and back."]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Home screen",
+      "features": [
+        {
+          "name": "BooxUltimatum home",
+          "tier": "T0",
+          "cells": {
+            "na6c": "v",
+            "lumi": ["r", "In use when its owner reported that Boox-frozen apps were missing from it (issue #3)."],
+            "other": ["v", "On the emulator, and on a Bigme B7 by its owner's report."]
+          }
+        },
+        {
+          "name": "Boox shelf and Boox functions",
+          "tier": "T0",
+          "cells": {"na6c": "v", "other": "n"}
+        },
+        {
+          "name": "Boox-frozen apps shown dimmed",
+          "tier": "T0",
+          "cells": {
+            "na6c": "v",
+            "lumi": ["b", "Built in 0.7.0 from its owner's report (issue #3). Not confirmed on that tablet since."]
+          }
+        },
+        {
+          "name": "Open a frozen app, freeze it again",
+          "tier": "T2",
+          "cells": {"na6c": "v"}
+        }
+      ]
+    },
+    {
+      "name": "Sleep screen",
+      "needs": "Boox firmware",
+      "features": [
+        {
+          "name": "Sleep image mode",
+          "tier": "T0",
+          "cells": {
+            "na6c": "v",
+            "na4c": ["", "Its owner was asked to try it in issue #5, as the way round the missing sticker album. No answer yet."],
+            "other": "n"
+          }
+        },
+        {
+          "name": "Updates while asleep",
+          "tier": "T0",
+          "cells": {
+            "na6c": ["v", "Checked on battery. Measured there, the one-minute step cost about 1.6 mAh an hour, so it now runs only while charging."],
+            "other": "n"
+          }
+        },
+        {
+          "name": "Over Transparent",
+          "tier": "T2",
+          "cells": {
+            "na6c": ["b", "Built from Boox's own code and checked against renders on the emulator. Not yet seen through a real sleep."],
+            "na4c": ["x", "Boox's settings on this tablet have no sticker album, so the plate has nowhere to go (issue #5)."],
+            "other": "n"
+          }
+        },
+        {
+          "name": "Power-off screen",
+          "tier": "T0",
+          "cells": {
+            "na6c": ["p", "Boox saves its copy of the picture, per its own log. The screen at a real power-off isn't looked at yet."],
+            "na4c": ["r", "Its owner reports that the power-off screen works (issue #5)."],
+            "other": "n"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Instant ink",
+      "needs": "Boox firmware",
+      "features": [
+        {
+          "name": "Instant ink in other apps",
+          "tier": "T0",
+          "cells": {
+            "na6c": ["v", "With a real pen in Sketchbook."],
+            "lumi": ["r", "No effect on 0.4.1. Its owner reported it working once 0.5 found the pen by how it behaves and checked usage access (issues #1 and #2)."],
+            "na2p": ["r", "No effect on 0.4.1. Its owner reported it working once 0.5 found the pen by how it behaves and checked usage access (issues #1 and #2)."],
+            "nx3p": ["r", "Its owner uses it for handwriting, through the direct display route (issue #6)."],
+            "other": "n"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Nib",
+      "features": [
+        {
+          "name": "Nib draws, saves and exports",
+          "tier": "T0",
+          "cells": {
+            "na6c": "v",
+            "other": ["v", "Without the display's preview: Nib draws every stroke itself."]
+          }
+        },
+        {
+          "name": "Nib's instant preview",
+          "tier": "T0",
+          "cells": {"na6c": "v", "other": "n"}
+        }
+      ]
+    },
+    {
+      "name": "Battery",
+      "features": [
+        {
+          "name": "Battery log and Today",
+          "tier": "T0",
+          "cells": {
+            "na6c": "v",
+            "other": ["v", "With a battery log copied from a Note Air6 C."]
+          }
+        },
+        {
+          "name": "What kept the tablet awake",
+          "tier": "T1",
+          "cells": {"na6c": "v"}
+        },
+        {
+          "name": "A note when Android restarts by itself",
+          "tier": "T1",
+          "cells": {
+            "na6c": ["v", "Android 16 asks for one more grant, READ_DROPBOX_DATA, to read where a restart is recorded."]
+          }
+        },
+        {
+          "name": "Safeguards for a display that stays on",
+          "tier": "T0",
+          "cells": {
+            "na6c": ["b", "Switch off a display that stays on, and Refresh the sleep screen while asleep, are on by default since 0.10.1. Neither has been seen to work yet."]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tweaks and fonts",
+      "features": [
+        {
+          "name": "Tweaks with the adb grants",
+          "tier": "T1",
+          "cells": {"na6c": "v"}
+        },
+        {
+          "name": "Tweaks with Shizuku",
+          "tier": "T2",
+          "cells": {
+            "na6c": "v",
+            "na4c": ["r", "Through Shizuku's direct route. Shizuku's helper service never starts on this tablet, and since 0.9.0 commands don't need it (issue #4)."],
+            "go103": ["r", "Through Shizuku's direct route. Shizuku's helper service never starts on this tablet, and since 0.9.0 commands don't need it (issue #4)."]
+          }
+        },
+        {
+          "name": "The tablet font",
+          "tier": "T0",
+          "cells": {"na6c": "v"}
+        },
+        {
+          "name": "Status bar icons shown or hidden",
+          "tier": "T1",
+          "cells": {"na6c": "v"}
+        },
+        {
+          "name": "Google Fonts browser",
+          "tier": "T0",
+          "cells": {"na6c": "v"}
+        }
+      ]
+    }
+  ]
+}

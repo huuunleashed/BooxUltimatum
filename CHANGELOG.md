@@ -4,6 +4,20 @@ All notable changes to BooxUltimatum. Newest first. The project follows [Semanti
 
 ## [Unreleased]
 
+### Added
+
+- **A table of tablets and what works on them.** `DEVICES.md` and a new section of the website, *Which tablets it runs on*, show 23 features across seven columns: the maintainer's Note Air6 C, five Boox tablets whose owners reported on GitHub (Note Air4 C, Go 10.3, Go 10.3 Gen II Lumi, Note Air 2 Plus and NoteX3 Pro), and tablets that aren't Boox. Each cell says whether the maintainer checked the feature, an owner reported it working, it is partly checked, not yet seen working, doesn't work or isn't offered there, with a note and the issue it came from. Both are built from `knowledge/devices.json` by `tools/dev/device_matrix.py`, and a test on every push fails when either drifts from the data.
+
+### Changed
+
+- **The website follows 0.12.0 and Nib 0.5.0.** Its status line, readings and *Get it* section named 0.10 and retold every release since. They now name the current releases and leave the history to this changelog. The access scale says what the fifth `adb` grant adds on Android 16, and that Shizuku opens the apps Boox froze. The battery section lists the alerts and the two safeguards, and its findings use the log's 28-day standby figure and the four nights the display stayed on.
+- **The technical guide's battery findings** add the 28-day standby figure, the display that stayed on four times, and the processor that stays awake after Android restarts by itself. It no longer says the first overnight run is still to do.
+
+### Fixed
+
+- **Instant ink on a Note Air 2 Plus and a Go 10.3 Gen II Lumi.** The README and the website still said it had no effect there and that the reports were open. Their owner reported it working after 0.5, and issues #1 and #2 were closed on 2026-10-01; 0.7.1 had made the website match the README, which was the one out of date. The technical guide already said so.
+- **Smaller drifts.** The README offered `Nib-0.4.2.apk` where the release is `Nib-0.5.0.apk`, and its layout table stopped the design docs at `11`. The technical guide called Over Transparent "T1 with one consent", where its one permission is asked for on the tablet (T0, as 0.12.0 corrected in `docs/06`), still tagged live updates *New*, and said one sentence twice. `CONTRIBUTING.md` said the Vietnamese translation was on the way.
+
 ## [0.12.0] (2026-10-19)
 
 BooxUltimatum 0.12.0 gives the suite its own language. The app follows the tablet's language until the reader chooses another one, and the choice is kept for each app, so the hub and Nib can be in different languages. The hub, Nib, the shared kit and the updater read in Simplified Chinese and Vietnamese, and each app has a Language row of its own. A check and a convention make the next language a folder and a line. Nothing about how the apps work has changed. Checked by unit tests, lint and a release build, and by reading the pages in both languages on the Android 36 emulator; not yet seen on a tablet.
