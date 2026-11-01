@@ -20,10 +20,16 @@ All notable changes to BooxUltimatum. Newest first. The project follows [Semanti
 
 ### Research
 
-- **A light stroke now previews as light as it draws.** The display never blends a preview colour: Boox's own note app sends an opaque colour for every style and gets the marker's 50 % by compositing its own segments before they leave the app. Nib therefore sends the colour its ink will leave — a 45 % dab previews as that grey, a half-opaque pen as `#808080` — instead of solid black, and the marker keeps its own half alpha rather than being lightened twice. A solid grey can't composite over ink already on the page, so crossing lines still differ. Seen in the marker style on the tablet; the other styles are not yet seen.
-
 - **What is inside Boox's pen engine, and what it says about Nib's ink.** The engine is ten pens over one stroke pipeline, from a point producer and a smoothing filter through a spline, a brush and a brush applier to a convex hull and a polygon merger, with a width calculator beside it. Its two fountain pens are different laws: the older one averages the last six points' pressure, while the one Boox Notes draws with applies each point's own pressure, so Nib's measured width laws already match it. What is left to check is the rest of the pipeline, starting with how the engine places and joins points between pen samples. The structure is set out in `docs/09-ink.md` › *Inside the pen library*. Its smoothing filter is rebuilt as `PenSmoothing` in `nib-engine`, with tests and the pen-up tail; nothing calls it yet.
 - **The maintainer's tablet moved to firmware 4.3.1, and the interfaces the suite relies on still answer there.** The Note Air6 C updated from 4.3 (`rel_0817`) to 4.3.1 (`rel_10162`, built 16 October 2026, still Android 16). Read-only probes afterwards: the display's pen-state and pressure getters reply as before. The daydream, the hidden App Freeze page and the 22 Onyx packages are unchanged, and wireless debugging is still absent. The `adb` grants and Shizuku's permission survived the update, and the hub's accessibility service and alarms came back after the restart. Every feature check in this changelog was made on 4.3. What the update changed in behaviour is not known, so the sleep screen and the pen are next to re-check on 4.3.1.
+
+## [Nib 0.6.1] (2026-11-01)
+
+Nib's preview now draws a light stroke as light as the finished ink, instead of solid black under the nib.
+
+### Fixed
+
+- **A light stroke now previews as light as it draws.** The display never blends a preview colour: Boox's own note app sends an opaque colour for every style and gets the marker's 50 % by compositing its own segments before they leave the app. Nib therefore sends the colour its ink will leave — a 45 % dab previews as that grey, a half-opaque pen as `#808080` — instead of solid black, and the marker keeps its own half alpha rather than being lightened twice. A solid grey can't composite over ink already on the page, so crossing lines still differ. Seen in the marker style on the tablet; the other styles are not yet seen.
 
 ## [Nib 0.6.0] (2026-11-01)
 
