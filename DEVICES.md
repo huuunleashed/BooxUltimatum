@@ -16,7 +16,7 @@ The same table is on the website, at [huuunleashed.github.io/BooxUltimatum/#tabl
 - – **Not offered:** BooxUltimatum hides it on that tablet.
 - (blank) **No report yet:** nobody has reported on it, which says nothing about whether it works.
 
-| Feature | Access | Note Air6 C<br><sub>Firmware 4.3 · Android 16</sub> | Note Air4 C<br><sub>Firmware 4.2 · Android 13</sub> | Go 10.3<br><sub>Firmware 4.2 · Android 12</sub> | Go 10.3 Gen II Lumi<br><sub>Firmware 4.2</sub> | Note Air 2 Plus<br><sub>2022 firmware</sub> | NoteX3 Pro<br><sub>Firmware 4.2 · Android 12</sub> | Not a Boox tablet<br><sub>Android 11 or later</sub> |
+| Feature | Access | Note Air6 C<br><sub>Firmware 4.3.1 · Android 16</sub> | Note Air4 C<br><sub>Firmware 4.2 · Android 13</sub> | Go 10.3<br><sub>Firmware 4.2 · Android 12</sub> | Go 10.3 Gen II Lumi<br><sub>Firmware 4.2</sub> | Note Air 2 Plus<br><sub>2022 firmware</sub> | NoteX3 Pro<br><sub>Firmware 4.2 · Android 12</sub> | Not a Boox tablet<br><sub>Android 11 or later</sub> |
 | :-- | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
 | **The suite** |  |  |  |  |  |  |  |  |
 | Installs and opens | T0 | ● | ◐ | ◐ | ◐ | ◐ | ◐ | ● |
@@ -75,7 +75,7 @@ The same table is on the website, at [huuunleashed.github.io/BooxUltimatum/#tabl
 
 ### Where each column comes from
 
-- **Note Air6 C:** The maintainer's tablet, on firmware `4.3-rel_0817` (Android 16). Every check is recorded in [`knowledge/experiments.md`](knowledge/experiments.md).
+- **Note Air6 C:** The maintainer's tablet, on firmware `4.3.1-rel_10162` (Android 16). Every check is recorded in [`knowledge/experiments.md`](knowledge/experiments.md). Its feature checks were made on `4.3-rel_0817`; since the tablet moved to 4.3.1 on 2026-11-01 the interfaces the suite depends on have been re-probed there and still answer.
 - **Note Air4 C:** Its owner's reports in [issue #4](https://github.com/huuunleashed/BooxUltimatum/issues/4) (Shizuku tweaks, on 0.11.0) and [issue #5](https://github.com/huuunleashed/BooxUltimatum/issues/5) (the sleep screen).
 - **Go 10.3:** Its owner's reports in [issue #4](https://github.com/huuunleashed/BooxUltimatum/issues/4) (Shizuku tweaks, on 0.9.1), with *Test Shizuku* results from two Shizuku builds.
 - **Go 10.3 Gen II Lumi:** Its owner's reports in [issue #2](https://github.com/huuunleashed/BooxUltimatum/issues/2) (Instant ink) and [issue #3](https://github.com/huuunleashed/BooxUltimatum/issues/3) (the home screen), and in the [r/Onyx_Boox thread](https://www.reddit.com/r/Onyx_Boox/comments/1wqqsfz/) linked from them.

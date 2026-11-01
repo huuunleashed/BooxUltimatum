@@ -23,7 +23,7 @@ BooxUltimatum is built around evidence from real Boox hardware. Every tweak is b
 - The best-tested tablet, the maintainer's Note Air6 C, has a 10.3" Kaleido 3 colour e-ink screen: 1860×2480 mono at 300 ppi, 930×1240 colour at 150 ppi, muted colours, slow refresh, and visible ghosting. Other Boox models differ. BooxUltimatum is used in portrait and landscape, by finger and by EMR stylus (the electromagnetic pen), often with the front light low.
 - Sessions are short and deliberate: check drain, apply a change, come back hours later to verify. Long-running measurements happen while the tablet sleeps.
 - Setup happens once at a computer (adb grants, Shizuku start). Shizuku must be restarted each time the tablet restarts.
-- Firmware: Boox firmware 4.3 (Android 16) on the best-tested Note Air6 C. The Go 10.3 reports so far come from firmware 4.2 (Android 12). The locked bootloader means no root.
+- Firmware: Boox firmware 4.3.1 (Android 16) on the best-tested Note Air6 C, where the feature checks were made on 4.3. The Go 10.3 reports so far come from firmware 4.2 (Android 12). The locked bootloader means no root.
 
 ## Capabilities and Constraints
 

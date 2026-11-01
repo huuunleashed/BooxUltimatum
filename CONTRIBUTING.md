@@ -1,6 +1,6 @@
 # Contributing to BooxUltimatum
 
-Thanks for looking. BooxUltimatum is a one-person spare-time project. It is best tested on the maintainer's Note Air6 C (firmware 4.3), and owners of other Boox tablets are already reporting how it behaves on theirs. Every careful report and every finding from another tablet moves it forward. This page covers what's most useful, how to set up, and the few rules that keep the app safe. [`AGENTS.md`](AGENTS.md) holds the complete rules.
+Thanks for looking. BooxUltimatum is a one-person spare-time project. It is best tested on the maintainer's Note Air6 C (firmware 4.3.1), and owners of other Boox tablets are already reporting how it behaves on theirs. Every careful report and every finding from another tablet moves it forward. This page covers what's most useful, how to set up, and the few rules that keep the app safe. [`AGENTS.md`](AGENTS.md) holds the complete rules.
 
 ## Where help is wanted
 

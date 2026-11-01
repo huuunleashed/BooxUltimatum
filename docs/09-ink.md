@@ -59,6 +59,30 @@ Boox's own pen library was measured on a Note Air6 C with penlab (`tools/host/pe
 | Charcoal v2 (the display's charcoal v2 style) | stamps of about 1.13W + 5.7, at every point up to 2 px apart (4 px for stamps over about 16 px) | Measured 2026-10-07. 1-bit too, but anchored to the page: a pixel is on when a fixed, uniform, uncorrelated threshold at that page pixel is below the pressure there. So on the centre line the cover equals the pressure (0.03 at p 0.05, 0.20 at 0.2, 0.53 at 0.5, 0.87 at 0.85, 1 at 1: solid). Overlapping stamps don't build up, and a lighter stroke's pixels are a subset of a darker one's at the same place (0.95 to 0.97). Across the stroke the cover is flat out to 0.7 of the stamp's radius, then falls about linearly to nothing at its edge (at W 4, the pressure out to 3 px from the line, 0.4 of it at 4 px, none at 5). The same stroke 1 px further keeps 0.96 of its pixels where they were. Speed is ignored. |
 | Charcoal and tilt | the stamp × (1 + s · g(θ)) | Both versions: tilt scales the whole stamp evenly, and doesn't make it lighter (45° gives about 2.5 times, for W 1 to 6). |
 
+## Inside the pen library
+
+`/system/lib64/libneopen_jni.so` is the code behind the numbers above. It is 3.5 MB of arm64 C++, built with clang 21 and stripped, but its C++ RTTI survived, so its class names and their vtables can be recovered without symbols. That is how the structure below is known; the width laws themselves stay measured with penlab, because reading a formula is not the same as watching the pen draw.
+
+It exports nine JNI functions on `com.onyx.android.sdk.pennative.NeoPenNative`. `createPen(type, config)` reads the Java config field by field, by name, and builds one of ten pens:
+
+| Type | Factory | Type | Factory |
+|---|---|---|---|
+| 1 | Brush | 6 | Fountain v2 |
+| 2 | Fountain | 7 | Pencil |
+| 3 | Marker | 8 | Ballpoint |
+| 4 | Charcoal | 9 | Square (calligraphy) |
+| 5 | Charcoal v2 | 10 | Brush sign |
+
+Those ten numbers are the same constants `NeoPenConfig` uses in the app, so the native and Java sides agree on which pen is which. `onPenDown`, `onPenMove` and `onPenUp` take the points and return ink as a float array of points, an int array of sizes, and bitmaps for the pens that stamp.
+
+Each pen is a pipeline, not a formula. A stroke runs through a point producer, a smoothing filter, a spline producer and its interpolator, a brush and a brush applier, then a convex-hull chain producer and a polygon merger, while the pen's own width calculator feeds the points. The width calculators are the named ones: brush, ballpoint, square, fixed, directional and the fountain's own. The masks are circle, Gaussian circle and bitmap. Polygon work goes through Clipper2, and logging through spdlog.
+
+There are two fountain pens, and they are not the same law. The older one (type 2) computes `minWidth + (maxWidth - minWidth) × p²` over the last six points' weighted mean pressure, with weights of 0.9 per point for the pressure and 0.65 for the position, and a fixed exponent of 2. The one Boox Notes draws with is type 6, and it computes `max(minWidth, width × p^(2 × pressureSensitivity))` from each point's own pressure, the exponent being the sensitivity doubled in the code rather than a field of the config. Both work in a radius and hand the renderer twice it, the full width.
+
+**The smoothing filter.** Before the spline, each channel of the point stream runs through a fixed low-pass filter whose length comes from the pen's `smoothLevel`: `trunc(smoothLevel × 50)`, clamped to 1 to 50 taps, so 0 and 0.02 both pass the points through untouched. The taps are cut from a 15-tap prototype table in the library's read-only data by linear interpolation, then normalised; the prototype is asymmetric, with its mass at the newest end. The window repeats the first sample while it fills, so a stroke starts at its own value instead of easing in from zero. The filter is causal and lags 1.63 samples at 15 taps, and a step overshoots by 8 %, the ringing of a deliberately sharp cutoff rather than a fault. At pen-up the engine holds the last point back, then appends the lift point `floor(4n / 15)` times, so the stroke ends on a short run-on rather than stopping short of it. Nib has the same filter in `nib-engine/src/main/kotlin/app/booxultimatum/nib/engine/input/PenSmoothing.kt`, whole-run and stateful forms with the pen-up tail, tested against the numbers here. From Nib 0.6.0 its stroke builder smooths every new stroke's position with it and eases the pen-up tail onto the lift point.
+
+**What that means for Nib.** The measured laws match the code, including the per-point pressure of the fountain Notes uses, so the width law is not where Nib's committed ink differs from the display's preview. The rest of the pipeline is: how points are placed and joined, and which mask and applier a brush uses. The point producer and the spline are the next thing to read, and the `minWidth` Nib's floor stands in for is still to be measured on the tablet.
+
 **Charcoal and tilt.** With tilt on and a tilt scale of s (3 by default), the width grows by 1 + s · g(θ), where θ is the pen's angle from upright. The angle combines both tilt axes: tilts of 45° and 45° give 60°. g is 0 up to 10°, then 0.07 at 20°, 0.2 at 30°, 0.51 at 45°, 1.04 at 60°, 1.49 at 70° and 2.02 at 80°. That's close to 1/cos θ − 1 up to 60°. A broader stroke isn't lighter. At a usual writing tilt of 40° to 50°, a charcoal lays down two to three times its width. That is why Nib's charcoal preview looked much thicker than its ink when Nib ignored tilt below 30°.
 
 ## The display interface

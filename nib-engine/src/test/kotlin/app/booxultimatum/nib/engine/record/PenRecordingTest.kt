@@ -6,6 +6,7 @@ import app.booxultimatum.nib.engine.brush.BrushSpec
 import app.booxultimatum.nib.engine.doc.PackedPoints
 import app.booxultimatum.nib.engine.geom.Affine
 import app.booxultimatum.nib.engine.input.InputSample
+import app.booxultimatum.nib.engine.input.PenSmoothing
 import app.booxultimatum.nib.engine.input.Tool
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -94,15 +95,20 @@ class PenRecordingTest {
         assertEquals(2, strokes.size, "the cancelled stroke and the eraser are left out; the open one is finished")
         assertEquals(listOf(10L, 11L), strokes.map { it.id })
         val first = strokes[0]
-        assertEquals(32, first.points.size)
+        assertEquals(32 + penUpTail(brush, 32), first.points.size, "the 32 samples, then the filter's pen-up tail")
         assertEquals(PackedPoints.quantize(85f), first.points.x(first.points.size - 1), "ends where the pen lifted")
         assertEquals(PackedPoints.quantize(52f), first.points.y(first.points.size - 1))
         assertEquals(2, first.points.deltaMillis(1), "timing survives")
-        assertEquals(11, strokes[1].points.size)
-        val erasers = PenReplay.strokes(rec, BrushSpec.defaults(BrushKind.PixelEraser), BLACK, tools = setOf(Tool.Eraser))
+        assertEquals(11 + penUpTail(brush, 11), strokes[1].points.size, "the run left open is finished, tail and all")
+        val eraser = BrushSpec.defaults(BrushKind.PixelEraser)
+        val erasers = PenReplay.strokes(rec, eraser, BLACK, tools = setOf(Tool.Eraser))
         assertEquals(1, erasers.size)
-        assertEquals(3, erasers[0].points.size)
+        assertEquals(3 + penUpTail(eraser, 3), erasers[0].points.size)
         val doubled = PenReplay.strokes(rec, brush, BLACK, transform = Affine.scale(2f))
         assertEquals(PackedPoints.quantize(170f), doubled[0].points.x(doubled[0].points.size - 1))
     }
+
+    /** Points the filter adds at pen-up: floor(4 * window / 15), at most as many as the stroke has samples. */
+    private fun penUpTail(brush: BrushSpec, kept: Int): Int =
+        minOf(PenSmoothing.windowLength(brush.smoothing) * 4 / 15, kept)
 }

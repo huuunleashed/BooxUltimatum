@@ -7,6 +7,7 @@ import app.booxultimatum.nib.engine.brush.BrushSpec
 import app.booxultimatum.nib.engine.doc.PackedPoints
 import app.booxultimatum.nib.engine.render.StrokeRenderer
 import kotlin.math.abs
+import kotlin.math.sin
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.Test
@@ -27,9 +28,13 @@ class StrokeBuilderTest {
         b.add(sample(1.1f, 0.05f))
         assertEquals(2, b.size)
         val s = b.finish()
-        assertEquals(3, s.points.size, "the last sample is kept on finish")
-        assertEquals(PackedPoints.quantize(1.1f), s.points.x(2))
-        assertEquals(PackedPoints.quantize(0.05f), s.points.y(2))
+        // The three kept samples, then the filter's pen-up tail: floor(4 * window / 15) points, at most one per
+        // sample, so three here.
+        val penUpTail = minOf(PenSmoothing.windowLength(fineliner.smoothing) * 4 / 15, 3)
+        assertEquals(3 + penUpTail, s.points.size, "the last sample is kept on finish")
+        val last = s.points.size - 1
+        assertEquals(PackedPoints.quantize(1.1f), s.points.x(last), "and the stroke ends on it")
+        assertEquals(PackedPoints.quantize(0.05f), s.points.y(last))
     }
 
     @Test
@@ -73,6 +78,55 @@ class StrokeBuilderTest {
             assertEquals(PackedPoints.quantize(x), s.points.x(i))
             assertEquals(PackedPoints.quantize(x * 0.5f), s.points.y(i))
         }
+    }
+
+    @Test
+    fun smoothingZeroLeavesEveryPositionAsSampled() {
+        val b = StrokeBuilder(fineliner.copy(smoothing = 0f), BLACK, 1L)
+        val n = 50
+        val xs = FloatArray(n) { 4f + it * 1.3f + sin(it * 0.2f) }
+        val ys = FloatArray(n) { 60f + 5f * sin(it * 0.13f) }
+        for (i in 0 until n) b.add(sample(xs[i], ys[i], i.toLong()))
+        val s = b.finish()
+        assertEquals(n, s.points.size, "a level of 0 asks for one tap, so there is no pen-up tail either")
+        for (i in 0 until n) {
+            assertEquals(PackedPoints.quantize(xs[i]), s.points.x(i), "x at $i")
+            assertEquals(PackedPoints.quantize(ys[i]), s.points.y(i), "y at $i")
+        }
+    }
+
+    @Test
+    fun theInteriorMatchesPenSmoothingApplyOnTheKeptSamples() {
+        val brush = fineliner.copy(smoothing = 0.6f)
+        val b = StrokeBuilder(brush, BLACK, 1L)
+        val n = 60
+        val xs = FloatArray(n) { 12f + 1.7f * it }
+        val ys = FloatArray(n) { 40f + 2.4f * it }
+        for (i in 0 until n) b.add(sample(xs[i], ys[i], i.toLong()))
+        val s = b.finish()
+        assertEquals(n + PenSmoothing.windowLength(brush.smoothing) * 4 / 15, s.points.size, "every sample was kept")
+        val fx = PenSmoothing.apply(xs, brush.smoothing)
+        val fy = PenSmoothing.apply(ys, brush.smoothing)
+        // Every kept point but the last is the filter's own output; only the last eases onto its raw sample.
+        for (i in 0 until n - 1) {
+            assertEquals(PackedPoints.quantize(fx[i]), s.points.x(i), "x at $i")
+            assertEquals(PackedPoints.quantize(fy[i]), s.points.y(i), "y at $i")
+        }
+    }
+
+    @Test
+    fun theStrokeEndsExactlyOnTheLiftPoint() {
+        val b = StrokeBuilder(fineliner.copy(smoothing = 0.6f), BLACK, 1L)
+        for (i in 0..70) b.add(sample(8f + 2.2f * i, 30f + (i % 6) * 0.8f, i.toLong()))
+        // Off the position grid, so only a point placed on the lift point itself reads back as this value.
+        val liftX = 166.37f
+        val liftY = 35.61f
+        b.add(sample(liftX, liftY, 71L))
+        val s = b.finish()
+        val last = s.points.size - 1
+        assertTrue(last > 70, "the pen-up tail holds points after the samples")
+        assertEquals(PackedPoints.quantize(liftX), s.points.x(last), "x ends on the lift point")
+        assertEquals(PackedPoints.quantize(liftY), s.points.y(last), "y ends on the lift point")
     }
 
     @Test

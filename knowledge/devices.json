@@ -4,11 +4,11 @@
     {
       "id": "na6c",
       "name": "Note Air6 C",
-      "detail": "Firmware 4.3 · Android 16",
+      "detail": "Firmware 4.3.1 · Android 16",
       "reference": true,
       "source": "The maintainer's tablet",
       "links": [["Evidence log", "https://github.com/huuunleashed/BooxUltimatum/blob/main/knowledge/experiments.md"]],
-      "about": "The maintainer's tablet, on firmware `4.3-rel_0817` (Android 16). Every check is recorded in [`knowledge/experiments.md`](knowledge/experiments.md)."
+      "about": "The maintainer's tablet, on firmware `4.3.1-rel_10162` (Android 16). Every check is recorded in [`knowledge/experiments.md`](knowledge/experiments.md). Its feature checks were made on `4.3-rel_0817`; since the tablet moved to 4.3.1 on 2026-11-01 the interfaces the suite depends on have been re-probed there and still answer."
     },
     {
       "id": "na4c",

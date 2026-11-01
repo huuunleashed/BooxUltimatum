@@ -21,7 +21,7 @@
 ## Known limits
 
 - {{A limit that applies to this release, in one sentence: what the app can't do, or what isn't known yet.}}
-- Only the Note Air6 C on firmware 4.3 is tested.
+- Only the Note Air6 C on firmware 4.3.1 is tested.
 
 The full history is in [CHANGELOG.md](https://github.com/huuunleashed/BooxUltimatum/blob/main/CHANGELOG.md).
 

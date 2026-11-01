@@ -18,6 +18,23 @@ All notable changes to BooxUltimatum. Newest first. The project follows [Semanti
 - **Instant ink on a Note Air 2 Plus and a Go 10.3 Gen II Lumi.** The README and the website still said it had no effect there and that the reports were open. Their owner reported it working after 0.5, and issues #1 and #2 were closed on 2026-10-01; 0.7.1 had made the website match the README, which was the one out of date. The technical guide already said so.
 - **Smaller drifts.** The README offered `Nib-0.4.2.apk` where the release is `Nib-0.5.0.apk`, and its layout table stopped the design docs at `11`. The technical guide called Over Transparent "T1 with one consent", where its one permission is asked for on the tablet (T0, as 0.12.0 corrected in `docs/06`), still tagged live updates *New*, and said one sentence twice. `CONTRIBUTING.md` said the Vietnamese translation was on the way.
 
+### Research
+
+- **What is inside Boox's pen engine, and what it says about Nib's ink.** The engine is ten pens over one stroke pipeline, from a point producer and a smoothing filter through a spline, a brush and a brush applier to a convex hull and a polygon merger, with a width calculator beside it. Its two fountain pens are different laws: the older one averages the last six points' pressure, while the one Boox Notes draws with applies each point's own pressure, so Nib's measured width laws already match it. What is left to check is the rest of the pipeline, starting with how the engine places and joins points between pen samples. The structure is set out in `docs/09-ink.md` › *Inside the pen library*. Its smoothing filter is rebuilt as `PenSmoothing` in `nib-engine`, with tests and the pen-up tail; nothing calls it yet.
+- **The maintainer's tablet moved to firmware 4.3.1, and the interfaces the suite relies on still answer there.** The Note Air6 C updated from 4.3 (`rel_0817`) to 4.3.1 (`rel_10162`, built 16 October 2026, still Android 16). Read-only probes afterwards: the display's pen-state and pressure getters reply as before. The daydream, the hidden App Freeze page and the 22 Onyx packages are unchanged, and wireless debugging is still absent. The `adb` grants and Shizuku's permission survived the update, and the hub's accessibility service and alarms came back after the restart. Every feature check in this changelog was made on 4.3. What the update changed in behaviour is not known, so the sleep screen and the pen are next to re-check on 4.3.1.
+
+## [Nib 0.6.0] (2026-11-01)
+
+Nib's new strokes are smoothed by the same filter Boox's own pen engine uses, so a line follows the pen instead of stepping between samples. It is not yet seen on a tablet.
+
+### Changed
+
+- **The ink follows the pen the way Boox's own pens do.** Nib's stroke builder now smooths each new stroke's position with the firmware's own filter rather than its earlier exponential average: a window as long as the brush's Smoothing setting, up to fifty samples, and the pen-up run-on the engine uses. Drawing made before this release opens and renders exactly as it did, because the smoothing is applied while the stroke is drawn, not when it is shown. The Smoothing slider keeps its meaning and its unit. Details in `docs/09-ink.md` › *Inside the pen library*.
+
+### Fixed
+
+- **A stroke still ends exactly on the point where the pen lifted,** as before: the pen-up run-on is eased onto that point rather than left trailing behind it.
+
 ## [0.12.0] (2026-10-19)
 
 BooxUltimatum 0.12.0 gives the suite its own language. The app follows the tablet's language until the reader chooses another one, and the choice is kept for each app, so the hub and Nib can be in different languages. The hub, Nib, the shared kit and the updater read in Simplified Chinese and Vietnamese, and each app has a Language row of its own. A check and a convention make the next language a folder and a line. Nothing about how the apps work has changed. Checked by unit tests, lint and a release build, and by reading the pages in both languages on the Android 36 emulator; not yet seen on a tablet.

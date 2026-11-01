@@ -7,7 +7,7 @@
 ## Tested
 
 - **Checked:** {{what was run or looked at, and where: on the emulator, by unit tests, on the tablet.}}
-- **Not yet seen:** {{what changed but has not been seen on a tablet with firmware 4.3. Write "nothing" if everything was.}}
+- **Not yet seen:** {{what changed but has not been seen on a tablet with firmware 4.3.1. Write "nothing" if everything was.}}
 
 ## What to check
 
