@@ -129,6 +129,10 @@ Finger touch can be switched off in screen areas through Android's input manager
 
 The display keeps all of this after the process that set it dies: an app killed mid-session left its preview drawing over every app (2026-09-28).
 
+**The preview has no opacity of its own.** The display never blends a preview colour: BOOX's own note app sends an opaque colour for every style, and its one translucent pen, the marker, gets its 50 % by compositing its own segments before the pixels leave the app, not by asking the display to blend ([verify] read from the decompiled app, not yet confirmed with a pen on the tablet). So a preview is always solid, and a brush whose ink is lighter would draw bolder under the nib than after the lift.
+
+Nib sends the colour the finished ink will leave instead: a brush whose ink is a share of a dab, or whose opacity is below 1, previews in the grey that share leaves on paper. A half-opaque black previews at `#808080`, and the marker keeps its own half alpha rather than being lightened twice. What this cannot do is composite over ink already on the page: a solid grey does not behave like a translucent stroke where lines cross. The greys themselves were seen on the tablet in the marker style; whether every other style shows them the same way is [verify].
+
 ## How `kit:ink` is built
 
 ```

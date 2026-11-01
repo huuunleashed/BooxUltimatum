@@ -99,7 +99,9 @@ data class BrushSpec(
     ): HardwarePreview {
         val style = preview.styleFor(width, viewScale, verifiedOnly)
         val px = sentWidthPx(style, viewScale)
-        val argb = preview.argb(color).let { if (style == HardwareStyle.Marker) marker.adapt(it) else it }
+        // The marker style already carries its own half alpha, so its colour is not lightened a second time.
+        val weight = if (style == HardwareStyle.Marker) 1f else previewWeight
+        val argb = preview.argb(color, weight).let { if (style == HardwareStyle.Marker) marker.adapt(it) else it }
         return HardwarePreview(style, px, argb, DisplayParams.of(style, this, px, viewRotation))
     }
 
@@ -116,6 +118,17 @@ data class BrushSpec(
         get() {
             val tilt = if (usesTilt) TiltShading.maxWidthFactor(tiltScale, tiltResponse) else 1f
             return max(width * 0.5f * curve.maxFactor * tilt, widthFloor * 0.5f)
+        }
+
+    /**
+     * How dark this brush's finished ink is, 0..1, for the preview to draw at the same weight: its opacity, and for a
+     * brush that lays dabs, the share of a dab that is ink. The display can't blend a preview colour, so this is how a
+     * light stroke previews light instead of solid black.
+     */
+    val previewWeight: Float
+        get() {
+            val dab = if (kind.rendersAsDabs) flow.coerceIn(0f, 1f) else 1f
+            return (opacity * dab).coerceIn(0f, 1f)
         }
 
     /** The width no point of a stroke is drawn thinner than (see [minWidth]): 0 when there is none. */

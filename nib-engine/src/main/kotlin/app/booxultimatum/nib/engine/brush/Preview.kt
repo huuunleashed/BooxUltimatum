@@ -149,14 +149,30 @@ data class Preview(
     fun styleFor(docWidth: Float, viewScale: Float, verifiedOnly: Boolean = false): HardwareStyle =
         if (verifiedOnly && !style.verified) style.fallback else style
 
-    /** The ARGB colour to hand the firmware for a stroke of [brushColor]. */
-    fun argb(brushColor: Int): Int {
+    /**
+     * The ARGB colour to hand the firmware for a stroke of [brushColor], drawn as light as the finished ink will be.
+     *
+     * The display never blends a preview colour: BOOX's own note app sends an opaque colour for every style and gets
+     * the marker's 50 % by compositing its own segments before they leave the app (`docs/09-ink.md`). So a brush
+     * whose ink is lighter than solid would otherwise preview darker and bolder than it draws. [weight] takes it
+     * towards the paper instead, as the ink does: 0.5 of black draws #808080, the colour a half-opaque stroke leaves
+     * on white.
+     */
+    fun argb(brushColor: Int, weight: Float = 1f): Int {
         val rgb = when (color) {
             PreviewColor.Black -> 0x000000
             PreviewColor.White -> 0xFFFFFF
             PreviewColor.Brush -> brushColor and 0xFFFFFF
         }
-        return (alpha shl 24) or rgb
+        val w = if (weight.isFinite()) weight.coerceIn(0f, 1f) else 1f
+        val lit = if (w >= 1f) rgb else {
+            fun channel(v: Int): Int = ((v * w + 255f * (1f - w)) + 0.5f).toInt().coerceIn(0, 255)
+            val r = channel((rgb shr 16) and 0xFF)
+            val g = channel((rgb shr 8) and 0xFF)
+            val b = channel(rgb and 0xFF)
+            (r shl 16) or (g shl 8) or b
+        }
+        return (alpha shl 24) or lit
     }
 
     companion object {

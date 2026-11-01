@@ -203,12 +203,30 @@ class NativePensTest {
     }
 
     @Test
+    fun aLighterInkPreviewsLighter() {
+        // The display never blends a preview colour, so a light stroke is sent the grey its ink leaves on paper.
+        val graphite = BrushSpec.defaults(BrushKind.Graphite)
+        assertTrue(graphite.previewWeight < 1f, "graphite draws with a share of a dab as ink")
+        val black = 0xFF000000.toInt()
+        val preview = graphite.hardwarePreview(black, 1f)
+        val grey = preview.argb and 0xFF
+        assertTrue(grey > 0x20, "a light ink previews as a grey, not black: ${Integer.toHexString(grey)}")
+        assertTrue(grey < 0xF0, "and not as the paper: ${Integer.toHexString(grey)}")
+        // An opaque brush is unchanged, and a translucent one takes its own share.
+        assertEquals(0x000000, BrushSpec.defaults(BrushKind.Fineliner).hardwarePreview(black, 1f).argb and 0xFFFFFF)
+        // A half-opaque pen in a style the display draws solid is sent the grey its ink leaves.
+        val halfSpec = BrushSpec.defaults(BrushKind.Fineliner).copy(opacity = 0.5f)
+        assertEquals(0x80, halfSpec.hardwarePreview(black, 1f).argb and 0xFF, "half ink, half paper")
+    }
+
+    @Test
     fun everyPreviewIsOpaqueUnlessTheMarkerAsksForGrey() {
         val colours = listOf(BLACK, 0x80D2232A.toInt(), 0x001F4FB8, 0xFFF2C300.toInt())
         for (kind in BrushKind.entries) for (c in colours) for (scale in listOf(0.5f, 1f, 4f)) {
             val p = BrushSpec.defaults(kind).hardwarePreview(c, scale)
             assertEquals(0xFF, p.argb ushr 24, "$kind in ${Integer.toHexString(c)} at $scale")
-            if (BrushSpec.defaults(kind).preview.color == PreviewColor.Brush) assertEquals(c and 0xFFFFFF, p.argb and 0xFFFFFF, "colour passes unchanged")
+            val spec = BrushSpec.defaults(kind)
+            if (spec.preview.color == PreviewColor.Brush && spec.previewWeight >= 1f) assertEquals(c and 0xFFFFFF, p.argb and 0xFFFFFF, "an opaque brush's colour passes unchanged")
             val grey = BrushSpec.defaults(kind).hardwarePreview(c, scale, marker = MarkerPreview.SeeThroughGrey)
             assertEquals(if (grey.style == HardwareStyle.Marker) Preview.MARKER_ALPHA else 0xFF, grey.argb ushr 24)
         }
