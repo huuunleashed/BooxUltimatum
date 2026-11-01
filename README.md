@@ -355,6 +355,7 @@ No dates are promised. This is a spare-time project, and each release ships when
   - A Language row in BooxUltimatum and in Nib, the tablet's language by default and the app's own choice kept for each app, and the app's languages listed in Android's own App languages screen on Android 13 and later.
   - A Simplified Chinese and a Vietnamese translation of the whole suite: the hub, Nib, the shared kit and the updater.
   - A check that keeps a translation honest: every string present, the values in a string unchanged, and the plural forms the language has.
+- **Nib 0.6.0, lines that follow the pen (released 2026-11-01)**
 - **Nib 0.5.0, Nib in more languages (released 2026-10-19)**
   - Nib reads in Simplified Chinese and Vietnamese, and has a Language row of its own on the About page, so it can be in a different language from BooxUltimatum.
   - Nothing about drawing changed.
